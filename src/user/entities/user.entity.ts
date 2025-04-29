@@ -1,5 +1,5 @@
 import { ObjectType, Field, ID } from '@nestjs/graphql';
-import { Listing } from 'src/listing/entities/listing.entity';
+import { Person } from 'src/person/entities/person.entity';
 import {
   Column,
   Entity,
@@ -27,9 +27,9 @@ export class User {
   @Field({ description: 'Password пользователя' })
   password: string;
 
-  @Field(() => [Listing], { description: 'Password пользователя' })
-  @OneToMany(() => Listing, (listing) => listing.user)
-  listings: Listing[];
+  @OneToMany(() => Person, (person) => person.id)
+  @Field(() => [Person], { description: 'Персонажи аккаунта' })
+  persons: Person[];
 
   @Column({ type: 'text', nullable: true })
   @Field(() => String, { description: 'Refresh token', nullable: true })

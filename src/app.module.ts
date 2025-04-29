@@ -7,6 +7,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { IS_DEV } from './common/lib/is-dev';
+import { PersonModule } from './person/person.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { IS_DEV } from './common/lib/is-dev';
     }),
     UserModule,
     AuthModule,
+    PersonModule,
   ],
 })
 export class AppModule {}
