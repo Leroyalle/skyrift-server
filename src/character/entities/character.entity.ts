@@ -1,4 +1,5 @@
 import { ObjectType, Field, ID, Int } from '@nestjs/graphql';
+import { CharacterClass } from 'src/character-class/entities/character-class.entity';
 import { Faction } from 'src/faction/entities/faction.entity';
 import { User } from 'src/user/entities/user.entity';
 import {
@@ -6,6 +7,7 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
@@ -40,4 +42,11 @@ export class Character {
   @JoinColumn()
   @Field(() => Faction, { description: 'Фракция персонажа' })
   faction: Faction;
+
+  @ManyToOne(
+    () => CharacterClass,
+    (characterClass) => characterClass.characters,
+  )
+  @Field(() => CharacterClass, { description: 'Класс персонажа' })
+  characterClass: CharacterClass;
 }

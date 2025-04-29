@@ -1,6 +1,9 @@
 import { ObjectType, Field, ID } from '@nestjs/graphql';
-import { Column, PrimaryGeneratedColumn } from 'typeorm';
+import { CharacterClass } from 'src/character-class/entities/character-class.entity';
+import { Character } from 'src/character/entities/character.entity';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
+@Entity()
 @ObjectType()
 export class Faction {
   @PrimaryGeneratedColumn('uuid')
@@ -18,4 +21,8 @@ export class Faction {
   @Column()
   @Field(() => String, { description: 'Логотип фракции' })
   logo: string;
+
+  @OneToMany(() => CharacterClass, (characterClass) => characterClass.faction)
+  @Field(() => [CharacterClass], { description: 'Классы фракции' })
+  characterClasses: CharacterClass[];
 }
