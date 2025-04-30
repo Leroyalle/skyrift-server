@@ -1,15 +1,13 @@
 import { ObjectType, Field, ID, Int } from '@nestjs/graphql';
 import { CharacterClass } from 'src/character-class/entities/character-class.entity';
-import { Faction } from 'src/faction/entities/faction.entity';
 import { Item } from 'src/item/entities/item.entity';
+import { Location } from 'src/location/entities/location.entity';
 import { User } from 'src/user/entities/user.entity';
 import {
   Column,
   Entity,
-  JoinColumn,
   ManyToOne,
   OneToMany,
-  OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
@@ -49,4 +47,8 @@ export class Character {
   @OneToMany(() => Item, (item) => item.owner)
   @Field(() => [Item], { description: 'Инвентарь персонажа' })
   items: Item[];
+
+  @ManyToOne(() => Location, (location) => location.characters)
+  @Field(() => Location, { description: 'Локация персонажа' })
+  location: Location;
 }

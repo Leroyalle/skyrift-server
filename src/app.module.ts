@@ -10,6 +10,7 @@ import { IS_DEV } from './common/lib/is-dev';
 import { FactionModule } from './faction/faction.module';
 import { CharacterClassModule } from './character-class/character-class.module';
 import { ItemModule } from './item/item.module';
+import { LocationModule } from './location/location.module';
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import { ItemModule } from './item/item.module';
     FactionModule,
     CharacterClassModule,
     ItemModule,
+    LocationModule,
   ],
 })
 export class AppModule {}
