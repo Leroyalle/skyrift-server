@@ -9,6 +9,7 @@ import { AuthModule } from './auth/auth.module';
 import { IS_DEV } from './common/lib/is-dev';
 import { FactionModule } from './faction/faction.module';
 import { CharacterClassModule } from './character-class/character-class.module';
+import { ItemModule } from './item/item.module';
 
 @Module({
   imports: [
@@ -46,6 +47,7 @@ import { CharacterClassModule } from './character-class/character-class.module';
     AuthModule,
     FactionModule,
     CharacterClassModule,
+    ItemModule,
   ],
 })
 export class AppModule {}
