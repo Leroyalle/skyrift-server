@@ -70,23 +70,42 @@ enum ItemTypeEnum {
   MISC
 }
 
-type Location {
-  """ID локации"""
+type LocationLayer {
   id: ID!
+  location: Location!
 
-  """Название локации"""
+  """Название слоя"""
   name: String!
 
-  """Массив с информацией о проходных клетках"""
-  passableMap: [[Float!]!]!
+  """Тип слоя (tile, passable и т.п.)"""
+  type: String!
 
-  """Ключ тайлсета"""
+  """Порядок отрисовки"""
+  layerIndex: Float!
+
+  """Двумерный массив идентификаторов тайлов"""
+  tileData: [[Float!]!]
+
+  """
+  Двумерный массив булевых значений, определяющих проходимость клеток слоя
+  """
+  passableData: [[Boolean!]!]
+}
+
+type Location {
+  id: ID!
+  name: String!
+
+  """Координата старта X"""
+  startX: Float!
+
+  """Координата старта Y"""
+  startY: Float!
+  width: Float!
+  height: Float!
   tilesetKey: String!
-
-  """Путь до .png с тайлами"""
   mapImageUrl: String!
-
-  """Персонажи на локации"""
+  layers: [LocationLayer!]!
   characters: [Character!]!
 }
 
