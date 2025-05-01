@@ -1,3 +1,5 @@
+import { registerEnumType } from '@nestjs/graphql';
+
 export enum ItemTypeEnum {
   WEAPON = 'weapon',
   ARMOR = 'armor',
@@ -5,3 +7,8 @@ export enum ItemTypeEnum {
   RESOURCE = 'resource',
   MISC = 'misc',
 }
+
+registerEnumType(ItemTypeEnum, {
+  name: 'ItemTypeEnum',
+  description: 'Типы предметов',
+});

@@ -17,15 +17,12 @@ export class UserService {
   }
 
   public async findAll() {
-    return await this.userRepository.find({
-      relations: { listings: true },
-    });
+    return await this.userRepository.find();
   }
 
   public async findOne(id: string) {
     return await this.userRepository.findOne({
       where: { id },
-      relations: { listings: true },
     });
   }
 

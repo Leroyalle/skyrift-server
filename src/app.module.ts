@@ -11,6 +11,7 @@ import { FactionModule } from './faction/faction.module';
 import { CharacterClassModule } from './character-class/character-class.module';
 import { ItemModule } from './item/item.module';
 import { LocationModule } from './location/location.module';
+import { SeedModule } from './seed/seed.module';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { LocationModule } from './location/location.module';
     CharacterClassModule,
     ItemModule,
     LocationModule,
+    SeedModule,
   ],
 })
 export class AppModule {}

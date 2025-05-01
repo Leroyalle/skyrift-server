@@ -11,8 +11,8 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
-@Entity()
 @ObjectType()
+@Entity()
 export class Character {
   @PrimaryGeneratedColumn('uuid')
   @Field(() => ID, { description: 'ID персонажа' })

@@ -9,8 +9,8 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
-@Entity()
 @ObjectType()
+@Entity()
 export class CharacterClass {
   @PrimaryGeneratedColumn('uuid')
   @Field(() => ID, { description: 'ID класса' })

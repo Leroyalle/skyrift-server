@@ -5,9 +5,9 @@ import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 @Entity()
 @ObjectType()
 export class Location {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn('uuid')
   @Field(() => ID, { description: 'ID локации' })
-  id: number;
+  id: string;
 
   @Column()
   @Field({ description: 'Название локации' })
@@ -21,7 +21,7 @@ export class Location {
 
   @Column()
   @Field({ description: 'Ключ тайлсета' })
-  tileSetKey: string;
+  tilesetKey: string;
 
   @Column()
   @Field({ description: 'Путь до .png с тайлами' })

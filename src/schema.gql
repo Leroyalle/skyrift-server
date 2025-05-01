@@ -1,0 +1,259 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type Faction {
+  """ID фракции"""
+  id: ID!
+
+  """Название фракции"""
+  name: String!
+
+  """Описание фракции"""
+  description: String!
+
+  """Логотип фракции"""
+  logo: String!
+
+  """Классы фракции"""
+  characterClasses: [CharacterClass!]!
+}
+
+type CharacterClass {
+  """ID класса"""
+  id: ID!
+
+  """Название класса"""
+  name: String!
+
+  """Описание класса"""
+  description: String!
+
+  """Логотип класса"""
+  logo: String!
+
+  """Фракция класса"""
+  faction: Faction!
+
+  """Персонажи класса"""
+  characters: [Character!]!
+}
+
+type Item {
+  id: ID!
+
+  """Название предмета"""
+  name: String!
+
+  """Описание предмета"""
+  description: String!
+
+  """Тип предмета"""
+  type: ItemTypeEnum!
+
+  """Сила предмета"""
+  power: Float!
+
+  """Прочность предмета"""
+  durability: Float!
+
+  """Владелец предмета"""
+  owner: Character!
+}
+
+"""Типы предметов"""
+enum ItemTypeEnum {
+  WEAPON
+  ARMOR
+  POTION
+  RESOURCE
+  MISC
+}
+
+type Location {
+  """ID локации"""
+  id: ID!
+
+  """Название локации"""
+  name: String!
+
+  """Массив с информацией о проходных клетках"""
+  passableMap: [[Float!]!]!
+
+  """Ключ тайлсета"""
+  tilesetKey: String!
+
+  """Путь до .png с тайлами"""
+  mapImageUrl: String!
+
+  """Персонажи на локации"""
+  characters: [Character!]!
+}
+
+type Character {
+  """ID персонажа"""
+  id: ID!
+
+  """Имя персонажа"""
+  name: String!
+
+  """Уровень персонажа"""
+  level: Int!
+
+  """Статус удален или нет"""
+  isDeleted: Boolean!
+
+  """Аккаунт пользователя"""
+  user: User!
+
+  """Класс персонажа"""
+  characterClass: CharacterClass!
+
+  """Инвентарь персонажа"""
+  items: [Item!]!
+
+  """Локация персонажа"""
+  location: Location!
+}
+
+type User {
+  """ID пользователя"""
+  id: ID!
+
+  """Имя пользователя"""
+  name: String!
+
+  """Email пользователя"""
+  email: String!
+
+  """Password пользователя"""
+  password: String!
+
+  """Персонажи аккаунта"""
+  persons: [Character!]!
+
+  """Refresh token"""
+  refreshToken: String
+
+  """Дата создания пользователя"""
+  createdAt: Timestamp!
+
+  """Дата последнего обновления пользователя"""
+  updatedAt: Timestamp!
+}
+
+"""
+`Date` type as integer. Type represents date and time as number of milliseconds from start of UNIX epoch.
+"""
+scalar Timestamp
+
+type Auth {
+  """Access token"""
+  accessToken: String!
+
+  """RefreshToken token"""
+  refreshToken: String!
+}
+
+type Logout {
+  """Сообщение о выходе"""
+  message: String!
+}
+
+type Query {
+  findAllUsers: [User!]!
+  findOneUser(id: ID!): User!
+  faction(id: Int!): Faction!
+  characterClass(id: Int!): CharacterClass!
+  item(id: Int!): Item!
+  location(id: Int!): Location!
+}
+
+type Mutation {
+  createUser(createUserInput: CreateUserInput!): User!
+  signUp(signUpInput: RegisterInput!): Auth!
+  signIn(signInInput: RegisterInput!): Auth!
+  logout: Logout!
+  refreshTokens: Auth!
+  createFaction(createFactionInput: CreateFactionInput!): Faction!
+  updateFaction(updateFactionInput: UpdateFactionInput!): Faction!
+  removeFaction(id: Int!): Faction!
+  createCharacterClass(createCharacterClassInput: CreateCharacterClassInput!): CharacterClass!
+  updateCharacterClass(updateCharacterClassInput: UpdateCharacterClassInput!): CharacterClass!
+  removeCharacterClass(id: Int!): CharacterClass!
+  createItem(createItemInput: CreateItemInput!): Item!
+  updateItem(updateItemInput: UpdateItemInput!): Item!
+  removeItem(id: Int!): Item!
+  createLocation(createLocationInput: CreateLocationInput!): Location!
+  updateLocation(updateLocationInput: UpdateLocationInput!): Location!
+  removeLocation(id: Int!): Location!
+}
+
+input CreateUserInput {
+  """Имя пользователя"""
+  name: String!
+
+  """Email пользователя"""
+  email: String!
+
+  """Password пользователя"""
+  password: String!
+
+  """Токен обновления"""
+  refreshToken: String
+}
+
+input RegisterInput {
+  """Имя пользователя"""
+  name: String!
+
+  """Email пользователя"""
+  email: String!
+
+  """Password пользователя"""
+  password: String!
+}
+
+input CreateFactionInput {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+input UpdateFactionInput {
+  """Example field (placeholder)"""
+  exampleField: Int
+  id: Int!
+}
+
+input CreateCharacterClassInput {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+input UpdateCharacterClassInput {
+  """Example field (placeholder)"""
+  exampleField: Int
+  id: Int!
+}
+
+input CreateItemInput {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+input UpdateItemInput {
+  """Example field (placeholder)"""
+  exampleField: Int
+  id: Int!
+}
+
+input CreateLocationInput {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+input UpdateLocationInput {
+  """Example field (placeholder)"""
+  exampleField: Int
+  id: Int!
+}

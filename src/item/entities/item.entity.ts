@@ -3,8 +3,8 @@ import { Character } from 'src/character/entities/character.entity';
 import { ItemTypeEnum } from 'src/common/enums/item-type.enum';
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
-@Entity()
 @ObjectType()
+@Entity()
 export class Item {
   @PrimaryGeneratedColumn()
   @Field(() => ID)
