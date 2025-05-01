@@ -69,6 +69,10 @@ export class SeedService {
 
   private async clearDatabase() {
     await this.userRepository.query('TRUNCATE TABLE "user" CASCADE');
+    await this.locationLayerRepository.query(
+      'TRUNCATE TABLE "location_layer" CASCADE',
+    );
+    await this.locationRepository.query('TRUNCATE TABLE "location" CASCADE');
     console.log('Listings cleared');
   }
 
