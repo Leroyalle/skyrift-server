@@ -4,6 +4,8 @@ import { User } from './entities/user.entity';
 import { CreateUserInput } from './dto/create-user.input';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { PayloadUser } from 'src/common/types/user-request.type';
+import { UseGuards } from '@nestjs/common';
+import { AccessTokenGuard } from 'src/common/guards/access-token.guard';
 
 @Resolver(() => User)
 export class UserResolver {
@@ -24,6 +26,7 @@ export class UserResolver {
     return this.userService.findOne(id);
   }
 
+  @UseGuards(AccessTokenGuard)
   @Query(() => User, { name: 'getCurrentUser' })
   getCurrentUser(@CurrentUser() user: PayloadUser) {
     return this.userService.findOne(user.sub);

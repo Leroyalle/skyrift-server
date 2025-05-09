@@ -25,6 +25,7 @@ import { CharacterModule } from './character/character.module';
       autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
       // sortSchema: true,
       playground: IS_DEV,
+      context: ({ req, res }) => ({ req, res }),
       // installSubscriptionHandlers: true,
       buildSchemaOptions: {
         dateScalarMode: 'timestamp',

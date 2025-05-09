@@ -68,8 +68,11 @@ export class AuthService {
     return await this.userService.update({ id: userId, refreshToken: null });
   }
 
-  updateRefreshToken(userId: string, refreshToken: string) {
-    return this.userService.update({ id: userId, refreshToken });
+  async updateRefreshToken(userId: string, refreshToken: string) {
+    return await this.userService.update({
+      id: userId,
+      refreshToken: await argon2.hash(refreshToken),
+    });
   }
 
   hashData(data: string) {
@@ -125,10 +128,7 @@ export class AuthService {
     }
 
     const tokens = await this.getTokens(findUser.id, findUser.name);
-    await this.userService.update({
-      id: findUser.id,
-      refreshToken: tokens.refreshToken,
-    });
+    await this.updateRefreshToken(findUser.id, tokens.refreshToken);
 
     return tokens;
   }

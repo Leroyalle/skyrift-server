@@ -16,7 +16,7 @@ export class RefreshTokenStrategy extends PassportStrategy(
   constructor() {
     super({
       jwtFromRequest: (req: Request) => {
-        const refreshToken = req.cookies?.refreshToken;
+        const refreshToken = req.cookies['refreshToken'];
         if (!refreshToken) {
           throw new UnauthorizedException('Refresh token not found in cookies');
         }
@@ -35,6 +35,7 @@ export class RefreshTokenStrategy extends PassportStrategy(
     if (!refreshToken) {
       throw new UnauthorizedException('Refresh token not found in cookies');
     }
+
     return { ...payload, refreshToken };
   }
 }

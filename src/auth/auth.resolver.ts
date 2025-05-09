@@ -1,4 +1,9 @@
-import { Resolver, Mutation, Args } from '@nestjs/graphql';
+import {
+  Resolver,
+  Mutation,
+  Args,
+  GraphQLExecutionContext,
+} from '@nestjs/graphql';
 import { AuthService } from './auth.service';
 import { Auth } from './entities/auth.entity';
 import { RegisterInput } from './dto/register.input';
@@ -10,6 +15,7 @@ import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { PayloadUser } from 'src/common/types/user-request.type';
 import { LoginInput } from './dto/login.input';
 import { Response } from 'express';
+import { Context } from '@nestjs/graphql';
 
 @Resolver(() => Auth)
 export class AuthResolver {
@@ -23,20 +29,23 @@ export class AuthResolver {
   @Mutation(() => Auth)
   async signIn(
     @Args('signInInput') signInInput: LoginInput,
-    @Res() res: Response,
+    @Context() context: { res: Response },
   ) {
     const tokens = await this.authService.signIn(signInInput);
 
-    res.cookie('refreshToken', tokens, {
+    context.res.cookie('refreshToken', tokens.refreshToken, {
       httpOnly: true,
       secure: true,
       sameSite: 'strict',
       maxAge: 1000 * 60 * 60 * 24 * 7,
     });
 
-    return {
-      accessToken: tokens.accessToken,
-    };
+    context.res.cookie('accessToken', tokens.accessToken, {
+      sameSite: 'strict',
+      maxAge: 1000 * 60 * 15,
+    });
+
+    return tokens;
   }
 
   @UseGuards(AccessTokenGuard)
@@ -47,7 +56,25 @@ export class AuthResolver {
 
   @UseGuards(RefreshTokenGuard)
   @Mutation(() => Auth)
-  refreshTokens(@CurrentUser() user: PayloadUser) {
-    return this.authService.refreshTokens(user.sub, user.refreshToken);
+  public async refreshTokens(
+    @CurrentUser() user: PayloadUser,
+    @Context() context: { res: Response },
+  ) {
+    const tokens = await this.authService.refreshTokens(
+      user.sub,
+      user.refreshToken,
+    );
+    context.res.cookie('refreshToken', tokens.refreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'strict',
+      maxAge: 1000 * 60 * 60 * 24 * 7,
+    });
+
+    context.res.cookie('accessToken', tokens.accessToken, {
+      sameSite: 'strict',
+      maxAge: 1000 * 60 * 15,
+    });
+    return tokens;
   }
 }
