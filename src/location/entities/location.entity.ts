@@ -1,4 +1,4 @@
-import { Field, ID, ObjectType } from '@nestjs/graphql';
+import { Field, ID, Int, ObjectType } from '@nestjs/graphql';
 import { Character } from 'src/character/entities/character.entity';
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { LocationLayer } from './location-layer.entity';
@@ -6,12 +6,12 @@ import { LocationLayer } from './location-layer.entity';
 @Entity()
 @ObjectType()
 export class Location {
-  @PrimaryGeneratedColumn()
-  @Field(() => ID)
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  @Field(() => ID, { description: 'ID локации' })
+  id: string;
 
   @Column()
-  @Field()
+  @Field({ description: 'Название локации' })
   name: string;
 
   @Column()
@@ -37,6 +37,14 @@ export class Location {
   @Column()
   @Field()
   mapImageUrl: string;
+
+  @Column()
+  @Field(() => Int, { description: 'Ширина тайла' })
+  tileWidth: number;
+
+  @Column()
+  @Field(() => Int, { description: 'Высота тайла' })
+  tileHeight: number;
 
   @OneToMany(() => LocationLayer, (layer) => layer.location, { cascade: true })
   @Field(() => [LocationLayer])

@@ -8,6 +8,8 @@ import { LocationLayer } from 'src/location/entities/location-layer.entity';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as xml2js from 'xml2js';
+import { Faction } from 'src/faction/entities/faction.entity';
+import { CharacterClass } from 'src/character-class/entities/character-class.entity';
 
 @Injectable()
 export class SeedService {
@@ -18,6 +20,10 @@ export class SeedService {
     private locationRepository: Repository<Location>,
     @InjectRepository(LocationLayer)
     private locationLayerRepository: Repository<LocationLayer>,
+    @InjectRepository(Faction)
+    private factionRepository: Repository<Faction>,
+    @InjectRepository(CharacterClass)
+    private characterClassRepository: Repository<CharacterClass>,
   ) {}
 
   public async run() {
@@ -30,9 +36,24 @@ export class SeedService {
       refreshToken: null,
     });
 
+    const createdFaction = await this.factionRepository.save({
+      name: 'Эльфы',
+      description:
+        'Эльфы - это раса, известная своей грацией и магическими способностями.',
+      logo: 'https://example.com/elf_logo.png',
+    });
+
+    await this.characterClassRepository.save({
+      name: 'Лучник',
+      description: 'Мастер стрельбы из лука и скрытности.',
+      faction: createdFaction,
+      logo: 'https://example.com/archer_logo.png',
+    });
+
     const { mapEntries, tilesetEntries } = await this.readFiles();
 
     for (const mapEntry of mapEntries) {
+      console.log(mapEntry.tilewidth, mapEntry.tileheight);
       const location = this.locationRepository.create({
         height: mapEntry.height,
         width: mapEntry.width,
@@ -41,6 +62,8 @@ export class SeedService {
         name: this.findMapName(mapEntry),
         tilesetKey: mapEntry.tilesets[0].source,
         mapImageUrl: mapEntry.tilesets[0].source,
+        tileWidth: mapEntry.tilewidth,
+        tileHeight: mapEntry.tileheight,
       });
       await this.locationRepository.save(location);
 
@@ -152,9 +175,9 @@ export class SeedService {
 
     for (let i = 0; i < layer.height; i++) {
       const row = layer.data
-        .map((tileId) =>
-          mergedTilesetData[tileId]?.passable === false ? 0 : 1,
-        )
+        .map((tileId) => {
+          return mergedTilesetData[tileId]?.passable === 'false' ? 0 : 1;
+        })
         .slice(i * layer.width, (i + 1) * layer.width);
       passableData.push(row);
     }

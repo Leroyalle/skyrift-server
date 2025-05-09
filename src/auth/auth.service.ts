@@ -58,6 +58,7 @@ export class AuthService {
     }
 
     const tokens = await this.getTokens(findUser.id, findUser.name);
+
     await this.updateRefreshToken(findUser.id, tokens.refreshToken);
 
     return tokens;

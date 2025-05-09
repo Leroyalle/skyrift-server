@@ -71,7 +71,10 @@ enum ItemTypeEnum {
 }
 
 type LocationLayer {
+  """ID слоя"""
   id: ID!
+
+  """Локация, к которой принадлежит слой"""
   location: Location!
 
   """Название слоя"""
@@ -84,16 +87,19 @@ type LocationLayer {
   layerIndex: Float!
 
   """Двумерный массив идентификаторов тайлов"""
-  tileData: [[Float!]!]
+  tileData: [[Float!]!]!
 
   """
   Двумерный массив булевых значений, определяющих проходимость клеток слоя
   """
-  passableData: [[Boolean!]!]
+  passableData: [[Float!]!]!
 }
 
 type Location {
+  """ID локации"""
   id: ID!
+
+  """Название локации"""
   name: String!
 
   """Координата старта X"""
@@ -105,6 +111,12 @@ type Location {
   height: Float!
   tilesetKey: String!
   mapImageUrl: String!
+
+  """Ширина тайла"""
+  tileWidth: Int!
+
+  """Высота тайла"""
+  tileHeight: Int!
   layers: [LocationLayer!]!
   characters: [Character!]!
 }
@@ -182,21 +194,28 @@ type Logout {
 type Query {
   findAllUsers: [User!]!
   findOneUser(id: ID!): User!
+  getCurrentUser: User!
   faction(id: Int!): Faction!
+  findUserCharacters: [Character!]!
+  character(id: Int!): Character!
   characterClass(id: Int!): CharacterClass!
   item(id: Int!): Item!
-  location(id: Int!): Location!
+  location: [Location!]!
+  findLocationById(id: ID!): Location!
 }
 
 type Mutation {
   createUser(createUserInput: CreateUserInput!): User!
   signUp(signUpInput: RegisterInput!): Auth!
-  signIn(signInInput: RegisterInput!): Auth!
+  signIn(signInInput: LoginInput!): Auth!
   logout: Logout!
   refreshTokens: Auth!
   createFaction(createFactionInput: CreateFactionInput!): Faction!
   updateFaction(updateFactionInput: UpdateFactionInput!): Faction!
   removeFaction(id: Int!): Faction!
+  createCharacter(createCharacterInput: CreateCharacterInput!): Character!
+  updateCharacter(updateCharacterInput: UpdateCharacterInput!): Character!
+  removeCharacter(id: Int!): Character!
   createCharacterClass(createCharacterClassInput: CreateCharacterClassInput!): CharacterClass!
   updateCharacterClass(updateCharacterClassInput: UpdateCharacterClassInput!): CharacterClass!
   removeCharacterClass(id: Int!): CharacterClass!
@@ -233,12 +252,31 @@ input RegisterInput {
   password: String!
 }
 
+input LoginInput {
+  """Email пользователя"""
+  email: String!
+
+  """Password пользователя"""
+  password: String!
+}
+
 input CreateFactionInput {
   """Example field (placeholder)"""
   exampleField: Int!
 }
 
 input UpdateFactionInput {
+  """Example field (placeholder)"""
+  exampleField: Int
+  id: Int!
+}
+
+input CreateCharacterInput {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+input UpdateCharacterInput {
   """Example field (placeholder)"""
   exampleField: Int
   id: Int!

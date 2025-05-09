@@ -2,6 +2,8 @@ import { Resolver, Query, Mutation, Args, ID } from '@nestjs/graphql';
 import { UserService } from './user.service';
 import { User } from './entities/user.entity';
 import { CreateUserInput } from './dto/create-user.input';
+import { CurrentUser } from 'src/common/decorators/current-user.decorator';
+import { PayloadUser } from 'src/common/types/user-request.type';
 
 @Resolver(() => User)
 export class UserResolver {
@@ -20,5 +22,10 @@ export class UserResolver {
   @Query(() => User, { name: 'findOneUser' })
   findOne(@Args('id', { type: () => ID }) id: string) {
     return this.userService.findOne(id);
+  }
+
+  @Query(() => User, { name: 'getCurrentUser' })
+  getCurrentUser(@CurrentUser() user: PayloadUser) {
+    return this.userService.findOne(user.sub);
   }
 }

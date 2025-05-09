@@ -1,5 +1,5 @@
 import { PassportStrategy } from '@nestjs/passport';
-import { ExtractJwt, Strategy } from 'passport-jwt';
+import { Strategy } from 'passport-jwt';
 import { Request } from 'express';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 
@@ -15,7 +15,13 @@ export class RefreshTokenStrategy extends PassportStrategy(
 ) {
   constructor() {
     super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      jwtFromRequest: (req: Request) => {
+        const refreshToken = req.cookies?.refreshToken;
+        if (!refreshToken) {
+          throw new UnauthorizedException('Refresh token not found in cookies');
+        }
+        return refreshToken;
+      },
       secretOrKey: process.env.JWT_REFRESH_SECRET as string,
       passReqToCallback: true,
     });
@@ -25,11 +31,10 @@ export class RefreshTokenStrategy extends PassportStrategy(
     req: Request,
     payload: JwtPayload,
   ): { refreshToken: string; [key: string]: unknown } {
-    const authHeader = req.get('Authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      throw new UnauthorizedException('Invalid or missing Bearer token');
+    const refreshToken = req.cookies?.refreshToken;
+    if (!refreshToken) {
+      throw new UnauthorizedException('Refresh token not found in cookies');
     }
-    const refreshToken = authHeader.substring(7).trim();
     return { ...payload, refreshToken };
   }
 }

@@ -1,4 +1,4 @@
-import { Resolver, Query, Mutation, Args, Int } from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args, Int, ID } from '@nestjs/graphql';
 import { LocationService } from './location.service';
 import { Location } from './entities/location.entity';
 import { CreateLocationInput } from './dto/create-location.input';
@@ -20,8 +20,8 @@ export class LocationResolver {
     return this.locationService.findAll();
   }
 
-  @Query(() => Location, { name: 'location' })
-  findOne(@Args('id', { type: () => Int }) id: number) {
+  @Query(() => Location, { name: 'findLocationById' })
+  findOne(@Args('id', { type: () => ID }) id: string) {
     return this.locationService.findOne(id);
   }
 

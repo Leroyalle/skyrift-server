@@ -1,12 +1,4 @@
 { "compressionlevel":-1,
- "editorsettings":
-    {
-     "export":
-        {
-         "format":"json",
-         "target":"skyrift-map1.tmj"
-        }
-    },
  "height":64,
  "infinite":false,
  "layers":[

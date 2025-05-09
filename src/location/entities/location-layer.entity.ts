@@ -5,12 +5,12 @@ import { Location } from './location.entity';
 @Entity()
 @ObjectType()
 export class LocationLayer {
-  @PrimaryGeneratedColumn()
-  @Field(() => ID)
+  @PrimaryGeneratedColumn('uuid')
+  @Field(() => ID, { description: 'ID слоя' })
   id: number;
 
   @ManyToOne(() => Location, (location) => location.layers)
-  @Field(() => Location)
+  @Field(() => Location, { description: 'Локация, к которой принадлежит слой' })
   location: Location;
 
   @Column()
@@ -28,15 +28,13 @@ export class LocationLayer {
   @Column('jsonb')
   @Field(() => [[Number]], {
     description: 'Двумерный массив идентификаторов тайлов',
-    nullable: true,
   })
   tileData: number[][];
 
-  @Column('jsonb', { nullable: true })
-  @Field(() => [[Boolean]], {
+  @Column('jsonb')
+  @Field(() => [[Number]], {
     description:
       'Двумерный массив булевых значений, определяющих проходимость клеток слоя',
-    nullable: true,
   })
   passableData: number[][];
 }
