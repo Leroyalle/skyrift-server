@@ -144,7 +144,7 @@ type Character {
   items: [Item!]!
 
   """Локация персонажа"""
-  location: Location!
+  location: Location
 }
 
 type User {

@@ -2,37 +2,31 @@ import {
   WebSocketGateway,
   SubscribeMessage,
   MessageBody,
+  OnGatewayConnection,
+  OnGatewayDisconnect,
+  WebSocketServer,
 } from '@nestjs/websockets';
 import { GameService } from './game.service';
-import { CreateGameDto } from './dto/create-game.dto';
-import { UpdateGameDto } from './dto/update-game.dto';
+import { PlayerWalkDto } from './dto/player-walk.dto';
+import { Server, Socket } from 'socket.io';
 
 @WebSocketGateway()
-export class GameGateway {
+export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(private readonly gameService: GameService) {}
 
-  @SubscribeMessage('createGame')
-  create(@MessageBody() createGameDto: CreateGameDto) {
-    return this.gameService.create(createGameDto);
+  @WebSocketServer()
+  server: Server;
+
+  handleConnection(client: Socket) {
+    return this.gameService.handleConnection(client);
   }
 
-  @SubscribeMessage('findAllGame')
-  findAll() {
-    return this.gameService.findAll();
+  handleDisconnect(client: any) {
+    console.log('Client disconnected:', client.id);
   }
 
-  @SubscribeMessage('findOneGame')
-  findOne(@MessageBody() id: number) {
-    return this.gameService.findOne(id);
-  }
-
-  @SubscribeMessage('updateGame')
-  update(@MessageBody() updateGameDto: UpdateGameDto) {
-    return this.gameService.update(updateGameDto.id, updateGameDto);
-  }
-
-  @SubscribeMessage('removeGame')
-  remove(@MessageBody() id: number) {
-    return this.gameService.remove(id);
+  @SubscribeMessage('player:walk')
+  playerWalk(@MessageBody() walkInput: PlayerWalkDto) {
+    return this.gameService.playerWalk(walkInput);
   }
 }

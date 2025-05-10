@@ -10,6 +10,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { UserService } from 'src/user/user.service';
 import * as argon2 from 'argon2';
+import { JwtPayload } from 'src/common/types/jwt-payload.type';
 
 @Injectable()
 export class AuthService {
@@ -75,11 +76,11 @@ export class AuthService {
     });
   }
 
-  hashData(data: string) {
+  private hashData(data: string) {
     return argon2.hash(data);
   }
 
-  async getTokens(userId: string, username: string) {
+  private async getTokens(userId: string, username: string) {
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(
         {
@@ -131,5 +132,18 @@ export class AuthService {
     await this.updateRefreshToken(findUser.id, tokens.refreshToken);
 
     return tokens;
+  }
+
+  public verifyToken(token: string, type: 'access' | 'refresh'): JwtPayload {
+    try {
+      return this.jwtService.verify(token, {
+        secret:
+          type === 'access'
+            ? (this.configService.get<string>('JWT_ACCESS_SECRET') as string)
+            : (this.configService.get<string>('JWT_REFRESH_SECRET') as string),
+      });
+    } catch {
+      throw new ForbiddenException('Доступ запрещен');
+    }
   }
 }

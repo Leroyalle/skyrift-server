@@ -14,5 +14,6 @@ import { UserModule } from 'src/user/user.module';
     AccessTokenStrategy,
     RefreshTokenStrategy,
   ],
+  exports: [AuthService],
 })
 export class AuthModule {}

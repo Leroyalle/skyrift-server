@@ -6,6 +6,7 @@ import { Location } from 'src/location/entities/location.entity';
 import { LocationLayer } from 'src/location/entities/location-layer.entity';
 import { Faction } from 'src/faction/entities/faction.entity';
 import { CharacterClass } from 'src/character-class/entities/character-class.entity';
+import { Character } from 'src/character/entities/character.entity';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { CharacterClass } from 'src/character-class/entities/character-class.ent
       LocationLayer,
       Faction,
       CharacterClass,
+      Character,
     ]),
   ],
   providers: [SeedService],

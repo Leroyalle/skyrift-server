@@ -24,6 +24,11 @@ export class CharacterService {
       where: {
         user: { id: userId },
       },
+      relations: {
+        characterClass: {
+          faction: true,
+        },
+      },
     });
   }
 

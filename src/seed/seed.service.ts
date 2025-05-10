@@ -10,6 +10,8 @@ import * as path from 'path';
 import * as xml2js from 'xml2js';
 import { Faction } from 'src/faction/entities/faction.entity';
 import { CharacterClass } from 'src/character-class/entities/character-class.entity';
+import { Character } from 'src/character/entities/character.entity';
+import * as argon2 from 'argon2';
 
 @Injectable()
 export class SeedService {
@@ -24,15 +26,17 @@ export class SeedService {
     private factionRepository: Repository<Faction>,
     @InjectRepository(CharacterClass)
     private characterClassRepository: Repository<CharacterClass>,
+    @InjectRepository(Character)
+    private characterRepository: Repository<Character>,
   ) {}
 
   public async run() {
     await this.clearDatabase();
 
-    await this.userRepository.save({
+    const createdUser = await this.userRepository.save({
       name: 'Leroyalle',
-      email: 'leroyalle@example.com',
-      password: 'password',
+      email: 'nikolajmelonov@yandex.ru',
+      password: await argon2.hash('123123132'),
       refreshToken: null,
     });
 
@@ -43,11 +47,18 @@ export class SeedService {
       logo: 'https://example.com/elf_logo.png',
     });
 
-    await this.characterClassRepository.save({
+    const createdClass = await this.characterClassRepository.save({
       name: 'Лучник',
       description: 'Мастер стрельбы из лука и скрытности.',
       faction: createdFaction,
       logo: 'https://example.com/archer_logo.png',
+    });
+
+    const createdCharacter = await this.characterRepository.save({
+      name: 'saintLeroyalle',
+      user: createdUser,
+      characterClass: createdClass,
+      level: 1,
     });
 
     const { mapEntries, tilesetEntries } = await this.readFiles();

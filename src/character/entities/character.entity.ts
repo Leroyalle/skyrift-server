@@ -23,10 +23,10 @@ export class Character {
   name: string;
 
   @Column()
-  @Field(() => Int, { description: 'Уровень персонажа' })
+  @Field(() => Int, { description: 'Уровень персонажа', defaultValue: 1 })
   level: number;
 
-  @Column()
+  @Column({ default: false })
   @Field(() => Boolean, {
     description: 'Статус удален или нет',
     defaultValue: false,
@@ -49,6 +49,6 @@ export class Character {
   items: Item[];
 
   @ManyToOne(() => Location, (location) => location.characters)
-  @Field(() => Location, { description: 'Локация персонажа' })
+  @Field(() => Location, { description: 'Локация персонажа', nullable: true })
   location: Location;
 }
