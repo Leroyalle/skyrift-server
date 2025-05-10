@@ -4,6 +4,7 @@ declare module 'socket.io' {
   interface Socket {
     userData: {
       userId?: string;
+      characterId?: string;
     };
   }
 }

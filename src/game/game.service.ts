@@ -4,12 +4,14 @@ import { PlayerWalkDto } from './dto/player-walk.dto';
 import { Server, Socket } from 'socket.io';
 import { AuthService } from 'src/auth/auth.service';
 import { UserService } from 'src/user/user.service';
+import { CharacterService } from 'src/character/character.service';
 
 @Injectable()
 export class GameService {
   constructor(
     private readonly authService: AuthService,
     private readonly userService: UserService,
+    private readonly characterService: CharacterService,
     @Inject('SOCKET_IO_SERVER') private readonly server: Server,
   ) {}
 
@@ -17,9 +19,12 @@ export class GameService {
 
   public async handleConnection(client: Socket) {
     try {
-      const accessToken = client.handshake.auth?.token as string | undefined;
+      const { token: accessToken, characterId } = client.handshake.auth as {
+        token?: string;
+        characterId?: string;
+      };
 
-      if (!accessToken) {
+      if (!accessToken || !characterId) {
         client.disconnect();
         return;
       }
@@ -38,6 +43,16 @@ export class GameService {
         return;
       }
 
+      const findCharacter = await this.characterService.findOwnedCharacter(
+        findUser.id,
+        characterId,
+      );
+
+      if (!findCharacter) {
+        client.disconnect();
+        return;
+      }
+
       const oldClientId = this.activeConnections.get(findUser.id);
       if (oldClientId) {
         const oldClient = this.server.sockets.sockets.get(oldClientId);
@@ -46,7 +61,10 @@ export class GameService {
       }
 
       this.activeConnections.set(findUser.id, client.id);
-      client['userData'] = { userId: findUser.id };
+      client['userData'] = {
+        userId: findUser.id,
+        characterId: findCharacter.id,
+      };
     } catch {
       client.disconnect(true);
     }

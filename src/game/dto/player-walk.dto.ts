@@ -4,5 +4,5 @@ import { InputType } from '@nestjs/graphql';
 export class PlayerWalkDto {
   x: number;
   y: number;
-  id: string;
+  characterId: string;
 }

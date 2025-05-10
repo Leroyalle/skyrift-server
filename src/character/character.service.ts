@@ -32,6 +32,20 @@ export class CharacterService {
     });
   }
 
+  public async findOwnedCharacter(userId: string, characterId: string) {
+    return await this.characterRepository.findOne({
+      where: {
+        id: characterId,
+        user: { id: userId },
+      },
+      relations: {
+        characterClass: {
+          faction: true,
+        },
+      },
+    });
+  }
+
   findOne(id: number) {
     return `This action returns a #${id} character`;
   }
