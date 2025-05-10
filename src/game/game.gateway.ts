@@ -9,6 +9,7 @@ import {
 import { GameService } from './game.service';
 import { PlayerWalkDto } from './dto/player-walk.dto';
 import { Server, Socket } from 'socket.io';
+import { ClientToServerEvents } from 'src/common/enums/game-socket-events';
 
 @WebSocketGateway()
 export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
@@ -25,7 +26,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     console.log('Client disconnected:', client.id);
   }
 
-  @SubscribeMessage('player:walk')
+  @SubscribeMessage(ClientToServerEvents.PlayerWalk)
   playerWalk(@MessageBody() walkInput: PlayerWalkDto) {
     return this.gameService.playerWalk(walkInput);
   }

@@ -5,6 +5,7 @@ import { Server, Socket } from 'socket.io';
 import { AuthService } from 'src/auth/auth.service';
 import { UserService } from 'src/user/user.service';
 import { CharacterService } from 'src/character/character.service';
+import { ServerToClientEvents } from 'src/common/enums/game-socket-events';
 
 @Injectable()
 export class GameService {
@@ -65,6 +66,8 @@ export class GameService {
         userId: findUser.id,
         characterId: findCharacter.id,
       };
+
+      this.server.emit(ServerToClientEvents.PlayerConnected, findCharacter);
     } catch {
       client.disconnect(true);
     }
