@@ -5,6 +5,11 @@ declare module 'socket.io' {
     userData: {
       userId?: string;
       characterId?: string;
+      locationId?: string;
+      position?: {
+        x: number;
+        y: number;
+      };
     };
   }
 }

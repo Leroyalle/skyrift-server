@@ -1,5 +1,6 @@
 import { ObjectType, Field, ID, Int } from '@nestjs/graphql';
 import { CharacterClass } from 'src/character-class/entities/character-class.entity';
+import { PositionDto } from 'src/common/dto/position.dto';
 import { Item } from 'src/item/entities/item.entity';
 import { Location } from 'src/location/entities/location.entity';
 import { User } from 'src/user/entities/user.entity';
@@ -51,4 +52,7 @@ export class Character {
   @ManyToOne(() => Location, (location) => location.characters)
   @Field(() => Location, { description: 'Локация персонажа', nullable: true })
   location: Location;
+
+  @Field(() => PositionDto, { description: 'Позиция игрока' })
+  position: PositionDto;
 }

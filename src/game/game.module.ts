@@ -4,9 +4,10 @@ import { GameGateway } from './game.gateway';
 import { AuthModule } from 'src/auth/auth.module';
 import { UserModule } from 'src/user/user.module';
 import { CharacterModule } from 'src/character/character.module';
+import { LocationModule } from 'src/location/location.module';
 
 @Module({
-  imports: [AuthModule, UserModule, CharacterModule],
+  imports: [AuthModule, UserModule, CharacterModule, LocationModule],
   providers: [
     GameGateway,
     GameService,

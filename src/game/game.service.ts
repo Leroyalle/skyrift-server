@@ -1,11 +1,13 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { UpdateGameDto } from './dto/update-game.dto';
+import { Injectable, Logger, Inject } from '@nestjs/common';
 import { PlayerWalkDto } from './dto/player-walk.dto';
 import { Server, Socket } from 'socket.io';
 import { AuthService } from 'src/auth/auth.service';
 import { UserService } from 'src/user/user.service';
 import { CharacterService } from 'src/character/character.service';
 import { ServerToClientEvents } from 'src/common/enums/game-socket-events';
+import { ChangeLocationDto } from './dto/change-location.dto';
+import { LocationService } from 'src/location/location.service';
+import { PlayerData } from 'src/common/types/player-data.type';
 
 @Injectable()
 export class GameService {
@@ -13,12 +15,14 @@ export class GameService {
     private readonly authService: AuthService,
     private readonly userService: UserService,
     private readonly characterService: CharacterService,
+    private readonly locationService: LocationService,
     @Inject('SOCKET_IO_SERVER') private readonly server: Server,
   ) {}
 
+  private readonly logger = new Logger(GameService.name);
   private readonly activeConnections: Map<string, string> = new Map();
 
-  public async handleConnection(client: Socket) {
+  async handleConnection(client: Socket) {
     try {
       const { token: accessToken, characterId } = client.handshake.auth as {
         token?: string;
@@ -31,14 +35,12 @@ export class GameService {
       }
 
       const payload = this.authService.verifyToken(accessToken, 'access');
-
-      if (!payload) {
+      if (!payload || !payload.sub) {
         client.disconnect();
         return;
       }
 
       const findUser = await this.userService.findOne(payload.sub);
-
       if (!findUser) {
         client.disconnect();
         return;
@@ -48,7 +50,6 @@ export class GameService {
         findUser.id,
         characterId,
       );
-
       if (!findCharacter) {
         client.disconnect();
         return;
@@ -56,8 +57,13 @@ export class GameService {
 
       const oldClientId = this.activeConnections.get(findUser.id);
       if (oldClientId) {
-        const oldClient = this.server.sockets.sockets.get(oldClientId);
-        if (oldClient) oldClient?.disconnect();
+        const oldConnection = this.server.sockets.sockets.get(oldClientId);
+        if (oldConnection) {
+          this.logger.log(
+            `Disconnecting old client for user ${findUser.id}: ${oldClientId}`,
+          );
+          oldConnection.disconnect(true);
+        }
         this.activeConnections.delete(findUser.id);
       }
 
@@ -65,7 +71,11 @@ export class GameService {
       client['userData'] = {
         userId: findUser.id,
         characterId: findCharacter.id,
+        locationId: findCharacter.location.id,
+        position: findCharacter.position,
       };
+
+      void client.join(`location:${findCharacter.location.id}`);
 
       this.server.emit(ServerToClientEvents.PlayerConnected, findCharacter);
     } catch {
@@ -73,23 +83,148 @@ export class GameService {
     }
   }
 
-  playerWalk(input: PlayerWalkDto) {
-    return 'This action adds a new game';
+  public async getInitialData(client: Socket) {
+    if (!this.verifyUserDataInSocket(client)) {
+      client.disconnect();
+      return;
+    }
+
+    const { userId, characterId, locationId } = client['userData'];
+    const storedClientId = this.activeConnections.get(userId);
+    if (storedClientId !== client.id) {
+      this.logger.warn(`Invalid connection for user ${userId}`);
+      client.disconnect();
+      return;
+    }
+
+    const findCharacter = await this.characterService.findOwnedCharacter(
+      userId,
+      characterId,
+    );
+    if (!findCharacter) {
+      client.disconnect();
+      return;
+    }
+
+    const findLocation = await this.locationService.findOne(
+      findCharacter.location.id,
+    );
+
+    const otherPlayers: PlayerData[] = [];
+    const sockets = await this.server.in(`location:${locationId}`).allSockets();
+    for (const socketId of sockets) {
+      const otherClient = this.server.sockets.sockets.get(socketId);
+      if (
+        otherClient &&
+        otherClient.id !== client.id &&
+        this.verifyUserDataInSocket(otherClient)
+      ) {
+        otherPlayers.push({
+          userId: otherClient.userData.userId,
+          characterId: otherClient.userData.characterId,
+          position: otherClient.userData.position,
+        });
+      }
+    }
+
+    void client.join(`location:${findCharacter.location.id}`);
+
+    client.emit(ServerToClientEvents.GameInitialState, {
+      character: findCharacter,
+      location: findLocation,
+      players: otherPlayers,
+    });
   }
 
-  findAll() {
-    return `This action returns all game`;
+  public playerWalk(client: Socket, input: PlayerWalkDto) {
+    if (!this.verifyUserDataInSocket(client)) {
+      client.disconnect();
+      return;
+    }
+
+    const { userId, characterId, locationId } = client['userData'];
+    const storedClientId = this.activeConnections.get(userId);
+    if (storedClientId !== client.id) {
+      this.logger.warn(`Invalid connection for user ${userId}`);
+      client.disconnect();
+      return;
+    }
+
+    this.server
+      .to(`location:${locationId}`)
+      .emit(ServerToClientEvents.PlayerWalk, {
+        userId,
+        characterId,
+        locationId,
+        position: input.position,
+      });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} game`;
+  public async changeLocation(client: Socket, input: ChangeLocationDto) {
+    if (!this.verifyUserDataInSocket(client)) {
+      client.disconnect();
+      return;
+    }
+    const {
+      userId,
+      characterId,
+      locationId: oldLocationId,
+    } = client['userData'];
+    const storedClientId = this.activeConnections.get(userId);
+    if (storedClientId !== client.id) {
+      this.logger.warn(`Invalid connection for user ${userId}`);
+      client.disconnect();
+      return;
+    }
+
+    // TODO: проверить локацию на соседство
+
+    const findLocation = await this.locationService.findOne(
+      input.nextLocationId,
+    );
+
+    if (!findLocation) {
+      client.disconnect();
+      return;
+    }
+
+    if (findLocation.id === input.nextLocationId) {
+      return;
+    }
+
+    void client.leave(`location:${oldLocationId}`);
+    void client.join(`location:${input.nextLocationId}`);
+
+    this.server
+      .to(`location:${oldLocationId}`)
+      .emit(ServerToClientEvents.PlayerLeft, {
+        characterId,
+      });
+
+    this.server
+      .to(`location:${input.nextLocationId}`)
+      .emit(ServerToClientEvents.PlayerLeft, {
+        characterId,
+        position: {
+          x: 20,
+          y: 20,
+        },
+      });
   }
 
-  update(id: number, updateGameDto: UpdateGameDto) {
-    return `This action updates a #${id} game`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} game`;
+  private verifyUserDataInSocket(client: Socket): client is Socket & {
+    userData: PlayerData;
+  } {
+    const userData = client.userData;
+    if (
+      !userData ||
+      !userData.userId ||
+      !userData.characterId ||
+      !userData.locationId ||
+      !userData.position
+    ) {
+      return false;
+    }
+    return true;
   }
 }
