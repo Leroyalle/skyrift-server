@@ -3,7 +3,10 @@ import { LocationService } from './location.service';
 import { Location } from './entities/location.entity';
 import { CreateLocationInput } from './dto/create-location.input';
 import { UpdateLocationInput } from './dto/update-location.input';
+import { UseGuards } from '@nestjs/common';
+import { AccessTokenGuard } from 'src/common/guards/access-token.guard';
 
+@UseGuards(AccessTokenGuard)
 @Resolver(() => Location)
 export class LocationResolver {
   constructor(private readonly locationService: LocationService) {}

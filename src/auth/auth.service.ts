@@ -116,15 +116,19 @@ export class AuthService {
     const findUser = await this.userService.findOne(userId);
 
     if (!findUser || !findUser.refreshToken) {
+      console.log('User not found or no refresh token');
       throw new ForbiddenException('Доступ запрещен');
     }
 
+    console.log('token before verify:', findUser.refreshToken);
+    console.log('refreshToken:', refreshToken);
     const verifyRefresh = await argon2.verify(
       findUser.refreshToken,
       refreshToken,
     );
 
     if (!verifyRefresh) {
+      console.log('Refresh token verification failed');
       throw new ForbiddenException('Доступ запрещен');
     }
 
@@ -135,14 +139,19 @@ export class AuthService {
   }
 
   public verifyToken(token: string, type: 'access' | 'refresh'): JwtPayload {
+    const secret = this.configService.get<string>(
+      type === 'access' ? 'JWT_ACCESS_SECRET' : 'JWT_REFRESH_SECRET',
+    );
+
+    console.log('Token before verify:', token);
+    console.log('Secret:', secret);
+
     try {
-      return this.jwtService.verify(token, {
-        secret:
-          type === 'access'
-            ? (this.configService.get<string>('JWT_ACCESS_SECRET') as string)
-            : (this.configService.get<string>('JWT_REFRESH_SECRET') as string),
-      });
-    } catch {
+      return this.jwtService.verify(token, { secret });
+    } catch (e) {
+      console.error('JWT Verify Error:', e.name, e.message);
+      console.error('Token:', token);
+      console.error('Secret:', secret);
       throw new ForbiddenException('Доступ запрещен');
     }
   }

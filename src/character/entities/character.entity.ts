@@ -53,6 +53,7 @@ export class Character {
   @Field(() => Location, { description: 'Локация персонажа', nullable: true })
   location: Location;
 
+  @Column('json')
   @Field(() => PositionDto, { description: 'Позиция игрока' })
   position: PositionDto;
 }

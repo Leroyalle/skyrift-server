@@ -1,6 +1,7 @@
-import { InputType, Field, Int } from '@nestjs/graphql';
+import { InputType, Field, Int, ObjectType } from '@nestjs/graphql';
 
-@InputType()
+@ObjectType('PositionOutput')
+@InputType('PositionInput')
 export class PositionDto {
   @Field(() => Int)
   x: number;

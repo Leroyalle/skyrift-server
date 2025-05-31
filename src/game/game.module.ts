@@ -8,14 +8,6 @@ import { LocationModule } from 'src/location/location.module';
 
 @Module({
   imports: [AuthModule, UserModule, CharacterModule, LocationModule],
-  providers: [
-    GameGateway,
-    GameService,
-    {
-      provide: 'SOCKET_IO_SERVER',
-      useFactory: (gateway: GameGateway) => gateway.server,
-      inject: [GameGateway],
-    },
-  ],
+  providers: [GameGateway, GameService],
 })
 export class GameModule {}

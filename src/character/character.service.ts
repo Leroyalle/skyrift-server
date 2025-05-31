@@ -42,6 +42,7 @@ export class CharacterService {
         characterClass: {
           faction: true,
         },
+        location: true,
       },
     });
   }

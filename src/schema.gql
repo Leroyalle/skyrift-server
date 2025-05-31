@@ -39,6 +39,11 @@ type CharacterClass {
   characters: [Character!]!
 }
 
+type PositionOutput {
+  x: Int!
+  y: Int!
+}
+
 type Item {
   id: ID!
 
@@ -145,6 +150,9 @@ type Character {
 
   """Локация персонажа"""
   location: Location
+
+  """Позиция игрока"""
+  position: PositionOutput!
 }
 
 type User {
@@ -189,6 +197,11 @@ type Auth {
 type Logout {
   """Сообщение о выходе"""
   message: String!
+}
+
+input PositionInput {
+  x: Int!
+  y: Int!
 }
 
 type Query {

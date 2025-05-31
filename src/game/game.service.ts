@@ -1,6 +1,6 @@
-import { Injectable, Logger, Inject } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { PlayerWalkDto } from './dto/player-walk.dto';
-import { Server, Socket } from 'socket.io';
+import { Namespace, Server, Socket } from 'socket.io';
 import { AuthService } from 'src/auth/auth.service';
 import { UserService } from 'src/user/user.service';
 import { CharacterService } from 'src/character/character.service';
@@ -16,8 +16,13 @@ export class GameService {
     private readonly userService: UserService,
     private readonly characterService: CharacterService,
     private readonly locationService: LocationService,
-    @Inject('SOCKET_IO_SERVER') private readonly server: Server,
   ) {}
+
+  private server: Namespace;
+
+  setServer(server: Namespace) {
+    this.server = server;
+  }
 
   private readonly logger = new Logger(GameService.name);
   private readonly activeConnections: Map<string, string> = new Map();
@@ -31,18 +36,22 @@ export class GameService {
 
       if (!accessToken || !characterId) {
         client.disconnect();
+        console.log('Disconnect by token or character ID');
         return;
       }
 
-      const payload = this.authService.verifyToken(accessToken, 'access');
-      if (!payload || !payload.sub) {
+      let payload;
+      try {
+        payload = this.authService.verifyToken(accessToken, 'access');
+      } catch (e) {
+        console.log('Token verification failed', e);
         client.disconnect();
         return;
       }
-
       const findUser = await this.userService.findOne(payload.sub);
       if (!findUser) {
         client.disconnect();
+        console.log('Disconnect by findUser');
         return;
       }
 
@@ -52,23 +61,41 @@ export class GameService {
       );
       if (!findCharacter) {
         client.disconnect();
+        console.log('Disconnect by findCharacter');
         return;
       }
 
       const oldClientId = this.activeConnections.get(findUser.id);
-      if (oldClientId) {
-        const oldConnection = this.server.sockets.sockets.get(oldClientId);
-        if (oldConnection) {
-          this.logger.log(
-            `Disconnecting old client for user ${findUser.id}: ${oldClientId}`,
-          );
-          oldConnection.disconnect(true);
-        }
-        this.activeConnections.delete(findUser.id);
-      }
 
       this.activeConnections.set(findUser.id, client.id);
-      client['userData'] = {
+      console.log('oldClientId', oldClientId, 'newClientId', client.id);
+
+      if (oldClientId && oldClientId !== client.id) {
+        console.log('before oldConnection');
+        console.log('Sockets keys:', this.server.sockets.keys());
+        console.log('oldClientId', oldClientId);
+
+        if (this.server.sockets.has(oldClientId)) {
+          const oldConnection = this.server.sockets.get(oldClientId);
+          if (oldConnection) {
+            if (oldConnection.id === client.id) {
+              console.warn('⚠️ Attempting to disconnect self!');
+            } else {
+              console.log(
+                `Disconnecting old client for user ${findUser.id}: ${oldClientId}`,
+              );
+              console.log('before oldConnection.disconnect');
+              oldConnection.disconnect(true);
+            }
+          }
+        }
+      }
+
+      if (!client.userData) {
+        client.userData = {};
+        console.log('userData', findCharacter);
+      }
+      client.userData = {
         userId: findUser.id,
         characterId: findCharacter.id,
         locationId: findCharacter.location.id,
@@ -76,7 +103,6 @@ export class GameService {
       };
 
       void client.join(`location:${findCharacter.location.id}`);
-
       this.server.emit(ServerToClientEvents.PlayerConnected, findCharacter);
     } catch {
       client.disconnect(true);
@@ -84,6 +110,7 @@ export class GameService {
   }
 
   public async getInitialData(client: Socket) {
+    console.log('initial data to client');
     if (!this.verifyUserDataInSocket(client)) {
       client.disconnect();
       return;
@@ -109,11 +136,15 @@ export class GameService {
     const findLocation = await this.locationService.findOne(
       findCharacter.location.id,
     );
+    if (!findLocation) {
+      client.disconnect();
+      return;
+    }
 
     const otherPlayers: PlayerData[] = [];
     const sockets = await this.server.in(`location:${locationId}`).allSockets();
     for (const socketId of sockets) {
-      const otherClient = this.server.sockets.sockets.get(socketId);
+      const otherClient = this.server?.sockets?.get?.(socketId);
       if (
         otherClient &&
         otherClient.id !== client.id &&
@@ -126,9 +157,13 @@ export class GameService {
         });
       }
     }
-
+    console.log('initial data to client');
     void client.join(`location:${findCharacter.location.id}`);
-
+    console.log('initial data to client', {
+      character: findCharacter,
+      location: findLocation,
+      players: otherPlayers,
+    });
     client.emit(ServerToClientEvents.GameInitialState, {
       character: findCharacter,
       location: findLocation,

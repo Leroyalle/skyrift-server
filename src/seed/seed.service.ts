@@ -54,18 +54,12 @@ export class SeedService {
       logo: 'https://example.com/archer_logo.png',
     });
 
-    const createdCharacter = await this.characterRepository.save({
-      name: 'saintLeroyalle',
-      user: createdUser,
-      characterClass: createdClass,
-      level: 1,
-    });
-
     const { mapEntries, tilesetEntries } = await this.readFiles();
-
+    // FIXME: update character seed
+    let location;
     for (const mapEntry of mapEntries) {
       console.log(mapEntry.tilewidth, mapEntry.tileheight);
-      const location = this.locationRepository.create({
+      const savedLocation = this.locationRepository.create({
         height: mapEntry.height,
         width: mapEntry.width,
         startX: 0,
@@ -76,9 +70,10 @@ export class SeedService {
         tileWidth: mapEntry.tilewidth,
         tileHeight: mapEntry.tileheight,
       });
-      await this.locationRepository.save(location);
+      location = savedLocation;
+      await this.locationRepository.save(savedLocation);
 
-      console.log('Location saved', location.name);
+      console.log('Location saved', savedLocation.name);
 
       await Promise.all(
         mapEntry.layers.map(async (layer, layerIndex) => {
@@ -90,13 +85,25 @@ export class SeedService {
             name: layer.name,
             layerIndex,
             tileData,
-            location,
+            location: savedLocation,
             passableData,
             type: layer.type,
           });
         }),
       );
     }
+
+    await this.characterRepository.save({
+      name: 'saintLeroyalle',
+      user: createdUser,
+      characterClass: createdClass,
+      level: 1,
+      location,
+      position: {
+        x: 60,
+        y: 60,
+      },
+    });
 
     console.log('Listings seeded');
   }
@@ -107,6 +114,12 @@ export class SeedService {
       'TRUNCATE TABLE "location_layer" CASCADE',
     );
     await this.locationRepository.query('TRUNCATE TABLE "location" CASCADE');
+    await this.factionRepository.query('TRUNCATE TABLE "faction" CASCADE');
+    await this.characterClassRepository.query(
+      'TRUNCATE TABLE "character_class" CASCADE',
+    );
+    await this.characterRepository.query('TRUNCATE TABLE "character" CASCADE');
+
     console.log('Listings cleared');
   }
 

@@ -5,6 +5,7 @@ import * as cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  console.log('start');
   app.use(cookieParser());
   const configService = app.get(ConfigService);
 
@@ -14,6 +15,9 @@ async function bootstrap() {
     exposedHeaders: ['Set-Cookie'],
   });
 
-  await app.listen(configService.getOrThrow<number>('PORT') ?? 3001);
+  const port = configService.getOrThrow<number>('PORT') ?? 3001;
+  console.log('PORT', port);
+  await app.listen(port);
+  console.log(`🚀 Server is running at http://localhost:${port}/graphql`);
 }
 bootstrap();

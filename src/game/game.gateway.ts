@@ -9,18 +9,30 @@ import {
 } from '@nestjs/websockets';
 import { GameService } from './game.service';
 import { PlayerWalkDto } from './dto/player-walk.dto';
-import { Server, Socket } from 'socket.io';
+import { Namespace, Socket } from 'socket.io';
 import { ClientToServerEvents } from 'src/common/enums/game-socket-events';
 import { ChangeLocationDto } from './dto/change-location.dto';
 
-@WebSocketGateway()
+@WebSocketGateway({
+  namespace: 'game',
+  cors: {
+    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+    credentials: true,
+  },
+})
 export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(private readonly gameService: GameService) {}
 
   @WebSocketServer()
-  server: Server;
+  server: Namespace;
+
+  afterInit(server: Namespace) {
+    this.server = server;
+    this.gameService.setServer(server);
+  }
 
   handleConnection(client: Socket) {
+    console.log('Client connected:', client.id);
     return this.gameService.handleConnection(client);
   }
 
@@ -38,6 +50,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage(ClientToServerEvents.RequestInitialState)
   async handleInitialData(client: Socket) {
+    console.log('Client initial:', client.id);
     await this.gameService.getInitialData(client);
   }
 

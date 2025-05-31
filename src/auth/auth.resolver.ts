@@ -60,6 +60,7 @@ export class AuthResolver {
     @CurrentUser() user: PayloadUser,
     @Context() context: { res: Response },
   ) {
+    console.log('REFRESH USR');
     const tokens = await this.authService.refreshTokens(
       user.sub,
       user.refreshToken,
