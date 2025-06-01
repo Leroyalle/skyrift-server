@@ -14,6 +14,7 @@ import { LocationModule } from './location/location.module';
 import { SeedModule } from './seed/seed.module';
 import { GameModule } from './game/game.module';
 import { CharacterModule } from './character/character.module';
+import { RedisModule } from './redis/redis.module';
 
 @Module({
   imports: [
@@ -57,6 +58,7 @@ import { CharacterModule } from './character/character.module';
     LocationModule,
     SeedModule,
     GameModule,
+    RedisModule,
   ],
 })
 export class AppModule {}

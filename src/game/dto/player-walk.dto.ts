@@ -5,10 +5,4 @@ import { PositionDto } from '../../common/dto/position.dto';
 export class PlayerWalkDto {
   @Field(() => PositionDto)
   position: PositionDto;
-
-  @Field()
-  characterId: string;
-
-  @Field()
-  locationId: string;
 }

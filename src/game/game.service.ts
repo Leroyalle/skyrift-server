@@ -27,6 +27,9 @@ export class GameService {
   private readonly logger = new Logger(GameService.name);
   private readonly activeConnections: Map<string, string> = new Map();
 
+  // FIXME:
+  private readonly locationCache;
+
   async handleConnection(client: Socket) {
     try {
       const { token: accessToken, characterId } = client.handshake.auth as {
@@ -176,6 +179,8 @@ export class GameService {
       client.disconnect();
       return;
     }
+
+    console.log('position', input);
 
     const { userId, characterId, locationId } = client['userData'];
     const storedClientId = this.activeConnections.get(userId);
