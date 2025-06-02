@@ -1,14 +1,9 @@
-import {
-  Resolver,
-  Mutation,
-  Args,
-  GraphQLExecutionContext,
-} from '@nestjs/graphql';
+import { Resolver, Mutation, Args } from '@nestjs/graphql';
 import { AuthService } from './auth.service';
 import { Auth } from './entities/auth.entity';
 import { RegisterInput } from './dto/register.input';
 import { Logout } from './entities/logout.entity';
-import { Res, UseGuards } from '@nestjs/common';
+import { UseGuards } from '@nestjs/common';
 import { AccessTokenGuard } from 'src/common/guards/access-token.guard';
 import { RefreshTokenGuard } from 'src/common/guards/refresh-token.guard';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
@@ -74,7 +69,7 @@ export class AuthResolver {
 
     context.res.cookie('accessToken', tokens.accessToken, {
       sameSite: 'strict',
-      maxAge: 1000 * 60 * 15,
+      maxAge: 1000 * 60 * 30,
     });
     return tokens;
   }

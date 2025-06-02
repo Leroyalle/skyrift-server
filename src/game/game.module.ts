@@ -5,9 +5,16 @@ import { AuthModule } from 'src/auth/auth.module';
 import { UserModule } from 'src/user/user.module';
 import { CharacterModule } from 'src/character/character.module';
 import { LocationModule } from 'src/location/location.module';
+import { RedisModule } from 'src/redis/redis.module';
 
 @Module({
-  imports: [AuthModule, UserModule, CharacterModule, LocationModule],
+  imports: [
+    AuthModule,
+    UserModule,
+    CharacterModule,
+    LocationModule,
+    RedisModule,
+  ],
   providers: [GameGateway, GameService],
 })
 export class GameModule {}

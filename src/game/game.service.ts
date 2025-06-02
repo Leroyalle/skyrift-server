@@ -4,10 +4,12 @@ import { Namespace, Server, Socket } from 'socket.io';
 import { AuthService } from 'src/auth/auth.service';
 import { UserService } from 'src/user/user.service';
 import { CharacterService } from 'src/character/character.service';
-import { ServerToClientEvents } from 'src/common/enums/game-socket-events';
+import { ServerToClientEvents } from 'src/common/enums/game-socket-events.enum';
 import { ChangeLocationDto } from './dto/change-location.dto';
 import { LocationService } from 'src/location/location.service';
 import { PlayerData } from 'src/common/types/player-data.type';
+import { RedisService } from 'src/redis/redis.service';
+import { RedisKeys } from 'src/common/enums/redis-keys.enum';
 
 @Injectable()
 export class GameService {
@@ -16,6 +18,7 @@ export class GameService {
     private readonly userService: UserService,
     private readonly characterService: CharacterService,
     private readonly locationService: LocationService,
+    private readonly redisService: RedisService,
   ) {}
 
   private server: Namespace;
@@ -28,7 +31,7 @@ export class GameService {
   private readonly activeConnections: Map<string, string> = new Map();
 
   // FIXME:
-  private readonly locationCache;
+  // private readonly locationCache;
 
   async handleConnection(client: Socket) {
     try {
@@ -68,9 +71,17 @@ export class GameService {
         return;
       }
 
-      const oldClientId = this.activeConnections.get(findUser.id);
+      // const oldClientId = this.activeConnections.get(findUser.id);
+      const oldClientId = await this.redisService.get(
+        RedisKeys.ConnectedPlayers + findUser.id,
+      );
 
-      this.activeConnections.set(findUser.id, client.id);
+      await this.redisService.set(
+        RedisKeys.ConnectedPlayers + findUser.id,
+        client.id,
+      );
+
+      // this.activeConnections.set(findUser.id, client.id);
       console.log('oldClientId', oldClientId, 'newClientId', client.id);
 
       if (oldClientId && oldClientId !== client.id) {
@@ -88,6 +99,10 @@ export class GameService {
                 `Disconnecting old client for user ${findUser.id}: ${oldClientId}`,
               );
               console.log('before oldConnection.disconnect');
+              this.notifyDisconnection(
+                oldConnection,
+                'Другое устройство подключилось к игре',
+              );
               oldConnection.disconnect(true);
             }
           }
@@ -96,7 +111,7 @@ export class GameService {
 
       if (!client.userData) {
         client.userData = {};
-        console.log('userData', findCharacter);
+        console.log('client.userData', client.userData);
       }
       client.userData = {
         userId: findUser.id,
@@ -104,25 +119,43 @@ export class GameService {
         locationId: findCharacter.location.id,
         position: findCharacter.position,
       };
+      console.log('client.userData', client.userData);
 
       void client.join(`location:${findCharacter.location.id}`);
       this.server.emit(ServerToClientEvents.PlayerConnected, findCharacter);
+      console.log(
+        `Client ${client.id} joined location:`,
+        findCharacter.location.id,
+      );
     } catch {
+      console.log('Disconnect by catch in handleConnection');
       client.disconnect(true);
     }
   }
 
+  public handleDisconnect(client: Socket) {
+    console.log('Client disconnected:', client.id);
+  }
+
   public async getInitialData(client: Socket) {
-    console.log('initial data to client');
+    console.log('initial data to client', client.id);
     if (!this.verifyUserDataInSocket(client)) {
+      console.log('Disconnect by verifyUserDataInSocket');
+      this.notifyDisconnection(client);
       client.disconnect();
       return;
     }
 
     const { userId, characterId, locationId } = client['userData'];
-    const storedClientId = this.activeConnections.get(userId);
+    // const storedClientId = this.activeConnections.get(userId);
+    const storedClientId = await this.redisService.get(
+      RedisKeys.ConnectedPlayers + userId,
+    );
+
     if (storedClientId !== client.id) {
       this.logger.warn(`Invalid connection for user ${userId}`);
+      this.notifyDisconnection(client);
+      console.log('Disconnect by storedClientId');
       client.disconnect();
       return;
     }
@@ -132,6 +165,7 @@ export class GameService {
       characterId,
     );
     if (!findCharacter) {
+      this.notifyDisconnection(client, 'Character not found');
       client.disconnect();
       return;
     }
@@ -140,6 +174,7 @@ export class GameService {
       findCharacter.location.id,
     );
     if (!findLocation) {
+      this.notifyDisconnection(client, 'Location not found');
       client.disconnect();
       return;
     }
@@ -160,13 +195,9 @@ export class GameService {
         });
       }
     }
-    console.log('initial data to client');
+    console.log('initial data to client', client.id, otherPlayers);
     void client.join(`location:${findCharacter.location.id}`);
-    console.log('initial data to client', {
-      character: findCharacter,
-      location: findLocation,
-      players: otherPlayers,
-    });
+
     client.emit(ServerToClientEvents.GameInitialState, {
       character: findCharacter,
       location: findLocation,
@@ -174,8 +205,9 @@ export class GameService {
     });
   }
 
-  public playerWalk(client: Socket, input: PlayerWalkDto) {
+  public async playerWalk(client: Socket, input: PlayerWalkDto) {
     if (!this.verifyUserDataInSocket(client)) {
+      this.notifyDisconnection(client);
       client.disconnect();
       return;
     }
@@ -183,9 +215,13 @@ export class GameService {
     console.log('position', input);
 
     const { userId, characterId, locationId } = client['userData'];
-    const storedClientId = this.activeConnections.get(userId);
+    // const storedClientId = this.activeConnections.get(userId);
+    const storedClientId = await this.redisService.get(
+      RedisKeys.ConnectedPlayers + userId,
+    );
     if (storedClientId !== client.id) {
       this.logger.warn(`Invalid connection for user ${userId}`);
+      this.notifyDisconnection(client);
       client.disconnect();
       return;
     }
@@ -210,9 +246,13 @@ export class GameService {
       characterId,
       locationId: oldLocationId,
     } = client['userData'];
-    const storedClientId = this.activeConnections.get(userId);
+    // const storedClientId = this.activeConnections.get(userId);
+    const storedClientId = await this.redisService.get(
+      RedisKeys.ConnectedPlayers + userId,
+    );
     if (storedClientId !== client.id) {
       this.logger.warn(`Invalid connection for user ${userId}`);
+      this.notifyDisconnection(client);
       client.disconnect();
       return;
     }
@@ -256,6 +296,7 @@ export class GameService {
     userData: PlayerData;
   } {
     const userData = client.userData;
+    console.log('verifyUserDataInSocket', userData);
     if (
       !userData ||
       !userData.userId ||
@@ -266,5 +307,12 @@ export class GameService {
       return false;
     }
     return true;
+  }
+
+  public notifyDisconnection(
+    client: Socket,
+    message: string = 'Соединение потеряно',
+  ) {
+    client.emit(ServerToClientEvents.PlayerDisconnected, { message });
   }
 }
