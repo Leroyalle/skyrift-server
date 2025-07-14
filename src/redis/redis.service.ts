@@ -8,9 +8,9 @@ export class RedisService {
     this.client.on('error', (err) => console.error('Redis error:', err));
   }
 
-  async get(key: string): Promise<any> {
-    const data = (await this.client.get(key)) as string;
-    return data ? JSON.parse(data) : null;
+  async get<T = any>(key: string): Promise<T | null> {
+    const data = await this.client.get(key);
+    return data ? (JSON.parse(data) as T) : null;
   }
 
   async set(key: string, value: any): Promise<void> {

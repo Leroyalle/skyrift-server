@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { PlayerWalkDto } from './dto/player-walk.dto';
 import { Namespace, Server, Socket } from 'socket.io';
 import { AuthService } from 'src/auth/auth.service';
@@ -10,9 +10,14 @@ import { LocationService } from 'src/location/location.service';
 import { PlayerData } from 'src/common/types/player-data.type';
 import { RedisService } from 'src/redis/redis.service';
 import { RedisKeys } from 'src/common/enums/redis-keys.enum';
+import * as EasyStar from 'easystarjs';
+import { Location } from 'src/location/entities/location.entity';
+import { mergePassableMaps } from './lib/merge-passable-maps.lib';
+import { CachedLocation } from './types/cashed-location.type';
+import { RequestMoveToDto } from './dto/request-move-to.dto';
 
 @Injectable()
-export class GameService {
+export class GameService implements OnModuleInit {
   constructor(
     private readonly authService: AuthService,
     private readonly userService: UserService,
@@ -22,16 +27,29 @@ export class GameService {
   ) {}
 
   private server: Namespace;
+  private easyStar: EasyStar.js;
 
   setServer(server: Namespace) {
     this.server = server;
+    this.easyStar = new EasyStar.js();
+    this.easyStar.setAcceptableTiles([1]);
+    this.easyStar.setIterationsPerCalculation(1000);
   }
 
   private readonly logger = new Logger(GameService.name);
   private readonly activeConnections: Map<string, string> = new Map();
 
-  // FIXME:
-  // private readonly locationCache;
+  private readonly movementQueues = new Map<
+    string,
+    { steps: { x: number; y: number }[]; userId: string }
+  >();
+  private tickInterval: NodeJS.Timeout;
+
+  onModuleInit() {
+    this.tickInterval = setInterval(() => {
+      this.tickMovement();
+    }, 400);
+  }
 
   async handleConnection(client: Socket) {
     try {
@@ -170,9 +188,8 @@ export class GameService {
       return;
     }
 
-    const findLocation = await this.locationService.findOne(
-      findCharacter.location.id,
-    );
+    const findLocation = await this.loadLocation(locationId);
+
     if (!findLocation) {
       this.notifyDisconnection(client, 'Location not found');
       client.disconnect();
@@ -191,18 +208,108 @@ export class GameService {
         otherPlayers.push({
           userId: otherClient.userData.userId,
           characterId: otherClient.userData.characterId,
+          locationId: otherClient.userData.locationId,
           position: otherClient.userData.position,
         });
       }
     }
     console.log('initial data to client', client.id, otherPlayers);
-    void client.join(`location:${findCharacter.location.id}`);
+    void client.join(`location:${findLocation?.id}`);
 
     client.emit(ServerToClientEvents.GameInitialState, {
       character: findCharacter,
       location: findLocation,
       players: otherPlayers,
     });
+  }
+
+  public async requestMoveTo(client: Socket, input: RequestMoveToDto) {
+    if (!this.verifyUserDataInSocket(client)) {
+      this.notifyDisconnection(client);
+      client.disconnect();
+      return;
+    }
+
+    console.log('requestMoveTo', input);
+
+    const { userId, characterId, locationId, position } = client['userData'];
+
+    const findLocation = await this.loadLocation(locationId);
+    const map = findLocation?.passableMap;
+
+    if (!map) {
+      this.notifyDisconnection(client, 'Location not found');
+      client.disconnect();
+      return;
+    }
+
+    console.log('request move to inpput', input);
+    const isPermissible = map[input.targetY][input.targetX] === 1;
+
+    if (!isPermissible) return;
+
+    this.easyStar.setGrid(map);
+
+    console.log('dfk', {
+      x: position.x / 32,
+      y: position.y / 32,
+      targetX: input.targetX,
+      targetY: input.targetY,
+    });
+    this.easyStar.findPath(
+      Math.floor(position.x / findLocation.tileWidth),
+      Math.floor(position.y / findLocation.tileHeight),
+      input.targetX,
+      input.targetY,
+      (path) => {
+        console.log('path', path);
+        if (!path || path.length <= 1) return;
+
+        const steps = path.slice(1).map((p) => ({ x: p.x, y: p.y }));
+        console.log('steps', steps);
+        this.movementQueues.set(characterId, { steps, userId });
+      },
+    );
+    this.easyStar.calculate();
+  }
+
+  public async tickMovement() {
+    for (const [
+      characterId,
+      { steps, userId },
+    ] of this.movementQueues.entries()) {
+      console.log('tickMovement', this.movementQueues.size);
+      const step = steps.shift();
+      if (!step) {
+        this.movementQueues.delete(characterId);
+        console.log('step not found, deleted');
+        continue;
+      }
+
+      const socketId = (await this.redisService.get(
+        RedisKeys.ConnectedPlayers + userId,
+      )) as string;
+
+      if (!socketId) continue;
+
+      const client = this.server.sockets.get(socketId);
+
+      if (!client) continue;
+
+      client['userData'] = {
+        ...client['userData'],
+        position: { x: Math.floor(step.x * 32), y: Math.floor(step.y * 32) },
+      };
+
+      this.server
+        .to(RedisKeys.Location + client.userData.locationId)
+        .emit(ServerToClientEvents.PlayerWalk, {
+          userId: client.userData.userId,
+          characterId,
+          locationId: client.userData.locationId,
+          position: step,
+        });
+    }
   }
 
   public async playerWalk(client: Socket, input: PlayerWalkDto) {
@@ -215,16 +322,8 @@ export class GameService {
     console.log('position', input);
 
     const { userId, characterId, locationId } = client['userData'];
-    // const storedClientId = this.activeConnections.get(userId);
-    const storedClientId = await this.redisService.get(
-      RedisKeys.ConnectedPlayers + userId,
-    );
-    if (storedClientId !== client.id) {
-      this.logger.warn(`Invalid connection for user ${userId}`);
-      this.notifyDisconnection(client);
-      client.disconnect();
-      return;
-    }
+
+    const findLocation = await this.loadLocation(locationId);
 
     this.server
       .to(`location:${locationId}`)
@@ -314,5 +413,31 @@ export class GameService {
     message: string = 'Соединение потеряно',
   ) {
     client.emit(ServerToClientEvents.PlayerDisconnected, { message });
+  }
+
+  public async loadLocation(locationId: string) {
+    let findLocation = await this.redisService.get<CachedLocation>(
+      RedisKeys.Location + locationId,
+    );
+
+    if (!findLocation) {
+      const searchedLocation = await this.locationService.findOne(locationId);
+
+      if (!searchedLocation) return;
+
+      const mergedLocation = {
+        ...searchedLocation,
+        passableMap: mergePassableMaps(searchedLocation.layers),
+      };
+
+      await this.redisService.set(
+        RedisKeys.Location + locationId,
+        mergedLocation,
+      );
+
+      findLocation = mergedLocation;
+    }
+
+    return findLocation;
   }
 }

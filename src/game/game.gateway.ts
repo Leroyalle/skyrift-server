@@ -12,6 +12,7 @@ import { PlayerWalkDto } from './dto/player-walk.dto';
 import { Namespace, Socket } from 'socket.io';
 import { ClientToServerEvents } from 'src/common/enums/game-socket-events.enum';
 import { ChangeLocationDto } from './dto/change-location.dto';
+import { RequestMoveToDto } from './dto/request-move-to.dto';
 
 @WebSocketGateway({
   namespace: 'game',
@@ -43,9 +44,10 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage(ClientToServerEvents.PlayerWalk)
   playerWalk(
     @ConnectedSocket() client: Socket,
-    @MessageBody() walkInput: PlayerWalkDto,
+    @MessageBody() input: RequestMoveToDto,
   ) {
-    this.gameService.playerWalk(client, walkInput);
+    // this.gameService.playerWalk(client, input);
+    this.gameService.requestMoveTo(client, input);
   }
 
   @SubscribeMessage(ClientToServerEvents.RequestInitialState)
