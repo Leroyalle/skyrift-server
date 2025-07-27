@@ -15,6 +15,7 @@ import { Location } from 'src/location/entities/location.entity';
 import { mergePassableMaps } from './lib/merge-passable-maps.lib';
 import { CachedLocation } from './types/cashed-location.type';
 import { RequestMoveToDto } from './dto/request-move-to.dto';
+import { TBatchUpdate } from './types/batch-update.type';
 
 @Injectable()
 export class GameService implements OnModuleInit {
@@ -250,12 +251,6 @@ export class GameService implements OnModuleInit {
 
     this.easyStar.setGrid(map);
 
-    console.log('dfk', {
-      x: position.x / 32,
-      y: position.y / 32,
-      targetX: input.targetX,
-      targetY: input.targetY,
-    });
     this.easyStar.findPath(
       Math.floor(position.x / findLocation.tileWidth),
       Math.floor(position.y / findLocation.tileHeight),
@@ -274,6 +269,8 @@ export class GameService implements OnModuleInit {
   }
 
   public async tickMovement() {
+    const updatesByLocation = new Map<string, TBatchUpdate[]>();
+
     for (const [
       characterId,
       { steps, userId },
@@ -301,18 +298,32 @@ export class GameService implements OnModuleInit {
         position: { x: Math.floor(step.x * 32), y: Math.floor(step.y * 32) },
       };
 
-      this.server
-        .to(RedisKeys.Location + client.userData.locationId)
-        .emit(ServerToClientEvents.PlayerWalk, {
-          userId: client.userData.userId,
-          characterId,
-          locationId: client.userData.locationId,
+      // FIXME: clear the test of locationId because he is true
+      const locationId = client.userData.locationId;
+      if (!locationId) continue;
+
+      if (!updatesByLocation.has(locationId)) {
+        updatesByLocation.set(locationId, []);
+      }
+
+      // FIXME: remove the !
+      updatesByLocation.get(locationId)!.push({
+        characterId,
+        info: {
           position: step,
-        });
+          locationId,
+        },
+      });
+    }
+
+    for (const [locationId, updates] of updatesByLocation.entries()) {
+      this.server
+        .to(RedisKeys.Location + locationId)
+        .emit(ServerToClientEvents.PlayerWalkBatch, updates);
     }
   }
 
-  public async playerWalk(client: Socket, input: PlayerWalkDto) {
+  public playerWalk(client: Socket, input: PlayerWalkDto) {
     if (!this.verifyUserDataInSocket(client)) {
       this.notifyDisconnection(client);
       client.disconnect();
@@ -323,7 +334,8 @@ export class GameService implements OnModuleInit {
 
     const { userId, characterId, locationId } = client['userData'];
 
-    const findLocation = await this.loadLocation(locationId);
+    // FIXME: check the line from bottom (this method is deprecated)
+    // const findLocation = await this.loadLocation(locationId);
 
     this.server
       .to(`location:${locationId}`)
@@ -416,28 +428,27 @@ export class GameService implements OnModuleInit {
   }
 
   public async loadLocation(locationId: string) {
-    let findLocation = await this.redisService.get<CachedLocation>(
+    const findLocation = await this.redisService.get<CachedLocation>(
       RedisKeys.Location + locationId,
     );
 
-    if (!findLocation) {
-      const searchedLocation = await this.locationService.findOne(locationId);
+    if (findLocation) return findLocation;
 
-      if (!searchedLocation) return;
+    const dbLocation = await this.locationService.findOne(locationId);
 
-      const mergedLocation = {
-        ...searchedLocation,
-        passableMap: mergePassableMaps(searchedLocation.layers),
-      };
+    if (!dbLocation) return;
 
-      await this.redisService.set(
-        RedisKeys.Location + locationId,
-        mergedLocation,
-      );
+    const mergedLocation = {
+      ...dbLocation,
+      // FIXME: сохранять в бд сразу passableMap
+      passableMap: mergePassableMaps(dbLocation.layers),
+    };
 
-      findLocation = mergedLocation;
-    }
+    await this.redisService.set(
+      RedisKeys.Location + locationId,
+      mergedLocation,
+    );
 
-    return findLocation;
+    return mergedLocation;
   }
 }

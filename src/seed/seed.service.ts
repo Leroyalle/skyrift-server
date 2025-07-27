@@ -33,10 +33,17 @@ export class SeedService {
   public async run() {
     await this.clearDatabase();
 
-    const createdUser = await this.userRepository.save({
+    const firstUser = await this.userRepository.save({
       name: 'Leroyalle',
       email: 'nikolajmelonov@yandex.ru',
-      password: await argon2.hash('123123132'),
+      password: await argon2.hash('123123'),
+      refreshToken: null,
+    });
+
+    const secondUser = await this.userRepository.save({
+      name: 'Consul',
+      email: 'consuldev@yandex.ru',
+      password: await argon2.hash('123123'),
       refreshToken: null,
     });
 
@@ -95,13 +102,25 @@ export class SeedService {
 
     await this.characterRepository.save({
       name: 'saintLeroyalle',
-      user: createdUser,
+      user: firstUser,
       characterClass: createdClass,
       level: 1,
       location,
       position: {
-        x: 60,
-        y: 60,
+        x: 400,
+        y: 400,
+      },
+    });
+
+    await this.characterRepository.save({
+      name: 'Consul',
+      user: secondUser,
+      characterClass: createdClass,
+      level: 1,
+      location,
+      position: {
+        x: 450,
+        y: 450,
       },
     });
 

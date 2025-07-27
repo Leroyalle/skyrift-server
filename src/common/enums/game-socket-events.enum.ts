@@ -2,6 +2,7 @@ export enum ServerToClientEvents {
   PlayerConnected = 'player:connected',
   PlayerDisconnected = 'player:disconnected',
   PlayerWalk = 'player:walk',
+  PlayerWalkBatch = 'player:walk-batch',
   PlayerChangeLocation = 'player:change-location',
   PlayerLeft = 'player:left',
   PlayerEntered = 'player:entered',
