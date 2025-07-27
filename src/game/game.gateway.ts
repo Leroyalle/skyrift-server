@@ -8,7 +8,6 @@ import {
   ConnectedSocket,
 } from '@nestjs/websockets';
 import { GameService } from './game.service';
-import { PlayerWalkDto } from './dto/player-walk.dto';
 import { Namespace, Socket } from 'socket.io';
 import { ClientToServerEvents } from 'src/common/enums/game-socket-events.enum';
 import { ChangeLocationDto } from './dto/change-location.dto';
@@ -47,7 +46,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() input: RequestMoveToDto,
   ) {
     // this.gameService.playerWalk(client, input);
-    this.gameService.requestMoveTo(client, input);
+    return this.gameService.requestMoveTo(client, input);
   }
 
   @SubscribeMessage(ClientToServerEvents.RequestInitialState)

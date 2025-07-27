@@ -11,7 +11,6 @@ import { PlayerData } from 'src/common/types/player-data.type';
 import { RedisService } from 'src/redis/redis.service';
 import { RedisKeys } from 'src/common/enums/redis-keys.enum';
 import * as EasyStar from 'easystarjs';
-import { Location } from 'src/location/entities/location.entity';
 import { mergePassableMaps } from './lib/merge-passable-maps.lib';
 import { CachedLocation } from './types/cashed-location.type';
 import { RequestMoveToDto } from './dto/request-move-to.dto';
@@ -28,17 +27,12 @@ export class GameService implements OnModuleInit {
   ) {}
 
   private server: Namespace;
-  private easyStar: EasyStar.js;
 
   setServer(server: Namespace) {
     this.server = server;
-    this.easyStar = new EasyStar.js();
-    this.easyStar.setAcceptableTiles([1]);
-    this.easyStar.setIterationsPerCalculation(1000);
   }
 
   private readonly logger = new Logger(GameService.name);
-  private readonly activeConnections: Map<string, string> = new Map();
 
   private readonly movementQueues = new Map<
     string,
@@ -46,10 +40,17 @@ export class GameService implements OnModuleInit {
   >();
   private tickInterval: NodeJS.Timeout;
 
+  private readonly locationCache = new Map<string, CachedLocation>();
+  private readonly easyStarInstances = new Map<string, EasyStar.js>();
+
   onModuleInit() {
     this.tickInterval = setInterval(() => {
       this.tickMovement();
     }, 400);
+  }
+
+  onModuleDestroy() {
+    clearInterval(this.tickInterval);
   }
 
   async handleConnection(client: Socket) {
@@ -156,6 +157,23 @@ export class GameService implements OnModuleInit {
     console.log('Client disconnected:', client.id);
   }
 
+  private getEasyStarInstance(
+    locationId: string,
+    map: number[][],
+  ): EasyStar.js {
+    let easyStar = this.easyStarInstances.get(locationId);
+
+    if (!easyStar) {
+      easyStar = new EasyStar.js();
+      easyStar.setGrid(map);
+      easyStar.setAcceptableTiles([1]);
+      easyStar.setIterationsPerCalculation(1000);
+      this.easyStarInstances.set(locationId, easyStar);
+    }
+
+    return easyStar;
+  }
+
   public async getInitialData(client: Socket) {
     console.log('initial data to client', client.id);
     if (!this.verifyUserDataInSocket(client)) {
@@ -249,9 +267,9 @@ export class GameService implements OnModuleInit {
 
     if (!isPermissible) return;
 
-    this.easyStar.setGrid(map);
+    const easyStar = this.getEasyStarInstance(locationId, map);
 
-    this.easyStar.findPath(
+    easyStar.findPath(
       Math.floor(position.x / findLocation.tileWidth),
       Math.floor(position.y / findLocation.tileHeight),
       input.targetX,
@@ -265,7 +283,7 @@ export class GameService implements OnModuleInit {
         this.movementQueues.set(characterId, { steps, userId });
       },
     );
-    this.easyStar.calculate();
+    easyStar.calculate();
   }
 
   public async tickMovement() {
@@ -428,11 +446,18 @@ export class GameService implements OnModuleInit {
   }
 
   public async loadLocation(locationId: string) {
-    const findLocation = await this.redisService.get<CachedLocation>(
+    const cachedLocation = this.locationCache.get(locationId);
+
+    if (cachedLocation) return cachedLocation;
+
+    const redisLocation = await this.redisService.get<CachedLocation>(
       RedisKeys.Location + locationId,
     );
 
-    if (findLocation) return findLocation;
+    if (redisLocation) {
+      this.locationCache.set(locationId, redisLocation);
+      return redisLocation;
+    }
 
     const dbLocation = await this.locationService.findOne(locationId);
 
@@ -440,7 +465,7 @@ export class GameService implements OnModuleInit {
 
     const mergedLocation = {
       ...dbLocation,
-      // FIXME: сохранять в бд сразу passableMap
+      // TODO: сохранять в бд сразу passableMap
       passableMap: mergePassableMaps(dbLocation.layers),
     };
 
