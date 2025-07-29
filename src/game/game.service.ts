@@ -131,7 +131,7 @@ export class GameService implements OnModuleInit {
 
       if (!client.userData) {
         client.userData = {};
-        console.log('client.userData', client.userData);
+        console.log('client.userData is empty', client.userData);
       }
       client.userData = {
         userId: findUser.id,
@@ -141,8 +141,13 @@ export class GameService implements OnModuleInit {
       };
       console.log('client.userData', client.userData);
 
-      void client.join(`location:${findCharacter.location.id}`);
-      this.server.emit(ServerToClientEvents.PlayerConnected, findCharacter);
+      void client.join(RedisKeys.Location + findCharacter.location.id);
+      client.emit(ServerToClientEvents.PlayerConnected, findCharacter);
+
+      client
+        .to(RedisKeys.Location + findCharacter.location.id)
+        .emit(ServerToClientEvents.PlayerJoined, findCharacter);
+
       console.log(
         `Client ${client.id} joined location:`,
         findCharacter.location.id,

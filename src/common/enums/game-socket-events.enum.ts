@@ -1,9 +1,11 @@
 export enum ServerToClientEvents {
+  // TODO: rename to 'connection'
   PlayerConnected = 'player:connected',
   PlayerDisconnected = 'player:disconnected',
   PlayerWalk = 'player:walk',
   PlayerWalkBatch = 'player:walk-batch',
   PlayerChangeLocation = 'player:change-location',
+  PlayerJoined = 'player:joined',
   PlayerLeft = 'player:left',
   PlayerEntered = 'player:entered',
   GameInitialState = 'game:initial-state',
