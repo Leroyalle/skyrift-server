@@ -1,6 +1,6 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { PlayerWalkDto } from './dto/player-walk.dto';
-import { Namespace, Server, Socket } from 'socket.io';
+import { Namespace, Socket } from 'socket.io';
 import { AuthService } from 'src/auth/auth.service';
 import { UserService } from 'src/user/user.service';
 import { CharacterService } from 'src/character/character.service';
@@ -289,49 +289,61 @@ export class GameService implements OnModuleInit {
   public async tickMovement() {
     const updatesByLocation = new Map<string, TBatchUpdate[]>();
 
+    const entries = Array.from(this.movementQueues.entries());
+    const userIds = entries.map(([, { userId }]) => userId);
+
+    if (userIds.length === 0) return;
+
+    const redisKeys = userIds.map((id) => RedisKeys.ConnectedPlayers + id);
+    const socketIds = await this.redisService.mget<string>(redisKeys);
+    const userIdToSocketId = new Map<string, string>();
+
+    for (let i = 0; i < userIds.length; i++) {
+      if (socketIds[i]) {
+        userIdToSocketId.set(userIds[i], socketIds[i]!);
+      }
+    }
+
     for (const [
       characterId,
       { steps, userId },
     ] of this.movementQueues.entries()) {
-      console.log('tickMovement', this.movementQueues.size);
       const step = steps.shift();
       if (!step) {
         this.movementQueues.delete(characterId);
-        console.log('step not found, deleted');
         continue;
       }
 
-      const socketId = (await this.redisService.get(
-        RedisKeys.ConnectedPlayers + userId,
-      )) as string;
-
+      const socketId = userIdToSocketId.get(userId);
       if (!socketId) continue;
 
       const client = this.server.sockets.get(socketId);
-
       if (!client) continue;
 
-      client['userData'] = {
-        ...client['userData'],
-        position: { x: Math.floor(step.x * 32), y: Math.floor(step.y * 32) },
-      };
-
-      // FIXME: clear the test of locationId because he is true
-      const locationId = client.userData.locationId;
+      const userData = client['userData'];
+      const locationId = userData?.locationId;
       if (!locationId) continue;
 
-      if (!updatesByLocation.has(locationId)) {
-        updatesByLocation.set(locationId, []);
+      const pos = { x: Math.floor(step.x * 32), y: Math.floor(step.y * 32) };
+      client['userData'] = { ...userData, position: pos };
+
+      let updates = updatesByLocation.get(locationId);
+      if (!updates) {
+        updates = [];
+        updatesByLocation.set(locationId, updates);
       }
 
-      // FIXME: remove the !
-      updatesByLocation.get(locationId)!.push({
+      updates.push({
         characterId,
         info: {
           position: step,
           locationId,
         },
       });
+
+      if (steps.length === 0) {
+        this.movementQueues.delete(characterId);
+      }
     }
 
     for (const [locationId, updates] of updatesByLocation.entries()) {

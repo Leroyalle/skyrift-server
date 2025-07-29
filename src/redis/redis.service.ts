@@ -20,4 +20,12 @@ export class RedisService {
   async del(key: string): Promise<void> {
     await this.client.del(key);
   }
+
+  async mget<T = any[]>(keys: string[]): Promise<(T | null)[]> {
+    const data = await this.client.mget(keys);
+    if (data) {
+      return data.map((d) => (d ? (JSON.parse(d) as T) : null));
+    }
+    return data;
+  }
 }
