@@ -3,6 +3,7 @@ import { CharacterService } from 'src/character/character.service';
 import { LiveCharacterState } from 'src/character/types/live-character-state.type';
 import { RedisKeysFactory } from 'src/common/infra/redis-keys-factory.infra';
 import { RedisService } from 'src/redis/redis.service';
+import { parseLiveCharacterState } from './lib/parse-live-character-state.lib';
 
 @Injectable()
 export class PlayerStateService {
@@ -53,11 +54,16 @@ export class PlayerStateService {
   }
 
   async syncCharacterToDb(characterId: string) {
-    const findCharacter = await this.redisService.get<LiveCharacterState>(
+    const findCharacter = await this.redisService.hgetAll(
       RedisKeysFactory.playerState(characterId),
     );
-    if (findCharacter) {
-      await this.characterService.update(findCharacter.id, findCharacter);
+
+    console.log('[SYNC]', findCharacter);
+    if (findCharacter && findCharacter.id) {
+      await this.characterService.update(
+        findCharacter.id,
+        parseLiveCharacterState(findCharacter),
+      );
     }
   }
 

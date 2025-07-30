@@ -39,11 +39,6 @@ type CharacterClass {
   characters: [Character!]!
 }
 
-type PositionOutput {
-  x: Int!
-  y: Int!
-}
-
 type Item {
   id: ID!
 
@@ -190,8 +185,11 @@ type Character {
   """Локация персонажа"""
   location: Location
 
-  """Позиция игрока"""
-  position: PositionOutput!
+  """X координата позиции игрока"""
+  x: Int!
+
+  """Y координата позиции игрока"""
+  y: Int!
 }
 
 type User {
@@ -236,11 +234,6 @@ type Auth {
 type Logout {
   """Сообщение о выходе"""
   message: String!
-}
-
-input PositionInput {
-  x: Int!
-  y: Int!
 }
 
 type Query {
@@ -329,9 +322,7 @@ input CreateCharacterInput {
 }
 
 input UpdateCharacterInput {
-  """Example field (placeholder)"""
-  exampleField: Int
-  id: Int!
+  id: String!
 }
 
 input CreateCharacterClassInput {

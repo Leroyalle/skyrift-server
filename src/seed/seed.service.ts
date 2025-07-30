@@ -106,10 +106,8 @@ export class SeedService {
       characterClass: createdClass,
       level: 1,
       location,
-      position: {
-        x: 400,
-        y: 400,
-      },
+      x: 400,
+      y: 400,
       maxHp: 100,
     });
 
@@ -119,10 +117,8 @@ export class SeedService {
       characterClass: createdClass,
       level: 1,
       location,
-      position: {
-        x: 450,
-        y: 450,
-      },
+      x: 450,
+      y: 450,
       maxHp: 100,
     });
 

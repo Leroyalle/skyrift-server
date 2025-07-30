@@ -47,6 +47,10 @@ export class RedisService {
     await this.client.srem(key, value);
   }
 
+  async hgetAll(key: string): Promise<Record<string, string> | null> {
+    return await this.client.hgetall(key);
+  }
+
   pipeline() {
     return this.client.pipeline();
   }

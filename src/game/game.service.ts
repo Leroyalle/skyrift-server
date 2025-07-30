@@ -19,6 +19,7 @@ import { Character } from 'src/character/entities/character.entity';
 import { PlayerStateService } from './player-state.service';
 import { RedisKeysFactory } from 'src/common/infra/redis-keys-factory.infra';
 import { LiveCharacterState } from 'src/character/types/live-character-state.type';
+import { parseLiveCharacterState } from './lib/parse-live-character-state.lib';
 
 @Injectable()
 export class GameService implements OnModuleInit {
@@ -166,6 +167,7 @@ export class GameService implements OnModuleInit {
         `Client ${client.id} joined location:`,
         findCharacter.location.id,
       );
+      // FIXME: send initial data
     } catch {
       console.log('Disconnect by catch in handleConnection');
       client.disconnect(true);
@@ -175,14 +177,14 @@ export class GameService implements OnModuleInit {
   public async handleDisconnect(client: Socket) {
     if (!this.verifyUserDataInSocket(client)) return;
 
+    await this.playerStateService.syncCharacterToDb(
+      client.userData.characterId,
+    );
+
     await this.playerStateService.leave(
       client.userData.userId,
       client.userData.characterId,
       client.userData.locationId,
-    );
-
-    await this.playerStateService.syncCharacterToDb(
-      client.userData.characterId,
     );
 
     client
@@ -269,9 +271,31 @@ export class GameService implements OnModuleInit {
 
     console.log('[getInitialData] players keys', playersKeys);
 
-    const otherPlayers = (
-      await this.redisService.mget<LiveCharacterState>(playersKeys)
-    ).filter(Boolean);
+    const pipeline = this.redisService.pipeline();
+    for (const player of playersKeys) {
+      pipeline.hgetall(player);
+    }
+
+    const completedPipeline = await pipeline.exec();
+
+    console.log(completedPipeline);
+
+    if (!completedPipeline) {
+      // FIXME: check the error
+      throw new Error('Pipeline execution failed');
+    }
+
+    const otherPlayers = completedPipeline
+      .filter(([err]) => !err)
+      .map(([_, player]) =>
+        parseLiveCharacterState(player as Record<string, string>),
+      );
+
+    console.log('[getInitialData] otherPlayers PIPELINE', otherPlayers);
+
+    // const otherPlayers = (
+    //   await this.redisService.mget<LiveCharacterState>(playersKeys)
+    // ).filter(Boolean);
 
     console.log('[getInitialData] otherPlayers', client.id, otherPlayers);
     void client.join(`location:${findLocation?.id}`);
@@ -370,6 +394,7 @@ export class GameService implements OnModuleInit {
       if (!locationId) continue;
 
       const position = {
+        // FIXME: change 32 to tileSize
         x: Math.floor(step.x * 32),
         y: Math.floor(step.y * 32),
       };
