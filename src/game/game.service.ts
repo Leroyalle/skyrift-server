@@ -1,5 +1,4 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import { PlayerWalkDto } from './dto/player-walk.dto';
 import { Namespace, Socket } from 'socket.io';
 import { AuthService } from 'src/auth/auth.service';
 import { UserService } from 'src/user/user.service';
@@ -316,7 +315,7 @@ export class GameService implements OnModuleInit {
 
     console.log('requestMoveTo', input);
 
-    const { userId, characterId, locationId, position } = client['userData'];
+    const { userId, characterId, locationId, position } = client.userData;
 
     const findLocation = await this.loadLocation(locationId);
     const map = findLocation?.passableMap;
@@ -389,8 +388,9 @@ export class GameService implements OnModuleInit {
       const client = this.server.sockets.get(socketId);
       if (!client) continue;
 
-      const userData = client['userData'];
+      const userData = client.userData;
       const locationId = userData?.locationId;
+      const prevPosition = userData.position;
       if (!locationId) continue;
 
       const position = {
@@ -398,7 +398,7 @@ export class GameService implements OnModuleInit {
         x: Math.floor(step.x * 32),
         y: Math.floor(step.y * 32),
       };
-      client['userData'] = { ...userData, position };
+      client.userData = { ...userData, position };
 
       let updates = updatesByLocation.get(locationId);
       if (!updates) {
@@ -418,6 +418,22 @@ export class GameService implements OnModuleInit {
         y: position.y,
       });
 
+      if (prevPosition) {
+        this.removeCharacterFromSpatialGrid(
+          characterId,
+          locationId,
+          prevPosition.x,
+          prevPosition.y,
+        );
+      }
+
+      this.addCharacterToSpatialGrid(
+        characterId,
+        locationId,
+        position.x,
+        position.y,
+      );
+
       if (steps.length === 0) {
         this.movementQueues.delete(characterId);
       }
@@ -430,6 +446,41 @@ export class GameService implements OnModuleInit {
         .to(RedisKeys.Location + locationId)
         .emit(ServerToClientEvents.PlayerWalkBatch, updates);
     }
+  }
+
+  private addCharacterToSpatialGrid(
+    characterId: string,
+    locationId: string,
+    x: number,
+    y: number,
+  ) {
+    const key = this.generateSpatialGridKey(locationId, x, y);
+    const playersInTile = this.spatialGrid.get(key) ?? new Set<string>();
+    playersInTile.add(characterId);
+    this.spatialGrid.set(key, playersInTile);
+  }
+
+  private removeCharacterFromSpatialGrid(
+    characterId: string,
+    locationId: string,
+    x: number,
+    y: number,
+  ) {
+    const gridKey = this.generateSpatialGridKey(locationId, x, y);
+
+    const set = this.spatialGrid.get(gridKey);
+
+    if (!set) return;
+
+    set.delete(characterId);
+
+    if (set.size === 0) {
+      this.spatialGrid.delete(gridKey);
+    }
+  }
+
+  private generateSpatialGridKey(locationId: string, x: number, y: number) {
+    return `${locationId}_${x}_${y}`;
   }
 
   public async changeLocation(client: Socket, input: ChangeLocationDto) {
