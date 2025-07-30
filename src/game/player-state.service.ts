@@ -37,6 +37,19 @@ export class PlayerStateService {
     } as LiveCharacterState);
   }
 
+  async leave(userId: string, playerId: string, locationId: string) {
+    const playerMap = this.playersByLocation.get(locationId);
+    playerMap?.delete(playerId);
+
+    await this.redisService.srem(
+      RedisKeysFactory.locationPlayers(locationId),
+      playerId,
+    );
+    await this.redisService.del(RedisKeysFactory.playerState(playerId));
+
+    await this.redisService.del(RedisKeysFactory.connectedPlayer(userId));
+  }
+
   private getOrCreateLocationMap(
     locationId: string,
   ): Map<string, LiveCharacterState> {

@@ -42,4 +42,8 @@ export class RedisService {
   async smembers(key: string): Promise<string[]> {
     return await this.client.smembers(key);
   }
+
+  async srem(key: string, value: string): Promise<void> {
+    await this.client.srem(key, value);
+  }
 }

@@ -146,7 +146,10 @@ export class GameService implements OnModuleInit {
       };
       console.log('client.userData', client.userData);
 
-      this.playerStateService.join(findCharacter, findCharacter.location.id);
+      await this.playerStateService.join(
+        findCharacter,
+        findCharacter.location.id,
+      );
       void client.join(RedisKeys.Location + findCharacter.location.id);
       client.emit(ServerToClientEvents.PlayerConnected, findCharacter);
       this.broadcastPlayerJoined(
@@ -165,12 +168,19 @@ export class GameService implements OnModuleInit {
     }
   }
 
-  public handleDisconnect(client: Socket) {
-    const userData = client['userData'];
+  public async handleDisconnect(client: Socket) {
+    if (!this.verifyUserDataInSocket(client)) return;
+
+    await this.playerStateService.leave(
+      client.userData.userId,
+      client.userData.characterId,
+      client.userData.locationId,
+    );
+
     client
-      .to(RedisKeys.Location + userData.locationId)
-      .emit(ServerToClientEvents.PlayerLeft, userData.characterId);
-    // TODO: clear connected player in redis
+      .to(RedisKeys.Location + client.userData.locationId)
+      .emit(ServerToClientEvents.PlayerLeft, client.userData.characterId);
+    // TODO: clear connected sockets in redis
     console.log('Client disconnected:', client.id);
   }
 
