@@ -19,6 +19,9 @@ import { PlayerStateService } from './player-state.service';
 import { RedisKeysFactory } from 'src/common/infra/redis-keys-factory.infra';
 import { LiveCharacterState } from 'src/character/types/live-character-state.type';
 import { parseLiveCharacterState } from './lib/parse-live-character-state.lib';
+import { removeCharacterFromSpatialGrid } from './lib/spatial-grid/remove-character-from-spatial-grid.lib';
+import { addCharacterToSpatialGrid } from './lib/spatial-grid/add-character-to-spatial-grid.lib';
+import { generateSpatialGridKey } from './lib/spatial-grid/generate-spatial-grid-key.lib';
 
 @Injectable()
 export class GameService implements OnModuleInit {
@@ -418,8 +421,10 @@ export class GameService implements OnModuleInit {
         y: position.y,
       });
 
+      // TODO: add spatial grid to redis
       if (prevPosition) {
-        this.removeCharacterFromSpatialGrid(
+        removeCharacterFromSpatialGrid(
+          this.spatialGrid,
           characterId,
           locationId,
           prevPosition.x,
@@ -427,7 +432,8 @@ export class GameService implements OnModuleInit {
         );
       }
 
-      this.addCharacterToSpatialGrid(
+      addCharacterToSpatialGrid(
+        this.spatialGrid,
         characterId,
         locationId,
         position.x,
@@ -446,41 +452,6 @@ export class GameService implements OnModuleInit {
         .to(RedisKeys.Location + locationId)
         .emit(ServerToClientEvents.PlayerWalkBatch, updates);
     }
-  }
-
-  private addCharacterToSpatialGrid(
-    characterId: string,
-    locationId: string,
-    x: number,
-    y: number,
-  ) {
-    const key = this.generateSpatialGridKey(locationId, x, y);
-    const playersInTile = this.spatialGrid.get(key) ?? new Set<string>();
-    playersInTile.add(characterId);
-    this.spatialGrid.set(key, playersInTile);
-  }
-
-  private removeCharacterFromSpatialGrid(
-    characterId: string,
-    locationId: string,
-    x: number,
-    y: number,
-  ) {
-    const gridKey = this.generateSpatialGridKey(locationId, x, y);
-
-    const set = this.spatialGrid.get(gridKey);
-
-    if (!set) return;
-
-    set.delete(characterId);
-
-    if (set.size === 0) {
-      this.spatialGrid.delete(gridKey);
-    }
-  }
-
-  private generateSpatialGridKey(locationId: string, x: number, y: number) {
-    return `${locationId}_${x}_${y}`;
   }
 
   public async changeLocation(client: Socket, input: ChangeLocationDto) {
