@@ -51,8 +51,14 @@ export class CharacterService {
     return `This action returns a #${id} character`;
   }
 
-  update(id: number, updateCharacterInput: UpdateCharacterInput) {
-    return `This action updates a #${id} character`;
+  public async update(
+    characterId: string,
+    updateCharacterInput: UpdateCharacterInput,
+  ) {
+    return await this.characterRepository.update(
+      characterId,
+      updateCharacterInput,
+    );
   }
 
   remove(id: number) {

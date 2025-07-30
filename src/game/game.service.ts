@@ -38,12 +38,13 @@ export class GameService implements OnModuleInit {
   }
 
   private readonly logger = new Logger(GameService.name);
+  private tickInterval: NodeJS.Timeout;
 
   private readonly movementQueues = new Map<
     string,
     { steps: { x: number; y: number }[]; userId: string }
   >();
-  private tickInterval: NodeJS.Timeout;
+  private readonly spatialGrid: Map<string, Set<string>> = new Map();
 
   private readonly locationCache = new Map<string, CachedLocation>();
   private readonly easyStarInstances = new Map<string, EasyStar.js>();
@@ -142,7 +143,10 @@ export class GameService implements OnModuleInit {
         userId: findUser.id,
         characterId: findCharacter.id,
         locationId: findCharacter.location.id,
-        position: findCharacter.position,
+        position: {
+          x: findCharacter.x,
+          y: findCharacter.y,
+        },
       };
       console.log('client.userData', client.userData);
 
@@ -177,10 +181,13 @@ export class GameService implements OnModuleInit {
       client.userData.locationId,
     );
 
+    await this.playerStateService.syncCharacterToDb(
+      client.userData.characterId,
+    );
+
     client
       .to(RedisKeys.Location + client.userData.locationId)
       .emit(ServerToClientEvents.PlayerLeft, client.userData.characterId);
-    // TODO: clear connected sockets in redis
     console.log('Client disconnected:', client.id);
   }
 
@@ -339,6 +346,8 @@ export class GameService implements OnModuleInit {
       }
     }
 
+    const pipeline = this.redisService.pipeline();
+
     for (const [
       characterId,
       { steps, userId },
@@ -352,6 +361,7 @@ export class GameService implements OnModuleInit {
       const socketId = userIdToSocketId.get(userId);
       if (!socketId) continue;
 
+      // FIXME: change to redis
       const client = this.server.sockets.get(socketId);
       if (!client) continue;
 
@@ -359,8 +369,11 @@ export class GameService implements OnModuleInit {
       const locationId = userData?.locationId;
       if (!locationId) continue;
 
-      const pos = { x: Math.floor(step.x * 32), y: Math.floor(step.y * 32) };
-      client['userData'] = { ...userData, position: pos };
+      const position = {
+        x: Math.floor(step.x * 32),
+        y: Math.floor(step.y * 32),
+      };
+      client['userData'] = { ...userData, position };
 
       let updates = updatesByLocation.get(locationId);
       if (!updates) {
@@ -370,10 +383,14 @@ export class GameService implements OnModuleInit {
 
       updates.push({
         characterId,
-        info: {
-          position: step,
-          locationId,
-        },
+        locationId,
+        x: position.x,
+        y: position.y,
+      });
+
+      pipeline.hset(RedisKeysFactory.playerState(characterId), {
+        x: position.x,
+        y: position.y,
       });
 
       if (steps.length === 0) {
@@ -381,35 +398,13 @@ export class GameService implements OnModuleInit {
       }
     }
 
+    await pipeline.exec();
+
     for (const [locationId, updates] of updatesByLocation.entries()) {
       this.server
         .to(RedisKeys.Location + locationId)
         .emit(ServerToClientEvents.PlayerWalkBatch, updates);
     }
-  }
-
-  public playerWalk(client: Socket, input: PlayerWalkDto) {
-    if (!this.verifyUserDataInSocket(client)) {
-      this.notifyDisconnection(client);
-      client.disconnect();
-      return;
-    }
-
-    console.log('position', input);
-
-    const { userId, characterId, locationId } = client['userData'];
-
-    // FIXME: check the line from bottom (this method is deprecated)
-    // const findLocation = await this.loadLocation(locationId);
-
-    this.server
-      .to(`location:${locationId}`)
-      .emit(ServerToClientEvents.PlayerWalk, {
-        userId,
-        characterId,
-        locationId,
-        position: input.position,
-      });
   }
 
   public async changeLocation(client: Socket, input: ChangeLocationDto) {

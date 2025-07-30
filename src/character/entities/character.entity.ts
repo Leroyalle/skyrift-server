@@ -129,9 +129,17 @@ export class Character {
   @Field(() => Location, { description: 'Локация персонажа', nullable: true })
   location: Location;
 
-  @Column('json')
-  @Field(() => PositionDto, { description: 'Позиция игрока' })
-  position: PositionDto;
+  // @Column('json')
+  // @Field(() => PositionDto, { description: 'Позиция игрока' })
+  // position: PositionDto;
+
+  @Column()
+  @Field(() => Int, { description: 'X координата позиции игрока' })
+  x: number;
+
+  @Column()
+  @Field(() => Int, { description: 'Y координата позиции игрока' })
+  y: number;
 
   // TODO: @Column({ default: 0.1 })
   // @Field(() => Number, {

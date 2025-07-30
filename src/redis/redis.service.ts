@@ -46,4 +46,8 @@ export class RedisService {
   async srem(key: string, value: string): Promise<void> {
     await this.client.srem(key, value);
   }
+
+  pipeline() {
+    return this.client.pipeline();
+  }
 }

@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { CharacterService } from 'src/character/character.service';
 import { LiveCharacterState } from 'src/character/types/live-character-state.type';
 import { RedisKeysFactory } from 'src/common/infra/redis-keys-factory.infra';
 import { RedisService } from 'src/redis/redis.service';
@@ -10,7 +11,10 @@ export class PlayerStateService {
     Map<string, LiveCharacterState>
   >();
 
-  constructor(private readonly redisService: RedisService) {}
+  constructor(
+    private readonly redisService: RedisService,
+    private readonly characterService: CharacterService,
+  ) {}
 
   async join(player: LiveCharacterState, locationId: string) {
     const playerMap = this.getOrCreateLocationMap(locationId);
@@ -21,20 +25,18 @@ export class PlayerStateService {
       player.id,
     );
 
-    await this.redisService.set(RedisKeysFactory.playerState(player.id), {
+    await this.redisService.hset(RedisKeysFactory.playerState(player.id), {
       id: player.id,
       name: player.name,
-      position: {
-        x: player.position.x,
-        y: player.position.y,
-      },
-      hp: player.hp,
-      maxHp: player.maxHp,
-      defense: player.defense,
-      isAlive: player.isAlive,
-      attackRange: player.attackRange,
+      x: player.x,
+      y: player.y,
       level: player.level,
-    } as LiveCharacterState);
+      maxHp: player.maxHp,
+      hp: player.hp,
+      defense: player.defense,
+      attackRange: player.attackRange,
+      isAlive: player.isAlive,
+    });
   }
 
   async leave(userId: string, playerId: string, locationId: string) {
@@ -49,6 +51,60 @@ export class PlayerStateService {
 
     await this.redisService.del(RedisKeysFactory.connectedPlayer(userId));
   }
+
+  async syncCharacterToDb(characterId: string) {
+    const findCharacter = await this.redisService.get<LiveCharacterState>(
+      RedisKeysFactory.playerState(characterId),
+    );
+    if (findCharacter) {
+      await this.characterService.update(findCharacter.id, findCharacter);
+    }
+  }
+
+  // async attack(
+  //   attackerId: string,
+  //   targetId: string,
+  //   locationId: string,
+  //   damage: number,
+  // ): Promise<PlayerState | null> {
+  //   const playerMap = this.playersByLocation.get(locationId);
+  //   const target = playerMap?.get(targetId);
+
+  //   if (target) {
+  //     target.hp = Math.max(target.hp - damage, 0);
+  //     return target;
+  //   }
+
+  //   const key = this.getPlayerKey(targetId);
+  //   const newHp = await this.redis.hincrby(key, 'hp', -damage);
+  //   const state = await this.redis.hgetall(key);
+  //   if (!state || !state.id) return null;
+
+  //   return {
+  //     id: state.id,
+  //     name: state.name,
+  //     x: parseInt(state.x),
+  //     y: parseInt(state.y),
+  //     hp: parseInt(state.hp),
+  //     maxHp: 100,
+  //     direction: state.direction as any,
+  //     equipment: [],
+  //   };
+  // }
+
+  // async syncToRedis(locationId: string) {
+  //   const players = this.playersByLocation.get(locationId);
+  //   if (!players) return;
+
+  //   for (const [id, state] of players) {
+  //     await this.redis.hset(this.getPlayerKey(id), {
+  //       x: state.x,
+  //       y: state.y,
+  //       hp: state.hp,
+  //       direction: state.direction,
+  //     });
+  //   }
+  // }
 
   private getOrCreateLocationMap(
     locationId: string,
