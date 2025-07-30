@@ -23,9 +23,23 @@ export class RedisService {
 
   async mget<T = any[]>(keys: string[]): Promise<(T | null)[]> {
     const data = await this.client.mget(keys);
+    console.log('[redis service mget]', data);
     if (data) {
+      // TODO: add try/catch
       return data.map((d) => (d ? (JSON.parse(d) as T) : null));
     }
     return data;
+  }
+
+  async sadd(key: string, value: string): Promise<void> {
+    await this.client.sadd(key, value);
+  }
+
+  async hset(key: string, value: any): Promise<void> {
+    await this.client.hset(key, value);
+  }
+
+  async smembers(key: string): Promise<string[]> {
+    return await this.client.smembers(key);
   }
 }

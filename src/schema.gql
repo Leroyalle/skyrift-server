@@ -136,6 +136,45 @@ type Character {
   """Уровень персонажа"""
   level: Int!
 
+  """Максимальное здоровье персонажа"""
+  maxHp: Int!
+
+  """Текущее здоровье персонажа"""
+  hp: Int!
+
+  """Физический урон"""
+  basePhysicalDamage: Int!
+
+  """Магический урон"""
+  baseMagicDamage: Int!
+
+  """Броня персонажа (снижает физ. урон)"""
+  defense: Int!
+
+  """Магическая защита (снижает маг. урон)"""
+  magicDefense: Int!
+
+  """Множитель крит. урона"""
+  critMultiplier: Float!
+
+  """Скорость атаки (уд/сек)"""
+  attackSpeed: Float!
+
+  """Дистанция атаки (в тайлах)"""
+  attackRange: Int!
+
+  """Опыт персонажа"""
+  experience: Int!
+
+  """Опыт до следующего уровня"""
+  experienceToNextLevel: Int!
+
+  """Очки навыков"""
+  skillPoints: Int!
+
+  """Жив ли персонаж"""
+  isAlive: Boolean!
+
   """Статус удален или нет"""
   isDeleted: Boolean!
 

@@ -143,9 +143,6 @@ export class AuthService {
       type === 'access' ? 'JWT_ACCESS_SECRET' : 'JWT_REFRESH_SECRET',
     );
 
-    console.log('Token before verify:', token);
-    console.log('Secret:', secret);
-
     try {
       return this.jwtService.verify(token, { secret });
     } catch (e) {

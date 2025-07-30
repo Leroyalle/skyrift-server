@@ -15,6 +15,10 @@ import { mergePassableMaps } from './lib/merge-passable-maps.lib';
 import { CachedLocation } from './types/cashed-location.type';
 import { RequestMoveToDto } from './dto/request-move-to.dto';
 import { TBatchUpdate } from './types/batch-update.type';
+import { Character } from 'src/character/entities/character.entity';
+import { PlayerStateService } from './player-state.service';
+import { RedisKeysFactory } from 'src/common/infra/redis-keys-factory.infra';
+import { LiveCharacterState } from 'src/character/types/live-character-state.type';
 
 @Injectable()
 export class GameService implements OnModuleInit {
@@ -24,6 +28,7 @@ export class GameService implements OnModuleInit {
     private readonly characterService: CharacterService,
     private readonly locationService: LocationService,
     private readonly redisService: RedisService,
+    private readonly playerStateService: PlayerStateService,
   ) {}
 
   private server: Namespace;
@@ -141,12 +146,14 @@ export class GameService implements OnModuleInit {
       };
       console.log('client.userData', client.userData);
 
+      this.playerStateService.join(findCharacter, findCharacter.location.id);
       void client.join(RedisKeys.Location + findCharacter.location.id);
       client.emit(ServerToClientEvents.PlayerConnected, findCharacter);
-
-      client
-        .to(RedisKeys.Location + findCharacter.location.id)
-        .emit(ServerToClientEvents.PlayerJoined, findCharacter);
+      this.broadcastPlayerJoined(
+        client,
+        findCharacter.location.id,
+        findCharacter,
+      );
 
       console.log(
         `Client ${client.id} joined location:`,
@@ -159,7 +166,22 @@ export class GameService implements OnModuleInit {
   }
 
   public handleDisconnect(client: Socket) {
+    const userData = client['userData'];
+    client
+      .to(RedisKeys.Location + userData.locationId)
+      .emit(ServerToClientEvents.PlayerLeft, userData.characterId);
+    // TODO: clear connected player in redis
     console.log('Client disconnected:', client.id);
+  }
+
+  public broadcastPlayerJoined(
+    client: Socket,
+    locationId: string,
+    character: Character,
+  ) {
+    client
+      .to(RedisKeys.Location + locationId)
+      .emit(ServerToClientEvents.PlayerJoined, character);
   }
 
   private getEasyStarInstance(
@@ -189,7 +211,6 @@ export class GameService implements OnModuleInit {
     }
 
     const { userId, characterId, locationId } = client['userData'];
-    // const storedClientId = this.activeConnections.get(userId);
     const storedClientId = await this.redisService.get(
       RedisKeys.ConnectedPlayers + userId,
     );
@@ -220,24 +241,22 @@ export class GameService implements OnModuleInit {
       return;
     }
 
-    const otherPlayers: PlayerData[] = [];
-    const sockets = await this.server.in(`location:${locationId}`).allSockets();
-    for (const socketId of sockets) {
-      const otherClient = this.server?.sockets?.get?.(socketId);
-      if (
-        otherClient &&
-        otherClient.id !== client.id &&
-        this.verifyUserDataInSocket(otherClient)
-      ) {
-        otherPlayers.push({
-          userId: otherClient.userData.userId,
-          characterId: otherClient.userData.characterId,
-          locationId: otherClient.userData.locationId,
-          position: otherClient.userData.position,
-        });
-      }
-    }
-    console.log('initial data to client', client.id, otherPlayers);
+    const playersIds = await this.redisService.smembers(
+      RedisKeysFactory.locationPlayers(locationId),
+    );
+
+    console.log('[getInitialData] players ids', playersIds);
+    const playersKeys = playersIds.map((id) => {
+      return RedisKeysFactory.playerState(id);
+    });
+
+    console.log('[getInitialData] players keys', playersKeys);
+
+    const otherPlayers = (
+      await this.redisService.mget<LiveCharacterState>(playersKeys)
+    ).filter(Boolean);
+
+    console.log('[getInitialData] otherPlayers', client.id, otherPlayers);
     void client.join(`location:${findLocation?.id}`);
 
     client.emit(ServerToClientEvents.GameInitialState, {
@@ -292,6 +311,7 @@ export class GameService implements OnModuleInit {
   }
 
   public async tickMovement() {
+    // TODO: add pipeline for movement players
     const updatesByLocation = new Map<string, TBatchUpdate[]>();
 
     const entries = Array.from(this.movementQueues.entries());

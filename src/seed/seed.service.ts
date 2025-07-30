@@ -110,6 +110,7 @@ export class SeedService {
         x: 400,
         y: 400,
       },
+      maxHp: 100,
     });
 
     await this.characterRepository.save({
@@ -122,6 +123,7 @@ export class SeedService {
         x: 450,
         y: 450,
       },
+      maxHp: 100,
     });
 
     console.log('Listings seeded');
