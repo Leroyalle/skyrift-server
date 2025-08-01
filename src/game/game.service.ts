@@ -13,7 +13,7 @@ import * as EasyStar from 'easystarjs';
 import { mergePassableMaps } from './lib/merge-passable-maps.lib';
 import { CachedLocation } from './types/cashed-location.type';
 import { RequestMoveToDto } from './dto/request-move-to.dto';
-import { TBatchUpdate } from './types/batch-update.type';
+import { TBatchUpdateMovement } from './types/batch-update-movement.type';
 import { Character } from 'src/character/entities/character.entity';
 import { PlayerStateService } from './player-state.service';
 import { RedisKeysFactory } from 'src/common/infra/redis-keys-factory.infra';
@@ -22,6 +22,8 @@ import { parseLiveCharacterState } from './lib/parse-live-character-state.lib';
 import { removeCharacterFromSpatialGrid } from './lib/spatial-grid/remove-character-from-spatial-grid.lib';
 import { addCharacterToSpatialGrid } from './lib/spatial-grid/add-character-to-spatial-grid.lib';
 import { generateSpatialGridKey } from './lib/spatial-grid/generate-spatial-grid-key.lib';
+import { PendingAction } from './types/pending-actions.type';
+import { BatchUpdateAction } from './types/batch-update-action.type';
 
 @Injectable()
 export class GameService implements OnModuleInit {
@@ -48,6 +50,7 @@ export class GameService implements OnModuleInit {
     { steps: { x: number; y: number }[]; userId: string }
   >();
   private readonly spatialGrid: Map<string, Set<string>> = new Map();
+  private readonly pendingActions: PendingAction[] = [];
 
   private readonly locationCache = new Map<string, CachedLocation>();
   private readonly easyStarInstances = new Map<string, EasyStar.js>();
@@ -154,7 +157,7 @@ export class GameService implements OnModuleInit {
       console.log('client.userData', client.userData);
 
       await this.playerStateService.join(
-        findCharacter,
+        { ...findCharacter, locationId: findCharacter.location.id },
         findCharacter.location.id,
       );
       void client.join(RedisKeys.Location + findCharacter.location.id);
@@ -320,6 +323,31 @@ export class GameService implements OnModuleInit {
 
     const { userId, characterId, locationId, position } = client.userData;
 
+    // TODO: optimization
+    const gridKey = generateSpatialGridKey(locationId, position.x, position.y);
+    const victimsSet = this.spatialGrid.get(gridKey);
+    if (victimsSet) {
+      if (victimsSet.size === 1) {
+        const [victimId] = victimsSet;
+        const pipeline = this.redisService.pipeline();
+        pipeline.hgetall(RedisKeysFactory.playerState(victimId));
+        pipeline.hgetall(RedisKeysFactory.playerState(characterId));
+        const result = await pipeline.exec();
+
+        if (result && result.length === 2) {
+          const [victim, attacker] = result
+            .filter(([err]) => !err)
+            .map(([_, player]) =>
+              parseLiveCharacterState(player as Record<string, string>),
+            );
+        }
+
+        await this.playerStateService.attack(locationId, characterId, victimId);
+
+        // TODO: add a check whether you can attack the character
+      }
+    }
+
     const findLocation = await this.loadLocation(locationId);
     const map = findLocation?.passableMap;
 
@@ -353,9 +381,75 @@ export class GameService implements OnModuleInit {
     easyStar.calculate();
   }
 
+  public async tickActions() {
+    const updatesByLocation = new Map<string, BatchUpdateAction[]>();
+    const pipelineForState = this.redisService.pipeline();
+
+    this.pendingActions.forEach((action) => {
+      pipelineForState.hgetall(RedisKeysFactory.playerState(action.attackerId));
+      pipelineForState.hgetall(RedisKeysFactory.playerState(action.victimId));
+    });
+
+    const result = await pipelineForState.exec();
+
+    if (!result) return;
+
+    const pairedPlayers: {
+      victim: LiveCharacterState;
+      attacker: LiveCharacterState;
+    }[] = [];
+
+    for (let i = 0; i < result.length; i += 2) {
+      const [errA, rawA] = result[i];
+      const [errV, rawV] = result[i + 1];
+
+      if (errA || errV) continue;
+
+      const attacker = parseLiveCharacterState(rawA as Record<string, string>);
+      const victim = parseLiveCharacterState(rawV as Record<string, string>);
+
+      if (attacker && victim) {
+        pairedPlayers.push({ attacker, victim });
+      }
+    }
+
+    const pipelineForHpUpdate = this.redisService.pipeline();
+
+    pairedPlayers.forEach(({ attacker, victim }) => {
+      // TODO: calculate received damage with defense and other stats
+      const receivedDamage = attacker.basePhysicalDamage;
+      const remainingHp = Math.max(victim.hp - receivedDamage, 0);
+      pipelineForHpUpdate.hset(RedisKeysFactory.playerState(victim.id), {
+        hp: remainingHp,
+      });
+
+      let locationBatch = updatesByLocation.get(attacker.locationId);
+
+      if (!locationBatch) {
+        locationBatch = [];
+        updatesByLocation.set(attacker.locationId, locationBatch);
+      }
+
+      locationBatch.push({
+        characterId: victim.id,
+        hp: remainingHp,
+        isAlive: remainingHp > 0,
+        receivedDamage,
+      });
+    });
+
+    await pipelineForHpUpdate.exec();
+
+    for (const [locationId, update] of updatesByLocation.entries()) {
+      this.server
+        .to(RedisKeys.Location + locationId)
+        .emit(ServerToClientEvents.PlayerStateUpdate, update);
+    }
+  }
+
   public async tickMovement() {
     // TODO: add pipeline for movement players
-    const updatesByLocation = new Map<string, TBatchUpdate[]>();
+    const updatesByLocation = new Map<string, TBatchUpdateMovement[]>();
 
     const entries = Array.from(this.movementQueues.entries());
     const userIds = entries.map(([, { userId }]) => userId);

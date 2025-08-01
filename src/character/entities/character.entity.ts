@@ -42,11 +42,11 @@ export class Character {
   hp: number;
 
   @Column({ default: 0 })
-  @Field(() => Int, { description: 'Физический урон', defaultValue: 0 })
+  @Field(() => Int, { description: 'Физический урон', defaultValue: 55 })
   basePhysicalDamage: number;
 
   @Column({ default: 0 })
-  @Field(() => Int, { description: 'Магический урон', defaultValue: 0 })
+  @Field(() => Int, { description: 'Магический урон', defaultValue: 26 })
   baseMagicDamage: number;
 
   @Column({ default: 0 })

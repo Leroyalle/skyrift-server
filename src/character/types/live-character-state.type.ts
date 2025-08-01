@@ -9,4 +9,8 @@ export type LiveCharacterState = {
   defense: number;
   attackRange: number;
   isAlive: boolean;
+  basePhysicalDamage: number;
+  baseMagicDamage: number;
+  locationId: string;
+  // TODO: add the damage(now) - sum all damage items
 };

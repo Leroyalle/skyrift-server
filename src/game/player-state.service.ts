@@ -37,7 +37,10 @@ export class PlayerStateService {
       defense: player.defense,
       attackRange: player.attackRange,
       isAlive: player.isAlive,
-    });
+      basePhysicalDamage: player.basePhysicalDamage,
+      baseMagicDamage: player.baseMagicDamage,
+      locationId: player.locationId,
+    } as LiveCharacterState);
   }
 
   async leave(userId: string, playerId: string, locationId: string) {
@@ -67,6 +70,39 @@ export class PlayerStateService {
     }
   }
 
+  async attack(locationId: string, attackerId: string, victimId: string) {
+    // const playersSet = this.playersByLocation.get(locationId);
+    // const playersSet = await this.redisService.smembers(
+    //   RedisKeysFactory.locationPlayers(locationId),
+    // );
+
+    // if (!playersSet) return;
+
+    // const victim = playersSet.get(victimId);
+    // const attacker = playersSet.get(attackerId);
+
+    // if (victim && attacker) {
+    //   // TODO: check character class - magic or physical
+    //   victim.hp = Math.max(victim.hp - attacker.basePhysicalDamage);
+    //   return { victim, attacker };
+    // }
+
+    const pipeline = this.redisService.pipeline();
+
+    pipeline.hgetall(RedisKeysFactory.playerState(victimId));
+    pipeline.hgetall(RedisKeysFactory.playerState(attackerId));
+
+    const result = await pipeline.exec();
+
+    if (result && result.length === 2) {
+      const [victim, attacker] = result
+        .filter(([err]) => !err)
+        .map(([_, player]) =>
+          parseLiveCharacterState(player as Record<string, string>),
+        );
+    }
+  }
+
   // async attack(
   //   attackerId: string,
   //   targetId: string,
@@ -82,7 +118,7 @@ export class PlayerStateService {
   //   }
 
   //   const key = this.getPlayerKey(targetId);
-  //   const newHp = await this.redis.hincrby(key, 'hp', -damage);
+  //   const newHp = await this.redis.incrby(key, 'hp', -damage);
   //   const state = await this.redis.hgetall(key);
   //   if (!state || !state.id) return null;
 
