@@ -17,5 +17,8 @@ export function parseLiveCharacterState(
     baseMagicDamage: Number(raw.baseMagicDamage),
     basePhysicalDamage: Number(raw.basePhysicalDamage),
     locationId: raw.locationId,
+    attackSpeed: Number(raw.attackSpeed),
+    lastMoveAt: Number(raw.lastMoveAt),
+    lastAttackAt: Number(raw.lastAttackAt),
   };
 }

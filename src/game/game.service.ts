@@ -27,6 +27,7 @@ import { PathFindingService } from './path-finding/path-finding.service';
 import { RequestAttackMoveDto } from './dto/request-attack-move.dto';
 import { validateResultPipeline } from 'src/redis/lib/validate-result-pipeline';
 import { getPendingActionKey } from './lib/get-pending-action-key';
+import { PairedPlayers } from './types/paired-players.type';
 
 @Injectable()
 export class GameService implements OnModuleInit {
@@ -189,7 +190,13 @@ export class GameService implements OnModuleInit {
       console.log('client.userData', client.userData);
 
       await this.playerStateService.join(
-        { ...findCharacter, locationId: findCharacter.location.id },
+        {
+          ...findCharacter,
+          locationId: findCharacter.location.id,
+          // TODO: maybe add this fields in db
+          lastMoveAt: Date.now(),
+          lastAttackAt: Date.now(),
+        },
         findCharacter.location.id,
       );
       void client.join(RedisKeys.Location + findCharacter.location.id);
@@ -338,31 +345,6 @@ export class GameService implements OnModuleInit {
 
     const { userId, characterId, locationId, position } = client.userData;
 
-    // TODO: optimization
-    // const gridKey = generateSpatialGridKey(locationId, position.x, position.y);
-    // const victimsSet = this.spatialGrid.get(gridKey);
-    // if (victimsSet) {
-    //   if (victimsSet.size === 1) {
-    //     const [victimId] = victimsSet;
-    //     const pipeline = this.redisService.pipeline();
-    //     pipeline.hgetall(RedisKeysFactory.playerState(victimId));
-    //     pipeline.hgetall(RedisKeysFactory.playerState(characterId));
-    //     const result = await pipeline.exec();
-
-    //     if (result && result.length === 2) {
-    //       const [victim, attacker] = result
-    //         .filter(([err]) => !err)
-    //         .map(([_, player]) =>
-    //           parseLiveCharacterState(player as Record<string, string>),
-    //         );
-    //     }
-
-    //     await this.playerStateService.attack(locationId, characterId, victimId);
-
-    //     // TODO: add a check whether you can attack the character
-    //   }
-    // }
-
     const findLocation = await this.loadLocation(locationId);
     const map = findLocation?.passableMap;
 
@@ -437,14 +419,12 @@ export class GameService implements OnModuleInit {
     if (distance === -1) return;
 
     if (distance <= attacker.attackRange) {
-      const ts = new Date();
       this.pendingActions.set(
-        getPendingActionKey(attacker.id, target.id, 'attack', ts),
+        getPendingActionKey(attacker.id, target.id, 'attack'),
         {
           attackerId: attacker.id,
           victimId: target.id,
           type: 'attack',
-          ts,
         },
       );
     } else {
@@ -463,7 +443,7 @@ export class GameService implements OnModuleInit {
       );
 
       this.movementQueues.set(attacker.id, {
-        steps,
+        steps: steps.slice(0, steps.length - attacker.attackRange),
         userId: client.userData.userId,
       });
     }
@@ -483,11 +463,7 @@ export class GameService implements OnModuleInit {
 
     if (!result) return;
 
-    const pairedPlayers: {
-      victim: LiveCharacterState;
-      attacker: LiveCharacterState;
-      action: PendingAction;
-    }[] = [];
+    const pairedPlayers: PairedPlayers[] = [];
 
     for (let i = 0; i < result.length; i += 2) {
       const [errA, rawA] = result[i];
@@ -604,6 +580,14 @@ export class GameService implements OnModuleInit {
       characterId,
       { steps, userId },
     ] of this.movementQueues.entries()) {
+      const character = playersStates.get(characterId);
+
+      if (!character) continue;
+
+      const now = Date.now();
+
+      if (now - character.lastMoveAt < character.attackSpeed) continue;
+
       const step = steps.shift();
       if (!step) {
         this.movementQueues.delete(characterId);
