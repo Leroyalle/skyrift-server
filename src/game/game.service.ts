@@ -21,9 +21,12 @@ import { LiveCharacterState } from 'src/character/types/live-character-state.typ
 import { parseLiveCharacterState } from './lib/parse-live-character-state.lib';
 import { removeCharacterFromSpatialGrid } from './lib/spatial-grid/remove-character-from-spatial-grid.lib';
 import { addCharacterToSpatialGrid } from './lib/spatial-grid/add-character-to-spatial-grid.lib';
-import { generateSpatialGridKey } from './lib/spatial-grid/generate-spatial-grid-key.lib';
 import { PendingAction } from './types/pending-actions.type';
 import { BatchUpdateAction } from './types/batch-update-action.type';
+import { PathFindingService } from './path-finding/path-finding.service';
+import { RequestAttackMoveDto } from './dto/request-attack-move.dto';
+import { validateResultPipeline } from 'src/redis/lib/validate-result-pipeline';
+import { getPendingActionKey } from './lib/get-pending-action-key';
 
 @Injectable()
 export class GameService implements OnModuleInit {
@@ -34,6 +37,7 @@ export class GameService implements OnModuleInit {
     private readonly locationService: LocationService,
     private readonly redisService: RedisService,
     private readonly playerStateService: PlayerStateService,
+    private readonly pathFindingService: PathFindingService,
   ) {}
 
   private server: Namespace;
@@ -43,26 +47,54 @@ export class GameService implements OnModuleInit {
   }
 
   private readonly logger = new Logger(GameService.name);
-  private tickInterval: NodeJS.Timeout;
+  private tickMovementInterval: NodeJS.Timeout;
+  private tickActionsInterval: NodeJS.Timeout;
 
   private readonly movementQueues = new Map<
     string,
     { steps: { x: number; y: number }[]; userId: string }
   >();
   private readonly spatialGrid: Map<string, Set<string>> = new Map();
-  private readonly pendingActions: PendingAction[] = [];
+  // TODO: change to Map with unique key
+  private readonly pendingActions: Map<string, PendingAction> = new Map();
 
   private readonly locationCache = new Map<string, CachedLocation>();
   private readonly easyStarInstances = new Map<string, EasyStar.js>();
 
   onModuleInit() {
-    this.tickInterval = setInterval(() => {
-      this.tickMovement();
-    }, 400);
+    void this.runTickMovement();
+    void this.runTickActions();
+  }
+
+  private async runTickMovement() {
+    try {
+      await this.tickMovement();
+    } catch (error) {
+      this.logger.error(`Error in tickMovement: ${error.message}`);
+    } finally {
+      this.tickMovementInterval = setTimeout(
+        () => void this.runTickMovement(),
+        150,
+      );
+    }
+  }
+
+  private async runTickActions() {
+    try {
+      await this.tickActions();
+    } catch (error) {
+      this.logger.error(`Error in tickActions: ${error.message}`);
+    } finally {
+      this.tickActionsInterval = setTimeout(
+        () => void this.runTickActions(),
+        100,
+      );
+    }
   }
 
   onModuleDestroy() {
-    clearInterval(this.tickInterval);
+    clearInterval(this.tickMovementInterval);
+    clearInterval(this.tickActionsInterval);
   }
 
   async handleConnection(client: Socket) {
@@ -208,23 +240,6 @@ export class GameService implements OnModuleInit {
       .emit(ServerToClientEvents.PlayerJoined, character);
   }
 
-  private getEasyStarInstance(
-    locationId: string,
-    map: number[][],
-  ): EasyStar.js {
-    let easyStar = this.easyStarInstances.get(locationId);
-
-    if (!easyStar) {
-      easyStar = new EasyStar.js();
-      easyStar.setGrid(map);
-      easyStar.setAcceptableTiles([1]);
-      easyStar.setIterationsPerCalculation(1000);
-      this.easyStarInstances.set(locationId, easyStar);
-    }
-
-    return easyStar;
-  }
-
   public async getInitialData(client: Socket) {
     console.log('initial data to client', client.id);
     if (!this.verifyUserDataInSocket(client)) {
@@ -324,29 +339,29 @@ export class GameService implements OnModuleInit {
     const { userId, characterId, locationId, position } = client.userData;
 
     // TODO: optimization
-    const gridKey = generateSpatialGridKey(locationId, position.x, position.y);
-    const victimsSet = this.spatialGrid.get(gridKey);
-    if (victimsSet) {
-      if (victimsSet.size === 1) {
-        const [victimId] = victimsSet;
-        const pipeline = this.redisService.pipeline();
-        pipeline.hgetall(RedisKeysFactory.playerState(victimId));
-        pipeline.hgetall(RedisKeysFactory.playerState(characterId));
-        const result = await pipeline.exec();
+    // const gridKey = generateSpatialGridKey(locationId, position.x, position.y);
+    // const victimsSet = this.spatialGrid.get(gridKey);
+    // if (victimsSet) {
+    //   if (victimsSet.size === 1) {
+    //     const [victimId] = victimsSet;
+    //     const pipeline = this.redisService.pipeline();
+    //     pipeline.hgetall(RedisKeysFactory.playerState(victimId));
+    //     pipeline.hgetall(RedisKeysFactory.playerState(characterId));
+    //     const result = await pipeline.exec();
 
-        if (result && result.length === 2) {
-          const [victim, attacker] = result
-            .filter(([err]) => !err)
-            .map(([_, player]) =>
-              parseLiveCharacterState(player as Record<string, string>),
-            );
-        }
+    //     if (result && result.length === 2) {
+    //       const [victim, attacker] = result
+    //         .filter(([err]) => !err)
+    //         .map(([_, player]) =>
+    //           parseLiveCharacterState(player as Record<string, string>),
+    //         );
+    //     }
 
-        await this.playerStateService.attack(locationId, characterId, victimId);
+    //     await this.playerStateService.attack(locationId, characterId, victimId);
 
-        // TODO: add a check whether you can attack the character
-      }
-    }
+    //     // TODO: add a check whether you can attack the character
+    //   }
+    // }
 
     const findLocation = await this.loadLocation(locationId);
     const map = findLocation?.passableMap;
@@ -362,23 +377,96 @@ export class GameService implements OnModuleInit {
 
     if (!isPermissible) return;
 
-    const easyStar = this.getEasyStarInstance(locationId, map);
-
-    easyStar.findPath(
-      Math.floor(position.x / findLocation.tileWidth),
-      Math.floor(position.y / findLocation.tileHeight),
-      input.targetX,
-      input.targetY,
-      (path) => {
-        console.log('path', path);
-        if (!path || path.length <= 1) return;
-
-        const steps = path.slice(1).map((p) => ({ x: p.x, y: p.y }));
-        console.log('steps', steps);
-        this.movementQueues.set(characterId, { steps, userId });
-      },
+    console.log('[REQUEST_MOVE]', position, input);
+    const steps = await this.pathFindingService.getPlayerPath(
+      locationId,
+      { x: position.x, y: position.y },
+      { x: input.targetX, y: input.targetY },
+      findLocation.tileWidth,
+      map,
     );
-    easyStar.calculate();
+
+    console.log('steps', steps);
+
+    this.movementQueues.set(characterId, { steps, userId });
+    console.log(
+      `[REQUEST MOVE TO STEPS]`,
+      this.movementQueues.get(characterId),
+    );
+  }
+
+  public async requestAttackMove(client: Socket, input: RequestAttackMoveDto) {
+    if (!this.verifyUserDataInSocket(client)) {
+      this.notifyDisconnection(client);
+      client.disconnect();
+      return;
+    }
+
+    const pipeline = this.redisService.pipeline();
+
+    pipeline.hgetall(RedisKeysFactory.playerState(client.userData.characterId));
+    pipeline.hgetall(RedisKeysFactory.playerState(input.targetId));
+
+    const result = await pipeline.exec();
+
+    if (!result) return;
+
+    const [attacker, target] = validateResultPipeline(result);
+
+    if (!attacker || !target) return;
+
+    const findLocation = await this.loadLocation(attacker.locationId);
+
+    if (!findLocation) return;
+
+    const distance = await this.pathFindingService.getPathDistance(
+      attacker.locationId,
+      {
+        x: Math.floor(attacker.x / findLocation.tileWidth),
+        y: Math.floor(attacker.y / findLocation.tileHeight),
+      },
+      {
+        x: Math.floor(target.x / findLocation.tileWidth),
+        y: Math.floor(target.y / findLocation.tileHeight),
+      },
+      findLocation.passableMap,
+    );
+
+    console.log('[REQUEST_ATTACK_MOVE] DISTANCE', distance);
+
+    if (distance === -1) return;
+
+    if (distance <= attacker.attackRange) {
+      const ts = new Date();
+      this.pendingActions.set(
+        getPendingActionKey(attacker.id, target.id, 'attack', ts),
+        {
+          attackerId: attacker.id,
+          victimId: target.id,
+          type: 'attack',
+          ts,
+        },
+      );
+    } else {
+      const steps = await this.pathFindingService.getPlayerPath(
+        findLocation.id,
+        {
+          x: attacker.x,
+          y: attacker.y,
+        },
+        {
+          x: Math.floor(target.x / findLocation.tileWidth),
+          y: Math.floor(target.y / findLocation.tileHeight),
+        },
+        findLocation.tileWidth,
+        findLocation.passableMap,
+      );
+
+      this.movementQueues.set(attacker.id, {
+        steps,
+        userId: client.userData.userId,
+      });
+    }
   }
 
   public async tickActions() {
@@ -386,6 +474,7 @@ export class GameService implements OnModuleInit {
     const pipelineForState = this.redisService.pipeline();
 
     this.pendingActions.forEach((action) => {
+      console.log('[tick_actions]', action);
       pipelineForState.hgetall(RedisKeysFactory.playerState(action.attackerId));
       pipelineForState.hgetall(RedisKeysFactory.playerState(action.victimId));
     });
@@ -397,11 +486,21 @@ export class GameService implements OnModuleInit {
     const pairedPlayers: {
       victim: LiveCharacterState;
       attacker: LiveCharacterState;
+      action: PendingAction;
     }[] = [];
 
     for (let i = 0; i < result.length; i += 2) {
       const [errA, rawA] = result[i];
       const [errV, rawV] = result[i + 1];
+      const action = Array.from(this.pendingActions.values())[
+        i > 0 ? i / 2 : 0
+      ];
+      console.log(
+        `[for_loop]`,
+        i,
+        Array.from(this.pendingActions.values())[i > 0 ? i / 2 : 0],
+        Array.from(this.pendingActions.values()),
+      );
 
       if (errA || errV) continue;
 
@@ -409,15 +508,21 @@ export class GameService implements OnModuleInit {
       const victim = parseLiveCharacterState(rawV as Record<string, string>);
 
       if (attacker && victim) {
-        pairedPlayers.push({ attacker, victim });
+        console.log(`[before paired push]`, this.pendingActions, {
+          attacker,
+          victim,
+          action,
+        });
+        pairedPlayers.push({ attacker, victim, action });
       }
     }
 
     const pipelineForHpUpdate = this.redisService.pipeline();
 
-    pairedPlayers.forEach(({ attacker, victim }) => {
+    pairedPlayers.forEach(({ attacker, victim, action }) => {
       // TODO: calculate received damage with defense and other stats
       const receivedDamage = attacker.basePhysicalDamage;
+      console.log('receivedDamage', receivedDamage);
       const remainingHp = Math.max(victim.hp - receivedDamage, 0);
       pipelineForHpUpdate.hset(RedisKeysFactory.playerState(victim.id), {
         hp: remainingHp,
@@ -436,6 +541,12 @@ export class GameService implements OnModuleInit {
         isAlive: remainingHp > 0,
         receivedDamage,
       });
+
+      // console.log('[before get pending key]', { attacker, victim, action });
+
+      this.pendingActions.delete(
+        getPendingActionKey(attacker.id, victim.id, action.type, action.ts),
+      );
     });
 
     await pipelineForHpUpdate.exec();
@@ -460,13 +571,34 @@ export class GameService implements OnModuleInit {
     const socketIds = await this.redisService.mget<string>(redisKeys);
     const userIdToSocketId = new Map<string, string>();
 
+    const pipelineForPlayersStates = this.redisService.pipeline();
+
+    entries.forEach(([characterId]) => {
+      pipelineForPlayersStates.hgetall(
+        RedisKeysFactory.playerState(characterId),
+      );
+    });
+
+    const result = await pipelineForPlayersStates.exec();
+
+    if (!result) return;
+
+    const playersStates = new Map<string, LiveCharacterState>();
+
+    result
+      .filter(([e]) => !e)
+      .forEach(([_, p]) => {
+        const player = parseLiveCharacterState(p as Record<string, string>);
+        playersStates.set(player.id, player);
+      });
+
     for (let i = 0; i < userIds.length; i++) {
       if (socketIds[i]) {
         userIdToSocketId.set(userIds[i], socketIds[i]!);
       }
     }
 
-    const pipeline = this.redisService.pipeline();
+    const pipelineForSetPosition = this.redisService.pipeline();
 
     for (const [
       characterId,
@@ -510,7 +642,7 @@ export class GameService implements OnModuleInit {
         y: position.y,
       });
 
-      pipeline.hset(RedisKeysFactory.playerState(characterId), {
+      pipelineForSetPosition.hset(RedisKeysFactory.playerState(characterId), {
         x: position.x,
         y: position.y,
       });
@@ -539,7 +671,7 @@ export class GameService implements OnModuleInit {
       }
     }
 
-    await pipeline.exec();
+    await pipelineForSetPosition.exec();
 
     for (const [locationId, updates] of updatesByLocation.entries()) {
       this.server

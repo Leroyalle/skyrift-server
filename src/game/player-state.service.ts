@@ -4,6 +4,7 @@ import { LiveCharacterState } from 'src/character/types/live-character-state.typ
 import { RedisKeysFactory } from 'src/common/infra/redis-keys-factory.infra';
 import { RedisService } from 'src/redis/redis.service';
 import { parseLiveCharacterState } from './lib/parse-live-character-state.lib';
+import { PathFindingService } from './path-finding/path-finding.service';
 
 @Injectable()
 export class PlayerStateService {
@@ -15,6 +16,7 @@ export class PlayerStateService {
   constructor(
     private readonly redisService: RedisService,
     private readonly characterService: CharacterService,
+    private readonly pathFindingService: PathFindingService,
   ) {}
 
   async join(player: LiveCharacterState, locationId: string) {
@@ -94,13 +96,12 @@ export class PlayerStateService {
 
     const result = await pipeline.exec();
 
-    if (result && result.length === 2) {
-      const [victim, attacker] = result
-        .filter(([err]) => !err)
-        .map(([_, player]) =>
-          parseLiveCharacterState(player as Record<string, string>),
-        );
-    }
+    if (!result || result.length < 2) return;
+    const [victim, attacker] = result
+      .filter(([err]) => !err)
+      .map(([_, player]) =>
+        parseLiveCharacterState(player as Record<string, string>),
+      );
   }
 
   // async attack(

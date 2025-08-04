@@ -190,6 +190,9 @@ type Character {
 
   """Y координата позиции игрока"""
   y: Int!
+
+  """Айди локации в которой находится игрок"""
+  locationId: String!
 }
 
 type User {

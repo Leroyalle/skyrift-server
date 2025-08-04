@@ -6,6 +6,7 @@ export enum ServerToClientEvents {
   PlayerWalkBatch = 'player:walk-batch',
   PlayerStateUpdate = 'player:state-update',
   PlayerChangeLocation = 'player:change-location',
+  PlayerAttack = 'player:attack',
   PlayerJoined = 'player:joined',
   PlayerLeft = 'player:left',
   PlayerEntered = 'player:entered',
@@ -15,5 +16,6 @@ export enum ServerToClientEvents {
 export enum ClientToServerEvents {
   PlayerWalk = 'player:walk',
   ChangeLocation = 'player:change-location',
+  RequestAttackMove = 'player:request-attack-move',
   RequestInitialState = 'game:request-initial-state',
 }

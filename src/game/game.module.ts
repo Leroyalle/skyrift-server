@@ -7,6 +7,7 @@ import { CharacterModule } from 'src/character/character.module';
 import { LocationModule } from 'src/location/location.module';
 import { RedisModule } from 'src/redis/redis.module';
 import { PlayerStateService } from './player-state.service';
+import { PathFindingModule } from './path-finding/path-finding.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { PlayerStateService } from './player-state.service';
     CharacterModule,
     LocationModule,
     RedisModule,
+    PathFindingModule,
   ],
   providers: [GameGateway, GameService, PlayerStateService],
 })

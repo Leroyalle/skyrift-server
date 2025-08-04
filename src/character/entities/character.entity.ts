@@ -1,12 +1,12 @@
 import { ObjectType, Field, ID, Int } from '@nestjs/graphql';
 import { CharacterClass } from 'src/character-class/entities/character-class.entity';
-import { PositionDto } from 'src/common/dto/position.dto';
 import { Item } from 'src/item/entities/item.entity';
 import { Location } from 'src/location/entities/location.entity';
 import { User } from 'src/user/entities/user.entity';
 import {
   Column,
   Entity,
+  JoinColumn,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -140,6 +140,10 @@ export class Character {
   @Column()
   @Field(() => Int, { description: 'Y координата позиции игрока' })
   y: number;
+
+  @Column()
+  @Field({ description: 'Айди локации в которой находится игрок' })
+  locationId: string;
 
   // TODO: @Column({ default: 0.1 })
   // @Field(() => Number, {

@@ -14,5 +14,8 @@ export function parseLiveCharacterState(
     defense: Number(raw.defense),
     attackRange: Number(raw.attackRange),
     isAlive: raw.isAlive === 'true',
+    baseMagicDamage: Number(raw.baseMagicDamage),
+    basePhysicalDamage: Number(raw.basePhysicalDamage),
+    locationId: raw.locationId,
   };
 }
