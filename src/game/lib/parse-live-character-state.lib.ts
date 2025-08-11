@@ -20,5 +20,6 @@ export function parseLiveCharacterState(
     attackSpeed: Number(raw.attackSpeed),
     lastMoveAt: Number(raw.lastMoveAt),
     lastAttackAt: Number(raw.lastAttackAt),
+    userId: raw.userId,
   };
 }

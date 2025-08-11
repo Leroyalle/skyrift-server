@@ -61,15 +61,16 @@ export class GameService implements OnModuleInit {
 
   private readonly locationCache = new Map<string, CachedLocation>();
   private readonly easyStarInstances = new Map<string, EasyStar.js>();
+  private readonly userIdToSocketId = new Map<string, string>();
 
   onModuleInit() {
     void this.runTickMovement();
     void this.runTickActions();
   }
 
-  private async runTickMovement() {
+  private runTickMovement() {
     try {
-      await this.tickMovement();
+      this.tickMovement();
     } catch (error) {
       this.logger.error(`Error in tickMovement: ${error.message}`);
     } finally {
@@ -88,7 +89,7 @@ export class GameService implements OnModuleInit {
     } finally {
       this.tickActionsInterval = setTimeout(
         () => void this.runTickActions(),
-        100,
+        150,
       );
     }
   }
@@ -106,8 +107,8 @@ export class GameService implements OnModuleInit {
       };
 
       if (!accessToken || !characterId) {
-        client.disconnect();
         console.log('Disconnect by token or character ID');
+        client.disconnect();
         return;
       }
 
@@ -121,8 +122,8 @@ export class GameService implements OnModuleInit {
       }
       const findUser = await this.userService.findOne(payload.sub);
       if (!findUser) {
-        client.disconnect();
         console.log('Disconnect by findUser');
+        client.disconnect();
         return;
       }
 
@@ -131,48 +132,61 @@ export class GameService implements OnModuleInit {
         characterId,
       );
       if (!findCharacter) {
-        client.disconnect();
         console.log('Disconnect by findCharacter');
+        client.disconnect();
         return;
       }
 
       // const oldClientId = this.activeConnections.get(findUser.id);
-      const oldClientId = await this.redisService.get(
+      const oldClientId = (await this.redisService.get(
         RedisKeys.ConnectedPlayers + findUser.id,
-      );
+      )) as string;
 
+      // const oldClient = this.userIdToSocketId.get(findUser.id);
       await this.redisService.set(
         RedisKeys.ConnectedPlayers + findUser.id,
         client.id,
       );
+      this.userIdToSocketId.set(findUser.id, client.id);
 
-      // this.activeConnections.set(findUser.id, client.id);
-      console.log('oldClientId', oldClientId, 'newClientId', client.id);
-
-      if (oldClientId && oldClientId !== client.id) {
-        console.log('before oldConnection');
-        console.log('Sockets keys:', this.server.sockets.keys());
-        console.log('oldClientId', oldClientId);
-
-        if (this.server.sockets.has(oldClientId)) {
-          const oldConnection = this.server.sockets.get(oldClientId);
-          if (oldConnection) {
-            if (oldConnection.id === client.id) {
-              console.warn('⚠️ Attempting to disconnect self!');
-            } else {
-              console.log(
-                `Disconnecting old client for user ${findUser.id}: ${oldClientId}`,
-              );
-              console.log('before oldConnection.disconnect');
-              this.notifyDisconnection(
-                oldConnection,
-                'Другое устройство подключилось к игре',
-              );
-              oldConnection.disconnect(true);
-            }
-          }
+      if (oldClientId) {
+        const oldConnection = this.server.sockets.get(oldClientId);
+        if (oldConnection && oldConnection.id !== client.id) {
+          this.notifyDisconnection(
+            oldConnection,
+            'Другое устройство подключилось к игре',
+          );
+          oldConnection.disconnect(true);
         }
       }
+
+      // this.activeConnections.set(findUser.id, client.id);
+      // console.log('oldClientId', oldClient, 'newClientId', client.id);
+
+      // if (oldClient && oldClient !== client.id) {
+      //   console.log('before oldConnection');
+      //   console.log('Sockets keys:', this.server.sockets.keys());
+      //   console.log('oldClientId', oldClient);
+
+      //   if (this.server.sockets.has(oldClient)) {
+      //     const oldConnection = this.server.sockets.get(oldClient);
+      //     if (oldConnection) {
+      //       if (oldConnection.id === client.id) {
+      //         console.warn('⚠️ Attempting to disconnect self!');
+      //       } else {
+      //         console.log(
+      //           `Disconnecting old client for user ${findUser.id}: ${oldClient}`,
+      //         );
+      //         console.log('before oldConnection.disconnect');
+      //         this.notifyDisconnection(
+      //           oldConnection,
+      //           'Другое устройство подключилось к игре',
+      //         );
+      //         oldConnection.disconnect(true);
+      //       }
+      //     }
+      //   }
+      // }
 
       if (!client.userData) {
         client.userData = {};
@@ -188,17 +202,20 @@ export class GameService implements OnModuleInit {
         },
       };
       console.log('client.userData', client.userData);
+      const now = Date.now();
 
       await this.playerStateService.join(
         {
           ...findCharacter,
-          locationId: findCharacter.location.id,
           // TODO: maybe add this fields in db
-          lastMoveAt: Date.now(),
-          lastAttackAt: Date.now(),
+          lastMoveAt: now,
+          lastAttackAt: now,
+          locationId: findCharacter.location.id,
+          userId: findCharacter.user.id,
         },
         findCharacter.location.id,
       );
+
       void client.join(RedisKeys.Location + findCharacter.location.id);
       client.emit(ServerToClientEvents.PlayerConnected, findCharacter);
       this.broadcastPlayerJoined(
@@ -212,14 +229,17 @@ export class GameService implements OnModuleInit {
         findCharacter.location.id,
       );
       // FIXME: send initial data
-    } catch {
-      console.log('Disconnect by catch in handleConnection');
+    } catch (error) {
+      console.log('Disconnect by catch in handleConnection', error);
       client.disconnect(true);
     }
   }
 
   public async handleDisconnect(client: Socket) {
     if (!this.verifyUserDataInSocket(client)) return;
+
+    // FIXME: rework to generateActionKey
+    this.pendingActions.delete(client.userData.characterId);
 
     await this.playerStateService.syncCharacterToDb(
       client.userData.characterId,
@@ -341,11 +361,14 @@ export class GameService implements OnModuleInit {
       return;
     }
 
-    console.log('requestMoveTo', input);
+    const { userId, characterId, locationId } = client.userData;
 
-    const { userId, characterId, locationId, position } = client.userData;
+    const character = this.playerStateService.getCharacterState(characterId);
+    if (!character) return;
 
     const findLocation = await this.loadLocation(locationId);
+
+    if (!findLocation) return;
     const map = findLocation?.passableMap;
 
     if (!map) {
@@ -354,27 +377,22 @@ export class GameService implements OnModuleInit {
       return;
     }
 
-    console.log('request move to inpput', input);
     const isPermissible = map[input.targetY][input.targetX] === 1;
 
     if (!isPermissible) return;
 
-    console.log('[REQUEST_MOVE]', position, input);
     const steps = await this.pathFindingService.getPlayerPath(
       locationId,
-      { x: position.x, y: position.y },
+      {
+        x: Math.floor(character.x / findLocation.tileWidth),
+        y: Math.floor(character.y / findLocation.tileHeight),
+      },
       { x: input.targetX, y: input.targetY },
       findLocation.tileWidth,
       map,
     );
 
-    console.log('steps', steps);
-
     this.movementQueues.set(characterId, { steps, userId });
-    console.log(
-      `[REQUEST MOVE TO STEPS]`,
-      this.movementQueues.get(characterId),
-    );
   }
 
   public async requestAttackMove(client: Socket, input: RequestAttackMoveDto) {
@@ -384,16 +402,40 @@ export class GameService implements OnModuleInit {
       return;
     }
 
-    const pipeline = this.redisService.pipeline();
+    const hasSubscribe = this.pendingActions.has(
+      getPendingActionKey(
+        client.userData.characterId,
+        input.targetId,
+        'damage',
+      ),
+    );
 
-    pipeline.hgetall(RedisKeysFactory.playerState(client.userData.characterId));
-    pipeline.hgetall(RedisKeysFactory.playerState(input.targetId));
+    if (hasSubscribe) return;
 
-    const result = await pipeline.exec();
+    await this.schedulePathUpdate(
+      client.userData.characterId,
+      input.targetId,
+      client.userData.userId,
+    );
+  }
 
-    if (!result) return;
+  private async schedulePathUpdate(
+    attackerId: string,
+    targetId: string,
+    attackerUserId: string,
+  ) {
+    this.pendingActions.set(
+      getPendingActionKey(attackerId, targetId, 'damage'),
+      {
+        attackerId,
+        victimId: targetId,
+        actionType: 'damage',
+        state: 'wait-path',
+      },
+    );
 
-    const [attacker, target] = validateResultPipeline(result);
+    const attacker = this.playerStateService.getCharacterState(attackerId);
+    const target = this.playerStateService.getCharacterState(targetId);
 
     if (!attacker || !target) return;
 
@@ -401,8 +443,8 @@ export class GameService implements OnModuleInit {
 
     if (!findLocation) return;
 
-    const distance = await this.pathFindingService.getPathDistance(
-      attacker.locationId,
+    const steps = await this.pathFindingService.getPlayerPath(
+      findLocation.id,
       {
         x: Math.floor(attacker.x / findLocation.tileWidth),
         y: Math.floor(attacker.y / findLocation.tileHeight),
@@ -411,121 +453,105 @@ export class GameService implements OnModuleInit {
         x: Math.floor(target.x / findLocation.tileWidth),
         y: Math.floor(target.y / findLocation.tileHeight),
       },
+      findLocation.tileWidth,
       findLocation.passableMap,
     );
 
-    console.log('[REQUEST_ATTACK_MOVE] DISTANCE', distance);
+    console.log('[REQUEST_ATTACK_MOVE] DISTANCE', steps.length);
 
-    if (distance === -1) return;
+    if (steps.length === -1) return;
 
-    if (distance <= attacker.attackRange) {
+    if (steps.length <= attacker.attackRange) {
       this.pendingActions.set(
-        getPendingActionKey(attacker.id, target.id, 'attack'),
+        getPendingActionKey(attacker.id, target.id, 'damage'),
         {
           attackerId: attacker.id,
           victimId: target.id,
-          type: 'attack',
+          actionType: 'damage',
+          state: 'attack',
         },
       );
-    } else {
-      const steps = await this.pathFindingService.getPlayerPath(
-        findLocation.id,
-        {
-          x: attacker.x,
-          y: attacker.y,
-        },
-        {
-          x: Math.floor(target.x / findLocation.tileWidth),
-          y: Math.floor(target.y / findLocation.tileHeight),
-        },
-        findLocation.tileWidth,
-        findLocation.passableMap,
-      );
-
-      this.movementQueues.set(attacker.id, {
-        steps: steps.slice(0, steps.length - attacker.attackRange),
-        userId: client.userData.userId,
-      });
+      return;
     }
+
+    this.movementQueues.set(attacker.id, {
+      steps: steps.slice(0, steps.length - attacker.attackRange),
+      userId: attackerUserId,
+    });
+
+    this.pendingActions.set(
+      getPendingActionKey(attacker.id, target.id, 'damage'),
+      {
+        attackerId: attacker.id,
+        victimId: target.id,
+        actionType: 'damage',
+        state: 'move-to-target',
+      },
+    );
   }
 
   public async tickActions() {
     const updatesByLocation = new Map<string, BatchUpdateAction[]>();
-    const pipelineForState = this.redisService.pipeline();
 
-    this.pendingActions.forEach((action) => {
-      console.log('[tick_actions]', action);
-      pipelineForState.hgetall(RedisKeysFactory.playerState(action.attackerId));
-      pipelineForState.hgetall(RedisKeysFactory.playerState(action.victimId));
-    });
-
-    const result = await pipelineForState.exec();
-
-    if (!result) return;
-
-    const pairedPlayers: PairedPlayers[] = [];
-
-    for (let i = 0; i < result.length; i += 2) {
-      const [errA, rawA] = result[i];
-      const [errV, rawV] = result[i + 1];
-      const action = Array.from(this.pendingActions.values())[
-        i > 0 ? i / 2 : 0
-      ];
-      console.log(
-        `[for_loop]`,
-        i,
-        Array.from(this.pendingActions.values())[i > 0 ? i / 2 : 0],
-        Array.from(this.pendingActions.values()),
+    for (const action of this.pendingActions.values()) {
+      const attacker = this.playerStateService.getCharacterState(
+        action.attackerId,
       );
 
-      if (errA || errV) continue;
+      const victim = this.playerStateService.getCharacterState(action.victimId);
 
-      const attacker = parseLiveCharacterState(rawA as Record<string, string>);
-      const victim = parseLiveCharacterState(rawV as Record<string, string>);
+      if (!attacker || !victim) return;
 
-      if (attacker && victim) {
-        console.log(`[before paired push]`, this.pendingActions, {
-          attacker,
-          victim,
-          action,
-        });
-        pairedPlayers.push({ attacker, victim, action });
+      const location = await this.loadLocation(attacker?.locationId);
+
+      if (!location) return;
+
+      const steps = await this.pathFindingService.getPlayerPath(
+        attacker.locationId,
+        {
+          x: Math.floor(attacker.x / location.tileWidth),
+          y: Math.floor(attacker.y / location.tileHeight),
+        },
+        {
+          x: Math.floor(victim.x / location.tileWidth),
+          y: Math.floor(victim.y / location.tileHeight),
+        },
+        location.tileWidth,
+        location.passableMap,
+      );
+
+      if (steps.length > attacker.attackRange) {
+        await this.schedulePathUpdate(attacker.id, victim.id, attacker.userId);
+        return;
+      } else {
+        this.pendingActions.set(
+          getPendingActionKey(attacker.id, victim.id, action.actionType),
+          {
+            state: 'attack',
+            actionType: 'damage',
+            attackerId: attacker.id,
+            victimId: victim.id,
+          },
+        );
+      }
+
+      const result = this.playerStateService.attack(attacker.id, victim.id);
+
+      if (!result) return;
+
+      let batchLocation = updatesByLocation.get(location.id);
+      if (!batchLocation) {
+        batchLocation = [];
+        batchLocation.push(result);
+        updatesByLocation.set(location.id, batchLocation);
+      }
+
+      if (!result.isAlive) {
+        this.pendingActions.delete(
+          getPendingActionKey(attacker.id, victim.id, action.actionType),
+        );
       }
     }
-
-    const pipelineForHpUpdate = this.redisService.pipeline();
-
-    pairedPlayers.forEach(({ attacker, victim, action }) => {
-      // TODO: calculate received damage with defense and other stats
-      const receivedDamage = attacker.basePhysicalDamage;
-      console.log('receivedDamage', receivedDamage);
-      const remainingHp = Math.max(victim.hp - receivedDamage, 0);
-      pipelineForHpUpdate.hset(RedisKeysFactory.playerState(victim.id), {
-        hp: remainingHp,
-      });
-
-      let locationBatch = updatesByLocation.get(attacker.locationId);
-
-      if (!locationBatch) {
-        locationBatch = [];
-        updatesByLocation.set(attacker.locationId, locationBatch);
-      }
-
-      locationBatch.push({
-        characterId: victim.id,
-        hp: remainingHp,
-        isAlive: remainingHp > 0,
-        receivedDamage,
-      });
-
-      // console.log('[before get pending key]', { attacker, victim, action });
-
-      this.pendingActions.delete(
-        getPendingActionKey(attacker.id, victim.id, action.type, action.ts),
-      );
-    });
-
-    await pipelineForHpUpdate.exec();
 
     for (const [locationId, update] of updatesByLocation.entries()) {
       this.server
@@ -534,84 +560,37 @@ export class GameService implements OnModuleInit {
     }
   }
 
-  public async tickMovement() {
-    // TODO: add pipeline for movement players
+  public tickMovement() {
     const updatesByLocation = new Map<string, TBatchUpdateMovement[]>();
 
     const entries = Array.from(this.movementQueues.entries());
-    const userIds = entries.map(([, { userId }]) => userId);
 
-    if (userIds.length === 0) return;
-
-    const redisKeys = userIds.map((id) => RedisKeys.ConnectedPlayers + id);
-    const socketIds = await this.redisService.mget<string>(redisKeys);
-    const userIdToSocketId = new Map<string, string>();
-
-    const pipelineForPlayersStates = this.redisService.pipeline();
-
-    entries.forEach(([characterId]) => {
-      pipelineForPlayersStates.hgetall(
-        RedisKeysFactory.playerState(characterId),
-      );
-    });
-
-    const result = await pipelineForPlayersStates.exec();
-
-    if (!result) return;
-
-    const playersStates = new Map<string, LiveCharacterState>();
-
-    result
-      .filter(([e]) => !e)
-      .forEach(([_, p]) => {
-        const player = parseLiveCharacterState(p as Record<string, string>);
-        playersStates.set(player.id, player);
-      });
-
-    for (let i = 0; i < userIds.length; i++) {
-      if (socketIds[i]) {
-        userIdToSocketId.set(userIds[i], socketIds[i]!);
-      }
-    }
-
-    const pipelineForSetPosition = this.redisService.pipeline();
-
-    for (const [
-      characterId,
-      { steps, userId },
-    ] of this.movementQueues.entries()) {
-      const character = playersStates.get(characterId);
-
-      if (!character) continue;
+    entries.forEach(([characterId, { steps, userId }]) => {
+      const character = this.playerStateService.getCharacterState(characterId);
+      if (!character) return;
 
       const now = Date.now();
 
-      if (now - character.lastMoveAt < character.attackSpeed) continue;
+      if (now - character.lastMoveAt < 450) return;
 
-      const step = steps.shift();
-      if (!step) {
-        this.movementQueues.delete(characterId);
-        continue;
-      }
+      const pathStep = steps.shift();
+      if (!pathStep) return;
 
-      const socketId = userIdToSocketId.get(userId);
-      if (!socketId) continue;
-
-      // FIXME: change to redis
+      const socketId = this.userIdToSocketId.get(userId);
+      if (!socketId) return;
       const client = this.server.sockets.get(socketId);
-      if (!client) continue;
 
-      const userData = client.userData;
-      const locationId = userData?.locationId;
-      const prevPosition = userData.position;
-      if (!locationId) continue;
+      if (!client) return;
+      const prevPosition = client.userData.position;
+      const locationId = character.locationId;
 
       const position = {
         // FIXME: change 32 to tileSize
-        x: Math.floor(step.x * 32),
-        y: Math.floor(step.y * 32),
+        x: Math.floor(pathStep.x * 32),
+        y: Math.floor(pathStep.y * 32),
       };
-      client.userData = { ...userData, position };
+      client.userData = { ...client.userData, position };
+      this.playerStateService.moveTo(character.id, position, now);
 
       let updates = updatesByLocation.get(locationId);
       if (!updates) {
@@ -626,12 +605,6 @@ export class GameService implements OnModuleInit {
         y: position.y,
       });
 
-      pipelineForSetPosition.hset(RedisKeysFactory.playerState(characterId), {
-        x: position.x,
-        y: position.y,
-      });
-
-      // TODO: add spatial grid to redis
       if (prevPosition) {
         removeCharacterFromSpatialGrid(
           this.spatialGrid,
@@ -653,14 +626,27 @@ export class GameService implements OnModuleInit {
       if (steps.length === 0) {
         this.movementQueues.delete(characterId);
       }
-    }
-
-    await pipelineForSetPosition.exec();
-
+    });
     for (const [locationId, updates] of updatesByLocation.entries()) {
       this.server
         .to(RedisKeys.Location + locationId)
         .emit(ServerToClientEvents.PlayerWalkBatch, updates);
+    }
+  }
+
+  public requestAttackCancelled(client: Socket, input: RequestAttackMoveDto) {
+    if (!this.verifyUserDataInSocket(client)) {
+      client.disconnect();
+      return;
+    }
+    const actionKey = getPendingActionKey(
+      client.userData.characterId,
+      input.targetId,
+      'damage',
+    );
+    if (this.pendingActions.has(actionKey)) {
+      console.log('[request attack cancelled], delete action');
+      this.pendingActions.delete(actionKey);
     }
   }
 

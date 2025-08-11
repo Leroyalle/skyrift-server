@@ -54,23 +54,17 @@ export class PathFindingService {
     const easyStar = this.getOrCreateEasyStar(locationId, map);
 
     return new Promise((resolve) => {
-      easyStar.findPath(
-        Math.floor(from.x / tileSize),
-        Math.floor(from.y / tileSize),
-        to.x,
-        to.y,
-        (path) => {
-          console.log('path', path);
-          if (!path || path.length <= 1) {
-            resolve([]);
-            return;
-          }
+      easyStar.findPath(from.x, from.y, to.x, to.y, (path) => {
+        console.log('path', path);
+        if (!path || path.length <= 1) {
+          resolve([]);
+          return;
+        }
 
-          const steps = path.slice(1).map((p) => ({ x: p.x, y: p.y }));
-          console.log('steps', steps);
-          resolve(steps);
-        },
-      );
+        const steps = path.slice(1).map((p) => ({ x: p.x, y: p.y }));
+        console.log('steps', steps);
+        resolve(steps);
+      });
       easyStar.calculate();
     });
   }

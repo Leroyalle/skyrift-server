@@ -17,5 +17,6 @@ export enum ClientToServerEvents {
   PlayerWalk = 'player:walk',
   ChangeLocation = 'player:change-location',
   RequestAttackMove = 'player:request-attack-move',
+  PlayerAttackCancelled = 'player:attack-cancelled',
   RequestInitialState = 'game:request-initial-state',
 }

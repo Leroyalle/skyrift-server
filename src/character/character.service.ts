@@ -43,6 +43,7 @@ export class CharacterService {
           faction: true,
         },
         location: true,
+        user: true,
       },
     });
   }

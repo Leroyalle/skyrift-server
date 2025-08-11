@@ -58,6 +58,14 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     return this.gameService.requestAttackMove(client, input);
   }
 
+  @SubscribeMessage(ClientToServerEvents.PlayerAttackCancelled)
+  requestAttackCancalled(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() input: RequestAttackMoveDto,
+  ) {
+    return this.gameService.requestAttackCancelled(client, input);
+  }
+
   @SubscribeMessage(ClientToServerEvents.RequestInitialState)
   async handleInitialData(client: Socket) {
     console.log('Client initial:', client.id);

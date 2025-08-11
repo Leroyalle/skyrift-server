@@ -1,7 +1,9 @@
 export type PendingAction = {
   attackerId: string;
   victimId: string;
-  type: ActionType;
+  actionType: ActionType;
+  state: State;
 };
 
-export type ActionType = 'attack' | 'heal';
+export type ActionType = 'damage' | 'heal';
+export type State = 'wait-path' | 'move-to-target' | 'attack';
