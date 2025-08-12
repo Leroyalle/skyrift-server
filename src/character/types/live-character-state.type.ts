@@ -16,5 +16,6 @@ export type LiveCharacterState = {
   lastAttackAt: number;
   locationId: string;
   userId: string;
+  isAttacking: boolean;
   // TODO: add the damage(now) - sum all damage items
 };

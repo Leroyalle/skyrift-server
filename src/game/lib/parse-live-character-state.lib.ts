@@ -21,5 +21,6 @@ export function parseLiveCharacterState(
     lastMoveAt: Number(raw.lastMoveAt),
     lastAttackAt: Number(raw.lastAttackAt),
     userId: raw.userId,
+    isAttacking: raw.isAttacking === 'true',
   };
 }

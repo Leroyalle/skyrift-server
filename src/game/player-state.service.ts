@@ -58,6 +58,7 @@ export class PlayerStateService {
         lastMoveAt: player.lastMoveAt,
         lastAttackAt: player.lastAttackAt,
         userId: player.userId,
+        isAttacking: false,
       });
     }
 
@@ -130,7 +131,8 @@ export class PlayerStateService {
       const {
         lastMoveAt: _,
         lastAttackAt: __,
-        userId: ___,
+        isAttacking: ___,
+        userId: ____,
         ...croppedCharacter
       } = parseLiveCharacterState(findCharacter);
 
@@ -142,15 +144,12 @@ export class PlayerStateService {
     return this.playersStates.get(characterId);
   }
 
-  public attack(attackerId: string, victimId: string) {
+  public attack(attackerId: string, victimId: string, now: number) {
     const attacker = this.playersStates.get(attackerId);
     const victim = this.playersStates.get(victimId);
 
     if (!attacker || !victim || attacker.locationId !== victim.locationId)
       return;
-    const now = Date.now();
-
-    if (now - attacker.lastAttackAt < attacker.attackSpeed) return;
 
     // TODO: calculate received damage with defense and other stats
     const receivedDamage = attacker.basePhysicalDamage;

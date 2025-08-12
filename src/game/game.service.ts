@@ -89,7 +89,7 @@ export class GameService implements OnModuleInit {
     } finally {
       this.tickActionsInterval = setTimeout(
         () => void this.runTickActions(),
-        150,
+        300,
       );
     }
   }
@@ -207,11 +207,11 @@ export class GameService implements OnModuleInit {
       await this.playerStateService.join(
         {
           ...findCharacter,
-          // TODO: maybe add this fields in db
           lastMoveAt: now,
           lastAttackAt: now,
           locationId: findCharacter.location.id,
           userId: findCharacter.user.id,
+          isAttacking: false,
         },
         findCharacter.location.id,
       );
@@ -366,6 +366,8 @@ export class GameService implements OnModuleInit {
     const character = this.playerStateService.getCharacterState(characterId);
     if (!character) return;
 
+    character.isAttacking = false;
+
     const findLocation = await this.loadLocation(locationId);
 
     if (!findLocation) return;
@@ -424,6 +426,11 @@ export class GameService implements OnModuleInit {
     targetId: string,
     attackerUserId: string,
   ) {
+    const attacker = this.playerStateService.getCharacterState(attackerId);
+    const target = this.playerStateService.getCharacterState(targetId);
+
+    if (!attacker || !target) return;
+
     this.pendingActions.set(
       getPendingActionKey(attackerId, targetId, 'damage'),
       {
@@ -433,11 +440,6 @@ export class GameService implements OnModuleInit {
         state: 'wait-path',
       },
     );
-
-    const attacker = this.playerStateService.getCharacterState(attackerId);
-    const target = this.playerStateService.getCharacterState(targetId);
-
-    if (!attacker || !target) return;
 
     const findLocation = await this.loadLocation(attacker.locationId);
 
@@ -471,6 +473,7 @@ export class GameService implements OnModuleInit {
           state: 'attack',
         },
       );
+
       return;
     }
 
@@ -521,9 +524,13 @@ export class GameService implements OnModuleInit {
       );
 
       if (steps.length > attacker.attackRange) {
+        attacker.isAttacking = false;
         await this.schedulePathUpdate(attacker.id, victim.id, attacker.userId);
         return;
       } else {
+        attacker.isAttacking = true;
+        console.log('ATTACK', attacker.isAttacking);
+        // FIXME: maybe delete this set because we did it in schedulePathUpdate
         this.pendingActions.set(
           getPendingActionKey(attacker.id, victim.id, action.actionType),
           {
@@ -535,7 +542,22 @@ export class GameService implements OnModuleInit {
         );
       }
 
-      const result = this.playerStateService.attack(attacker.id, victim.id);
+      const now = Date.now();
+
+      if (now - attacker.lastAttackAt < attacker.attackSpeed) return;
+
+      this.server
+        .to(RedisKeys.Location + attacker.locationId)
+        .emit(ServerToClientEvents.PlayerAttackStart, {
+          attackerId: attacker.id,
+          victimId: victim.id,
+        });
+
+      const result = this.playerStateService.attack(
+        attacker.id,
+        victim.id,
+        now,
+      );
 
       if (!result) return;
 
@@ -571,7 +593,14 @@ export class GameService implements OnModuleInit {
 
       const now = Date.now();
 
-      if (now - character.lastMoveAt < 450) return;
+      console.log(`tickMovement: ${character.isAttacking}`);
+      if (
+        now - character.lastMoveAt <
+        450
+        // ||
+        // now - character.lastAttackAt < 450
+      )
+        return;
 
       const pathStep = steps.shift();
       if (!pathStep) return;
