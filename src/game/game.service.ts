@@ -17,7 +17,6 @@ import { TBatchUpdateMovement } from './types/batch-update-movement.type';
 import { Character } from 'src/character/entities/character.entity';
 import { PlayerStateService } from './player-state.service';
 import { RedisKeysFactory } from 'src/common/infra/redis-keys-factory.infra';
-import { LiveCharacterState } from 'src/character/types/live-character-state.type';
 import { parseLiveCharacterState } from './lib/parse-live-character-state.lib';
 import { removeCharacterFromSpatialGrid } from './lib/spatial-grid/remove-character-from-spatial-grid.lib';
 import { addCharacterToSpatialGrid } from './lib/spatial-grid/add-character-to-spatial-grid.lib';
@@ -25,9 +24,7 @@ import { PendingAction } from './types/pending-actions.type';
 import { BatchUpdateAction } from './types/batch-update-action.type';
 import { PathFindingService } from './path-finding/path-finding.service';
 import { RequestAttackMoveDto } from './dto/request-attack-move.dto';
-import { validateResultPipeline } from 'src/redis/lib/validate-result-pipeline';
 import { getPendingActionKey } from './lib/get-pending-action-key';
-import { PairedPlayers } from './types/paired-players.type';
 
 @Injectable()
 export class GameService implements OnModuleInit {
@@ -48,8 +45,7 @@ export class GameService implements OnModuleInit {
   }
 
   private readonly logger = new Logger(GameService.name);
-  private tickMovementInterval: NodeJS.Timeout;
-  private tickActionsInterval: NodeJS.Timeout;
+  private gameTickInterval: NodeJS.Timeout;
 
   private readonly movementQueues = new Map<
     string,
@@ -60,43 +56,24 @@ export class GameService implements OnModuleInit {
   private readonly pendingActions: Map<string, PendingAction> = new Map();
 
   private readonly locationCache = new Map<string, CachedLocation>();
-  private readonly easyStarInstances = new Map<string, EasyStar.js>();
   private readonly userIdToSocketId = new Map<string, string>();
-
   onModuleInit() {
-    void this.runTickMovement();
-    void this.runTickActions();
-  }
-
-  private runTickMovement() {
-    try {
-      this.tickMovement();
-    } catch (error) {
-      this.logger.error(`Error in tickMovement: ${error.message}`);
-    } finally {
-      this.tickMovementInterval = setTimeout(
-        () => void this.runTickMovement(),
-        150,
-      );
-    }
-  }
-
-  private async runTickActions() {
-    try {
-      await this.tickActions();
-    } catch (error) {
-      this.logger.error(`Error in tickActions: ${error.message}`);
-    } finally {
-      this.tickActionsInterval = setTimeout(
-        () => void this.runTickActions(),
-        300,
-      );
-    }
+    this.gameTickInterval = setInterval(() => {
+      try {
+        this.tick();
+      } catch (error) {
+        this.logger.error(`Error in game tick: ${error.message}`);
+      }
+    }, 150);
   }
 
   onModuleDestroy() {
-    clearInterval(this.tickMovementInterval);
-    clearInterval(this.tickActionsInterval);
+    clearInterval(this.gameTickInterval);
+  }
+
+  private async tick() {
+    this.tickMovement();
+    await this.tickActions();
   }
 
   async handleConnection(client: Socket) {
@@ -137,12 +114,10 @@ export class GameService implements OnModuleInit {
         return;
       }
 
-      // const oldClientId = this.activeConnections.get(findUser.id);
       const oldClientId = (await this.redisService.get(
         RedisKeys.ConnectedPlayers + findUser.id,
       )) as string;
 
-      // const oldClient = this.userIdToSocketId.get(findUser.id);
       await this.redisService.set(
         RedisKeys.ConnectedPlayers + findUser.id,
         client.id,
@@ -159,34 +134,6 @@ export class GameService implements OnModuleInit {
           oldConnection.disconnect(true);
         }
       }
-
-      // this.activeConnections.set(findUser.id, client.id);
-      // console.log('oldClientId', oldClient, 'newClientId', client.id);
-
-      // if (oldClient && oldClient !== client.id) {
-      //   console.log('before oldConnection');
-      //   console.log('Sockets keys:', this.server.sockets.keys());
-      //   console.log('oldClientId', oldClient);
-
-      //   if (this.server.sockets.has(oldClient)) {
-      //     const oldConnection = this.server.sockets.get(oldClient);
-      //     if (oldConnection) {
-      //       if (oldConnection.id === client.id) {
-      //         console.warn('⚠️ Attempting to disconnect self!');
-      //       } else {
-      //         console.log(
-      //           `Disconnecting old client for user ${findUser.id}: ${oldClient}`,
-      //         );
-      //         console.log('before oldConnection.disconnect');
-      //         this.notifyDisconnection(
-      //           oldConnection,
-      //           'Другое устройство подключилось к игре',
-      //         );
-      //         oldConnection.disconnect(true);
-      //       }
-      //     }
-      //   }
-      // }
 
       if (!client.userData) {
         client.userData = {};
@@ -267,6 +214,7 @@ export class GameService implements OnModuleInit {
       .emit(ServerToClientEvents.PlayerJoined, character);
   }
 
+  // FIXME: replace to handle connection
   public async getInitialData(client: Socket) {
     console.log('initial data to client', client.id);
     if (!this.verifyUserDataInSocket(client)) {
@@ -293,6 +241,7 @@ export class GameService implements OnModuleInit {
       userId,
       characterId,
     );
+
     if (!findCharacter) {
       this.notifyDisconnection(client, 'Character not found');
       client.disconnect();
@@ -311,41 +260,11 @@ export class GameService implements OnModuleInit {
       RedisKeysFactory.locationPlayers(locationId),
     );
 
-    console.log('[getInitialData] players ids', playersIds);
-    const playersKeys = playersIds.map((id) => {
-      return RedisKeysFactory.playerState(id);
-    });
+    const otherPlayers = playersIds
+      .map((id) => this.playerStateService.getCharacterState(id))
+      .filter((p) => p && p.id !== characterId);
 
-    console.log('[getInitialData] players keys', playersKeys);
-
-    const pipeline = this.redisService.pipeline();
-    for (const player of playersKeys) {
-      pipeline.hgetall(player);
-    }
-
-    const completedPipeline = await pipeline.exec();
-
-    console.log(completedPipeline);
-
-    if (!completedPipeline) {
-      // FIXME: check the error
-      throw new Error('Pipeline execution failed');
-    }
-
-    const otherPlayers = completedPipeline
-      .filter(([err]) => !err)
-      .map(([_, player]) =>
-        parseLiveCharacterState(player as Record<string, string>),
-      );
-
-    console.log('[getInitialData] otherPlayers PIPELINE', otherPlayers);
-
-    // const otherPlayers = (
-    //   await this.redisService.mget<LiveCharacterState>(playersKeys)
-    // ).filter(Boolean);
-
-    console.log('[getInitialData] otherPlayers', client.id, otherPlayers);
-    void client.join(`location:${findLocation?.id}`);
+    void client.join(RedisKeys.Location + findLocation.id);
 
     client.emit(ServerToClientEvents.GameInitialState, {
       character: findCharacter,

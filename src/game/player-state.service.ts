@@ -99,22 +99,19 @@ export class PlayerStateService {
   }
 
   async leave(userId: string, playerId: string, locationId: string) {
-    // const playerMap = this.playersByLocation.get(locationId);
-    // playerMap?.delete(playerId);
-
     await this.redisService.srem(
       RedisKeysFactory.locationPlayers(locationId),
       playerId,
     );
     // await this.redisService.del(RedisKeysFactory.playerState(playerId));
-    const playerState = this.playersStates.get(playerId);
+    // const playerState = this.playersStates.get(playerId);
 
-    if (!playerState) return;
+    // if (!playerState) return;
 
-    await this.redisService.hset(
-      RedisKeysFactory.playerState(playerId),
-      playerState,
-    );
+    // await this.redisService.hset(
+    //   RedisKeysFactory.playerState(playerId),
+    //   playerState,
+    // );
 
     this.playersStates.delete(playerId);
 
@@ -122,21 +119,24 @@ export class PlayerStateService {
   }
 
   async syncCharacterToDb(characterId: string) {
-    const findCharacter = await this.redisService.hgetAll(
-      RedisKeysFactory.playerState(characterId),
-    );
+    const playerState = this.playersStates.get(characterId);
 
-    console.log('[SYNC]', findCharacter);
-    if (findCharacter && findCharacter.id) {
+    console.log('[SYNC]', playerState);
+    if (playerState && playerState.id) {
       const {
         lastMoveAt: _,
         lastAttackAt: __,
         isAttacking: ___,
         userId: ____,
         ...croppedCharacter
-      } = parseLiveCharacterState(findCharacter);
+      } = playerState;
 
-      await this.characterService.update(findCharacter.id, croppedCharacter);
+      await this.redisService.hset(
+        RedisKeysFactory.playerState(characterId),
+        playerState,
+      );
+
+      await this.characterService.update(playerState.id, croppedCharacter);
     }
   }
 
