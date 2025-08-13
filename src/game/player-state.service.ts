@@ -57,30 +57,11 @@ export class PlayerStateService {
         attackSpeed: player.attackSpeed,
         lastMoveAt: player.lastMoveAt,
         lastAttackAt: player.lastAttackAt,
+        lastHpRegenerationTime: player.lastHpRegenerationTime,
         userId: player.userId,
         isAttacking: false,
       });
     }
-
-    // await this.redisService.hset(RedisKeysFactory.playerState(player.id), {
-    //   id: player.id,
-    //   name: player.name,
-    //   x: player.x,
-    //   y: player.y,
-    //   level: player.level,
-    //   maxHp: player.maxHp,
-    //   hp: player.hp,
-    //   defense: player.defense,
-    //   attackRange: player.attackRange,
-    //   isAlive: player.isAlive,
-    //   basePhysicalDamage: player.basePhysicalDamage,
-    //   baseMagicDamage: player.baseMagicDamage,
-    //   locationId: player.locationId,
-    //   attackSpeed: player.attackSpeed,
-    //   lastMoveAt: player.lastMoveAt,
-    //   lastAttackAt: player.lastAttackAt,
-    //   userId: player.userId,
-    // } as LiveCharacterState);
   }
 
   public moveTo(
@@ -99,23 +80,14 @@ export class PlayerStateService {
   }
 
   async leave(userId: string, playerId: string, locationId: string) {
+    this.playersStates.delete(playerId);
+
     await this.redisService.srem(
       RedisKeysFactory.locationPlayers(locationId),
       playerId,
     );
-    // await this.redisService.del(RedisKeysFactory.playerState(playerId));
-    // const playerState = this.playersStates.get(playerId);
 
-    // if (!playerState) return;
-
-    // await this.redisService.hset(
-    //   RedisKeysFactory.playerState(playerId),
-    //   playerState,
-    // );
-
-    this.playersStates.delete(playerId);
-
-    // await this.redisService.del(RedisKeysFactory.connectedPlayer(userId));
+    await this.redisService.del(RedisKeysFactory.connectedPlayer(userId));
   }
 
   async syncCharacterToDb(characterId: string) {
@@ -126,8 +98,9 @@ export class PlayerStateService {
       const {
         lastMoveAt: _,
         lastAttackAt: __,
-        isAttacking: ___,
-        userId: ____,
+        lastHpRegenerationTime: ___,
+        isAttacking: ____,
+        userId: _____,
         ...croppedCharacter
       } = playerState;
 
@@ -142,6 +115,10 @@ export class PlayerStateService {
 
   public getCharacterState(characterId: string) {
     return this.playersStates.get(characterId);
+  }
+
+  public getCharactersArray() {
+    return Array.from(this.playersStates.values());
   }
 
   public attack(attackerId: string, victimId: string, now: number) {
@@ -168,85 +145,6 @@ export class PlayerStateService {
       isAlive,
       receivedDamage,
     };
-    // pipelineForHpUpdate.hset(RedisKeysFactory.playerState(victim.id), {
-    //   hp: remainingHp,
-    //   isAlive,
-    // });
-
-    // const playersSet = this.playersByLocation.get(locationId);
-    // const playersSet = await this.redisService.smembers(
-    //   RedisKeysFactory.locationPlayers(locationId),
-    // );
-
-    // if (!playersSet) return;
-
-    // const victim = playersSet.get(victimId);
-    // const attacker = playersSet.get(attackerId);
-
-    // if (victim && attacker) {
-    //   // TODO: check character class - magic or physical
-    //   victim.hp = Math.max(victim.hp - attacker.basePhysicalDamage);
-    //   return { victim, attacker };
-    // }
-
-    //   const pipeline = this.redisService.pipeline();
-
-    //   pipeline.hgetall(RedisKeysFactory.playerState(victimId));
-    //   pipeline.hgetall(RedisKeysFactory.playerState(attackerId));
-
-    //   const result = await pipeline.exec();
-
-    //   if (!result || result.length < 2) return;
-    //   const [victim, attacker] = result
-    //     .filter(([err]) => !err)
-    //     .map(([_, player]) =>
-    //       parseLiveCharacterState(player as Record<string, string>),
-    //     );
-    // }
-
-    // async attack(
-    //   attackerId: string,
-    //   targetId: string,
-    //   locationId: string,
-    //   damage: number,
-    // ): Promise<PlayerState | null> {
-    //   const playerMap = this.playersByLocation.get(locationId);
-    //   const target = playerMap?.get(targetId);
-
-    //   if (target) {
-    //     target.hp = Math.max(target.hp - damage, 0);
-    //     return target;
-    //   }
-
-    //   const key = this.getPlayerKey(targetId);
-    //   const newHp = await this.redis.incrby(key, 'hp', -damage);
-    //   const state = await this.redis.hgetall(key);
-    //   if (!state || !state.id) return null;
-
-    //   return {
-    //     id: state.id,
-    //     name: state.name,
-    //     x: parseInt(state.x),
-    //     y: parseInt(state.y),
-    //     hp: parseInt(state.hp),
-    //     maxHp: 100,
-    //     direction: state.direction as any,
-    //     equipment: [],
-    //   };
-    // }
-
-    // async syncToRedis(locationId: string) {
-    //   const players = this.playersByLocation.get(locationId);
-    //   if (!players) return;
-
-    //   for (const [id, state] of players) {
-    //     await this.redis.hset(this.getPlayerKey(id), {
-    //       x: state.x,
-    //       y: state.y,
-    //       hp: state.hp,
-    //       direction: state.direction,
-    //     });
-    //   }
   }
 
   private getOrCreateLocationMap(

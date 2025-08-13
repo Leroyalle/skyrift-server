@@ -4,6 +4,7 @@ export enum ServerToClientEvents {
   PlayerDisconnected = 'player:disconnected',
   PlayerWalk = 'player:walk',
   PlayerWalkBatch = 'player:walk-batch',
+  PlayerResourcesBatch = 'player:resources-batch',
   PlayerStateUpdate = 'player:state-update',
   PlayerChangeLocation = 'player:change-location',
   PlayerAttack = 'player:attack',

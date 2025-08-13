@@ -9,22 +9,22 @@ import { LocationService } from 'src/location/location.service';
 import { PlayerData } from 'src/common/types/player-data.type';
 import { RedisService } from 'src/redis/redis.service';
 import { RedisKeys } from 'src/common/enums/redis-keys.enum';
-import * as EasyStar from 'easystarjs';
 import { mergePassableMaps } from './lib/merge-passable-maps.lib';
 import { CachedLocation } from './types/cashed-location.type';
 import { RequestMoveToDto } from './dto/request-move-to.dto';
-import { TBatchUpdateMovement } from './types/batch-update-movement.type';
+import { TBatchUpdateMovement } from './types/batch-update/batch-update-movement.type';
 import { Character } from 'src/character/entities/character.entity';
 import { PlayerStateService } from './player-state.service';
 import { RedisKeysFactory } from 'src/common/infra/redis-keys-factory.infra';
-import { parseLiveCharacterState } from './lib/parse-live-character-state.lib';
 import { removeCharacterFromSpatialGrid } from './lib/spatial-grid/remove-character-from-spatial-grid.lib';
 import { addCharacterToSpatialGrid } from './lib/spatial-grid/add-character-to-spatial-grid.lib';
 import { PendingAction } from './types/pending-actions.type';
-import { BatchUpdateAction } from './types/batch-update-action.type';
+import { BatchUpdateAction } from './types/batch-update/batch-update-action.type';
 import { PathFindingService } from './path-finding/path-finding.service';
 import { RequestAttackMoveDto } from './dto/request-attack-move.dto';
 import { getPendingActionKey } from './lib/get-pending-action-key';
+import { BatchUpdateRegeneration } from './types/batch-update/batch-update-regeneration.type';
+import { JwtPayload } from 'src/common/types/jwt-payload.type';
 
 @Injectable()
 export class GameService implements OnModuleInit {
@@ -52,11 +52,19 @@ export class GameService implements OnModuleInit {
     { steps: { x: number; y: number }[]; userId: string }
   >();
   private readonly spatialGrid: Map<string, Set<string>> = new Map();
-  // TODO: change to Map with unique key
   private readonly pendingActions: Map<string, PendingAction> = new Map();
 
   private readonly locationCache = new Map<string, CachedLocation>();
   private readonly userIdToSocketId = new Map<string, string>();
+
+  private lastTickTimeMovement = 0;
+  private lastTickTimeActions = 0;
+  private lastTickTimeRegeneration = 0;
+
+  private readonly intervalMovement = 150;
+  private readonly intervalActions = 200;
+  private readonly intervalRegeneration = 1000;
+
   onModuleInit() {
     this.gameTickInterval = setInterval(() => {
       try {
@@ -72,8 +80,21 @@ export class GameService implements OnModuleInit {
   }
 
   private async tick() {
-    this.tickMovement();
-    await this.tickActions();
+    const now = Date.now();
+
+    if (now - this.lastTickTimeMovement >= this.intervalMovement) {
+      this.tickMovement();
+      this.lastTickTimeMovement = now;
+    }
+    if (now - this.lastTickTimeActions >= this.intervalActions) {
+      await this.tickActions();
+      this.lastTickTimeActions = now;
+    }
+
+    if (now - this.lastTickTimeRegeneration >= this.intervalRegeneration) {
+      this.tickRegeneration();
+      this.lastTickTimeRegeneration = now;
+    }
   }
 
   async handleConnection(client: Socket) {
@@ -89,7 +110,7 @@ export class GameService implements OnModuleInit {
         return;
       }
 
-      let payload;
+      let payload: JwtPayload;
       try {
         payload = this.authService.verifyToken(accessToken, 'access');
       } catch (e) {
@@ -137,8 +158,8 @@ export class GameService implements OnModuleInit {
 
       if (!client.userData) {
         client.userData = {};
-        console.log('client.userData is empty', client.userData);
       }
+
       client.userData = {
         userId: findUser.id,
         characterId: findCharacter.id,
@@ -148,14 +169,13 @@ export class GameService implements OnModuleInit {
           y: findCharacter.y,
         },
       };
-      console.log('client.userData', client.userData);
-      const now = Date.now();
 
       await this.playerStateService.join(
         {
           ...findCharacter,
-          lastMoveAt: now,
-          lastAttackAt: now,
+          lastMoveAt: 0,
+          lastAttackAt: 0,
+          lastHpRegenerationTime: 0,
           locationId: findCharacter.location.id,
           userId: findCharacter.user.id,
           isAttacking: false,
@@ -595,6 +615,44 @@ export class GameService implements OnModuleInit {
     if (this.pendingActions.has(actionKey)) {
       console.log('[request attack cancelled], delete action');
       this.pendingActions.delete(actionKey);
+    }
+  }
+
+  public tickRegeneration() {
+    const updatesByLocation = new Map<string, BatchUpdateRegeneration[]>();
+
+    const now = Date.now();
+
+    const characters = this.playerStateService.getCharactersArray();
+
+    characters.forEach((char) => {
+      if (now - char.lastHpRegenerationTime < 5000) return;
+
+      if (char.hp >= char.maxHp || !char.isAlive) return;
+      const hpDelta = 10;
+
+      char.hp = Math.min(char.hp + hpDelta, char.maxHp);
+      char.lastHpRegenerationTime = now;
+
+      let locationBatch = updatesByLocation.get(char.locationId);
+
+      if (!locationBatch) {
+        locationBatch = [];
+        updatesByLocation.set(char.locationId, locationBatch);
+      }
+
+      console.log('tickRegeneration', char.hp, hpDelta);
+      locationBatch.push({
+        characterId: char.id,
+        hp: char.hp,
+        hpDelta,
+      });
+    });
+
+    for (const [locationId, updates] of updatesByLocation.entries()) {
+      this.server
+        .to(RedisKeys.Location + locationId)
+        .emit(ServerToClientEvents.PlayerResourcesBatch, updates);
     }
   }
 
