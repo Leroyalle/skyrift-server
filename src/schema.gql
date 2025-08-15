@@ -19,6 +19,55 @@ type Faction {
   characterClasses: [CharacterClass!]!
 }
 
+type CharacterSkill {
+  id: String!
+
+  """Навык"""
+  skill: Skill!
+
+  """Время последнего использования"""
+  lastUsedAt: Float
+
+  """Время окончания кулдауна"""
+  cooldownEnd: Float
+
+  """Уровень навыка"""
+  level: Int!
+}
+
+type Skill {
+  """ID навыка"""
+  id: String!
+
+  """Класс, к которому относится навык"""
+  characterClass: CharacterClass!
+
+  """Название навыка"""
+  name: String!
+
+  """Ключ иконки навыка"""
+  icon: String!
+
+  """Кулдаун в миллисекундах"""
+  cooldownMs: Int!
+
+  """Стоимость маны"""
+  manaCost: Int!
+
+  """Наносимый урон"""
+  damage: Int!
+
+  """Восстанавливаемое здоровье"""
+  heal: Int!
+
+  """Дистанция"""
+  range: Int!
+
+  """Дополнительные параметры в JSON"""
+  extraParams: String
+  characterSkills: CharacterSkill!
+}
+
 type CharacterClass {
   """ID класса"""
   id: ID!
@@ -37,6 +86,9 @@ type CharacterClass {
 
   """Персонажи класса"""
   characters: [Character!]!
+
+  """Список навыков класса"""
+  skills: [Skill!]!
 }
 
 type Item {
@@ -193,6 +245,9 @@ type Character {
 
   """Айди локации в которой находится игрок"""
   locationId: String!
+
+  """Навыки персонаж"""
+  characterSkills: [CharacterSkill!]!
 }
 
 type User {
@@ -246,7 +301,9 @@ type Query {
   faction(id: Int!): Faction!
   findUserCharacters: [Character!]!
   character(id: Int!): Character!
+  characterSkill(id: Int!): CharacterSkill!
   characterClass(id: Int!): CharacterClass!
+  skill(id: Int!): Skill!
   item(id: Int!): Item!
   location: [Location!]!
   findLocationById(id: ID!): Location!
@@ -264,9 +321,15 @@ type Mutation {
   createCharacter(createCharacterInput: CreateCharacterInput!): Character!
   updateCharacter(updateCharacterInput: UpdateCharacterInput!): Character!
   removeCharacter(id: Int!): Character!
+  createCharacterSkill(createCharacterSkillInput: CreateCharacterSkillInput!): CharacterSkill!
+  updateCharacterSkill(updateCharacterSkillInput: UpdateCharacterSkillInput!): CharacterSkill!
+  removeCharacterSkill(id: Int!): CharacterSkill!
   createCharacterClass(createCharacterClassInput: CreateCharacterClassInput!): CharacterClass!
   updateCharacterClass(updateCharacterClassInput: UpdateCharacterClassInput!): CharacterClass!
   removeCharacterClass(id: Int!): CharacterClass!
+  createSkill(createSkillInput: CreateSkillInput!): Skill!
+  updateSkill(updateSkillInput: UpdateSkillInput!): Skill!
+  removeSkill(id: Int!): Skill!
   createItem(createItemInput: CreateItemInput!): Item!
   updateItem(updateItemInput: UpdateItemInput!): Item!
   removeItem(id: Int!): Item!
@@ -328,12 +391,34 @@ input UpdateCharacterInput {
   id: String!
 }
 
+input CreateCharacterSkillInput {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+input UpdateCharacterSkillInput {
+  """Example field (placeholder)"""
+  exampleField: Int
+  id: Int!
+}
+
 input CreateCharacterClassInput {
   """Example field (placeholder)"""
   exampleField: Int!
 }
 
 input UpdateCharacterClassInput {
+  """Example field (placeholder)"""
+  exampleField: Int
+  id: Int!
+}
+
+input CreateSkillInput {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+input UpdateSkillInput {
   """Example field (placeholder)"""
   exampleField: Int
   id: Int!

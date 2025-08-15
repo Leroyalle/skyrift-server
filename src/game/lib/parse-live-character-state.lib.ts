@@ -23,5 +23,7 @@ export function parseLiveCharacterState(
     userId: raw.userId,
     isAttacking: raw.isAttacking === 'true',
     lastHpRegenerationTime: Number(raw.lastHpRegenerationTime),
+    currentTarget: JSON.parse(raw.currentTarget),
+    characterSkills: JSON.parse(raw.characterSkills),
   };
 }

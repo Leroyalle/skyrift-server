@@ -18,13 +18,15 @@ import { PlayerStateService } from './player-state.service';
 import { RedisKeysFactory } from 'src/common/infra/redis-keys-factory.infra';
 import { removeCharacterFromSpatialGrid } from './lib/spatial-grid/remove-character-from-spatial-grid.lib';
 import { addCharacterToSpatialGrid } from './lib/spatial-grid/add-character-to-spatial-grid.lib';
-import { PendingAction } from './types/pending-actions.type';
+import { ActionType, PendingAction } from './types/pending-actions.type';
 import { BatchUpdateAction } from './types/batch-update/batch-update-action.type';
 import { PathFindingService } from './path-finding/path-finding.service';
 import { RequestAttackMoveDto } from './dto/request-attack-move.dto';
 import { getPendingActionKey } from './lib/get-pending-action-key';
 import { BatchUpdateRegeneration } from './types/batch-update/batch-update-regeneration.type';
 import { JwtPayload } from 'src/common/types/jwt-payload.type';
+import { ActionContext, resolveAction } from './lib/actions/resolve-action';
+import { RequestSkillUseDto } from './dto/request-use-skill.dto';
 
 @Injectable()
 export class GameService implements OnModuleInit {
@@ -179,6 +181,7 @@ export class GameService implements OnModuleInit {
           locationId: findCharacter.location.id,
           userId: findCharacter.user.id,
           isAttacking: false,
+          currentTarget: null,
         },
         findCharacter.location.id,
       );
@@ -300,9 +303,12 @@ export class GameService implements OnModuleInit {
       return;
     }
 
+    console.log(input);
+
     const { userId, characterId, locationId } = client.userData;
 
     const character = this.playerStateService.getCharacterState(characterId);
+
     if (!character) return;
 
     character.isAttacking = false;
@@ -347,7 +353,7 @@ export class GameService implements OnModuleInit {
       getPendingActionKey(
         client.userData.characterId,
         input.targetId,
-        'damage',
+        ActionType.AutoAttack,
       ),
     );
 
@@ -360,25 +366,67 @@ export class GameService implements OnModuleInit {
     );
   }
 
+  public async requestUseSkill(client: Socket, input: RequestSkillUseDto) {
+    if (!this.verifyUserDataInSocket(client)) {
+      this.notifyDisconnection(client);
+      client.disconnect();
+      return;
+    }
+
+    const attacker = this.playerStateService.getCharacterState(
+      client.userData.characterId,
+    );
+    const victim = this.playerStateService.getCharacterState(input.targetId);
+
+    if (!attacker || !victim) return;
+
+    const characterSkill = attacker.characterSkills.find(
+      (skill) => skill.id === input.skillId,
+    );
+
+    if (!characterSkill) return;
+
+    await this.schedulePathUpdate(
+      attacker.id,
+      victim.id,
+      client.userData.userId,
+      characterSkill.id,
+    );
+  }
+
   private async schedulePathUpdate(
     attackerId: string,
     targetId: string,
     attackerUserId: string,
+    skillId: string | null = null,
   ) {
     const attacker = this.playerStateService.getCharacterState(attackerId);
     const target = this.playerStateService.getCharacterState(targetId);
 
     if (!attacker || !target) return;
 
-    this.pendingActions.set(
-      getPendingActionKey(attackerId, targetId, 'damage'),
-      {
-        attackerId,
-        victimId: targetId,
-        actionType: 'damage',
-        state: 'wait-path',
-      },
+    const characterSkill = attacker.characterSkills.find(
+      (skill) => skill.id === skillId,
     );
+
+    if (skillId && !characterSkill) {
+      console.log(
+        `Character ${attackerId} doesn't have skill ${skillId} to use`,
+      );
+      return;
+    }
+
+    if (characterSkill) {
+      this.pendingActions.delete(
+        getPendingActionKey(attackerId, targetId, ActionType.AutoAttack),
+      );
+      console.log('delete auto attack action');
+    }
+
+    attacker.currentTarget = {
+      id: target.id,
+      type: 'player',
+    };
 
     const findLocation = await this.loadLocation(attacker.locationId);
 
@@ -398,38 +446,49 @@ export class GameService implements OnModuleInit {
       findLocation.passableMap,
     );
 
-    console.log('[REQUEST_ATTACK_MOVE] DISTANCE', steps.length);
-
     if (steps.length === -1) return;
 
-    if (steps.length <= attacker.attackRange) {
+    const range = characterSkill
+      ? characterSkill.skill.range
+      : attacker.attackRange;
+
+    console.log('range:', range);
+
+    const actionType = skillId ? ActionType.Skill : ActionType.AutoAttack;
+    if (steps.length <= range) {
       this.pendingActions.set(
-        getPendingActionKey(attacker.id, target.id, 'damage'),
+        getPendingActionKey(attacker.id, target.id, actionType),
         {
           attackerId: attacker.id,
           victimId: target.id,
-          actionType: 'damage',
+          actionType,
           state: 'attack',
+          skillId,
         },
       );
+
+      console.log('steps length <= range, set attack action');
 
       return;
     }
 
     this.movementQueues.set(attacker.id, {
-      steps: steps.slice(0, steps.length - attacker.attackRange),
+      steps: steps.slice(0, steps.length - range),
       userId: attackerUserId,
     });
 
     this.pendingActions.set(
-      getPendingActionKey(attacker.id, target.id, 'damage'),
+      getPendingActionKey(attacker.id, target.id, actionType),
       {
         attackerId: attacker.id,
         victimId: target.id,
-        actionType: 'damage',
+        actionType,
         state: 'move-to-target',
+        skillId,
       },
     );
+
+    console.log('steps length > range, set move-to-target action');
   }
 
   public async tickActions() {
@@ -444,7 +503,7 @@ export class GameService implements OnModuleInit {
 
       if (!attacker || !victim) return;
 
-      const location = await this.loadLocation(attacker?.locationId);
+      const location = await this.loadLocation(attacker.locationId);
 
       if (!location) return;
 
@@ -462,56 +521,52 @@ export class GameService implements OnModuleInit {
         location.passableMap,
       );
 
-      if (steps.length > attacker.attackRange) {
-        attacker.isAttacking = false;
-        await this.schedulePathUpdate(attacker.id, victim.id, attacker.userId);
-        return;
-      } else {
-        attacker.isAttacking = true;
-        console.log('ATTACK', attacker.isAttacking);
-        // FIXME: maybe delete this set because we did it in schedulePathUpdate
-        this.pendingActions.set(
-          getPendingActionKey(attacker.id, victim.id, action.actionType),
-          {
-            state: 'attack',
-            actionType: 'damage',
-            attackerId: attacker.id,
-            victimId: victim.id,
-          },
-        );
-      }
-
-      const now = Date.now();
-
-      if (now - attacker.lastAttackAt < attacker.attackSpeed) return;
-
-      this.server
-        .to(RedisKeys.Location + attacker.locationId)
-        .emit(ServerToClientEvents.PlayerAttackStart, {
-          attackerId: attacker.id,
-          victimId: victim.id,
-        });
-
-      const result = this.playerStateService.attack(
-        attacker.id,
-        victim.id,
-        now,
+      const skill = attacker.characterSkills.find(
+        (skill) => skill.id === action.skillId,
       );
 
-      if (!result) return;
+      const range = skill ? skill.skill.range : attacker.attackRange;
+
+      if (steps.length > range) {
+        attacker.isAttacking = false;
+        await this.schedulePathUpdate(
+          attacker.id,
+          victim.id,
+          attacker.userId,
+          action.skillId,
+        );
+        continue;
+      } else {
+        attacker.isAttacking = true;
+        this.movementQueues.delete(attacker.id);
+      }
 
       let batchLocation = updatesByLocation.get(location.id);
       if (!batchLocation) {
         batchLocation = [];
-        batchLocation.push(result);
         updatesByLocation.set(location.id, batchLocation);
       }
 
-      if (!result.isAlive) {
-        this.pendingActions.delete(
-          getPendingActionKey(attacker.id, victim.id, action.actionType),
-        );
-      }
+      const now = Date.now();
+
+      const actionCtx: ActionContext = {
+        server: this.server,
+        attacker,
+        victim,
+        characterSkill: skill,
+        autoAttackFn: this.playerStateService.autoAttack.bind(
+          this.playerStateService,
+        ),
+        applySkillFn: this.playerStateService.applySkill.bind(
+          this.playerStateService,
+        ),
+        schedulePathUpdateFn: this.schedulePathUpdate.bind(this),
+        batchLocation,
+        pendingActions: this.pendingActions,
+        now,
+      };
+
+      await resolveAction(actionCtx, action);
     }
 
     for (const [locationId, update] of updatesByLocation.entries()) {
@@ -523,7 +578,6 @@ export class GameService implements OnModuleInit {
 
   public tickMovement() {
     const updatesByLocation = new Map<string, TBatchUpdateMovement[]>();
-
     const entries = Array.from(this.movementQueues.entries());
 
     entries.forEach(([characterId, { steps, userId }]) => {
@@ -532,7 +586,6 @@ export class GameService implements OnModuleInit {
 
       const now = Date.now();
 
-      console.log(`tickMovement: ${character.isAttacking}`);
       if (
         now - character.lastMoveAt <
         450
@@ -607,10 +660,11 @@ export class GameService implements OnModuleInit {
       client.disconnect();
       return;
     }
+    // FIXME: delete on more action types
     const actionKey = getPendingActionKey(
       client.userData.characterId,
       input.targetId,
-      'damage',
+      ActionType.AutoAttack,
     );
     if (this.pendingActions.has(actionKey)) {
       console.log('[request attack cancelled], delete action');
@@ -641,7 +695,6 @@ export class GameService implements OnModuleInit {
         updatesByLocation.set(char.locationId, locationBatch);
       }
 
-      console.log('tickRegeneration', char.hp, hpDelta);
       locationBatch.push({
         characterId: char.id,
         hp: char.hp,

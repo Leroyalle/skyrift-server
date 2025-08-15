@@ -1,3 +1,5 @@
+import { CharacterSkill } from '../character-skill/entities/character-skill.entity';
+
 export type LiveCharacterState = {
   id: string;
   name: string;
@@ -18,5 +20,10 @@ export type LiveCharacterState = {
   userId: string;
   isAttacking: boolean;
   lastHpRegenerationTime: number;
+  currentTarget: {
+    id: string;
+    type: 'player' | 'mob';
+  } | null;
+  characterSkills: CharacterSkill[];
   // TODO: add the damage(now) - sum all damage items
 };

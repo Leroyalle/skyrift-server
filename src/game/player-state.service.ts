@@ -4,7 +4,8 @@ import { LiveCharacterState } from 'src/character/types/live-character-state.typ
 import { RedisKeysFactory } from 'src/common/infra/redis-keys-factory.infra';
 import { RedisService } from 'src/redis/redis.service';
 import { parseLiveCharacterState } from './lib/parse-live-character-state.lib';
-import { PathFindingService } from './path-finding/path-finding.service';
+import { ActionType } from './types/pending-actions.type';
+import { BatchUpdateAction } from './types/batch-update/batch-update-action.type';
 
 @Injectable()
 export class PlayerStateService {
@@ -16,7 +17,6 @@ export class PlayerStateService {
   constructor(
     private readonly redisService: RedisService,
     private readonly characterService: CharacterService,
-    private readonly pathFindingService: PathFindingService,
   ) {}
 
   private readonly playersStates: Map<string, LiveCharacterState> = new Map();
@@ -31,16 +31,16 @@ export class PlayerStateService {
       player.id,
     );
 
-    const cachedPlayer = await this.redisService.hgetAll(
-      RedisKeysFactory.playerState(player.id),
-    );
+    // const cachedPlayer = await this.redisService.hgetAll(
+    //   RedisKeysFactory.playerState(player.id),
+    // );
 
-    if (!cachedPlayer) return;
+    // if (!cachedPlayer) return;
 
-    const parsedPlayer = parseLiveCharacterState(cachedPlayer);
+    // const parsedPlayer = parseLiveCharacterState(cachedPlayer);
 
-    if (!this.playersStates.has(parsedPlayer.id)) {
-      this.playersStates.set(parsedPlayer.id, {
+    if (!this.playersStates.has(player.id)) {
+      this.playersStates.set(player.id, {
         id: player.id,
         name: player.name,
         x: player.x,
@@ -60,6 +60,8 @@ export class PlayerStateService {
         lastHpRegenerationTime: player.lastHpRegenerationTime,
         userId: player.userId,
         isAttacking: false,
+        currentTarget: null,
+        characterSkills: player.characterSkills,
       });
     }
   }
@@ -121,7 +123,11 @@ export class PlayerStateService {
     return Array.from(this.playersStates.values());
   }
 
-  public attack(attackerId: string, victimId: string, now: number) {
+  public autoAttack(
+    attackerId: string,
+    victimId: string,
+    now: number,
+  ): BatchUpdateAction | undefined {
     const attacker = this.playersStates.get(attackerId);
     const victim = this.playersStates.get(victimId);
 
@@ -144,6 +150,8 @@ export class PlayerStateService {
       hp: remainingHp,
       isAlive,
       receivedDamage,
+      type: ActionType.AutoAttack,
+      skillId: null,
     };
   }
 
@@ -154,5 +162,46 @@ export class PlayerStateService {
       this.playersByLocation.set(locationId, new Map());
     }
     return this.playersByLocation.get(locationId)!;
+  }
+
+  public applySkill(
+    attackerId: string,
+    victimId: string,
+    skillId: string,
+    now: number,
+  ): BatchUpdateAction | undefined {
+    const attacker = this.playersStates.get(attackerId);
+    const victim = this.playersStates.get(victimId);
+
+    if (!attacker || !victim || attacker.locationId !== victim.locationId)
+      return;
+
+    const characterSkill = attacker.characterSkills.find(
+      (skill) => skill.id === skillId,
+    );
+
+    if (!characterSkill) return;
+
+    // TODO: return message with time for cooldown
+    if ((characterSkill.cooldownEnd ?? 0) > now) return;
+
+    const receivedDamage = characterSkill.skill.damage;
+    const remainingHp = Math.max(victim.hp - receivedDamage, 0);
+    victim.hp = remainingHp;
+    victim.isAlive = remainingHp > 0;
+
+    characterSkill.lastUsedAt = now;
+    characterSkill.cooldownEnd = now + characterSkill.skill.cooldownMs;
+
+    attacker.lastAttackAt = now;
+
+    return {
+      characterId: victim.id,
+      hp: remainingHp,
+      isAlive: remainingHp > 0,
+      receivedDamage,
+      type: ActionType.Skill,
+      skillId: characterSkill.id,
+    };
   }
 }

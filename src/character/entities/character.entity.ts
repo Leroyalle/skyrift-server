@@ -6,11 +6,11 @@ import { User } from 'src/user/entities/user.entity';
 import {
   Column,
   Entity,
-  JoinColumn,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { CharacterSkill } from '../character-skill/entities/character-skill.entity';
 
 @ObjectType()
 @Entity()
@@ -144,6 +144,10 @@ export class Character {
   @Column()
   @Field({ description: 'Айди локации в которой находится игрок' })
   locationId: string;
+
+  @OneToMany(() => CharacterSkill, (characterSkill) => characterSkill.character)
+  @Field(() => [CharacterSkill], { description: 'Навыки персонаж' })
+  characterSkills: CharacterSkill[];
 
   // TODO: @Column({ default: 0.1 })
   // @Field(() => Number, {

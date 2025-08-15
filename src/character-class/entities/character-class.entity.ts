@@ -8,6 +8,7 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { Skill } from '../skill/entities/skill.entity';
 
 @ObjectType()
 @Entity()
@@ -35,4 +36,8 @@ export class CharacterClass {
   @OneToMany(() => Character, (character) => character.characterClass)
   @Field(() => [Character], { description: 'Персонажи класса' })
   characters: Character[];
+
+  @OneToMany(() => Skill, (skill) => skill.characterClass)
+  @Field(() => [Skill], { description: 'Список навыков класса' })
+  skills: Skill[];
 }

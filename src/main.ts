@@ -2,6 +2,8 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
 import * as cookieParser from 'cookie-parser';
+import * as express from 'express';
+import { join } from 'path';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -15,9 +17,14 @@ async function bootstrap() {
     exposedHeaders: ['Set-Cookie'],
   });
 
+  app.use('/assets', express.static(join(__dirname, '..', 'src/assets')));
+
   const port = configService.getOrThrow<number>('PORT') ?? 3001;
   console.log('PORT', port);
   await app.listen(port);
-  console.log(`🚀 Server is running at http://localhost:${port}/graphql`);
+  console.log(
+    `🚀 Server is running at http://localhost:${port}/graphql`,
+    join(__dirname, '..', 'src/assets'),
+  );
 }
 bootstrap();

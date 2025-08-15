@@ -13,6 +13,7 @@ import { ClientToServerEvents } from 'src/common/enums/game-socket-events.enum';
 import { ChangeLocationDto } from './dto/change-location.dto';
 import { RequestMoveToDto } from './dto/request-move-to.dto';
 import { RequestAttackMoveDto } from './dto/request-attack-move.dto';
+import { RequestSkillUseDto } from './dto/request-use-skill.dto';
 
 @WebSocketGateway({
   namespace: 'game',
@@ -56,6 +57,14 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() input: RequestAttackMoveDto,
   ) {
     return this.gameService.requestAttackMove(client, input);
+  }
+
+  @SubscribeMessage(ClientToServerEvents.RequestUseSkill)
+  requestUseSkill(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() input: RequestSkillUseDto,
+  ) {
+    return this.gameService.requestUseSkill(client, input);
   }
 
   @SubscribeMessage(ClientToServerEvents.PlayerAttackCancelled)

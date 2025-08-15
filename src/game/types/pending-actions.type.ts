@@ -3,7 +3,13 @@ export type PendingAction = {
   victimId: string;
   actionType: ActionType;
   state: State;
+  skillId: string | null;
 };
 
-export type ActionType = 'damage' | 'heal';
+export enum ActionType {
+  AutoAttack = 'autoAttack',
+  Heal = 'heal',
+  Skill = 'skill',
+}
+
 export type State = 'wait-path' | 'move-to-target' | 'attack';

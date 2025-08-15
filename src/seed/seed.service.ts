@@ -12,6 +12,8 @@ import { Faction } from 'src/faction/entities/faction.entity';
 import { CharacterClass } from 'src/character-class/entities/character-class.entity';
 import { Character } from 'src/character/entities/character.entity';
 import * as argon2 from 'argon2';
+import { CharacterSkill } from 'src/character/character-skill/entities/character-skill.entity';
+import { Skill } from 'src/character-class/skill/entities/skill.entity';
 
 @Injectable()
 export class SeedService {
@@ -28,6 +30,10 @@ export class SeedService {
     private characterClassRepository: Repository<CharacterClass>,
     @InjectRepository(Character)
     private characterRepository: Repository<Character>,
+    @InjectRepository(Skill)
+    private skillRepository: Repository<Skill>,
+    @InjectRepository(CharacterSkill)
+    private characterSkillRepository: Repository<CharacterSkill>,
   ) {}
 
   public async run() {
@@ -54,7 +60,7 @@ export class SeedService {
       logo: 'https://example.com/elf_logo.png',
     });
 
-    const createdClass = await this.characterClassRepository.save({
+    const archerClass = await this.characterClassRepository.save({
       name: 'Лучник',
       description: 'Мастер стрельбы из лука и скрытности.',
       faction: createdFaction,
@@ -100,26 +106,44 @@ export class SeedService {
       );
     }
 
-    await this.characterRepository.save({
-      name: 'saintLeroyalle',
+    const firstCharacter = await this.characterRepository.save({
+      name: 'Егор Вытрус',
       user: firstUser,
-      characterClass: createdClass,
+      characterClass: archerClass,
       level: 1,
       location,
       x: 400,
       y: 400,
-      maxHp: 100,
+      maxHp: 600,
+      hp: 600,
     });
 
     await this.characterRepository.save({
       name: 'Consul',
       user: secondUser,
-      characterClass: createdClass,
+      characterClass: archerClass,
       level: 1,
       location,
       x: 450,
       y: 450,
-      maxHp: 100,
+      maxHp: 600,
+      hp: 600,
+    });
+
+    const fireArrowSkill = await this.skillRepository.save({
+      name: 'Огненная стрела',
+      damage: 12,
+      cooldownMs: 5000,
+      manaCost: 10,
+      characterClass: archerClass,
+      icon: '/assets/skills/archer/fire-arrow.png',
+      range: 8,
+    });
+
+    await this.characterSkillRepository.save({
+      character: firstCharacter,
+      skill: fireArrowSkill,
+      range: 8,
     });
 
     console.log('Listings seeded');
@@ -136,7 +160,10 @@ export class SeedService {
       'TRUNCATE TABLE "character_class" CASCADE',
     );
     await this.characterRepository.query('TRUNCATE TABLE "character" CASCADE');
-
+    await this.skillRepository.query('TRUNCATE TABLE "skill" CASCADE');
+    await this.characterSkillRepository.query(
+      'TRUNCATE TABLE "character_skill" CASCADE',
+    );
     console.log('Listings cleared');
   }
 

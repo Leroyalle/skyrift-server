@@ -44,6 +44,9 @@ export class CharacterService {
         },
         location: true,
         user: true,
+        characterSkills: {
+          skill: true,
+        },
       },
     });
   }
@@ -56,10 +59,7 @@ export class CharacterService {
     characterId: string,
     updateCharacterInput: UpdateCharacterInput,
   ) {
-    return await this.characterRepository.update(
-      characterId,
-      updateCharacterInput,
-    );
+    return await this.characterRepository.save(updateCharacterInput);
   }
 
   remove(id: number) {
