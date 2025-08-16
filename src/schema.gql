@@ -62,10 +62,19 @@ type Skill {
 
   """Дистанция"""
   range: Int!
+  characterSkills: CharacterSkill!
+
+  """Ключ тайлсета"""
+  tilesetKey: String!
+
+  """Геймплейные эффекты"""
+  effects: String
+
+  """Визуальные эффекты"""
+  visualEffects: String
 
   """Дополнительные параметры в JSON"""
   extraParams: String
-  characterSkills: CharacterSkill!
 }
 
 type CharacterClass {

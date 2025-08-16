@@ -52,16 +52,41 @@ export class Skill {
   @Field(() => Int, { description: 'Дистанция' })
   range: number;
 
+  @OneToMany(() => CharacterSkill, (characterSkill) => characterSkill.skill, {
+    cascade: true,
+  })
+  @Field(() => CharacterSkill)
+  characterSkills: CharacterSkill[];
+
+  @Column()
+  @Field({ description: 'Ключ тайлсета' })
+  tilesetKey: string;
+
+  @Column({ type: 'json', nullable: true })
+  @Field(() => String, { nullable: true, description: 'Геймплейные эффекты' })
+  effects?: {
+    type: 'burn' | 'stun' | 'freeze' | 'shield';
+    durationMs: number;
+    damagePerTick?: number;
+    healPerTick?: number;
+    speedMultiplier?: number;
+    shieldValue?: number;
+  }[];
+
+  @Column({ type: 'json', nullable: true })
+  @Field(() => String, { nullable: true, description: 'Визуальные эффекты' })
+  visualEffects?: {
+    type: 'animation' | 'particle' | 'sound';
+    assetKey: string;
+    durationMs?: number;
+    frameRate?: number;
+    offset?: { x: number; y: number };
+  }[];
+
   @Column({ type: 'json', nullable: true })
   @Field(() => String, {
     nullable: true,
     description: 'Дополнительные параметры в JSON',
   })
   extraParams?: Record<string, any>;
-
-  @OneToMany(() => CharacterSkill, (characterSkill) => characterSkill.skill, {
-    cascade: true,
-  })
-  @Field(() => CharacterSkill)
-  characterSkills: CharacterSkill[];
 }

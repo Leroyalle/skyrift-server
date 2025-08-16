@@ -114,8 +114,12 @@ export class SeedService {
       location,
       x: 400,
       y: 400,
-      maxHp: 600,
-      hp: 600,
+      maxHp: 1000,
+      hp: 1000,
+      basePhysicalDamage: 5,
+      attackRange: 4,
+      attackSpeed: 1000,
+      isAlive: true,
     });
 
     await this.characterRepository.save({
@@ -126,8 +130,12 @@ export class SeedService {
       location,
       x: 450,
       y: 450,
-      maxHp: 600,
-      hp: 600,
+      maxHp: 1000,
+      hp: 1000,
+      basePhysicalDamage: 5,
+      attackRange: 4,
+      attackSpeed: 1000,
+      isAlive: true,
     });
 
     const fireArrowSkill = await this.skillRepository.save({
@@ -138,6 +146,15 @@ export class SeedService {
       characterClass: archerClass,
       icon: '/assets/skills/archer/fire-arrow.png',
       range: 8,
+      tilesetKey: 'spells-tileset.png',
+      // TODO: update
+      visualEffects: [
+        {
+          type: 'animation',
+          assetKey: 'fire-arrow_animation',
+          durationMs: 3000,
+        },
+      ],
     });
 
     await this.characterSkillRepository.save({

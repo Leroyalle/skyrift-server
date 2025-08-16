@@ -23,8 +23,6 @@ export class PlayerStateService {
 
   async join(player: LiveCharacterState, locationId: string) {
     console.log('[join]', player);
-    const playerMap = this.getOrCreateLocationMap(locationId);
-    playerMap.set(player.id, player);
 
     await this.redisService.sadd(
       RedisKeysFactory.locationPlayers(locationId),

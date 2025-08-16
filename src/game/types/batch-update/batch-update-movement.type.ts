@@ -3,4 +3,7 @@ export type TBatchUpdateMovement = {
   characterId: string;
   x: number;
   y: number;
+  direction: TDirection;
 };
+
+type TDirection = 'left' | 'right' | 'up' | 'down';

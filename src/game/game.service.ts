@@ -27,6 +27,7 @@ import { BatchUpdateRegeneration } from './types/batch-update/batch-update-regen
 import { JwtPayload } from 'src/common/types/jwt-payload.type';
 import { ActionContext, resolveAction } from './lib/actions/resolve-action';
 import { RequestSkillUseDto } from './dto/request-use-skill.dto';
+import { getDirection } from './lib/get-direction';
 
 @Injectable()
 export class GameService implements OnModuleInit {
@@ -70,7 +71,7 @@ export class GameService implements OnModuleInit {
   onModuleInit() {
     this.gameTickInterval = setInterval(() => {
       try {
-        this.tick();
+        void this.tick();
       } catch (error) {
         this.logger.error(`Error in game tick: ${error.message}`);
       }
@@ -602,6 +603,13 @@ export class GameService implements OnModuleInit {
       const client = this.server.sockets.get(socketId);
 
       if (!client) return;
+
+      if (!this.verifyUserDataInSocket(client)) {
+        this.notifyDisconnection(client);
+        client.disconnect();
+        return;
+      }
+
       const prevPosition = client.userData.position;
       const locationId = character.locationId;
 
@@ -612,6 +620,7 @@ export class GameService implements OnModuleInit {
       };
       client.userData = { ...client.userData, position };
       this.playerStateService.moveTo(character.id, position, now);
+      const direction = getDirection(prevPosition, position);
 
       let updates = updatesByLocation.get(locationId);
       if (!updates) {
@@ -624,6 +633,7 @@ export class GameService implements OnModuleInit {
         locationId,
         x: position.x,
         y: position.y,
+        direction,
       });
 
       if (prevPosition) {
