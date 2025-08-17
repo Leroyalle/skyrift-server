@@ -8,6 +8,7 @@ import { getPendingActionKey } from '../get-pending-action-key';
 import { CharacterSkill } from 'src/character/character-skill/entities/character-skill.entity';
 import { ApplySkillResult } from 'src/game/types/attack/apply-skill-result.type';
 import { ApplyAutoAttackResult } from 'src/game/types/attack/apply-auto-attack-result.type';
+import { getDirection } from '../get-direction';
 
 type LiveCharacterStateWithSocketId = LiveCharacterState & { socketId: string };
 
@@ -41,7 +42,7 @@ export type ActionContext = {
 export const resolveAction = async (
   ctx: ActionContext,
   action: PendingAction,
-) => {
+): Promise<void> => {
   switch (action.actionType) {
     case ActionType.AutoAttack: {
       if (ctx.now - ctx.attacker.lastAttackAt < ctx.attacker.attackSpeed)
@@ -54,6 +55,16 @@ export const resolveAction = async (
           victimId: ctx.victim.id,
           actionType: ActionType.AutoAttack,
           skillId: action.skillId,
+          attackerDirection: getDirection(
+            {
+              x: ctx.attacker.x,
+              y: ctx.attacker.y,
+            },
+            {
+              x: ctx.victim.x,
+              y: ctx.victim.y,
+            },
+          ),
         });
 
       const attackResult = ctx.autoAttackFn(
@@ -90,6 +101,16 @@ export const resolveAction = async (
           victimId: ctx.victim.id,
           actionType: ActionType.Skill,
           skillId: action.skillId,
+          attackerDirection: getDirection(
+            {
+              x: ctx.attacker.x,
+              y: ctx.attacker.y,
+            },
+            {
+              x: ctx.victim.x,
+              y: ctx.victim.y,
+            },
+          ),
         });
 
       const applySkillResult = ctx.applySkillFn(

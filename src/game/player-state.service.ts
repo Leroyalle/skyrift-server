@@ -4,7 +4,6 @@ import { LiveCharacterState } from 'src/character/types/live-character-state.typ
 import { RedisKeysFactory } from 'src/common/infra/redis-keys-factory.infra';
 import { RedisService } from 'src/redis/redis.service';
 import { ActionType } from './types/pending-actions.type';
-import { BatchUpdateAction } from './types/batch-update/batch-update-action.type';
 import { ApplySkillResult } from './types/attack/apply-skill-result.type';
 import { getPendingActionKey } from './lib/get-pending-action-key';
 import { ApplyAutoAttackResult } from './types/attack/apply-auto-attack-result.type';
@@ -30,14 +29,6 @@ export class PlayerStateService {
       RedisKeysFactory.locationPlayers(locationId),
       player.id,
     );
-
-    // const cachedPlayer = await this.redisService.hgetAll(
-    //   RedisKeysFactory.playerState(player.id),
-    // );
-
-    // if (!cachedPlayer) return;
-
-    // const parsedPlayer = parseLiveCharacterState(cachedPlayer);
 
     if (!this.playersStates.has(player.id)) {
       this.playersStates.set(player.id, {
