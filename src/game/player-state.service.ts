@@ -3,9 +3,11 @@ import { CharacterService } from 'src/character/character.service';
 import { LiveCharacterState } from 'src/character/types/live-character-state.type';
 import { RedisKeysFactory } from 'src/common/infra/redis-keys-factory.infra';
 import { RedisService } from 'src/redis/redis.service';
-import { parseLiveCharacterState } from './lib/parse-live-character-state.lib';
 import { ActionType } from './types/pending-actions.type';
 import { BatchUpdateAction } from './types/batch-update/batch-update-action.type';
+import { ApplySkillResult } from './types/attack/apply-skill-result.type';
+import { getPendingActionKey } from './lib/get-pending-action-key';
+import { ApplyAutoAttackResult } from './types/attack/apply-auto-attack-result.type';
 
 @Injectable()
 export class PlayerStateService {
@@ -125,7 +127,7 @@ export class PlayerStateService {
     attackerId: string,
     victimId: string,
     now: number,
-  ): BatchUpdateAction | undefined {
+  ): ApplyAutoAttackResult | undefined {
     const attacker = this.playersStates.get(attackerId);
     const victim = this.playersStates.get(victimId);
 
@@ -144,22 +146,15 @@ export class PlayerStateService {
     attacker.lastAttackAt = now;
 
     return {
-      characterId: victim.id,
-      hp: remainingHp,
-      isAlive,
-      receivedDamage,
+      targets: [
+        { characterId: victim.id, hp: remainingHp, isAlive, receivedDamage },
+      ],
       type: ActionType.AutoAttack,
       skillId: null,
+      pendingActionKey: !victim.isAlive
+        ? getPendingActionKey(attacker.id, victim.id, ActionType.AutoAttack)
+        : undefined,
     };
-  }
-
-  private getOrCreateLocationMap(
-    locationId: string,
-  ): Map<string, LiveCharacterState> {
-    if (!this.playersByLocation.has(locationId)) {
-      this.playersByLocation.set(locationId, new Map());
-    }
-    return this.playersByLocation.get(locationId)!;
   }
 
   public applySkill(
@@ -167,7 +162,7 @@ export class PlayerStateService {
     victimId: string,
     skillId: string,
     now: number,
-  ): BatchUpdateAction | undefined {
+  ): ApplySkillResult | undefined {
     const attacker = this.playersStates.get(attackerId);
     const victim = this.playersStates.get(victimId);
 
@@ -194,12 +189,22 @@ export class PlayerStateService {
     attacker.lastAttackAt = now;
 
     return {
-      characterId: victim.id,
-      hp: remainingHp,
-      isAlive: remainingHp > 0,
-      receivedDamage,
-      type: ActionType.Skill,
-      skillId: characterSkill.id,
+      attackResult: {
+        targets: [
+          {
+            characterId: victim.id,
+            hp: remainingHp,
+            isAlive: remainingHp > 0,
+            receivedDamage,
+          },
+        ],
+        type: ActionType.Skill,
+        skillId: characterSkill.id,
+      },
+      cooldown: {
+        cooldownEnd: characterSkill.cooldownEnd,
+        skillId: characterSkill.id,
+      },
     };
   }
 }

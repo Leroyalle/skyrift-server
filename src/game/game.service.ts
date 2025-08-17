@@ -550,10 +550,15 @@ export class GameService implements OnModuleInit {
 
       const now = Date.now();
 
+      const attackerSocketId = this.userIdToSocketId.get(attacker.userId);
+      const victimSocketId = this.userIdToSocketId.get(victim.userId);
+
+      if (!attackerSocketId || !victimSocketId) return;
+
       const actionCtx: ActionContext = {
         server: this.server,
-        attacker,
-        victim,
+        attacker: { ...attacker, socketId: attackerSocketId },
+        victim: { ...victim, socketId: victimSocketId },
         characterSkill: skill,
         autoAttackFn: this.playerStateService.autoAttack.bind(
           this.playerStateService,

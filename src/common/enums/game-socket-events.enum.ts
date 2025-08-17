@@ -9,6 +9,7 @@ export enum ServerToClientEvents {
   PlayerChangeLocation = 'player:change-location',
   PlayerAttack = 'player:attack',
   PlayerAttackStart = 'player:attack-start',
+  PlayerSkillCooldownUpdate = 'player:skill-cooldown-update',
   PlayerJoined = 'player:joined',
   PlayerLeft = 'player:left',
   PlayerEntered = 'player:entered',

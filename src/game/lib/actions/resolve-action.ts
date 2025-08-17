@@ -6,23 +6,27 @@ import { Namespace } from 'socket.io';
 import { BatchUpdateAction } from 'src/game/types/batch-update/batch-update-action.type';
 import { getPendingActionKey } from '../get-pending-action-key';
 import { CharacterSkill } from 'src/character/character-skill/entities/character-skill.entity';
+import { ApplySkillResult } from 'src/game/types/attack/apply-skill-result.type';
+import { ApplyAutoAttackResult } from 'src/game/types/attack/apply-auto-attack-result.type';
+
+type LiveCharacterStateWithSocketId = LiveCharacterState & { socketId: string };
 
 export type ActionContext = {
   server: Namespace;
-  attacker: LiveCharacterState;
-  victim: LiveCharacterState;
+  attacker: LiveCharacterStateWithSocketId;
+  victim: LiveCharacterStateWithSocketId;
   characterSkill?: CharacterSkill;
   autoAttackFn: (
     attackerId: string,
     victimId: string,
     now: number,
-  ) => BatchUpdateAction | undefined;
+  ) => ApplyAutoAttackResult | undefined;
   applySkillFn: (
     attackerId: string,
     victimId: string,
     skillId: string,
     now: number,
-  ) => BatchUpdateAction | undefined;
+  ) => ApplySkillResult | undefined;
   schedulePathUpdateFn: (
     attackerId: string,
     targetId: string,
@@ -60,16 +64,12 @@ export const resolveAction = async (
 
       if (!attackResult) return;
 
-      ctx.batchLocation.push(attackResult);
+      const { pendingActionKey: _, ...croppedAttackResult } = attackResult;
 
-      if (!attackResult.isAlive) {
-        ctx.pendingActions.delete(
-          getPendingActionKey(
-            ctx.attacker.id,
-            ctx.victim.id,
-            action.actionType,
-          ),
-        );
+      ctx.batchLocation.push(croppedAttackResult);
+
+      if (attackResult.pendingActionKey) {
+        ctx.pendingActions.delete(attackResult.pendingActionKey);
       }
 
       break;
@@ -92,16 +92,24 @@ export const resolveAction = async (
           skillId: action.skillId,
         });
 
-      const attackResult = ctx.applySkillFn(
+      const applySkillResult = ctx.applySkillFn(
         ctx.attacker.id,
         ctx.victim.id,
         action.skillId,
         ctx.now,
       );
 
-      if (!attackResult) return;
+      if (!applySkillResult) return;
 
-      ctx.batchLocation.push(attackResult);
+      ctx.batchLocation.push(applySkillResult.attackResult);
+
+      // FIXME: чек удалить ли чарактер айди из возвррата потому что мы сами отправляем нужному клиенту его кулдаун
+      ctx.server
+        .to(ctx.attacker.socketId)
+        .emit(ServerToClientEvents.PlayerSkillCooldownUpdate, {
+          skillId: applySkillResult.cooldown.skillId,
+          cooldownEnd: applySkillResult.cooldown.cooldownEnd,
+        });
 
       ctx.pendingActions.delete(
         getPendingActionKey(ctx.attacker.id, ctx.victim.id, action.actionType),
