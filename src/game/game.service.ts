@@ -671,14 +671,26 @@ export class GameService implements OnModuleInit {
       return;
     }
     // FIXME: delete on more action types
-    const actionKey = getPendingActionKey(
+    const actionKeyAuto = getPendingActionKey(
       client.userData.characterId,
       input.targetId,
       ActionType.AutoAttack,
     );
-    if (this.pendingActions.has(actionKey)) {
+
+    const actionKeySkill = getPendingActionKey(
+      client.userData.characterId,
+      input.targetId,
+      ActionType.Skill,
+    );
+
+    if (this.pendingActions.has(actionKeyAuto)) {
       console.log('[request attack cancelled], delete action');
-      this.pendingActions.delete(actionKey);
+      this.pendingActions.delete(actionKeyAuto);
+    }
+
+    if (this.pendingActions.has(actionKeySkill)) {
+      console.log('[request attack cancelled], delete action');
+      this.pendingActions.delete(actionKeySkill);
     }
   }
 
