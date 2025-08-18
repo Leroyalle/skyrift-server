@@ -48,6 +48,17 @@ export const resolveAction = async (
       if (ctx.now - ctx.attacker.lastAttackAt < ctx.attacker.attackSpeed)
         return;
 
+      const attackerDirection = getDirection(
+        {
+          x: ctx.attacker.x,
+          y: ctx.attacker.y,
+        },
+        {
+          x: ctx.victim.x,
+          y: ctx.victim.y,
+        },
+      );
+
       ctx.server
         .to(RedisKeys.Location + ctx.attacker.locationId)
         .emit(ServerToClientEvents.PlayerAttackStart, {
@@ -55,16 +66,7 @@ export const resolveAction = async (
           victimId: ctx.victim.id,
           actionType: ActionType.AutoAttack,
           skillId: action.skillId,
-          attackerDirection: getDirection(
-            {
-              x: ctx.attacker.x,
-              y: ctx.attacker.y,
-            },
-            {
-              x: ctx.victim.x,
-              y: ctx.victim.y,
-            },
-          ),
+          attackerDirection,
         });
 
       const attackResult = ctx.autoAttackFn(
@@ -94,6 +96,17 @@ export const resolveAction = async (
 
       if ((ctx.characterSkill.cooldownEnd ?? 0) > ctx.now) return;
 
+      const attackerDirection = getDirection(
+        {
+          x: ctx.attacker.x,
+          y: ctx.attacker.y,
+        },
+        {
+          x: ctx.victim.x,
+          y: ctx.victim.y,
+        },
+      );
+
       ctx.server
         .to(RedisKeys.Location + ctx.attacker.locationId)
         .emit(ServerToClientEvents.PlayerAttackStart, {
@@ -101,16 +114,7 @@ export const resolveAction = async (
           victimId: ctx.victim.id,
           actionType: ActionType.Skill,
           skillId: action.skillId,
-          attackerDirection: getDirection(
-            {
-              x: ctx.attacker.x,
-              y: ctx.attacker.y,
-            },
-            {
-              x: ctx.victim.x,
-              y: ctx.victim.y,
-            },
-          ),
+          attackerDirection,
         });
 
       const applySkillResult = ctx.applySkillFn(

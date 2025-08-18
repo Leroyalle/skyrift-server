@@ -404,7 +404,7 @@ export class GameService implements OnModuleInit {
     const attacker = this.playerStateService.getCharacterState(attackerId);
     const target = this.playerStateService.getCharacterState(targetId);
 
-    if (!attacker || !target) return;
+    if (!attacker || !target || !target.isAlive) return;
 
     const characterSkill = attacker.characterSkills.find(
       (skill) => skill.id === skillId,
