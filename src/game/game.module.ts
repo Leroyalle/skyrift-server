@@ -8,6 +8,8 @@ import { LocationModule } from 'src/location/location.module';
 import { RedisModule } from 'src/redis/redis.module';
 import { PlayerStateService } from './player-state.service';
 import { PathFindingModule } from './path-finding/path-finding.module';
+import { CombatService } from './services/combat/combat.service';
+import { SpatialGridService } from './services/spatial-grid/spatial-grid.service';
 
 @Module({
   imports: [
@@ -18,6 +20,12 @@ import { PathFindingModule } from './path-finding/path-finding.module';
     RedisModule,
     PathFindingModule,
   ],
-  providers: [GameGateway, GameService, PlayerStateService],
+  providers: [
+    GameGateway,
+    GameService,
+    PlayerStateService,
+    CombatService,
+    SpatialGridService,
+  ],
 })
 export class GameModule {}

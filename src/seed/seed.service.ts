@@ -14,6 +14,7 @@ import { Character } from 'src/character/entities/character.entity';
 import * as argon2 from 'argon2';
 import { CharacterSkill } from 'src/character/character-skill/entities/character-skill.entity';
 import { Skill } from 'src/character-class/skill/entities/skill.entity';
+import { SkillType } from 'src/common/enums/skill/skill-type.enum';
 
 @Injectable()
 export class SeedService {
@@ -116,7 +117,7 @@ export class SeedService {
       y: 400,
       maxHp: 1000,
       hp: 1000,
-      basePhysicalDamage: 5,
+      basePhysicalDamage: 50,
       attackRange: 4,
       attackSpeed: 1000,
       isAlive: true,
@@ -132,7 +133,7 @@ export class SeedService {
       y: 450,
       maxHp: 1000,
       hp: 1000,
-      basePhysicalDamage: 5,
+      basePhysicalDamage: 50,
       attackRange: 4,
       attackSpeed: 1000,
       isAlive: true,
@@ -140,7 +141,7 @@ export class SeedService {
 
     const fireArrowSkill = await this.skillRepository.save({
       name: 'Огненная стрела',
-      damage: 12,
+      damage: 92,
       cooldownMs: 5000,
       manaCost: 10,
       characterClass: archerClass,
@@ -155,12 +156,37 @@ export class SeedService {
           durationMs: 3000,
         },
       ],
+      type: SkillType.Target,
+    });
+
+    const fireHailSkill = await this.skillRepository.save({
+      name: 'Огненный град',
+      damage: 40,
+      cooldownMs: 5000,
+      manaCost: 10,
+      characterClass: archerClass,
+      icon: '/assets/skills/archer/fire-hail.png',
+      range: 5,
+      tilesetKey: 'spells-tileset.png',
+      // TODO: update
+      visualEffects: [
+        {
+          type: 'animation',
+          assetKey: 'fire-hail_animation',
+          durationMs: 3000,
+        },
+      ],
+      type: SkillType.AoE,
     });
 
     await this.characterSkillRepository.save({
       character: firstCharacter,
       skill: fireArrowSkill,
-      range: 8,
+    });
+
+    await this.characterSkillRepository.save({
+      character: firstCharacter,
+      skill: fireHailSkill,
     });
 
     console.log('Listings seeded');

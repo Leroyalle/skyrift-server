@@ -16,8 +16,6 @@ import { TBatchUpdateMovement } from './types/batch-update/batch-update-movement
 import { Character } from 'src/character/entities/character.entity';
 import { PlayerStateService } from './player-state.service';
 import { RedisKeysFactory } from 'src/common/infra/redis-keys-factory.infra';
-import { removeCharacterFromSpatialGrid } from './lib/spatial-grid/remove-character-from-spatial-grid.lib';
-import { addCharacterToSpatialGrid } from './lib/spatial-grid/add-character-to-spatial-grid.lib';
 import { ActionType, PendingAction } from './types/pending-actions.type';
 import { BatchUpdateAction } from './types/batch-update/batch-update-action.type';
 import { PathFindingService } from './path-finding/path-finding.service';
@@ -28,6 +26,8 @@ import { JwtPayload } from 'src/common/types/jwt-payload.type';
 import { ActionContext, resolveAction } from './lib/actions/resolve-action';
 import { RequestSkillUseDto } from './dto/request-use-skill.dto';
 import { getDirection } from './lib/get-direction';
+import { SpatialGrid } from './lib/spatial-grid/spatial-grid.lib';
+import { LiveCharacterState } from 'src/character/types/live-character-state.type';
 
 @Injectable()
 export class GameService implements OnModuleInit {
@@ -54,7 +54,7 @@ export class GameService implements OnModuleInit {
     string,
     { steps: { x: number; y: number }[]; userId: string }
   >();
-  private readonly spatialGrid: Map<string, Set<string>> = new Map();
+  private spatialGrid: SpatialGrid<LiveCharacterState>;
   private readonly pendingActions: Map<string, PendingAction> = new Map();
 
   private readonly locationCache = new Map<string, CachedLocation>();
@@ -69,6 +69,8 @@ export class GameService implements OnModuleInit {
   private readonly intervalRegeneration = 1000;
 
   onModuleInit() {
+    this.spatialGrid = new SpatialGrid<LiveCharacterState>(32);
+
     this.gameTickInterval = setInterval(() => {
       try {
         void this.tick();
@@ -173,19 +175,23 @@ export class GameService implements OnModuleInit {
         },
       };
 
+      const liveCharacter = {
+        ...findCharacter,
+        lastMoveAt: 0,
+        lastAttackAt: 0,
+        lastHpRegenerationTime: 0,
+        locationId: findCharacter.location.id,
+        userId: findCharacter.user.id,
+        isAttacking: false,
+        currentTarget: null,
+      };
+
       await this.playerStateService.join(
-        {
-          ...findCharacter,
-          lastMoveAt: 0,
-          lastAttackAt: 0,
-          lastHpRegenerationTime: 0,
-          locationId: findCharacter.location.id,
-          userId: findCharacter.user.id,
-          isAttacking: false,
-          currentTarget: null,
-        },
+        liveCharacter,
         findCharacter.location.id,
       );
+
+      this.spatialGrid.add(liveCharacter);
 
       void client.join(RedisKeys.Location + findCharacter.location.id);
       client.emit(ServerToClientEvents.PlayerConnected, findCharacter);
@@ -212,15 +218,18 @@ export class GameService implements OnModuleInit {
     // FIXME: rework to generateActionKey
     this.pendingActions.delete(client.userData.characterId);
 
-    await this.playerStateService.syncCharacterToDb(
+    const characterState = await this.playerStateService.syncCharacterToDb(
       client.userData.characterId,
     );
 
+    // FIXME: replace to characterState.[]
     await this.playerStateService.leave(
       client.userData.userId,
       client.userData.characterId,
       client.userData.locationId,
     );
+
+    if (characterState) this.spatialGrid.remove(characterState);
 
     client
       .to(RedisKeys.Location + client.userData.locationId)
@@ -592,15 +601,10 @@ export class GameService implements OnModuleInit {
 
       const now = Date.now();
 
-      if (
-        now - character.lastMoveAt <
-        450
-        // ||
-        // now - character.lastAttackAt < 450
-      )
-        return;
+      if (now - character.lastMoveAt < 450) return;
 
       const pathStep = steps.shift();
+
       if (!pathStep) return;
 
       const socketId = this.userIdToSocketId.get(userId);
@@ -623,8 +627,21 @@ export class GameService implements OnModuleInit {
         x: Math.floor(pathStep.x * 32),
         y: Math.floor(pathStep.y * 32),
       };
+
       client.userData = { ...client.userData, position };
-      this.playerStateService.moveTo(character.id, position, now);
+      this.playerStateService.moveTo(character, position, now);
+
+      if (prevPosition) {
+        this.spatialGrid.update(
+          character,
+          character.locationId,
+          prevPosition.x,
+          prevPosition.y,
+        );
+      } else {
+        this.spatialGrid.add(character);
+      }
+
       const direction = getDirection(prevPosition, position);
 
       let updates = updatesByLocation.get(locationId);
@@ -640,24 +657,6 @@ export class GameService implements OnModuleInit {
         y: position.y,
         direction,
       });
-
-      if (prevPosition) {
-        removeCharacterFromSpatialGrid(
-          this.spatialGrid,
-          characterId,
-          locationId,
-          prevPosition.x,
-          prevPosition.y,
-        );
-      }
-
-      addCharacterToSpatialGrid(
-        this.spatialGrid,
-        characterId,
-        locationId,
-        position.x,
-        position.y,
-      );
 
       if (steps.length === 0) {
         this.movementQueues.delete(characterId);

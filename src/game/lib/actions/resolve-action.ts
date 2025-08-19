@@ -128,7 +128,6 @@ export const resolveAction = async (
 
       ctx.batchLocation.push(applySkillResult.attackResult);
 
-      // FIXME: чек удалить ли чарактер айди из возвррата потому что мы сами отправляем нужному клиенту его кулдаун
       ctx.server
         .to(ctx.attacker.socketId)
         .emit(ServerToClientEvents.PlayerSkillCooldownUpdate, {

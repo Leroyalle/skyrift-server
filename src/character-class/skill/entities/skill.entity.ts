@@ -1,6 +1,7 @@
 import { ObjectType, Field, Int } from '@nestjs/graphql';
 import { CharacterClass } from 'src/character-class/entities/character-class.entity';
 import { CharacterSkill } from 'src/character/character-skill/entities/character-skill.entity';
+import { SkillType } from 'src/common/enums/skill/skill-type.enum';
 import {
   Column,
   Entity,
@@ -8,6 +9,7 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { SkillEffectConfig } from '../dto/skill-effect-config.input';
 
 @Entity()
 @ObjectType()
@@ -52,26 +54,47 @@ export class Skill {
   @Field(() => Int, { description: 'Дистанция' })
   range: number;
 
+  @Column({ nullable: true })
+  @Field({
+    description: 'Радиус действия в тайлах для AoE-скиллов (квадратная зона)',
+    nullable: true,
+  })
+  areaRadius?: number;
+
+  @Column({ nullable: true })
+  @Field({
+    description: 'Урон в секунду для AoE-скиллов',
+    nullable: true,
+  })
+  damagePerSecond?: number;
+
+  @Column({ nullable: true })
+  @Field({
+    description: 'Длительность действия AoE-скилла в миллисекундах',
+    nullable: true,
+  })
+  duration?: number;
+
   @OneToMany(() => CharacterSkill, (characterSkill) => characterSkill.skill, {
     cascade: true,
   })
   @Field(() => CharacterSkill)
   characterSkills: CharacterSkill[];
 
+  @Column({ type: 'enum', enum: SkillType })
+  @Field({ description: 'Тип скилла' })
+  type: SkillType;
+
   @Column()
   @Field({ description: 'Ключ тайлсета' })
   tilesetKey: string;
 
-  @Column({ type: 'json', nullable: true })
-  @Field(() => String, { nullable: true, description: 'Геймплейные эффекты' })
-  effects?: {
-    type: 'burn' | 'stun' | 'freeze' | 'shield';
-    durationMs: number;
-    damagePerTick?: number;
-    healPerTick?: number;
-    speedMultiplier?: number;
-    shieldValue?: number;
-  }[];
+  @Column({ type: 'jsonb', nullable: true })
+  @Field(() => [SkillEffectConfig], {
+    nullable: true,
+    description: 'Геймплейные эффекты',
+  })
+  effects?: SkillEffectConfig[];
 
   @Column({ type: 'json', nullable: true })
   @Field(() => String, { nullable: true, description: 'Визуальные эффекты' })

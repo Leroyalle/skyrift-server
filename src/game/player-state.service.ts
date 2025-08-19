@@ -7,6 +7,8 @@ import { ActionType } from './types/pending-actions.type';
 import { ApplySkillResult } from './types/attack/apply-skill-result.type';
 import { getPendingActionKey } from './lib/get-pending-action-key';
 import { ApplyAutoAttackResult } from './types/attack/apply-auto-attack-result.type';
+import { PositionDto } from 'src/common/dto/position.dto';
+import { SkillType } from 'src/common/enums/skill/skill-type.enum';
 
 @Injectable()
 export class PlayerStateService {
@@ -58,15 +60,13 @@ export class PlayerStateService {
   }
 
   public moveTo(
-    characterId: string,
+    character: LiveCharacterState,
     position: {
       x: number;
       y: number;
     },
     lastMoveAt: number,
   ) {
-    const character = this.playersStates.get(characterId);
-    if (!character) return;
     character.x = position.x;
     character.y = position.y;
     character.lastMoveAt = lastMoveAt;
@@ -86,24 +86,23 @@ export class PlayerStateService {
   async syncCharacterToDb(characterId: string) {
     const playerState = this.playersStates.get(characterId);
 
-    console.log('[SYNC]', playerState);
-    if (playerState && playerState.id) {
-      const {
-        lastMoveAt: _,
-        lastAttackAt: __,
-        lastHpRegenerationTime: ___,
-        isAttacking: ____,
-        userId: _____,
-        ...croppedCharacter
-      } = playerState;
+    if (!playerState) return;
+    const {
+      lastMoveAt: _,
+      lastAttackAt: __,
+      lastHpRegenerationTime: ___,
+      isAttacking: ____,
+      userId: _____,
+      ...croppedCharacter
+    } = playerState;
 
-      await this.redisService.hset(
-        RedisKeysFactory.playerState(characterId),
-        playerState,
-      );
+    await this.redisService.hset(
+      RedisKeysFactory.playerState(characterId),
+      playerState,
+    );
 
-      await this.characterService.update(playerState.id, croppedCharacter);
-    }
+    await this.characterService.update(playerState.id, croppedCharacter);
+    return playerState;
   }
 
   public getCharacterState(characterId: string) {
@@ -197,5 +196,18 @@ export class PlayerStateService {
         skillId: characterSkill.id,
       },
     };
+  }
+
+  applyAoESkill(attackerId: string, skillId: string, area: PositionDto) {
+    const attacker = this.getCharacterState(attackerId);
+    if (!attacker) return;
+
+    const characterSkill = attacker.characterSkills.find(
+      (skill) => skill.id === skillId,
+    );
+
+    if (!characterSkill) return;
+
+    if (characterSkill.skill.type !== SkillType.AoE) return;
   }
 }
