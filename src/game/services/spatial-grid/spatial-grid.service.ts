@@ -9,11 +9,10 @@ export class SpatialGridService<
     y: number;
   },
 > {
-  private readonly tileSize: number;
+  private readonly tileSize: number = 32;
   private cells: Map<string, Set<string>>;
 
-  constructor(tileSize: number) {
-    this.tileSize = tileSize;
+  constructor() {
     this.cells = new Map();
   }
 

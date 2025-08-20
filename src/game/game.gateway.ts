@@ -10,10 +10,10 @@ import {
 import { GameService } from './game.service';
 import { Namespace, Socket } from 'socket.io';
 import { ClientToServerEvents } from 'src/common/enums/game-socket-events.enum';
-import { ChangeLocationDto } from './dto/change-location.dto';
 import { RequestMoveToDto } from './dto/request-move-to.dto';
 import { RequestAttackMoveDto } from './dto/request-attack-move.dto';
 import { RequestSkillUseDto } from './dto/request-use-skill.dto';
+import { SocketService } from './services/socket/socket.service';
 
 @WebSocketGateway({
   namespace: 'game',
@@ -23,14 +23,17 @@ import { RequestSkillUseDto } from './dto/request-use-skill.dto';
   },
 })
 export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
-  constructor(private readonly gameService: GameService) {}
+  constructor(
+    private readonly gameService: GameService,
+    private readonly socketService: SocketService,
+  ) {}
 
   @WebSocketServer()
   server: Namespace;
 
   afterInit(server: Namespace) {
     this.server = server;
-    this.gameService.setServer(server);
+    this.socketService.setServer(server);
   }
 
   handleConnection(client: Socket) {
@@ -81,8 +84,8 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     return await this.gameService.getInitialData(client);
   }
 
-  @SubscribeMessage(ClientToServerEvents.ChangeLocation)
-  async handleChangeLocation(client: Socket, input: ChangeLocationDto) {
-    return await this.gameService.changeLocation(client, input);
-  }
+  // @SubscribeMessage(ClientToServerEvents.ChangeLocation)
+  // async handleChangeLocation(client: Socket, input: ChangeLocationDto) {
+  //   return await this.gameService.changeLocation(client, input);
+  // }
 }

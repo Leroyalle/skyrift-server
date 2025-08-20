@@ -15,6 +15,7 @@ import * as argon2 from 'argon2';
 import { CharacterSkill } from 'src/character/character-skill/entities/character-skill.entity';
 import { Skill } from 'src/character-class/skill/entities/skill.entity';
 import { SkillType } from 'src/common/enums/skill/skill-type.enum';
+import { EffectType } from 'src/common/enums/skill/effect-type.enum';
 
 @Injectable()
 export class SeedService {
@@ -161,7 +162,6 @@ export class SeedService {
 
     const fireHailSkill = await this.skillRepository.save({
       name: 'Огненный град',
-      damage: 40,
       cooldownMs: 5000,
       manaCost: 10,
       characterClass: archerClass,
@@ -173,10 +173,19 @@ export class SeedService {
         {
           type: 'animation',
           assetKey: 'fire-hail_animation',
-          durationMs: 3000,
+          durationMs: 5000,
         },
       ],
       type: SkillType.AoE,
+      duration: 5000,
+      damagePerSecond: 40,
+      effects: [
+        {
+          damagePerSecond: 37,
+          durationMs: 5000,
+          type: EffectType.Stun,
+        },
+      ],
     });
 
     await this.characterSkillRepository.save({

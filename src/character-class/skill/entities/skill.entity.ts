@@ -78,11 +78,11 @@ export class Skill {
   @OneToMany(() => CharacterSkill, (characterSkill) => characterSkill.skill, {
     cascade: true,
   })
-  @Field(() => CharacterSkill)
+  @Field(() => [CharacterSkill])
   characterSkills: CharacterSkill[];
 
   @Column({ type: 'enum', enum: SkillType })
-  @Field({ description: 'Тип скилла' })
+  @Field(() => SkillType, { description: 'Тип скилла' })
   type: SkillType;
 
   @Column()

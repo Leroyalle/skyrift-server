@@ -3,7 +3,7 @@ import { EffectType } from 'src/common/enums/skill/effect-type.enum';
 
 @ObjectType()
 export class SkillEffectConfig {
-  @Field(() => EffectType)
+  @Field(() => EffectType, { description: 'Тип эффекта скилла' })
   type: EffectType;
 
   @Field(() => Int, { nullable: true })

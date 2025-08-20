@@ -10,6 +10,9 @@ import { PlayerStateService } from './player-state.service';
 import { PathFindingModule } from './path-finding/path-finding.module';
 import { CombatService } from './services/combat/combat.service';
 import { SpatialGridService } from './services/spatial-grid/spatial-grid.service';
+import { SocketService } from './services/socket/socket.service';
+import { MovementService } from './services/movement/movement.service';
+import { RegenerationService } from './services/regeneration/regeneration.service';
 
 @Module({
   imports: [
@@ -26,6 +29,9 @@ import { SpatialGridService } from './services/spatial-grid/spatial-grid.service
     PlayerStateService,
     CombatService,
     SpatialGridService,
+    SocketService,
+    MovementService,
+    RegenerationService,
   ],
 })
 export class GameModule {}

@@ -10,4 +10,5 @@ export type ActiveAoEZone = {
   radius: number;
   effects: SkillEffectConfig[];
   expiresAt: number;
+  lastUsedAt: number | null;
 };

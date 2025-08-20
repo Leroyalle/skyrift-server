@@ -1,3 +1,5 @@
+import { registerEnumType } from '@nestjs/graphql';
+
 export enum EffectType {
   InstantDamage = 'instant_damage',
   DamageOverTime = 'damage_over_time',
@@ -7,3 +9,8 @@ export enum EffectType {
   Slow = 'slow',
   Stun = 'stun',
 }
+
+registerEnumType(EffectType, {
+  name: 'EffectType',
+  description: 'Тип эффекта',
+});
