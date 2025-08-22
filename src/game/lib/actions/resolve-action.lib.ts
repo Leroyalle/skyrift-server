@@ -1,24 +1,16 @@
 import { LiveCharacterState } from 'src/character/types/live-character-state.type';
-import { ServerToClientEvents } from 'src/common/enums/game-socket-events.enum';
-import { RedisKeys } from 'src/common/enums/redis-keys.enum';
-import { ActionType, PendingAction } from 'src/game/types/pending-actions.type';
-import { Namespace } from 'socket.io';
 import { BatchUpdateAction } from 'src/game/types/batch-update/batch-update-action.type';
-import { getPendingActionKey } from '../get-pending-action-key.lib';
 import { CharacterSkill } from 'src/character/character-skill/entities/character-skill.entity';
-import { ApplySkillResult } from 'src/game/types/attack/apply-skill-result.type';
-import { ApplyAutoAttackResult } from 'src/game/types/attack/apply-auto-attack-result.type';
-import { getDirection } from '../get-direction.lib';
-
-type LiveCharacterStateWithSocketId = LiveCharacterState & { socketId: string };
+import { TargetAction } from 'src/game/services/combat/types/target-action.type';
 
 export type ActionContext = {
-  attacker: LiveCharacterStateWithSocketId;
-  victim: LiveCharacterStateWithSocketId;
+  attacker: LiveCharacterState;
+  target: TargetAction;
   characterSkill?: CharacterSkill;
-
   batchLocation: BatchUpdateAction[];
   now: number;
+  tileSize: number;
+  removeAction: () => void;
 };
 
 // export const resolveAction = async (
