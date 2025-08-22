@@ -256,14 +256,20 @@ export class CombatService {
     return queue;
   }
 
-  public requestAttackMove(client: Socket, input: RequestAttackMoveDto) {
+  public async requestAttackMove(client: Socket, input: RequestAttackMoveDto) {
     if (!this.socketService.verifyUserDataInSocket(client)) {
       this.socketService.notifyDisconnection(client);
       this.socketService.onDisconnect(client);
       return;
     }
 
-    const queue = this.getOrCreateActionQueue(client.userData.characterId);
+    const attacker = this.playerStateService.getCharacterState(
+      client.userData.characterId,
+    );
+
+    if (!attacker) return;
+
+    const queue = this.getOrCreateActionQueue(attacker.id);
 
     const hasAutoAttack = queue.some(
       (q) => q.actionType === ActionType.AutoAttack,
@@ -284,7 +290,15 @@ export class CombatService {
       state: 'attack',
     };
 
-    queue.push(pendingAction);
+    // queue.push(pendingAction);
+    await this.schedulePathUpdate(
+      attacker,
+      {
+        kind: 'player',
+        id: input.targetId,
+      },
+      null,
+    );
     console.log('queue request auto attack', queue, pendingAction);
     // FIXME:
     // await this.schedulePathUpdate(

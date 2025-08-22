@@ -22,7 +22,7 @@ export class RegenerationService {
       if (now - char.lastHpRegenerationTime < 5000) return;
 
       if (char.hp >= char.maxHp || !char.isAlive) return;
-      const hpDelta = 10;
+      const hpDelta = 100;
 
       char.hp = Math.min(char.hp + hpDelta, char.maxHp);
       char.lastHpRegenerationTime = now;

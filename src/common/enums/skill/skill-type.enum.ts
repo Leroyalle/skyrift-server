@@ -1,12 +1,12 @@
 import { registerEnumType } from '@nestjs/graphql';
 
 export enum SkillType {
-  Target = 'target',
-  AoE = 'aoe',
-  Self = 'self',
-  Passive = 'passive',
-  Buff = 'buff',
-  Debuff = 'debuff',
+  Target = 'Target',
+  AoE = 'AoE',
+  Self = 'Self',
+  Passive = 'Passive',
+  Buff = 'Buff',
+  Debuff = 'Debuff',
 }
 
 registerEnumType(SkillType, {
