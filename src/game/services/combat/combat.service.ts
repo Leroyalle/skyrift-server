@@ -162,15 +162,10 @@ export class CombatService {
     for (const zone of this.activeAoEZones.values()) {
       const now = Date.now();
 
-      console.log('tick AOE zone', zone, zone.expiresAt > now);
       if (now >= zone.expiresAt) {
         this.activeAoEZones.delete(zone.id);
         continue;
       }
-      console.log(
-        'before tick check',
-        zone.lastUsedAt && now - zone.lastUsedAt <= 1000,
-      );
 
       if (zone.lastUsedAt && now - zone.lastUsedAt <= 1000) continue;
 
@@ -188,14 +183,12 @@ export class CombatService {
         continue;
       }
 
-      const { enemiesIds, affectedCells } = this.spatialGridService.queryRadius(
+      const { enemiesIds } = this.spatialGridService.queryRadius(
         zone.locationId,
         zone.x,
         zone.y,
         zone.radius,
       );
-
-      console.log('TICK AOE enemiesIds', enemiesIds);
 
       let batchLocation = updatesByLocation.get(zone.locationId);
       if (!batchLocation) {
@@ -773,6 +766,11 @@ export class CombatService {
       effects: cSkill.skill.effects ?? [],
       lastUsedAt: null,
     });
+
+    cSkill.lastUsedAt = now;
+    cSkill.cooldownEnd = now + cSkill.skill.cooldownMs;
+
+    caster.lastAttackAt = now;
 
     const { enemiesIds, affectedCells } = this.spatialGridService.queryRadius(
       caster.locationId,
