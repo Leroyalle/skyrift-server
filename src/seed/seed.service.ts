@@ -179,11 +179,12 @@ export class SeedService {
       type: SkillType.AoE,
       duration: 5000,
       damagePerSecond: 40,
+      areaRadius: 1,
       effects: [
         {
           damagePerSecond: 37,
           durationMs: 5000,
-          type: EffectType.Stun,
+          type: EffectType.DamageOverTime,
         },
       ],
     });

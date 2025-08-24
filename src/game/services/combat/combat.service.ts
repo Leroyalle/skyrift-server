@@ -10,7 +10,6 @@ import {
 import { ActiveAoEZone } from './types/active-aoe-zone.type';
 import { CharacterSkill } from 'src/character/character-skill/entities/character-skill.entity';
 import { v4 as uuidv4 } from 'uuid';
-import { EffectType } from 'src/common/enums/skill/effect-type.enum';
 import {
   BatchUpdateAction,
   Target,
@@ -160,20 +159,25 @@ export class CombatService {
 
   public tickAoE() {
     const updatesByLocation = new Map<string, BatchUpdateAction[]>();
-
     for (const zone of this.activeAoEZones.values()) {
       const now = Date.now();
-      if (zone.expiresAt > now) {
-        this.activeAoEZones.delete(zone.id);
-        return;
-      }
 
-      if (!zone.lastUsedAt || now - zone.lastUsedAt <= 1000) return;
+      console.log('tick AOE zone', zone, zone.expiresAt > now);
+      if (now >= zone.expiresAt) {
+        this.activeAoEZones.delete(zone.id);
+        continue;
+      }
+      console.log(
+        'before tick check',
+        zone.lastUsedAt && now - zone.lastUsedAt <= 1000,
+      );
+
+      if (zone.lastUsedAt && now - zone.lastUsedAt <= 1000) continue;
 
       const attacker = this.playerStateService.getCharacterState(zone.casterId);
       if (!attacker) {
         this.activeAoEZones.delete(zone.id);
-        return;
+        continue;
       }
 
       const cSkill = attacker.characterSkills.find(
@@ -181,15 +185,17 @@ export class CombatService {
       );
       if (!cSkill) {
         this.activeAoEZones.delete(zone.id);
-        return;
+        continue;
       }
 
-      const victimsIds = this.spatialGridService.queryRadius(
+      const { enemiesIds, affectedCells } = this.spatialGridService.queryRadius(
         zone.locationId,
         zone.x,
         zone.y,
         zone.radius,
       );
+
+      console.log('TICK AOE enemiesIds', enemiesIds);
 
       let batchLocation = updatesByLocation.get(zone.locationId);
       if (!batchLocation) {
@@ -198,9 +204,10 @@ export class CombatService {
       }
 
       const targets: Target[] = [];
-      victimsIds.forEach((id) => {
+      enemiesIds.forEach((id) => {
         const victim = this.playerStateService.getCharacterState(id);
-        if (!victim || !cSkill.skill.damagePerSecond) return;
+        if (!victim || !cSkill.skill.damagePerSecond || !victim.isAlive) return;
+        if (attacker.id === victim.id) return;
         const receivedDamage = cSkill.skill.damagePerSecond;
         const remainingHp = Math.max(victim.hp - receivedDamage, 0);
         victim.hp = remainingHp;
@@ -212,6 +219,8 @@ export class CombatService {
           isAlive: victim.isAlive,
           receivedDamage,
         });
+
+        console.log('TICK AOE', victim.name, receivedDamage);
       });
 
       batchLocation.push({
@@ -627,16 +636,6 @@ export class CombatService {
         }
 
         ctx.removeAction();
-        // this.pendingActions.delete(
-        //   getTargetActionKey(ctx.attacker.id, ctx.victim.id, action.actionType),
-        // );
-
-        // await this.schedulePathUpdate(
-        //   ctx.attacker.id,
-        //   ctx.victim.id,
-        //   ctx.attacker.userId,
-        //   null,
-        // );
 
         break;
       }
@@ -736,15 +735,19 @@ export class CombatService {
 
     if (!characterSkill) return;
 
+    console.log('applyAoESkill', characterSkill);
+
     const areaRadius = characterSkill.skill.areaRadius;
 
     if (characterSkill.skill.type !== SkillType.AoE || !areaRadius) return;
 
-    characterSkill.skill.effects?.forEach((effect) => {
-      if (effect.type === EffectType.DamageOverTime) {
-        this.spawnAoeZone(attacker, characterSkill, area);
-      }
-    });
+    console.log('BEFORE SPAWN AOE ZONE');
+
+    this.spawnAoeZone(attacker, characterSkill, area);
+    // characterSkill.skill.effects?.forEach((effect) => {
+    //   if (effect.type === EffectType.DamageOverTime) {
+    //   }
+    // });
   }
 
   spawnAoeZone(
@@ -753,6 +756,8 @@ export class CombatService {
     area: PositionDto,
   ) {
     if (!cSkill.skill.areaRadius || !cSkill.skill.duration) return;
+
+    console.log('spawn AOE zone');
 
     const now = Date.now();
     const zoneId = uuidv4() as string;
@@ -768,5 +773,12 @@ export class CombatService {
       effects: cSkill.skill.effects ?? [],
       lastUsedAt: null,
     });
+
+    const { enemiesIds, affectedCells } = this.spatialGridService.queryRadius(
+      caster.locationId,
+      area.x,
+      area.y,
+      cSkill.skill.areaRadius,
+    );
   }
 }

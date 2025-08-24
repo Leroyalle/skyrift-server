@@ -1,4 +1,7 @@
 import { Injectable } from '@nestjs/common';
+import { decodeGridKey } from './lib/decode-grid-key.lib';
+import { DecodedGridKey } from './types/decoed-grid-key.type';
+import { QueryRadiusResult } from './types/query-radius-result.type';
 
 @Injectable()
 export class SpatialGridService<
@@ -49,21 +52,29 @@ export class SpatialGridService<
     x: number,
     y: number,
     radius: number,
-  ): string[] {
-    const minX = Math.floor((x - radius) / this.tileSize);
-    const maxX = Math.floor((x + radius) / this.tileSize);
-    const minY = Math.floor((y - radius) / this.tileSize);
-    const maxY = Math.floor((y + radius) / this.tileSize);
+  ): QueryRadiusResult {
+    const centerX = Math.floor(x / this.tileSize);
+    const centerY = Math.floor(y / this.tileSize);
 
-    const results: string[] = [];
+    const minX = centerX - radius;
+    const maxX = centerX + radius;
+    const minY = centerY - radius;
+    const maxY = centerY + radius;
+
+    const enemiesIds: string[] = [];
+    const affectedCells: DecodedGridKey[] = [];
     for (let cx = minX; cx <= maxX; cx++) {
       for (let cy = minY; cy <= maxY; cy++) {
         const key = `${locationId}_${cx}_${cy}`;
         const bucket = this.cells.get(key);
         if (!bucket) continue;
-        bucket.forEach((eId) => results.push(eId));
+        affectedCells.push(decodeGridKey(key));
+        bucket.forEach((eId) => enemiesIds.push(eId));
       }
     }
-    return results;
+    return {
+      enemiesIds,
+      affectedCells,
+    };
   }
 }
