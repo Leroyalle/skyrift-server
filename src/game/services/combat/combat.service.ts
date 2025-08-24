@@ -3,7 +3,10 @@ import { PlayerStateService } from '../../player-state.service';
 import { SkillType } from 'src/common/enums/skill/skill-type.enum';
 import { PositionDto } from 'src/common/dto/position.dto';
 import { SpatialGridService } from '../spatial-grid/spatial-grid.service';
-import { LiveCharacterState } from 'src/character/types/live-character-state.type';
+import {
+  LiveCharacterState,
+  TargetType,
+} from 'src/character/types/live-character-state.type';
 import { ActiveAoEZone } from './types/active-aoe-zone.type';
 import { CharacterSkill } from 'src/character/character-skill/entities/character-skill.entity';
 import { v4 as uuidv4 } from 'uuid';
@@ -27,6 +30,8 @@ import { RequestAttackMoveDto } from 'src/game/dto/request-attack-move.dto';
 import { RequestSkillUseDto } from 'src/game/dto/request-use-skill.dto';
 import { MovementService } from '../movement/movement.service';
 import { TargetAction } from './types/target-action.type';
+import { CachedLocation } from 'src/location/types/cashed-location.type';
+import { pushTargetAction } from './lib/push-target-action.lib';
 
 @Injectable()
 export class CombatService {
@@ -111,34 +116,10 @@ export class CombatService {
 
       if (steps.length > range) {
         attacker.isAttacking = false;
-        // if (action.target.kind === 'player') {
-        //   const victim = this.playerStateService.getCharacterState(
-        //     action.target.id,
-        //   );
-        //   if (!victim) continue;
-
         this.movementService.setMovementQueue(attacker.id, {
           steps: steps.slice(0, steps.length - range),
           userId: attacker.userId,
         });
-        // await this.schedulePathUpdate(
-        //   attacker,
-        //   {
-        //     kind: 'player',
-        //     id: victim.id,
-        //   },
-        //   characterSkill?.id,
-        // );
-        // } else if (action.target.kind === 'aoe') {
-        //   await this.schedulePathUpdate(
-        //     attacker,
-        //     {
-        //       kind: 'aoe',
-        //       ...targetTile,
-        //     },
-        //     characterSkill?.id,
-        //   );
-        // }
         continue;
       } else {
         attacker.isAttacking = true;
@@ -162,6 +143,8 @@ export class CombatService {
         tileSize: location.tileWidth,
         removeAction: () => queue.shift(),
       };
+
+      console.log('tick action', action);
 
       this.resolveAction(actionCtx, action);
     }
@@ -369,6 +352,40 @@ export class CombatService {
     this.pendingActionsQueue.set(client.userData.characterId, []);
   }
 
+  private resolveTarget(
+    target: TargetAction,
+    location: CachedLocation,
+  ): {
+    tile: { x: number; y: number };
+    currentTarget: { id: string; type: TargetType } | null;
+  } | null {
+    if (target.kind === 'player') {
+      const victim = this.playerStateService.getCharacterState(target.id);
+      if (!victim || !victim.isAlive) return null;
+      return {
+        tile: {
+          x: Math.floor(victim.x / location.tileWidth) | 0,
+          y: Math.floor(victim.y / location.tileHeight) | 0,
+        },
+        currentTarget: { id: victim.id, type: target.kind },
+      };
+    }
+    if (target.kind === 'aoe') {
+      console.log('resolve target', {
+        x: Math.floor(target.x / location.tileWidth) | 0,
+        y: Math.floor(target.y / location.tileHeight) | 0,
+      });
+      return {
+        tile: {
+          x: Math.floor(target.x / location.tileWidth) | 0,
+          y: Math.floor(target.y / location.tileHeight) | 0,
+        },
+        currentTarget: null,
+      };
+    }
+    return null;
+  }
+
   private async schedulePathUpdate(
     attacker: LiveCharacterState,
     target: TargetAction,
@@ -396,30 +413,12 @@ export class CombatService {
       y: Math.floor(attacker.y / findLocation.tileHeight),
     };
 
-    let targetTile: { x: number; y: number } | null = null;
+    const result = this.resolveTarget(target, findLocation);
 
-    if (target.kind === 'player') {
-      const victim = this.playerStateService.getCharacterState(target.id);
-      if (!victim || !victim.isAlive) return;
+    if (!result) return;
 
-      attacker.currentTarget = {
-        id: victim.id,
-        type: target.kind,
-      };
-
-      targetTile = {
-        x: Math.floor(victim.x / findLocation.tileWidth),
-        y: Math.floor(victim.y / findLocation.tileHeight),
-      };
-    } else if (target.kind === 'aoe') {
-      attacker.currentTarget = null;
-      targetTile = {
-        x: Math.floor(target.x / findLocation.tileWidth),
-        y: Math.floor(target.y / findLocation.tileHeight),
-      };
-    }
-
-    if (!targetTile) return;
+    attacker.currentTarget = result.currentTarget;
+    const targetTile = result.tile;
 
     const steps = await this.pathFindingService.getPlayerPath(
       findLocation.id,
@@ -443,52 +442,47 @@ export class CombatService {
       state: 'wait-path',
     };
 
-    const autoAttackAction: PendingAction = {
-      ...pendingAction,
-      actionType: ActionType.AutoAttack,
-      skillId: null,
-    };
-
     const queue = this.getOrCreateActionQueue(attacker.id);
 
     const hasAutoAttack = queue.some(
       (q) => q.actionType === ActionType.AutoAttack,
     );
 
-    if (steps.length <= range) {
-      pendingAction.state = 'attack';
-
-      if (hasAutoAttack && !skillId) return;
-
-      if (hasAutoAttack) {
-        queue.splice(-1, 0, pendingAction);
-      } else {
-        autoAttackAction.state = 'attack';
-        queue.push(pendingAction, autoAttackAction);
-      }
-
-      console.log('steps length <= range, set attack action');
-
-      return;
-    }
-
-    this.movementService.setMovementQueue(attacker.id, {
-      steps: steps.slice(0, steps.length - range),
-      userId: attacker.userId,
-    });
-
-    pendingAction.state = 'move-to-target';
-
     if (hasAutoAttack && !skillId) return;
 
-    if (hasAutoAttack) {
-      queue.splice(-1, 0, pendingAction);
-    } else {
-      autoAttackAction.state = 'move-to-target';
-      queue.push(pendingAction, autoAttackAction);
+    switch (characterSkill?.skill.type) {
+      case SkillType.AoE: {
+        this.resolvePendingActionState(attacker, pendingAction, range, steps);
+        console.log('push aoe skill', pendingAction);
+        queue.push(pendingAction);
+        break;
+      }
+      default: {
+        this.resolvePendingActionState(attacker, pendingAction, range, steps);
+        pushTargetAction(queue, hasAutoAttack, pendingAction, characterSkill);
+        break;
+      }
     }
+  }
 
-    console.log('steps length > range, set move-to-target action');
+  private resolvePendingActionState(
+    attacker: LiveCharacterState,
+    pendingAction: PendingAction,
+    range: number,
+    steps: PositionDto[],
+  ) {
+    const inRange = steps.length <= range;
+    if (!inRange) {
+      this.movementService.setMovementQueue(attacker.id, {
+        steps: steps.slice(0, steps.length - range),
+        userId: attacker.userId,
+      });
+      pendingAction.state = 'move-to-target';
+      console.log('[resolve_pending_action]: SET STEPS');
+    } else {
+      pendingAction.state = 'attack';
+      console.log('[resolve_pending_action]: attack');
+    }
   }
 
   resolveAction(ctx: ActionContext, action: PendingAction): void {

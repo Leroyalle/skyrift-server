@@ -20,10 +20,14 @@ export type LiveCharacterState = {
   userId: string;
   isAttacking: boolean;
   lastHpRegenerationTime: number;
-  currentTarget: {
-    id: string;
-    type: 'player' | 'mob';
-  } | null;
+  currentTarget: CurrentTarget | null;
   characterSkills: CharacterSkill[];
   // TODO: add the damage(now) - sum all damage items
 };
+
+export type CurrentTarget = {
+  id: string;
+  type: TargetType;
+};
+
+export type TargetType = 'player' | 'mob';
