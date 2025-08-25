@@ -282,6 +282,8 @@ export class GameService implements OnModuleInit {
       .map((id) => this.playerStateService.getCharacterState(id))
       .filter((p) => p && p.id !== characterId);
 
+    const aoeZones = this.combatService.getActiveAoeZones();
+    console.log('initialZones', aoeZones);
     this.socketService.joinToRoom(userId, RedisKeys.Location + findLocation.id);
 
     this.socketService.sendToUser(
@@ -291,6 +293,7 @@ export class GameService implements OnModuleInit {
         character: findCharacter,
         location: findLocation,
         players: otherPlayers,
+        aoeZones,
       },
     );
   }

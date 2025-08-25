@@ -14,6 +14,8 @@ export enum ServerToClientEvents {
   PlayerLeft = 'player:left',
   PlayerEntered = 'player:entered',
   GameInitialState = 'game:initial-state',
+  AoESpawn = 'aoe:spawn',
+  AoERemove = 'aoe:remove',
 }
 
 export enum ClientToServerEvents {

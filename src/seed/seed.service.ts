@@ -146,7 +146,7 @@ export class SeedService {
       cooldownMs: 5000,
       manaCost: 10,
       characterClass: archerClass,
-      icon: '/assets/skills/archer/fire-arrow.png',
+      icon: '/sprites/skills/archer/fire-arrow.png',
       range: 8,
       tilesetKey: 'spells-tileset.png',
       // TODO: update
@@ -165,7 +165,7 @@ export class SeedService {
       cooldownMs: 5000,
       manaCost: 10,
       characterClass: archerClass,
-      icon: '/assets/skills/archer/fire-hail.png',
+      icon: '/sprites/skills/archer/fire-hail.png',
       range: 5,
       tilesetKey: 'spells-tileset.png',
       // TODO: update

@@ -23,7 +23,10 @@ import { getDirection } from 'src/game/lib/get-direction.lib';
 import { ServerToClientEvents } from 'src/common/enums/game-socket-events.enum';
 import { RedisKeys } from 'src/common/enums/redis-keys.enum';
 import { ApplyAutoAttackResult } from 'src/game/types/attack/apply-auto-attack-result.type';
-import { ApplySkillResult } from 'src/game/types/attack/apply-skill-result.type';
+import {
+  ApplySkillResult,
+  CooldownResult,
+} from 'src/game/types/attack/apply-skill-result.type';
 import { Socket } from 'socket.io';
 import { RequestAttackMoveDto } from 'src/game/dto/request-attack-move.dto';
 import { RequestSkillUseDto } from 'src/game/dto/request-use-skill.dto';
@@ -157,13 +160,22 @@ export class CombatService {
     }
   }
 
+  private despawnAoEZone(zone: ActiveAoEZone) {
+    this.activeAoEZones.delete(zone.id);
+    this.socketService.sendTo(
+      RedisKeys.Location + zone.locationId,
+      ServerToClientEvents.AoERemove,
+      { id: zone.id },
+    );
+  }
+
   public tickAoE() {
     const updatesByLocation = new Map<string, BatchUpdateAction[]>();
     for (const zone of this.activeAoEZones.values()) {
       const now = Date.now();
 
       if (now >= zone.expiresAt) {
-        this.activeAoEZones.delete(zone.id);
+        this.despawnAoEZone(zone);
         continue;
       }
 
@@ -171,15 +183,16 @@ export class CombatService {
 
       const attacker = this.playerStateService.getCharacterState(zone.casterId);
       if (!attacker) {
-        this.activeAoEZones.delete(zone.id);
+        this.despawnAoEZone(zone);
         continue;
       }
 
       const cSkill = attacker.characterSkills.find(
         (cSkill) => cSkill.id === zone.skillId,
       );
+
       if (!cSkill) {
-        this.activeAoEZones.delete(zone.id);
+        this.despawnAoEZone(zone);
         continue;
       }
 
@@ -239,6 +252,10 @@ export class CombatService {
       this.pendingActionsQueue.set(characterId, queue);
     }
     return queue;
+  }
+
+  public getActiveAoeZones() {
+    return Array.from(this.activeAoEZones.values());
   }
 
   public async requestAttackMove(client: Socket, input: RequestAttackMoveDto) {
@@ -456,7 +473,7 @@ export class CombatService {
       case SkillType.AoE: {
         this.resolvePendingActionState(attacker, pendingAction, range, steps);
         console.log('push aoe skill', pendingAction);
-        queue.push(pendingAction);
+        pushTargetAction(queue, hasAutoAttack, pendingAction, characterSkill);
         break;
       }
       default: {
@@ -612,20 +629,25 @@ export class CombatService {
 
           ctx.batchLocation.push(applySkillResult.attackResult);
 
-          this.socketService.sendToUser(
+          this.sendUserSkillCooldown(
             ctx.attacker.userId,
-            ServerToClientEvents.PlayerSkillCooldownUpdate,
-            {
-              skillId: applySkillResult.cooldown.skillId,
-              cooldownEnd: applySkillResult.cooldown.cooldownEnd,
-            },
+            applySkillResult.cooldown,
           );
         } else if (
           skillType === SkillType.AoE &&
           action.target.kind === 'aoe'
         ) {
           const { kind: _, ...area } = action.target;
-          this.applyAoESkill(action.attackerId, action.skillId, area);
+          const applyAoeSkillResult = this.applyAoESkill(
+            action.attackerId,
+            action.skillId,
+            area,
+          );
+          if (!applyAoeSkillResult) return;
+          this.sendUserSkillCooldown(
+            ctx.attacker.userId,
+            applyAoeSkillResult.cooldown,
+          );
         }
 
         ctx.removeAction();
@@ -633,6 +655,14 @@ export class CombatService {
         break;
       }
     }
+  }
+
+  private sendUserSkillCooldown(userId: string, cooldown: CooldownResult) {
+    this.socketService.sendToUser(
+      userId,
+      ServerToClientEvents.PlayerSkillCooldownUpdate,
+      cooldown,
+    );
   }
 
   public autoAttack(
@@ -718,7 +748,11 @@ export class CombatService {
     };
   }
 
-  applyAoESkill(attackerId: string, skillId: string, area: PositionDto) {
+  applyAoESkill(
+    attackerId: string,
+    skillId: string,
+    area: PositionDto,
+  ): { cooldown: CooldownResult } | undefined {
     const attacker = this.playerStateService.getCharacterState(attackerId);
     if (!attacker) return;
 
@@ -736,8 +770,22 @@ export class CombatService {
 
     console.log('BEFORE SPAWN AOE ZONE');
 
-    this.spawnAoeZone(attacker, characterSkill, area);
-    // characterSkill.skill.effects?.forEach((effect) => {
+    const now = Date.now();
+
+    this.spawnAoeZone(attacker, characterSkill, area, now);
+
+    characterSkill.lastUsedAt = now;
+    characterSkill.cooldownEnd = now + characterSkill.skill.cooldownMs;
+
+    attacker.lastAttackAt = now;
+
+    return {
+      cooldown: {
+        cooldownEnd: characterSkill.cooldownEnd,
+        skillId: characterSkill.id,
+      },
+    };
+    // TODO: characterSkill.skill.effects?.forEach((effect) => {
     //   if (effect.type === EffectType.DamageOverTime) {
     //   }
     // });
@@ -747,12 +795,12 @@ export class CombatService {
     caster: LiveCharacterState,
     cSkill: CharacterSkill,
     area: PositionDto,
+    now: number,
   ) {
     if (!cSkill.skill.areaRadius || !cSkill.skill.duration) return;
 
     console.log('spawn AOE zone');
 
-    const now = Date.now();
     const zoneId = uuidv4() as string;
     this.activeAoEZones.set(zoneId, {
       id: zoneId,
@@ -767,16 +815,18 @@ export class CombatService {
       lastUsedAt: null,
     });
 
-    cSkill.lastUsedAt = now;
-    cSkill.cooldownEnd = now + cSkill.skill.cooldownMs;
-
-    caster.lastAttackAt = now;
-
-    const { enemiesIds, affectedCells } = this.spatialGridService.queryRadius(
-      caster.locationId,
-      area.x,
-      area.y,
-      cSkill.skill.areaRadius,
+    this.socketService.sendTo(
+      RedisKeys.Location + caster.locationId,
+      ServerToClientEvents.AoESpawn,
+      {
+        id: zoneId,
+        casterId: caster.id,
+        skillId: cSkill.id,
+        radius: cSkill.skill.areaRadius,
+        x: area.x,
+        y: area.y,
+        expiresAt: cSkill.skill.duration + now,
+      },
     );
   }
 }

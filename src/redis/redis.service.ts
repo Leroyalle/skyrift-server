@@ -3,7 +3,7 @@ import Redis from 'ioredis';
 
 @Injectable()
 export class RedisService {
-  constructor(@Inject('REDIS_CLIENT') private client: Redis) {
+  constructor(@Inject('REDIS_CLIENT') private readonly client: Redis) {
     this.client.on('connect', () => console.log('Connected to Redis'));
     this.client.on('error', (err) => console.error('Redis error:', err));
   }
