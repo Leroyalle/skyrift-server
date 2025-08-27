@@ -5,7 +5,6 @@ import { RedisKeysFactory } from 'src/common/infra/redis-keys-factory.infra';
 import { RedisService } from 'src/redis/redis.service';
 import { ActionType } from './types/pending-actions.type';
 import { ApplySkillResult } from './types/attack/apply-skill-result.type';
-import { getTargetActionKey } from './lib/get-pending-action-key.lib';
 import { ApplyAutoAttackResult } from './types/attack/apply-auto-attack-result.type';
 import { PositionDto } from 'src/common/dto/position.dto';
 import { SkillType } from 'src/common/enums/skill/skill-type.enum';

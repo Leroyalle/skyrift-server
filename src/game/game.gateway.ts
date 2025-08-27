@@ -50,7 +50,6 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @ConnectedSocket() client: Socket,
     @MessageBody() input: RequestMoveToDto,
   ) {
-    // this.gameService.playerWalk(client, input);
     return this.gameService.requestMoveTo(client, input);
   }
 
@@ -71,11 +70,8 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage(ClientToServerEvents.PlayerAttackCancelled)
-  requestAttackCancalled(
-    @ConnectedSocket() client: Socket,
-    @MessageBody() input: RequestAttackMoveDto,
-  ) {
-    return this.gameService.requestAttackCancelled(client, input);
+  requestAttackCancalled(@ConnectedSocket() client: Socket) {
+    return this.gameService.requestAttackCancelled(client);
   }
 
   @SubscribeMessage(ClientToServerEvents.RequestInitialState)

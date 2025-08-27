@@ -361,7 +361,7 @@ export class CombatService {
     }
   }
 
-  public requestAttackCancel(client: Socket, input: RequestAttackMoveDto) {
+  public requestAttackCancel(client: Socket) {
     if (!this.socketService.verifyUserDataInSocket(client)) {
       this.socketService.notifyDisconnection(client);
       this.socketService.onDisconnect(client);
@@ -369,6 +369,15 @@ export class CombatService {
     }
 
     this.pendingActionsQueue.set(client.userData.characterId, []);
+
+    const attacker = this.playerStateService.getCharacterState(
+      client.userData.characterId,
+    );
+
+    if (!attacker) return;
+
+    attacker.currentTarget = null;
+    attacker.isAttacking = false;
   }
 
   private resolveTarget(

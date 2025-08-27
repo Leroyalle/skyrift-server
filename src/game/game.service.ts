@@ -310,7 +310,7 @@ export class GameService implements OnModuleInit {
     await this.combatService.requestUseSkill(client, input);
   }
 
-  public requestAttackCancelled(client: Socket, input: RequestAttackMoveDto) {
-    this.combatService.requestAttackCancel(client, input);
+  public requestAttackCancelled(client: Socket) {
+    this.combatService.requestAttackCancel(client);
   }
 }
