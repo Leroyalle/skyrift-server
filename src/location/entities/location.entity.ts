@@ -1,54 +1,42 @@
 import { Field, ID, Int, ObjectType } from '@nestjs/graphql';
 import { Character } from 'src/character/entities/character.entity';
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
-import { LocationLayer } from './location-layer.entity';
+import { TiledMap } from 'src/common/types/tiled-map.type';
 
 @Entity()
 @ObjectType()
 export class Location {
   @PrimaryGeneratedColumn('uuid')
-  @Field(() => ID, { description: 'ID локации' })
+  @Field(() => ID)
   id: string;
 
   @Column()
-  @Field({ description: 'Название локации' })
+  @Field()
   name: string;
 
-  @Column()
-  @Field({ description: 'Координата старта X' })
-  startX: number;
+  @Column('jsonb')
+  @Field(() => TiledMap)
+  tiledMap: TiledMap;
+
+  @Column('jsonb')
+  @Field(() => [[Int]])
+  passableMap: number[][];
 
   @Column()
-  @Field({ description: 'Координата старта Y' })
-  startY: number;
-
-  @Column()
-  @Field()
+  @Field(() => Int)
   width: number;
 
   @Column()
-  @Field()
+  @Field(() => Int)
   height: number;
 
   @Column()
-  @Field()
-  tilesetKey: string;
-
-  @Column()
-  @Field()
-  mapImageUrl: string;
-
-  @Column()
-  @Field(() => Int, { description: 'Ширина тайла' })
+  @Field(() => Int)
   tileWidth: number;
 
   @Column()
-  @Field(() => Int, { description: 'Высота тайла' })
+  @Field(() => Int)
   tileHeight: number;
-
-  @OneToMany(() => LocationLayer, (layer) => layer.location, { cascade: true })
-  @Field(() => [LocationLayer])
-  layers: LocationLayer[];
 
   @OneToMany(() => Character, (character) => character.location)
   @Field(() => [Character])

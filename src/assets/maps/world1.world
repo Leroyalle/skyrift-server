@@ -1,0 +1,11 @@
+{
+    "onlyShowAdjacentMaps": false,
+    "type": "world",
+    "maps": [
+    {
+      "fileName": "location_0_0.tmj",
+      "x": 0,
+      "y": 0
+    }
+  ]
+}
