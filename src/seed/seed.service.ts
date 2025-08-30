@@ -3,8 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../user/entities/user.entity';
 import { Repository } from 'typeorm';
 import { Location } from 'src/location/entities/location.entity';
-import { TiledMap, TileLayer } from 'src/common/types/tiled-map.type';
-import { LocationLayer } from 'src/location/entities/location-layer.entity';
+import { Property, TiledMap, TileLayer } from 'src/common/types/tiled-map.type';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as xml2js from 'xml2js';
@@ -24,8 +23,6 @@ export class SeedService {
     private userRepository: Repository<User>,
     @InjectRepository(Location)
     private locationRepository: Repository<Location>,
-    @InjectRepository(LocationLayer)
-    private locationLayerRepository: Repository<LocationLayer>,
     @InjectRepository(Faction)
     private factionRepository: Repository<Faction>,
     @InjectRepository(CharacterClass)
@@ -69,19 +66,20 @@ export class SeedService {
       logo: 'https://example.com/archer_logo.png',
     });
 
-    const { mapEntries, tilesetEntries } = await this.readFiles();
-    // FIXME: update character seed
+    const { mapEntries } = await this.readFiles();
     let location;
     for (const mapEntry of mapEntries) {
+      console.log(mapEntry.tilesets);
+      const tiledMap = this.optimizeTilesets(mapEntry);
+      const passableMap = this.createPassableMap(mapEntry);
       console.log(mapEntry.tilewidth, mapEntry.tileheight);
+
       const savedLocation = this.locationRepository.create({
         height: mapEntry.height,
         width: mapEntry.width,
-        startX: 0,
-        startY: 0,
+        tiledMap,
+        passableMap,
         name: this.findMapName(mapEntry),
-        tilesetKey: mapEntry.tilesets[0].source,
-        mapImageUrl: mapEntry.tilesets[0].source,
         tileWidth: mapEntry.tilewidth,
         tileHeight: mapEntry.tileheight,
       });
@@ -89,23 +87,6 @@ export class SeedService {
       await this.locationRepository.save(savedLocation);
 
       console.log('Location saved', savedLocation.name);
-
-      await Promise.all(
-        mapEntry.layers.map(async (layer, layerIndex) => {
-          const tileData = this.transformMapLayerData(layer);
-
-          const passableData = this.getPassableData(layer, tilesetEntries[0]);
-
-          await this.locationLayerRepository.save({
-            name: layer.name,
-            layerIndex,
-            tileData,
-            location: savedLocation,
-            passableData,
-            type: layer.type,
-          });
-        }),
-      );
     }
 
     const firstCharacter = await this.characterRepository.save({
@@ -204,9 +185,6 @@ export class SeedService {
 
   private async clearDatabase() {
     await this.userRepository.query('TRUNCATE TABLE "user" CASCADE');
-    await this.locationLayerRepository.query(
-      'TRUNCATE TABLE "location_layer" CASCADE',
-    );
     await this.locationRepository.query('TRUNCATE TABLE "location" CASCADE');
     await this.factionRepository.query('TRUNCATE TABLE "faction" CASCADE');
     await this.characterClassRepository.query(
@@ -222,9 +200,11 @@ export class SeedService {
 
   private async readFiles() {
     const mapsDir = path.join(__dirname, '..', 'assets', 'maps');
-    const maps = fs.readdirSync(mapsDir);
+    const maps = fs.readdirSync(mapsDir).filter((f) => f.endsWith('.tmj'));
     const tilesetsDir = path.join(__dirname, '..', 'assets', 'tilesets');
-    const tilesets = fs.readdirSync(tilesetsDir);
+    const tilesets = fs
+      .readdirSync(tilesetsDir)
+      .filter((f) => f.endsWith('.xml'));
 
     const tilesetEntries = await Promise.all(
       tilesets.map(async (tileset) => {
@@ -244,7 +224,7 @@ export class SeedService {
 
       return parsedMap;
     });
-
+    console.log(mapEntries.length);
     return { tilesetEntries, mapEntries };
   }
 
@@ -274,40 +254,130 @@ export class SeedService {
     }
   }
 
-  private transformMapLayerData(layer: TileLayer) {
-    const tileData: number[][] = [];
+  // private transformMapLayerData(layer: TileLayer) {
+  //   const tileData: number[][] = [];
 
-    for (let i = 0; i < layer.height; i++) {
-      const row = layer.data.slice(i * layer.width, (i + 1) * layer.width);
-      tileData.push(row);
-    }
+  //   for (let i = 0; i < layer.height; i++) {
+  //     const row = layer.data.slice(i * layer.width, (i + 1) * layer.width);
+  //     tileData.push(row);
+  //   }
 
-    return tileData;
-  }
-  private getPassableData(layer: TileLayer, tileset: Record<string, any>) {
-    const passableData: number[][] = [];
+  //   return tileData;
+  // }
+  // private getPassableData(layer: TileLayer, tileset: Record<string, any>) {
+  //   const passableData: number[][] = [];
 
-    const mergedTilesetData = Object.values(tileset).reduce(
-      (acc, tileGroup) => {
-        return { ...acc, ...tileGroup };
-      },
-      {},
-    );
+  //   const mergedTilesetData = Object.values(tileset).reduce(
+  //     (acc, tileGroup) => {
+  //       return { ...acc, ...tileGroup };
+  //     },
+  //     {},
+  //   );
 
-    for (let i = 0; i < layer.height; i++) {
-      const row = layer.data
-        .map((tileId) => {
-          return mergedTilesetData[tileId]?.passable === 'false' ? 0 : 1;
-        })
-        .slice(i * layer.width, (i + 1) * layer.width);
-      passableData.push(row);
-    }
-    return passableData;
-  }
+  //   for (let i = 0; i < layer.height; i++) {
+  //     const row = layer.data
+  //       .map((tileId) => {
+  //         return mergedTilesetData[tileId]?.passable === 'false' ? 0 : 1;
+  //       })
+  //       .slice(i * layer.width, (i + 1) * layer.width);
+  //     passableData.push(row);
+  //   }
+  //   return passableData;
+  // }
 
   private findMapName(tiledMap: TiledMap) {
     return String(
       tiledMap.properties.find((property) => property.name === 'name')?.value,
     );
   }
+
+  private optimizeTilesets(map: TiledMap) {
+    const usesIds = new Set<number>();
+    for (const layer of map.layers) {
+      layer.data.forEach((gid) => {
+        if (gid > 0) usesIds.add(gid);
+      });
+    }
+
+    map.tilesets.forEach((tileset) => {
+      const { firstgid } = tileset;
+      console.log(tileset.tiles);
+      tileset.tiles = tileset.tiles?.filter((tile) =>
+        usesIds.has(firstgid + tile.id),
+      );
+    });
+
+    return map;
+  }
+
+  private createPassableMap(map: TiledMap) {
+    const tilesMap = new Map<number, Property[]>();
+    map.tilesets.forEach((tileset) => {
+      const { firstgid } = tileset;
+
+      tileset.tiles?.forEach((tile) =>
+        tilesMap.set(firstgid + tile.id, tile.properties),
+      );
+    });
+
+    const passableMap: number[][] = Array.from({ length: map.height }, () =>
+      Array(map.width).fill(1),
+    );
+
+    for (const layer of map.layers) {
+      if (layer.type !== 'tilelayer') continue;
+
+      for (let y = 0; y < layer.height; y++) {
+        for (let x = 0; x < layer.width; x++) {
+          const tileIndex = y * layer.width + x;
+          const tileId = layer.data[tileIndex];
+          if (!tileId) continue;
+
+          const props = tilesMap.get(tileId);
+          if (!props) continue;
+          const passableProperty = props.find(
+            (prop) => prop.name === 'passable',
+          );
+          if (passableProperty && passableProperty.value === false) {
+            passableMap[y][x] = 0;
+          }
+        }
+      }
+    }
+
+    return passableMap;
+  }
+
+  // private buildPassableMap(
+  //   map: TiledMap,
+  //   tileset: Record<string, any>,
+  // ): number[][] {
+  //   const mergedTilesetData = Object.values(tileset).reduce(
+  //     (acc, tileGroup) => ({ ...acc, ...tileGroup }),
+  //     {},
+  //   );
+
+  //   const passableMap: number[][] = Array.from({ length: map.height }, () =>
+  //     Array(map.width).fill(1),
+  //   );
+
+  //   for (const layer of map.layers) {
+  //     if (layer.type !== 'tilelayer') continue;
+
+  //     for (let y = 0; y < layer.height; y++) {
+  //       for (let x = 0; x < layer.width; x++) {
+  //         const tileIndex = y * layer.width + x;
+  //         const tileId = layer.data[tileIndex];
+  //         if (!tileId) continue;
+
+  //         const props = mergedTilesetData[tileId];
+  //         if (props?.passable === 'false') {
+  //           passableMap[y][x] = 0;
+  //         }
+  //       }
+  //     }
+  //   }
+
+  //   return passableMap;
+  // }
 }

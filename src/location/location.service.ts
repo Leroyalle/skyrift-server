@@ -1,13 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { CreateLocationInput } from './dto/create-location.input';
-import { UpdateLocationInput } from './dto/update-location.input';
 import { Repository } from 'typeorm';
 import { Location } from './entities/location.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { RedisService } from 'src/redis/redis.service';
 import { CachedLocation } from 'src/location/types/cashed-location.type';
 import { RedisKeys } from 'src/common/enums/redis-keys.enum';
-import { mergePassableMaps } from 'src/game/lib/merge-passable-maps.lib';
 
 @Injectable()
 export class LocationService {
@@ -30,9 +28,6 @@ export class LocationService {
   public async findOne(id: string) {
     return await this.locationRepository.findOne({
       where: { id },
-      relations: {
-        layers: true,
-      },
     });
   }
 
@@ -58,17 +53,9 @@ export class LocationService {
 
     if (!dbLocation) return;
 
-    const mergedLocation = {
-      ...dbLocation,
-      // TODO: сохранять в бд сразу passableMap
-      passableMap: mergePassableMaps(dbLocation.layers),
-    };
+    this.locationCache.set(locationId, dbLocation);
+    await this.redisService.set(RedisKeys.Location + locationId, dbLocation);
 
-    await this.redisService.set(
-      RedisKeys.Location + locationId,
-      mergedLocation,
-    );
-
-    return mergedLocation;
+    return dbLocation;
   }
 }

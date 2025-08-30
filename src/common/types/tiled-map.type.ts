@@ -1,45 +1,151 @@
-// Тип для слоя карты (tilelayer)
-export interface TileLayer {
-  data: number[]; // Массив ID тайлов, длина = width * height (в данном случае 64 * 64 = 4096)
-  height: number; // Высота слоя в тайлах (в данном случае 64)
-  id: number; // Уникальный идентификатор слоя (например, 1)
-  name: string; // Имя слоя, например, "Ground"
-  opacity: number; // Прозрачность слоя (0–1, в данном случае 1)
-  type: 'tilelayer'; // Тип слоя, в данном случае "tilelayer"
-  visible: boolean; // Видимость слоя (в данном случае true)
-  width: number; // Ширина слоя в тайлах (в данном случае 64)
-  x: number; // Координата X слоя (в данном случае 0)
-  y: number; // Координата Y слоя (в данном случае 0)
+import { ObjectType, Field, Int, Float } from '@nestjs/graphql';
+
+@ObjectType()
+export class Property {
+  @Field()
+  name: string;
+
+  @Field()
+  type: 'bool' | 'int' | 'float' | 'string';
+
+  @Field(() => String)
+  value: boolean | number | string;
 }
 
-// Тип для тайлсета
-interface Tileset {
-  firstgid: number; // Первый глобальный ID тайла в тайлсете (например, 1)
-  source: string; // Путь к файлу тайлсета (например, "../.../tileset1.tsx")
+@ObjectType()
+export class Tile {
+  @Field(() => Int)
+  id: number;
+
+  @Field(() => [Property])
+  properties: Property[];
 }
 
-// Основной тип для Tiled карты
-export interface TiledMap {
-  compressionlevel: number; // Уровень сжатия (-1 означает без сжатия)
-  height: number; // Высота карты в тайлах (например, 64)
-  infinite: boolean; // Является ли карта бесконечной (например, false)
-  layers: TileLayer[]; // Массив слоев карты, содержащий tilelayer, такой как "Ground"
-  nextlayerid: number; // Следующий доступный ID для нового слоя (например, 4)
+// Тайлсет
+@ObjectType()
+export class Tileset {
+  @Field(() => Int)
+  firstgid: number;
+
+  @Field(() => Int)
+  columns: number;
+
+  @Field()
+  image: string;
+
+  @Field(() => Int)
+  imageWidth: number;
+
+  @Field(() => Int)
+  margin: number;
+
+  @Field(() => Int)
+  imageheight: number;
+
+  @Field(() => Int)
+  spacing: number;
+
+  @Field()
+  name: string;
+
+  @Field(() => Int)
+  tilecount: number;
+
+  @Field(() => Int)
+  tileHeight: 32;
+
+  @Field(() => Int)
+  tilewidth: 32;
+
+  @Field()
+  source: string;
+
+  @Field(() => [Tile], { nullable: true })
+  tiles?: Tile[];
+}
+
+// Слой карты
+@ObjectType()
+export class TileLayer {
+  @Field(() => [Int])
+  data: number[]; // одномерный массив ID тайлов
+
+  @Field(() => Int)
+  height: number;
+
+  @Field(() => Int)
+  id: number;
+
+  @Field()
+  name: string;
+
+  @Field(() => Float)
+  opacity: number;
+
+  @Field()
+  type: string; // всегда 'tilelayer'
+
+  @Field()
+  visible: boolean;
+
+  @Field(() => Int)
+  width: number;
+
+  @Field(() => Int)
+  x: number;
+
+  @Field(() => Int)
+  y: number;
+}
+
+// Основная карта
+@ObjectType()
+export class TiledMap {
+  @Field(() => Int)
+  compressionlevel: number;
+
+  @Field(() => Int)
+  height: number;
+
+  @Field()
+  infinite: boolean;
+
+  @Field(() => [TileLayer])
+  layers: TileLayer[];
+
+  @Field(() => Int)
+  nextlayerid: number;
+
+  @Field(() => Int)
   nextobjectid: number;
-  properties: Property[]; // Следующий доступный ID для нового объекта (например, 1)
-  orientation: 'orthogonal' | 'isometric' | 'staggered' | 'hexagonal'; // Тип ориентации карты (например, "orthogonal")
-  renderorder: 'right-down' | 'right-up' | 'left-down' | 'left-up'; // Порядок рендеринга (например, "right-down")
-  tiledversion: string; // Версия Tiled (например, "1.11.2")
-  tileheight: number; // Высота тайла в пикселях (например, 32)
-  tilesets: Tileset[]; // Массив тайлсетов, используемых в карте
-  tilewidth: number; // Ширина тайла в пикселях (например, 32)
-  type: 'map'; // Тип документа, в данном случае "map"
-  version: string; // Версия формата Tiled (например, "1.10")
-  width: number; // Ширина карты в тайлах (например, 64)
-}
 
-interface Property {
-  name: string; // Имя свойства (например, "isWalkable")
-  type: 'bool' | 'int' | 'float' | 'string'; // Тип свойства (например, "bool")
-  value: boolean | number | string; // Значение свойства (например, true или false)
+  @Field(() => [Property])
+  properties: Property[];
+
+  @Field()
+  orientation: 'orthogonal' | 'isometric' | 'staggered' | 'hexagonal';
+
+  @Field()
+  renderorder: 'right-down' | 'right-up' | 'left-down' | 'left-up';
+
+  @Field()
+  tiledversion: string;
+
+  @Field(() => Int)
+  tileheight: number;
+
+  @Field(() => [Tileset])
+  tilesets: Tileset[];
+
+  @Field(() => Int)
+  tilewidth: number;
+
+  @Field()
+  type: string; // всегда 'map'
+
+  @Field()
+  version: string;
+
+  @Field(() => Int)
+  width: number;
 }

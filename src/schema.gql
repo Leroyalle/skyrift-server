@@ -173,54 +173,74 @@ enum ItemTypeEnum {
   MISC
 }
 
-type LocationLayer {
-  """ID слоя"""
-  id: ID!
-
-  """Локация, к которой принадлежит слой"""
-  location: Location!
-
-  """Название слоя"""
+type Property {
   name: String!
-
-  """Тип слоя (tile, passable и т.п.)"""
   type: String!
+  value: String!
+}
 
-  """Порядок отрисовки"""
-  layerIndex: Float!
+type Tile {
+  id: Int!
+  properties: [Property!]!
+}
 
-  """Двумерный массив идентификаторов тайлов"""
-  tileData: [[Float!]!]!
+type Tileset {
+  firstgid: Int!
+  columns: Int!
+  image: String!
+  imageWidth: Int!
+  margin: Int!
+  imageheight: Int!
+  spacing: Int!
+  name: String!
+  tilecount: Int!
+  tileHeight: Int!
+  tilewidth: Int!
+  source: String!
+  tiles: [Tile!]
+}
 
-  """
-  Двумерный массив булевых значений, определяющих проходимость клеток слоя
-  """
-  passableData: [[Float!]!]!
+type TileLayer {
+  data: [Int!]!
+  height: Int!
+  id: Int!
+  name: String!
+  opacity: Float!
+  type: String!
+  visible: Boolean!
+  width: Int!
+  x: Int!
+  y: Int!
+}
+
+type TiledMap {
+  compressionlevel: Int!
+  height: Int!
+  infinite: Boolean!
+  layers: [TileLayer!]!
+  nextlayerid: Int!
+  nextobjectid: Int!
+  properties: [Property!]!
+  orientation: String!
+  renderorder: String!
+  tiledversion: String!
+  tileheight: Int!
+  tilesets: [Tileset!]!
+  tilewidth: Int!
+  type: String!
+  version: String!
+  width: Int!
 }
 
 type Location {
-  """ID локации"""
   id: ID!
-
-  """Название локации"""
   name: String!
-
-  """Координата старта X"""
-  startX: Float!
-
-  """Координата старта Y"""
-  startY: Float!
-  width: Float!
-  height: Float!
-  tilesetKey: String!
-  mapImageUrl: String!
-
-  """Ширина тайла"""
+  tiledMap: TiledMap!
+  passableMap: [[Int!]!]!
+  width: Int!
+  height: Int!
   tileWidth: Int!
-
-  """Высота тайла"""
   tileHeight: Int!
-  layers: [LocationLayer!]!
   characters: [Character!]!
 }
 
