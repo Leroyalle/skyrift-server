@@ -6,13 +6,14 @@ import { UserModule } from 'src/user/user.module';
 import { CharacterModule } from 'src/character/character.module';
 import { LocationModule } from 'src/location/location.module';
 import { RedisModule } from 'src/redis/redis.module';
-import { PlayerStateService } from './player-state.service';
-import { PathFindingModule } from './path-finding/path-finding.module';
+import { PlayerStateService } from './services/player-state/player-state.service';
 import { CombatService } from './services/combat/combat.service';
 import { SpatialGridService } from './services/spatial-grid/spatial-grid.service';
 import { SocketService } from './services/socket/socket.service';
 import { MovementService } from './services/movement/movement.service';
 import { RegenerationService } from './services/regeneration/regeneration.service';
+import { InteractionService } from './services/interaction/interaction.service';
+import { PathFindingService } from './services/path-finding/path-finding.service';
 
 @Module({
   imports: [
@@ -21,17 +22,18 @@ import { RegenerationService } from './services/regeneration/regeneration.servic
     CharacterModule,
     LocationModule,
     RedisModule,
-    PathFindingModule,
   ],
   providers: [
     GameGateway,
     GameService,
     PlayerStateService,
+    MovementService,
     CombatService,
     SpatialGridService,
     SocketService,
-    MovementService,
+    PathFindingService,
     RegenerationService,
+    InteractionService,
   ],
 })
 export class GameModule {}

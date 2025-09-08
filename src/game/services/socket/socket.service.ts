@@ -84,6 +84,14 @@ export class SocketService {
     void socket.join(roomId);
   }
 
+  leaveTheRoom(userId: string, roomId: string) {
+    const socketId = this.userIdToSocketId.get(userId);
+    if (!socketId) return;
+    const socket = this.getSocket(socketId);
+    if (!socket) return;
+    void socket.leave(roomId);
+  }
+
   setClientUserData(
     userId: string,
     characterId: string,

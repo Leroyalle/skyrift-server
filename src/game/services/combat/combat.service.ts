@@ -1,5 +1,5 @@
-import { Injectable } from '@nestjs/common';
-import { PlayerStateService } from '../../player-state.service';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { PlayerStateService } from '../player-state/player-state.service';
 import { SkillType } from 'src/common/enums/skill/skill-type.enum';
 import { PositionDto } from 'src/common/dto/position.dto';
 import { SpatialGridService } from '../spatial-grid/spatial-grid.service';
@@ -15,7 +15,6 @@ import {
   Target,
 } from 'src/game/types/batch-update/batch-update-action.type';
 import { ActionType, PendingAction } from 'src/game/types/pending-actions.type';
-import { PathFindingService } from 'src/game/path-finding/path-finding.service';
 import { LocationService } from 'src/location/location.service';
 import { SocketService } from '../socket/socket.service';
 import { ActionContext } from 'src/game/lib/actions/resolve-action.lib';
@@ -34,6 +33,7 @@ import { MovementService } from '../movement/movement.service';
 import { TargetAction } from './types/target-action.type';
 import { CachedLocation } from 'src/location/types/cashed-location.type';
 import { pushTargetAction } from './lib/push-target-action.lib';
+import { PathFindingService } from '../path-finding/path-finding.service';
 
 @Injectable()
 export class CombatService {
@@ -43,6 +43,7 @@ export class CombatService {
     private readonly pathFindingService: PathFindingService,
     private readonly locationService: LocationService,
     private readonly socketService: SocketService,
+    @Inject(forwardRef(() => MovementService))
     private readonly movementService: MovementService,
   ) {}
 
@@ -161,6 +162,7 @@ export class CombatService {
   }
 
   private despawnAoEZone(zone: ActiveAoEZone) {
+    console.log('despawnAoEZone', zone);
     this.activeAoEZones.delete(zone.id);
     this.socketService.sendTo(
       RedisKeys.Location + zone.locationId,

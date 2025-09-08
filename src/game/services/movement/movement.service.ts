@@ -1,8 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { PlayerStateService } from 'src/game/player-state.service';
+import { PlayerStateService } from 'src/game/services/player-state/player-state.service';
 import { LocationService } from 'src/location/location.service';
 import { SocketService } from '../socket/socket.service';
-import { PathFindingService } from 'src/game/path-finding/path-finding.service';
 import { RequestMoveToDto } from 'src/game/dto/request-move-to.dto';
 import { Socket } from 'socket.io';
 import { TBatchUpdateMovement } from 'src/game/types/batch-update/batch-update-movement.type';
@@ -12,6 +11,8 @@ import { getDirection } from 'src/game/lib/get-direction.lib';
 import { RedisKeys } from 'src/common/enums/redis-keys.enum';
 import { ServerToClientEvents } from 'src/common/enums/game-socket-events.enum';
 import { MovementQueue } from './types/movement-queue.type';
+import { PathFindingService } from '../path-finding/path-finding.service';
+import { InteractionService } from '../interaction/interaction.service';
 
 @Injectable()
 export class MovementService {
@@ -21,6 +22,7 @@ export class MovementService {
     private readonly socketService: SocketService,
     private readonly pathFindingService: PathFindingService,
     private readonly spatialGridService: SpatialGridService<LiveCharacterState>,
+    private readonly interactionService: InteractionService,
   ) {}
 
   private readonly movementQueues = new Map<string, MovementQueue>();
@@ -32,9 +34,9 @@ export class MovementService {
       return;
     }
 
-    console.log(input);
+    console.log('requestMoveTo', input);
 
-    const { userId, characterId, locationId } = client.userData;
+    const { characterId } = client.userData;
 
     const character = this.playerStateService.getCharacterState(characterId);
 
@@ -42,7 +44,9 @@ export class MovementService {
 
     character.isAttacking = false;
 
-    const findLocation = await this.locationService.loadLocation(locationId);
+    const findLocation = await this.locationService.loadLocation(
+      character.locationId,
+    );
 
     if (!findLocation) return;
     const map = findLocation?.passableMap;
@@ -58,7 +62,7 @@ export class MovementService {
     if (!isPermissible) return;
 
     const steps = await this.pathFindingService.getPlayerPath(
-      locationId,
+      character.locationId,
       {
         x: Math.floor(character.x / findLocation.tileWidth),
         y: Math.floor(character.y / findLocation.tileHeight),
@@ -68,7 +72,8 @@ export class MovementService {
       map,
     );
 
-    this.movementQueues.set(characterId, { steps, userId });
+    this.interactionService.deletePendingInteraction(character.id);
+    this.movementQueues.set(characterId, { steps, userId: character.userId });
   }
 
   public tickMovement() {
@@ -153,6 +158,10 @@ export class MovementService {
 
   public setMovementQueue(characterId: string, data: MovementQueue) {
     return this.movementQueues.set(characterId, data);
+  }
+
+  public getMovementQueue(characterId: string) {
+    return this.movementQueues.get(characterId);
   }
 
   public deleteMovementQueue(characterId: string) {

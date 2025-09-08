@@ -14,6 +14,7 @@ import { RequestMoveToDto } from './dto/request-move-to.dto';
 import { RequestAttackMoveDto } from './dto/request-attack-move.dto';
 import { RequestSkillUseDto } from './dto/request-use-skill.dto';
 import { SocketService } from './services/socket/socket.service';
+import { RequestUseTeleportDto } from './dto/request-use-teleport.dto';
 
 @WebSocketGateway({
   namespace: 'game',
@@ -80,8 +81,8 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     return await this.gameService.getInitialData(client);
   }
 
-  // @SubscribeMessage(ClientToServerEvents.ChangeLocation)
-  // async handleChangeLocation(client: Socket, input: ChangeLocationDto) {
-  //   return await this.gameService.changeLocation(client, input);
-  // }
+  @SubscribeMessage(ClientToServerEvents.RequestUseTeleport)
+  async requestUseTeleport(client: Socket, input: RequestUseTeleportDto) {
+    return await this.gameService.requestUseTeleport(client, input);
+  }
 }

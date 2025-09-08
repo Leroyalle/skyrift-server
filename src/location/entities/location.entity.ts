@@ -14,6 +14,10 @@ export class Location {
   @Field()
   name: string;
 
+  @Column({ unique: true })
+  @Field()
+  filename: string;
+
   @Column('jsonb')
   @Field(() => TiledMap)
   tiledMap: TiledMap;

@@ -17,11 +17,10 @@ export class Tile {
   @Field(() => Int)
   id: number;
 
-  @Field(() => [Property])
-  properties: Property[];
+  @Field(() => [Property], { nullable: true })
+  properties?: Property[];
 }
 
-// Тайлсет
 @ObjectType()
 export class Tileset {
   @Field(() => Int)
@@ -64,41 +63,83 @@ export class Tileset {
   tiles?: Tile[];
 }
 
-// Слой карты
 @ObjectType()
-export class TileLayer {
-  @Field(() => [Int])
-  data: number[]; // одномерный массив ID тайлов
-
-  @Field(() => Int)
-  height: number;
-
+export class TiledObject {
   @Field(() => Int)
   id: number;
 
   @Field()
   name: string;
 
-  @Field(() => Float)
-  opacity: number;
-
   @Field()
-  type: string; // всегда 'tilelayer'
+  type: string;
+
+  @Field(() => Float)
+  x: number;
+
+  @Field(() => Float)
+  y: number;
+
+  @Field(() => Float)
+  width: number;
+
+  @Field(() => Float)
+  height: number;
+
+  @Field(() => Float)
+  rotation: number;
 
   @Field()
   visible: boolean;
 
+  @Field(() => Int, { nullable: true })
+  gid?: number; // если объект - тайл
+
+  @Field(() => [Property], { nullable: true })
+  properties?: Property[];
+}
+
+@ObjectType()
+export class TiledLayer {
   @Field(() => Int)
-  width: number;
+  id: number;
+
+  @Field()
+  name: string;
+
+  @Field()
+  type: 'tilelayer' | 'objectgroup';
+
+  @Field(() => Float)
+  opacity: number;
+
+  @Field()
+  visible: boolean;
 
   @Field(() => Int)
   x: number;
 
   @Field(() => Int)
   y: number;
+
+  // Поля для tilelayer
+  @Field(() => [Int], { nullable: true })
+  data?: number[];
+
+  @Field(() => Int, { nullable: true })
+  width?: number;
+
+  @Field(() => Int, { nullable: true })
+  height?: number;
+
+  // Поля для objectgroup
+  @Field(() => String, { nullable: true })
+  draworder?: string;
+
+  @Field(() => [TiledObject], { nullable: true })
+  objects?: TiledObject[];
 }
 
-// Основная карта
 @ObjectType()
 export class TiledMap {
   @Field(() => Int)
@@ -110,8 +151,8 @@ export class TiledMap {
   @Field()
   infinite: boolean;
 
-  @Field(() => [TileLayer])
-  layers: TileLayer[];
+  @Field(() => [TiledLayer])
+  layers: TiledLayer[];
 
   @Field(() => Int)
   nextlayerid: number;
@@ -141,7 +182,7 @@ export class TiledMap {
   tilewidth: number;
 
   @Field()
-  type: string; // всегда 'map'
+  type: string;
 
   @Field()
   version: string;

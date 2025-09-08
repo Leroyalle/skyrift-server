@@ -6,6 +6,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { RedisService } from 'src/redis/redis.service';
 import { CachedLocation } from 'src/location/types/cashed-location.type';
 import { RedisKeys } from 'src/common/enums/redis-keys.enum';
+import { buildTeleportsMap } from './lib/build-teleports-map.lib';
 
 @Injectable()
 export class LocationService {
@@ -16,6 +17,7 @@ export class LocationService {
   ) {}
 
   private readonly locationCache = new Map<string, CachedLocation>();
+  private readonly filenameToLocationId = new Map<string, string>();
 
   create(createLocationInput: CreateLocationInput) {
     return 'This action adds a new location';
@@ -35,7 +37,23 @@ export class LocationService {
     return `This action removes a #${id} location`;
   }
 
-  public async loadLocation(locationId: string) {
+  public async loadLocationByFilename(filename: string) {
+    // const locationId = this.filenameToLocationId.get(filename);
+
+    // if (!locationId) return;
+
+    const locationByFilename = await this.locationRepository.findOneBy({
+      filename,
+    });
+
+    if (!locationByFilename) return;
+
+    return await this.loadLocation(locationByFilename.id);
+  }
+
+  public async loadLocation(
+    locationId: string,
+  ): Promise<CachedLocation | undefined> {
     const cachedLocation = this.locationCache.get(locationId);
 
     if (cachedLocation) return cachedLocation;
@@ -45,7 +63,13 @@ export class LocationService {
     );
 
     if (redisLocation) {
-      this.locationCache.set(locationId, redisLocation);
+      const teleportsMap = buildTeleportsMap(redisLocation.tiledMap);
+      const locationInMemory = {
+        ...redisLocation,
+        teleportsMap,
+      };
+      this.locationCache.set(locationId, locationInMemory);
+      this.filenameToLocationId.set(redisLocation.filename, locationId);
       return redisLocation;
     }
 
@@ -53,9 +77,16 @@ export class LocationService {
 
     if (!dbLocation) return;
 
-    this.locationCache.set(locationId, dbLocation);
+    const teleportsMap = buildTeleportsMap(dbLocation.tiledMap);
+    const locationInMemory = {
+      ...dbLocation,
+      teleportsMap,
+    };
+
+    this.locationCache.set(locationId, locationInMemory);
+    this.filenameToLocationId.set(locationInMemory.filename, locationId);
     await this.redisService.set(RedisKeys.Location + locationId, dbLocation);
 
-    return dbLocation;
+    return locationInMemory;
   }
 }

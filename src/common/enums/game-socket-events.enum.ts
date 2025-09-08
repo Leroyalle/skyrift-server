@@ -13,6 +13,7 @@ export enum ServerToClientEvents {
   PlayerJoined = 'player:joined',
   PlayerLeft = 'player:left',
   PlayerEntered = 'player:entered',
+  PlayerUseTeleport = 'player:use-teleport',
   GameInitialState = 'game:initial-state',
   AoESpawn = 'aoe:spawn',
   AoERemove = 'aoe:remove',
@@ -20,7 +21,7 @@ export enum ServerToClientEvents {
 
 export enum ClientToServerEvents {
   PlayerWalk = 'player:walk',
-  ChangeLocation = 'player:change-location',
+  RequestUseTeleport = 'player:request-use-teleport',
   RequestAttackMove = 'player:request-attack-move',
   RequestUseSkill = 'player:request-use-skill',
   PlayerAttackCancelled = 'player:attack-cancelled',

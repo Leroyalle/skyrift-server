@@ -3,7 +3,11 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../user/entities/user.entity';
 import { Repository } from 'typeorm';
 import { Location } from 'src/location/entities/location.entity';
-import { Property, TiledMap, TileLayer } from 'src/common/types/tiled-map.type';
+import {
+  Property,
+  TiledMap,
+  TiledObject,
+} from 'src/common/types/tiled-map.type';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as xml2js from 'xml2js';
@@ -15,6 +19,9 @@ import { CharacterSkill } from 'src/character/character-skill/entities/character
 import { Skill } from 'src/character-class/skill/entities/skill.entity';
 import { SkillType } from 'src/common/enums/skill/skill-type.enum';
 import { EffectType } from 'src/common/enums/skill/effect-type.enum';
+import { isTileLayer } from './guards/is-tile-layer';
+import { v4 as uuidv4 } from 'uuid';
+import { isObjectsLayer } from './guards/is-objects-layer';
 
 @Injectable()
 export class SeedService {
@@ -68,35 +75,38 @@ export class SeedService {
 
     const { mapEntries } = await this.readFiles();
     let location;
-    for (const mapEntry of mapEntries) {
-      console.log(mapEntry.tilesets);
-      const tiledMap = this.optimizeTilesets(mapEntry);
-      const passableMap = this.createPassableMap(mapEntry);
-      console.log(mapEntry.tilewidth, mapEntry.tileheight);
+    await Promise.all(
+      mapEntries.map(async ({ parsedMap, filename }, i) => {
+        console.log(parsedMap.tilesets);
+        const tiledMap = this.optimizeTilesets(parsedMap);
+        const passableMap = this.createPassableMap(tiledMap);
+        this.setNameToTeleportObjects(tiledMap);
 
-      const savedLocation = this.locationRepository.create({
-        height: mapEntry.height,
-        width: mapEntry.width,
-        tiledMap,
-        passableMap,
-        name: this.findMapName(mapEntry),
-        tileWidth: mapEntry.tilewidth,
-        tileHeight: mapEntry.tileheight,
-      });
-      location = savedLocation;
-      await this.locationRepository.save(savedLocation);
+        const savedLocation = this.locationRepository.create({
+          height: parsedMap.height,
+          width: parsedMap.width,
+          tiledMap,
+          filename,
+          passableMap,
+          name: this.findMapName(tiledMap),
+          tileWidth: tiledMap.tilewidth,
+          tileHeight: tiledMap.tileheight,
+        });
+        if (i === 0) location = savedLocation;
+        await this.locationRepository.save(savedLocation);
 
-      console.log('Location saved', savedLocation.name);
-    }
+        console.log('Location saved', savedLocation.name);
+      }),
+    );
 
     const firstCharacter = await this.characterRepository.save({
-      name: 'Егор Вытрус',
+      name: 'Leroyalle',
       user: firstUser,
       characterClass: archerClass,
       level: 1,
       location,
-      x: 400,
-      y: 400,
+      x: 2016,
+      y: 960,
       maxHp: 1000,
       hp: 1000,
       basePhysicalDamage: 50,
@@ -111,8 +121,8 @@ export class SeedService {
       characterClass: archerClass,
       level: 1,
       location,
-      x: 450,
-      y: 450,
+      x: 2016,
+      y: 960,
       maxHp: 1000,
       hp: 1000,
       basePhysicalDamage: 50,
@@ -222,7 +232,7 @@ export class SeedService {
         fs.readFileSync(filePath, 'utf-8'),
       ) as TiledMap;
 
-      return parsedMap;
+      return { parsedMap, filename: map.split('.')[0] };
     });
     console.log(mapEntries.length);
     return { tilesetEntries, mapEntries };
@@ -294,6 +304,7 @@ export class SeedService {
   private optimizeTilesets(map: TiledMap) {
     const usesIds = new Set<number>();
     for (const layer of map.layers) {
+      if (!isTileLayer(layer)) continue;
       layer.data.forEach((gid) => {
         if (gid > 0) usesIds.add(gid);
       });
@@ -315,9 +326,9 @@ export class SeedService {
     map.tilesets.forEach((tileset) => {
       const { firstgid } = tileset;
 
-      tileset.tiles?.forEach((tile) =>
-        tilesMap.set(firstgid + tile.id, tile.properties),
-      );
+      tileset.tiles?.forEach((tile) => {
+        tilesMap.set(firstgid + tile.id, tile.properties ?? []);
+      });
     });
 
     const passableMap: number[][] = Array.from({ length: map.height }, () =>
@@ -325,7 +336,7 @@ export class SeedService {
     );
 
     for (const layer of map.layers) {
-      if (layer.type !== 'tilelayer') continue;
+      if (!isTileLayer(layer)) continue;
 
       for (let y = 0; y < layer.height; y++) {
         for (let x = 0; x < layer.width; x++) {
@@ -347,6 +358,26 @@ export class SeedService {
 
     return passableMap;
   }
+
+  private setNameToTeleportObjects = (map: TiledMap) => {
+    const teleportsLayer = map.layers.find(
+      (layer) => layer.name === 'Teleports' && layer.type === 'objectgroup',
+    );
+
+    if (!teleportsLayer) return;
+
+    if (!isObjectsLayer(teleportsLayer)) return;
+
+    teleportsLayer.objects.forEach((obj) => {
+      const uuid = uuidv4() as string;
+
+      obj.name = uuid;
+
+      return obj;
+    });
+
+    return map;
+  };
 
   // private buildPassableMap(
   //   map: TiledMap,

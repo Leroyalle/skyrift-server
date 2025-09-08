@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { PlayerStateService } from 'src/game/player-state.service';
+import { PlayerStateService } from 'src/game/services/player-state/player-state.service';
 import { BatchUpdateRegeneration } from 'src/game/types/batch-update/batch-update-regeneration.type';
 import { SocketService } from '../socket/socket.service';
 import { RedisKeys } from 'src/common/enums/redis-keys.enum';

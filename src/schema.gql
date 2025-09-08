@@ -181,7 +181,7 @@ type Property {
 
 type Tile {
   id: Int!
-  properties: [Property!]!
+  properties: [Property!]
 }
 
 type Tileset {
@@ -200,24 +200,40 @@ type Tileset {
   tiles: [Tile!]
 }
 
-type TileLayer {
-  data: [Int!]!
-  height: Int!
+type TiledObject {
   id: Int!
   name: String!
-  opacity: Float!
   type: String!
+  x: Float!
+  y: Float!
+  width: Float!
+  height: Float!
+  rotation: Float!
   visible: Boolean!
-  width: Int!
+  gid: Int
+  properties: [Property!]
+}
+
+type TiledLayer {
+  id: Int!
+  name: String!
+  type: String!
+  opacity: Float!
+  visible: Boolean!
   x: Int!
   y: Int!
+  data: [Int!]
+  width: Int
+  height: Int
+  draworder: String
+  objects: [TiledObject!]
 }
 
 type TiledMap {
   compressionlevel: Int!
   height: Int!
   infinite: Boolean!
-  layers: [TileLayer!]!
+  layers: [TiledLayer!]!
   nextlayerid: Int!
   nextobjectid: Int!
   properties: [Property!]!
@@ -235,6 +251,7 @@ type TiledMap {
 type Location {
   id: ID!
   name: String!
+  filename: String!
   tiledMap: TiledMap!
   passableMap: [[Int!]!]!
   width: Int!

@@ -8,7 +8,7 @@ import { LocationService } from 'src/location/location.service';
 import { RedisService } from 'src/redis/redis.service';
 import { RedisKeys } from 'src/common/enums/redis-keys.enum';
 import { RequestMoveToDto } from './dto/request-move-to.dto';
-import { PlayerStateService } from './player-state.service';
+import { PlayerStateService } from './services/player-state/player-state.service';
 import { RedisKeysFactory } from 'src/common/infra/redis-keys-factory.infra';
 import { RequestAttackMoveDto } from './dto/request-attack-move.dto';
 import { JwtPayload } from 'src/common/types/jwt-payload.type';
@@ -19,6 +19,9 @@ import { CombatService } from './services/combat/combat.service';
 import { RegenerationService } from './services/regeneration/regeneration.service';
 import { SocketService } from './services/socket/socket.service';
 import { SpatialGridService } from './services/spatial-grid/spatial-grid.service';
+import { RequestUseTeleportDto } from './dto/request-use-teleport.dto';
+import { InteractionService } from './services/interaction/interaction.service';
+import { PathFindingService } from './services/path-finding/path-finding.service';
 
 @Injectable()
 export class GameService implements OnModuleInit {
@@ -34,6 +37,8 @@ export class GameService implements OnModuleInit {
     private readonly socketService: SocketService,
     private readonly spatialGridService: SpatialGridService<LiveCharacterState>,
     private readonly locationService: LocationService,
+    private readonly pathFindingService: PathFindingService,
+    private readonly interactionService: InteractionService,
   ) {}
 
   private readonly logger = new Logger(GameService.name);
@@ -43,11 +48,13 @@ export class GameService implements OnModuleInit {
   private lastTickTimeActions = 0;
   private lastTickTimeAoE = 0;
   private lastTickTimeRegeneration = 0;
+  private lastTickTimeInteraction = 0;
 
   private readonly intervalMovement = 150;
   private readonly intervalActions = 200;
   private readonly intervalAoE = 200;
   private readonly intervalRegeneration = 1000;
+  private readonly intervalInteraction = 300;
 
   onModuleInit() {
     this.gameTickInterval = setInterval(() => {
@@ -83,6 +90,11 @@ export class GameService implements OnModuleInit {
     if (now - this.lastTickTimeRegeneration >= this.intervalRegeneration) {
       this.regenerationService.tickRegeneration();
       this.lastTickTimeRegeneration = now;
+    }
+
+    if (now - this.lastTickTimeInteraction >= this.intervalInteraction) {
+      await this.interactionService.tickInteractions();
+      this.lastTickTimeInteraction = now;
     }
   }
 
@@ -312,5 +324,12 @@ export class GameService implements OnModuleInit {
 
   public requestAttackCancelled(client: Socket) {
     this.combatService.requestAttackCancel(client);
+  }
+
+  public async requestUseTeleport(
+    client: Socket,
+    input: RequestUseTeleportDto,
+  ) {
+    await this.interactionService.requestUseTeleport(client, input);
   }
 }

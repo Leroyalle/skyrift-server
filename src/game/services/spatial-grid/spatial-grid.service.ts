@@ -20,8 +20,7 @@ export class SpatialGridService<
   }
 
   private getCellKey(locationId: string, x: number, y: number): string {
-    const cx = Math.floor(x / this.tileSize);
-    const cy = Math.floor(y / this.tileSize);
+    const { x: cx, y: cy } = this.getTileByPosition(x, y);
     return `${locationId}_${cx}_${cy}`;
   }
 
@@ -53,8 +52,7 @@ export class SpatialGridService<
     y: number,
     radius: number,
   ): QueryRadiusResult {
-    const centerX = Math.floor(x / this.tileSize);
-    const centerY = Math.floor(y / this.tileSize);
+    const { x: centerX, y: centerY } = this.getTileByPosition(x, y);
 
     const minX = centerX - radius;
     const maxX = centerX + radius;
@@ -77,4 +75,10 @@ export class SpatialGridService<
       affectedCells,
     };
   }
+
+  public getTileByPosition = (pixelX: number, pixelY: number) => {
+    const x = Math.floor(pixelX / this.tileSize);
+    const y = Math.floor(pixelY / this.tileSize);
+    return { x, y };
+  };
 }

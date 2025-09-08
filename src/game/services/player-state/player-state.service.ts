@@ -3,11 +3,14 @@ import { CharacterService } from 'src/character/character.service';
 import { LiveCharacterState } from 'src/character/types/live-character-state.type';
 import { RedisKeysFactory } from 'src/common/infra/redis-keys-factory.infra';
 import { RedisService } from 'src/redis/redis.service';
-import { ActionType } from './types/pending-actions.type';
-import { ApplySkillResult } from './types/attack/apply-skill-result.type';
-import { ApplyAutoAttackResult } from './types/attack/apply-auto-attack-result.type';
+import { ActionType } from '../../types/pending-actions.type';
+import { ApplySkillResult } from '../../types/attack/apply-skill-result.type';
+import { ApplyAutoAttackResult } from '../../types/attack/apply-auto-attack-result.type';
 import { PositionDto } from 'src/common/dto/position.dto';
 import { SkillType } from 'src/common/enums/skill/skill-type.enum';
+import { CachedLocation } from 'src/location/types/cashed-location.type';
+import { Teleport } from 'src/location/types/teleport.type';
+import { Socket } from 'socket.io';
 
 @Injectable()
 export class PlayerStateService {
@@ -206,5 +209,22 @@ export class PlayerStateService {
     if (!characterSkill) return;
 
     if (characterSkill.skill.type !== SkillType.AoE) return;
+  }
+
+  public changeUserLocation(
+    playerState: LiveCharacterState,
+    targetLocation: CachedLocation,
+    teleport: Teleport,
+    client: Socket,
+  ) {
+    playerState.locationId = targetLocation.id;
+    playerState.x = teleport.targetX;
+    playerState.y = teleport.targetY;
+
+    client.userData = {
+      ...client.userData, // сохраняем старые поля
+      position: { x: playerState.x, y: playerState.y },
+      locationId: playerState.locationId,
+    };
   }
 }
