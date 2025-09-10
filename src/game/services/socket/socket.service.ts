@@ -76,20 +76,20 @@ export class SocketService {
     return socketId ? this.getSocket(socketId) : undefined;
   }
 
-  joinToRoom(userId: string, roomId: string) {
+  async joinToRoom(userId: string, roomId: string) {
     const socketId = this.userIdToSocketId.get(userId);
     if (!socketId) return;
     const socket = this.getSocket(socketId);
     if (!socket) return;
-    void socket.join(roomId);
+    await socket.join(roomId);
   }
 
-  leaveTheRoom(userId: string, roomId: string) {
+  async leaveTheRoom(userId: string, roomId: string) {
     const socketId = this.userIdToSocketId.get(userId);
     if (!socketId) return;
     const socket = this.getSocket(socketId);
     if (!socket) return;
-    void socket.leave(roomId);
+    await socket.leave(roomId);
   }
 
   setClientUserData(

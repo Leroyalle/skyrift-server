@@ -175,6 +175,7 @@ export class CombatService {
   public tickAoE() {
     const updatesByLocation = new Map<string, BatchUpdateAction[]>();
     for (const zone of this.activeAoEZones.values()) {
+      console.log('tickAoE', zone);
       const now = Date.now();
 
       if (now >= zone.expiresAt) {
@@ -257,8 +258,10 @@ export class CombatService {
     return queue;
   }
 
-  public getActiveAoeZones() {
-    return Array.from(this.activeAoEZones.values());
+  public getActiveAoeZones(locationId: string) {
+    return Array.from(this.activeAoEZones.values()).filter(
+      (zone) => zone.locationId === locationId,
+    );
   }
 
   public async requestAttackMove(client: Socket, input: RequestAttackMoveDto) {
@@ -828,6 +831,8 @@ export class CombatService {
       effects: cSkill.skill.effects ?? [],
       lastUsedAt: null,
     });
+
+    console.log('[spawnAoeZone] locationId', caster.locationId);
 
     this.socketService.sendTo(
       RedisKeys.Location + caster.locationId,

@@ -230,19 +230,19 @@ export class InteractionService {
       return;
     }
 
-    const playersIds = await this.redisService.smembers(
-      RedisKeysFactory.locationPlayers(targetLocation.id),
+    this.socketService.broadcastToOthers(
+      client,
+      RedisKeys.Location + playerState.locationId,
+      ServerToClientEvents.PlayerLeft,
+      playerState.id,
     );
 
-    console.log('playersIds', playersIds);
+    await this.redisService.srem(
+      RedisKeysFactory.locationPlayers(playerState.locationId),
+      playerState.id,
+    );
 
-    const otherPlayers = playersIds
-      .filter((id) => id !== playerState.id)
-      .map((id) => this.playerStateService.getCharacterState(id));
-
-    const aoeZones = this.combatService.getActiveAoeZones();
-
-    this.socketService.leaveTheRoom(
+    await this.socketService.leaveTheRoom(
       playerState.userId,
       RedisKeys.Location + playerState.locationId,
     );
@@ -253,23 +253,6 @@ export class InteractionService {
       y: playerState.y,
     };
 
-    console.log('[useTeleport] prevPosition', prevPosition);
-
-    this.socketService.joinToRoom(
-      playerState.userId,
-      RedisKeys.Location + targetLocation.id,
-    );
-
-    await this.redisService.srem(
-      RedisKeysFactory.locationPlayers(playerState.locationId),
-      playerState.id,
-    );
-
-    await this.redisService.sadd(
-      RedisKeysFactory.locationPlayers(targetLocation.id),
-      playerState.id,
-    );
-
     this.playerStateService.changeUserLocation(
       playerState,
       targetLocation,
@@ -277,11 +260,14 @@ export class InteractionService {
       client,
     );
 
-    console.log(
-      '[useTeleport] playerState',
-      playerState.locationId,
-      playerState.x,
-      playerState.y,
+    await this.redisService.sadd(
+      RedisKeysFactory.locationPlayers(targetLocation.id),
+      playerState.id,
+    );
+
+    await this.socketService.joinToRoom(
+      playerState.userId,
+      RedisKeys.Location + targetLocation.id,
     );
 
     this.spatialGridService.update(
@@ -291,18 +277,22 @@ export class InteractionService {
       prevPosition.y,
     );
 
-    // this.socketService.sendToUser(
-    //   playerState.userId,
-    //   ServerToClientEvents.PlayerConnected,
-    //   playerState,
-    // );
-
-    this.socketService.broadcastToOthers(
-      client,
-      RedisKeys.Location + playerState.locationId,
-      ServerToClientEvents.PlayerJoined,
-      playerState,
+    const playersIds = await this.redisService.smembers(
+      RedisKeysFactory.locationPlayers(targetLocation.id),
     );
+
+    const otherPlayers: LiveCharacter[] = playersIds.reduce<LiveCharacter[]>(
+      (acc, id) => {
+        const character = this.playerStateService.getCharacterState(id);
+        if (character && character.id !== playerState.id) {
+          acc.push(character);
+        }
+        return acc;
+      },
+      [],
+    );
+
+    const aoeZones = this.combatService.getActiveAoeZones(targetLocation.id);
 
     this.socketService.sendToUser(
       playerState.userId,
@@ -313,6 +303,13 @@ export class InteractionService {
         players: otherPlayers,
         aoeZones,
       },
+    );
+
+    this.socketService.broadcastToOthers(
+      client,
+      RedisKeys.Location + targetLocation.id,
+      ServerToClientEvents.PlayerJoined,
+      playerState,
     );
   }
 }

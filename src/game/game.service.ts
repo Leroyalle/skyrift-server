@@ -186,7 +186,7 @@ export class GameService implements OnModuleInit {
 
       this.spatialGridService.add(liveCharacter);
 
-      this.socketService.joinToRoom(
+      await this.socketService.joinToRoom(
         findCharacter.user.id,
         RedisKeys.Location + findCharacter.location.id,
       );
@@ -301,9 +301,14 @@ export class GameService implements OnModuleInit {
       [],
     );
 
-    const aoeZones = this.combatService.getActiveAoeZones();
+    const aoeZones = this.combatService.getActiveAoeZones(
+      findCharacter.locationId,
+    );
     console.log('initialZones', aoeZones);
-    this.socketService.joinToRoom(userId, RedisKeys.Location + findLocation.id);
+    await this.socketService.joinToRoom(
+      userId,
+      RedisKeys.Location + findLocation.id,
+    );
 
     this.socketService.sendToUser(
       userId,
