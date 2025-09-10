@@ -29,4 +29,7 @@ export enum ClientToServerEvents {
   RequestUseSkill = 'player:request-use-skill',
   PlayerAttackCancelled = 'player:attack-cancelled',
   RequestInitialState = 'game:request-initial-state',
+  PlayerSendWorldMessage = 'player:chat:world:send',
+  PlayerSendLocationMessage = 'player:chat:location:send',
+  PlayerSendDirectMessage = 'player:chat:direct:send',
 }

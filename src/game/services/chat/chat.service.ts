@@ -18,6 +18,8 @@ export class ChatService {
     private readonly playerStateService: PlayerStateService,
   ) {}
 
+  // TODO: sync messages to DB
+
   public async sendWorldMessage(client: Socket, message: string) {
     if (!this.socketService.verifyUserDataInSocket(client)) {
       this.socketService.notifyDisconnection(client);

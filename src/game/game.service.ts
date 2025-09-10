@@ -21,7 +21,8 @@ import { SocketService } from './services/socket/socket.service';
 import { SpatialGridService } from './services/spatial-grid/spatial-grid.service';
 import { RequestUseTeleportDto } from './dto/request-use-teleport.dto';
 import { InteractionService } from './services/interaction/interaction.service';
-import { PathFindingService } from './services/path-finding/path-finding.service';
+import { ChatService } from './services/chat/chat.service';
+import { DirectMessageInput } from './services/chat/dto/direct-message.input';
 
 @Injectable()
 export class GameService implements OnModuleInit {
@@ -37,8 +38,8 @@ export class GameService implements OnModuleInit {
     private readonly socketService: SocketService,
     private readonly spatialGridService: SpatialGridService<LiveCharacter>,
     private readonly locationService: LocationService,
-    private readonly pathFindingService: PathFindingService,
     private readonly interactionService: InteractionService,
+    private readonly chatService: ChatService,
   ) {}
 
   private readonly logger = new Logger(GameService.name);
@@ -343,5 +344,19 @@ export class GameService implements OnModuleInit {
     input: RequestUseTeleportDto,
   ) {
     await this.interactionService.requestUseTeleport(client, input);
+  }
+
+  public async playerSendWorldMessage(client: Socket, input: string) {
+    return await this.chatService.sendWorldMessage(client, input);
+  }
+
+  public async playerSendLocationMessage(client: Socket, input: string) {
+    return await this.chatService.sendLocationMessage(client, input);
+  }
+  public async playerSendDirectMessage(
+    client: Socket,
+    input: DirectMessageInput,
+  ) {
+    return await this.chatService.sendDirectMessage(client, input);
   }
 }
