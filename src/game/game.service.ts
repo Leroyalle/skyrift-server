@@ -13,7 +13,7 @@ import { RedisKeysFactory } from 'src/common/infra/redis-keys-factory.infra';
 import { RequestAttackMoveDto } from './dto/request-attack-move.dto';
 import { JwtPayload } from 'src/common/types/jwt-payload.type';
 import { RequestSkillUseDto } from './dto/request-use-skill.dto';
-import { LiveCharacterState } from 'src/character/types/live-character-state.type';
+import { LiveCharacter } from 'src/character/types/live-character-state.type';
 import { MovementService } from './services/movement/movement.service';
 import { CombatService } from './services/combat/combat.service';
 import { RegenerationService } from './services/regeneration/regeneration.service';
@@ -35,7 +35,7 @@ export class GameService implements OnModuleInit {
     private readonly combatService: CombatService,
     private readonly regenerationService: RegenerationService,
     private readonly socketService: SocketService,
-    private readonly spatialGridService: SpatialGridService<LiveCharacterState>,
+    private readonly spatialGridService: SpatialGridService<LiveCharacter>,
     private readonly locationService: LocationService,
     private readonly pathFindingService: PathFindingService,
     private readonly interactionService: InteractionService,
@@ -168,7 +168,7 @@ export class GameService implements OnModuleInit {
         },
       );
 
-      const liveCharacter = {
+      const liveCharacter: LiveCharacter = {
         ...findCharacter,
         lastMoveAt: 0,
         lastAttackAt: 0,
@@ -290,9 +290,16 @@ export class GameService implements OnModuleInit {
       RedisKeysFactory.locationPlayers(locationId),
     );
 
-    const otherPlayers = playersIds
-      .map((id) => this.playerStateService.getCharacterState(id))
-      .filter((p) => p && p.id !== characterId);
+    const otherPlayers: LiveCharacter[] = playersIds.reduce<LiveCharacter[]>(
+      (acc, id) => {
+        const character = this.playerStateService.getCharacterState(id);
+        if (character && character.id !== characterId) {
+          acc.push(character);
+        }
+        return acc;
+      },
+      [],
+    );
 
     const aoeZones = this.combatService.getActiveAoeZones();
     console.log('initialZones', aoeZones);

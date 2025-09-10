@@ -20,7 +20,7 @@ export class CharacterService {
   }
 
   public async findUserCharacters(userId: string) {
-    return await this.characterRepository.find({
+    const characters = await this.characterRepository.find({
       where: {
         user: { id: userId },
       },
@@ -30,6 +30,7 @@ export class CharacterService {
         },
       },
     });
+    return characters;
   }
 
   public async findOwnedCharacter(userId: string, characterId: string) {

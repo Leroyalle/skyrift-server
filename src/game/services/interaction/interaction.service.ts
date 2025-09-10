@@ -10,7 +10,7 @@ import { Socket } from 'socket.io';
 import { RequestUseTeleportDto } from 'src/game/dto/request-use-teleport.dto';
 import { verifyUserDataInSocket } from 'src/game/lib/verify-user-data-in-socket.lib';
 import { isPlayerInTeleportArea } from 'src/game/lib/teleport/is-player-in-teleport-radius.lib';
-import { LiveCharacterState } from 'src/character/types/live-character-state.type';
+import { LiveCharacter } from 'src/character/types/live-character-state.type';
 import { SpatialGridService } from '../spatial-grid/spatial-grid.service';
 import { MovementService } from '../movement/movement.service';
 import { RedisService } from 'src/redis/redis.service';
@@ -30,7 +30,7 @@ export class InteractionService {
     private readonly socketService: SocketService,
     private readonly locationService: LocationService,
     private readonly pathFindingService: PathFindingService,
-    private readonly spatialGridService: SpatialGridService<LiveCharacterState>,
+    private readonly spatialGridService: SpatialGridService<LiveCharacter>,
     private readonly redisService: RedisService,
     @Inject(forwardRef(() => MovementService))
     private readonly movementService: MovementService,
@@ -177,7 +177,7 @@ export class InteractionService {
   }
 
   private async startInteractionMovement(
-    playerState: LiveCharacterState,
+    playerState: LiveCharacter,
     area: PositionDto,
     currentLocation: CachedLocation,
   ) {
@@ -210,10 +210,7 @@ export class InteractionService {
     return steps;
   }
 
-  private async useTeleport(
-    playerState: LiveCharacterState,
-    teleport: Teleport,
-  ) {
+  private async useTeleport(playerState: LiveCharacter, teleport: Teleport) {
     const targetLocation = await this.locationService.loadLocationByFilename(
       teleport.targetMap,
     );

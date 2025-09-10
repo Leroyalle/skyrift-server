@@ -1,6 +1,7 @@
 import { CharacterSkill } from '../character-skill/entities/character-skill.entity';
+import { CharacterClass } from 'src/character-class/entities/character-class.entity';
 
-export type LiveCharacterState = {
+export type LiveCharacter = {
   id: string;
   name: string;
   x: number;
@@ -22,6 +23,7 @@ export type LiveCharacterState = {
   lastHpRegenerationTime: number;
   currentTarget: CurrentTarget | null;
   characterSkills: CharacterSkill[];
+  characterClass: CharacterClass;
   // TODO: add the damage(now) - sum all damage items
 };
 

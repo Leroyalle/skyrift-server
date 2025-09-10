@@ -4,7 +4,7 @@ import { SkillType } from 'src/common/enums/skill/skill-type.enum';
 import { PositionDto } from 'src/common/dto/position.dto';
 import { SpatialGridService } from '../spatial-grid/spatial-grid.service';
 import {
-  LiveCharacterState,
+  LiveCharacter,
   TargetType,
 } from 'src/character/types/live-character-state.type';
 import { ActiveAoEZone } from './types/active-aoe-zone.type';
@@ -34,12 +34,13 @@ import { TargetAction } from './types/target-action.type';
 import { CachedLocation } from 'src/location/types/cashed-location.type';
 import { pushTargetAction } from './lib/push-target-action.lib';
 import { PathFindingService } from '../path-finding/path-finding.service';
+import { isEnemyFaction } from './lib/is-enemy-faction.lib';
 
 @Injectable()
 export class CombatService {
   constructor(
     private readonly playerStateService: PlayerStateService,
-    private readonly spatialGridService: SpatialGridService<LiveCharacterState>,
+    private readonly spatialGridService: SpatialGridService<LiveCharacter>,
     private readonly pathFindingService: PathFindingService,
     private readonly locationService: LocationService,
     private readonly socketService: SocketService,
@@ -273,6 +274,15 @@ export class CombatService {
 
     if (!attacker) return;
 
+    const victim = this.playerStateService.getCharacterState(input.targetId);
+
+    if (!victim) return;
+
+    const attackerFactionName = attacker.characterClass.faction.name;
+    const victimFactionName = victim.characterClass.faction.name;
+
+    if (!isEnemyFaction(attackerFactionName, victimFactionName)) return;
+
     const queue = this.getOrCreateActionQueue(attacker.id);
 
     const hasAutoAttack = queue.some(
@@ -294,7 +304,6 @@ export class CombatService {
       state: 'attack',
     };
 
-    // queue.push(pendingAction);
     await this.schedulePathUpdate(
       attacker,
       {
@@ -304,12 +313,6 @@ export class CombatService {
       null,
     );
     console.log('queue request auto attack', queue, pendingAction);
-    // FIXME:
-    // await this.schedulePathUpdate(
-    //   client.userData.characterId,
-    //   input.targetId,
-    //   client.userData.userId,
-    // );
   }
 
   public async requestUseSkill(client: Socket, input: RequestSkillUseDto) {
@@ -417,7 +420,7 @@ export class CombatService {
   }
 
   private async schedulePathUpdate(
-    attacker: LiveCharacterState,
+    attacker: LiveCharacter,
     target: TargetAction,
     skillId: string | null = null,
   ) {
@@ -496,7 +499,7 @@ export class CombatService {
   }
 
   private resolvePendingActionState(
-    attacker: LiveCharacterState,
+    attacker: LiveCharacter,
     pendingAction: PendingAction,
     range: number,
     steps: PositionDto[],
@@ -803,7 +806,7 @@ export class CombatService {
   }
 
   spawnAoeZone(
-    caster: LiveCharacterState,
+    caster: LiveCharacter,
     cSkill: CharacterSkill,
     area: PositionDto,
     now: number,

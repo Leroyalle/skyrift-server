@@ -10,7 +10,7 @@ export class Faction {
   id: string;
 
   @Column()
-  @Field(() => String, { description: 'Название фракции' })
+  @Field({ description: 'Название фракции' })
   name: string;
 
   @Column()

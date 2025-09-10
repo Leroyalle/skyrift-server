@@ -38,6 +38,7 @@ export class LocationService {
   }
 
   public async loadLocationByFilename(filename: string) {
+    // FIXME: load location by filename and id when service is init
     // const locationId = this.filenameToLocationId.get(filename);
 
     // if (!locationId) return;

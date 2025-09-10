@@ -6,7 +6,7 @@ import { RequestMoveToDto } from 'src/game/dto/request-move-to.dto';
 import { Socket } from 'socket.io';
 import { TBatchUpdateMovement } from 'src/game/types/batch-update/batch-update-movement.type';
 import { SpatialGridService } from '../spatial-grid/spatial-grid.service';
-import { LiveCharacterState } from 'src/character/types/live-character-state.type';
+import { LiveCharacter } from 'src/character/types/live-character-state.type';
 import { getDirection } from 'src/game/lib/get-direction.lib';
 import { RedisKeys } from 'src/common/enums/redis-keys.enum';
 import { ServerToClientEvents } from 'src/common/enums/game-socket-events.enum';
@@ -21,7 +21,7 @@ export class MovementService {
     private readonly playerStateService: PlayerStateService,
     private readonly socketService: SocketService,
     private readonly pathFindingService: PathFindingService,
-    private readonly spatialGridService: SpatialGridService<LiveCharacterState>,
+    private readonly spatialGridService: SpatialGridService<LiveCharacter>,
     private readonly interactionService: InteractionService,
   ) {}
 

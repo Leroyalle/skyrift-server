@@ -1,8 +1,8 @@
-import { LiveCharacterState } from 'src/character/types/live-character-state.type';
+import { LiveCharacter } from 'src/character/types/live-character-state.type';
 import { Teleport } from 'src/location/types/teleport.type';
 
 export const isPlayerInTeleportArea = (
-  playerState: LiveCharacterState,
+  playerState: LiveCharacter,
   teleport: Teleport,
 ) => {
   const px = Math.floor(playerState.x);

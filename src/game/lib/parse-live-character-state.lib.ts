@@ -1,8 +1,8 @@
-import { LiveCharacterState } from 'src/character/types/live-character-state.type';
+import { LiveCharacter } from 'src/character/types/live-character-state.type';
 
 export function parseLiveCharacterState(
   raw: Record<string, string>,
-): LiveCharacterState {
+): LiveCharacter {
   return {
     id: raw.id,
     name: raw.name,
@@ -25,5 +25,6 @@ export function parseLiveCharacterState(
     lastHpRegenerationTime: Number(raw.lastHpRegenerationTime),
     currentTarget: JSON.parse(raw.currentTarget),
     characterSkills: JSON.parse(raw.characterSkills),
+    characterClass: JSON.parse(raw.characterClass),
   };
 }

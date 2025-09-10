@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { CharacterService } from 'src/character/character.service';
-import { LiveCharacterState } from 'src/character/types/live-character-state.type';
+import { LiveCharacter } from 'src/character/types/live-character-state.type';
 import { RedisKeysFactory } from 'src/common/infra/redis-keys-factory.infra';
 import { RedisService } from 'src/redis/redis.service';
 import { ActionType } from '../../types/pending-actions.type';
@@ -14,55 +14,51 @@ import { Socket } from 'socket.io';
 
 @Injectable()
 export class PlayerStateService {
-  private playersByLocation = new Map<
-    string,
-    Map<string, LiveCharacterState>
-  >();
-
   constructor(
     private readonly redisService: RedisService,
     private readonly characterService: CharacterService,
   ) {}
 
-  private readonly playersStates: Map<string, LiveCharacterState> = new Map();
+  private readonly playersStates: Map<string, LiveCharacter> = new Map();
 
-  async join(player: LiveCharacterState, locationId: string) {
-    console.log('[join]', player);
+  async join(character: LiveCharacter, locationId: string) {
+    console.log('[join]', character);
 
     await this.redisService.sadd(
       RedisKeysFactory.locationPlayers(locationId),
-      player.id,
+      character.id,
     );
 
-    if (!this.playersStates.has(player.id)) {
-      this.playersStates.set(player.id, {
-        id: player.id,
-        name: player.name,
-        x: player.x,
-        y: player.y,
-        level: player.level,
-        maxHp: player.maxHp,
-        hp: player.hp,
-        defense: player.defense,
-        attackRange: player.attackRange,
-        isAlive: player.isAlive,
-        basePhysicalDamage: player.basePhysicalDamage,
-        baseMagicDamage: player.baseMagicDamage,
-        locationId: player.locationId,
-        attackSpeed: player.attackSpeed,
-        lastMoveAt: player.lastMoveAt,
-        lastAttackAt: player.lastAttackAt,
-        lastHpRegenerationTime: player.lastHpRegenerationTime,
-        userId: player.userId,
+    if (!this.playersStates.has(character.id)) {
+      this.playersStates.set(character.id, {
+        id: character.id,
+        name: character.name,
+        x: character.x,
+        y: character.y,
+        level: character.level,
+        maxHp: character.maxHp,
+        hp: character.hp,
+        defense: character.defense,
+        attackRange: character.attackRange,
+        isAlive: character.isAlive,
+        basePhysicalDamage: character.basePhysicalDamage,
+        baseMagicDamage: character.baseMagicDamage,
+        locationId: character.locationId,
+        attackSpeed: character.attackSpeed,
+        lastMoveAt: character.lastMoveAt,
+        lastAttackAt: character.lastAttackAt,
+        lastHpRegenerationTime: character.lastHpRegenerationTime,
+        userId: character.userId,
         isAttacking: false,
         currentTarget: null,
-        characterSkills: player.characterSkills,
+        characterSkills: character.characterSkills,
+        characterClass: character.characterClass,
       });
     }
   }
 
   public moveTo(
-    character: LiveCharacterState,
+    character: LiveCharacter,
     position: {
       x: number;
       y: number;
@@ -212,7 +208,7 @@ export class PlayerStateService {
   }
 
   public changeUserLocation(
-    playerState: LiveCharacterState,
+    playerState: LiveCharacter,
     targetLocation: CachedLocation,
     teleport: Teleport,
     client: Socket,
@@ -222,7 +218,7 @@ export class PlayerStateService {
     playerState.y = teleport.targetY;
 
     client.userData = {
-      ...client.userData, // сохраняем старые поля
+      ...client.userData,
       position: { x: playerState.x, y: playerState.y },
       locationId: playerState.locationId,
     };

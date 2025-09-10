@@ -22,6 +22,7 @@ import { EffectType } from 'src/common/enums/skill/effect-type.enum';
 import { isTileLayer } from './guards/is-tile-layer';
 import { v4 as uuidv4 } from 'uuid';
 import { isObjectsLayer } from './guards/is-objects-layer';
+import { FactionEnum } from 'src/faction/types/faction.enum';
 
 @Injectable()
 export class SeedService {
@@ -59,18 +60,129 @@ export class SeedService {
       refreshToken: null,
     });
 
-    const createdFaction = await this.factionRepository.save({
-      name: 'Эльфы',
+    const dawnDominionFaction = await this.factionRepository.save({
+      name: FactionEnum.DawnDominion,
       description:
-        'Эльфы - это раса, известная своей грацией и магическими способностями.',
+        'Союз королевств людей, верящих в порядок и свет. Они видят себя защитниками мира и последней надеждой цивилизации. Для врагов это надменные фанатики, готовые подавить любую свободу ради своей «истинной веры».',
+      logo: 'https://example.com/elf_logo.png',
+    });
+
+    const silverleafFaction = await this.factionRepository.save({
+      name: FactionEnum.Silverleaf,
+      description:
+        'Древние лесные народы, связанные с природой и её магией. Их цель — сохранить баланс и остановить разрушение мира. Для чужаков они кажутся холодными и надменными, как сами леса, что скрывают их города.',
+      logo: 'https://example.com/elf_logo.png',
+    });
+
+    const crimsonCovenFaction = await this.factionRepository.save({
+      name: FactionEnum.CrimsonCoven,
+      description:
+        'Культ магов крови и жрецов тьмы, чья сила питается жертвами и запретными ритуалами. Они верят, что через кровь и страдания откроется путь к новому миру. Для остальных это безумцы, которые живут войной и смертью.',
+      logo: 'https://example.com/elf_logo.png',
+    });
+
+    const flamebornFaction = await this.factionRepository.save({
+      name: FactionEnum.Flameborn,
+      description:
+        'Воинственные племена, рожденные в пепле и огне. Их идеал — сила и разрушение, только так выживает достойный. Для союзников это братья по оружию, для врагов — неумолимая стихия пожара, которую нельзя остановить.',
       logo: 'https://example.com/elf_logo.png',
     });
 
     const archerClass = await this.characterClassRepository.save({
       name: 'Лучник',
       description: 'Мастер стрельбы из лука и скрытности.',
-      faction: createdFaction,
+      faction: silverleafFaction,
       logo: 'https://example.com/archer_logo.png',
+    });
+
+    // Доминион Рассвета
+    const paladinClass = await this.characterClassRepository.save({
+      name: 'Паладин',
+      description: 'Тяжёлая броня и щит, держит фронт и защищает союзников.',
+      faction: dawnDominionFaction,
+      logo: 'https://example.com/paladin_logo.png',
+    });
+
+    const gladiatorClass = await this.characterClassRepository.save({
+      name: 'Гладиатор',
+      description: 'Мастер клинка, наносит мощные удары ближнего боя.',
+      faction: dawnDominionFaction,
+      logo: 'https://example.com/gladiator_logo.png',
+    });
+
+    const magistrClass = await this.characterClassRepository.save({
+      name: 'Магистр',
+      description: 'Маг, лечит союзников и поддерживает их щитами.',
+      faction: dawnDominionFaction,
+      logo: 'https://example.com/magistr_logo.png',
+    });
+
+    // Серебролистые
+    const wardClass = await this.characterClassRepository.save({
+      name: 'Хранитель',
+      description: 'Защитник леса, крепкая броня и природная магия.',
+      faction: silverleafFaction,
+      logo: 'https://example.com/ward_logo.png',
+    });
+
+    const lunarClass = await this.characterClassRepository.save({
+      name: 'Лунар',
+      description: 'Меткий стрелок, мастер дальнего боя и скрытности.',
+      faction: silverleafFaction,
+      logo: 'https://example.com/lunar_logo.png',
+    });
+
+    const druidClass = await this.characterClassRepository.save({
+      name: 'Друид',
+      description: 'Лечит союзников магией природы и поддерживает щитами.',
+      faction: silverleafFaction,
+      logo: 'https://example.com/druid_logo.png',
+    });
+
+    // Алый Ковен
+    const bloodguardClass = await this.characterClassRepository.save({
+      name: 'Кровавый Щит',
+      description:
+        'Использует магию крови для защиты себя и ослабления врагов.',
+      faction: crimsonCovenFaction,
+      logo: 'https://example.com/bloodguard_logo.png',
+    });
+
+    const reaperClass = await this.characterClassRepository.save({
+      name: 'Рейвен',
+      description:
+        'Убийца с магией крови, наносит разрушительный урон в ближнем и дальнем бою.',
+      faction: crimsonCovenFaction,
+      logo: 'https://example.com/reaper_logo.png',
+    });
+
+    const hemomancerClass = await this.characterClassRepository.save({
+      name: 'Кровоцелитель',
+      description: 'Восстанавливает союзников через ритуалы крови.',
+      faction: crimsonCovenFaction,
+      logo: 'https://example.com/hemomancer_logo.png',
+    });
+
+    // Пламенорождённые
+    const fireguardClass = await this.characterClassRepository.save({
+      name: 'Пиростраж',
+      description: 'Держит фронт и сжигает врагов вокруг.',
+      faction: flamebornFaction,
+      logo: 'https://example.com/fireguard_logo.png',
+    });
+
+    const fireMagClass = await this.characterClassRepository.save({
+      name: 'Пиромант',
+      description: 'Маг огня, атакует издалека и в ближнем бою.',
+      faction: flamebornFaction,
+      logo: 'https://example.com/flameweaver_logo.png',
+    });
+
+    const torchClass = await this.characterClassRepository.save({
+      name: 'Факел',
+      description: 'Лечит союзников огненной магией.',
+      faction: flamebornFaction,
+      logo: 'https://example.com/torch_logo.png',
     });
 
     const { mapEntries } = await this.readFiles();
@@ -102,7 +214,7 @@ export class SeedService {
     const firstCharacter = await this.characterRepository.save({
       name: 'Leroyalle',
       user: firstUser,
-      characterClass: archerClass,
+      characterClass: lunarClass,
       level: 1,
       location,
       x: 2016,
@@ -118,7 +230,7 @@ export class SeedService {
     await this.characterRepository.save({
       name: 'Consul',
       user: secondUser,
-      characterClass: archerClass,
+      characterClass: fireMagClass,
       level: 1,
       location,
       x: 2016,
@@ -136,7 +248,7 @@ export class SeedService {
       damage: 92,
       cooldownMs: 5000,
       manaCost: 10,
-      characterClass: archerClass,
+      characterClass: lunarClass,
       icon: '/sprites/skills/archer/fire-arrow.png',
       range: 8,
       tilesetKey: 'spells-tileset.png',
@@ -155,7 +267,7 @@ export class SeedService {
       name: 'Огненный град',
       cooldownMs: 5000,
       manaCost: 10,
-      characterClass: archerClass,
+      characterClass: fireMagClass,
       icon: '/sprites/skills/archer/fire-hail.png',
       range: 5,
       tilesetKey: 'spells-tileset.png',

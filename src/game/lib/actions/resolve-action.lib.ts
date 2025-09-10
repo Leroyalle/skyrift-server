@@ -1,10 +1,10 @@
-import { LiveCharacterState } from 'src/character/types/live-character-state.type';
+import { LiveCharacter } from 'src/character/types/live-character-state.type';
 import { BatchUpdateAction } from 'src/game/types/batch-update/batch-update-action.type';
 import { CharacterSkill } from 'src/character/character-skill/entities/character-skill.entity';
 import { TargetAction } from 'src/game/services/combat/types/target-action.type';
 
 export type ActionContext = {
-  attacker: LiveCharacterState;
+  attacker: LiveCharacter;
   target: TargetAction;
   characterSkill?: CharacterSkill;
   batchLocation: BatchUpdateAction[];
