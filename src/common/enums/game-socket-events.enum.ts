@@ -17,6 +17,9 @@ export enum ServerToClientEvents {
   GameInitialState = 'game:initial-state',
   AoESpawn = 'aoe:spawn',
   AoERemove = 'aoe:remove',
+  ChatWorld = 'chat:world',
+  ChatLocation = 'chat:location',
+  ChatDirect = 'chat:direct',
 }
 
 export enum ClientToServerEvents {

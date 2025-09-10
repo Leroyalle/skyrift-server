@@ -3,6 +3,10 @@ export class RedisKeysFactory {
   private static readonly _connectedPlayersPrefix = 'connected-players';
   private static readonly _playersPrefix = 'players';
   private static readonly _statePrefix = 'state';
+  private static readonly _chatPrefix = 'chat';
+  private static readonly _chatWorldPrefix = 'world';
+  private static readonly _chatLocationPrefix = 'location';
+  private static readonly _chatDirectPrefix = 'direct';
 
   static get locationPrefix(): string {
     return this._locationPrefix;
@@ -20,7 +24,19 @@ export class RedisKeysFactory {
     return `${this._connectedPlayersPrefix}:${playerId}`;
   }
 
-  static playerState(playerId: string): string {
-    return `${this._playersPrefix}:${playerId}:${this._statePrefix}`;
+  static playerState(characterId: string): string {
+    return `${this._playersPrefix}:${characterId}:${this._statePrefix}`;
+  }
+
+  static chatWorld(): string {
+    return `${this._chatPrefix}:${this._chatWorldPrefix}`;
+  }
+
+  static chatLocation(locationId: string): string {
+    return `${this._chatPrefix}:${this._chatLocationPrefix}:${locationId}`;
+  }
+
+  static chatDirect(senderId: string, recipientId: string) {
+    return `${this._chatPrefix}:${this._chatDirectPrefix}:${senderId}:${recipientId}`;
   }
 }

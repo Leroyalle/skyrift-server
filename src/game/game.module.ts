@@ -14,6 +14,7 @@ import { MovementService } from './services/movement/movement.service';
 import { RegenerationService } from './services/regeneration/regeneration.service';
 import { InteractionService } from './services/interaction/interaction.service';
 import { PathFindingService } from './services/path-finding/path-finding.service';
+import { ChatService } from './services/chat/chat.service';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { PathFindingService } from './services/path-finding/path-finding.service
     PathFindingService,
     RegenerationService,
     InteractionService,
+    ChatService,
   ],
 })
 export class GameModule {}

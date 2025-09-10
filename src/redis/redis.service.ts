@@ -54,4 +54,16 @@ export class RedisService {
   pipeline() {
     return this.client.pipeline();
   }
+
+  async lpush(key: string, data: unknown) {
+    return await this.client.lpush(key, JSON.stringify(data));
+  }
+
+  async ltrim(key: string, start: number, end: number) {
+    return await this.client.ltrim(key, start, end);
+  }
+
+  async lrange(key: string, start: number, end: number) {
+    return await this.client.lrange(key, start, end);
+  }
 }
