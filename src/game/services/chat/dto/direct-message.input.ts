@@ -1,9 +1,9 @@
-import { Field, ID, InputType } from '@nestjs/graphql';
+import { Field, InputType } from '@nestjs/graphql';
 
 @InputType()
 export class DirectMessageInput {
-  @Field(() => ID)
-  recipientId: string;
+  @Field()
+  recipientName: string;
 
   @Field()
   message: string;

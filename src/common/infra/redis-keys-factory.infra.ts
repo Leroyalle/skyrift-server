@@ -1,6 +1,7 @@
 export class RedisKeysFactory {
   private static readonly _locationPrefix = 'location';
   private static readonly _connectedPlayersPrefix = 'connected-players';
+  private static readonly _playerNameToIdPrefix = 'player-name-to-id';
   private static readonly _playersPrefix = 'players';
   private static readonly _statePrefix = 'state';
   private static readonly _chatPrefix = 'chat';
@@ -22,6 +23,10 @@ export class RedisKeysFactory {
 
   static connectedPlayer(playerId: string): string {
     return `${this._connectedPlayersPrefix}:${playerId}`;
+  }
+
+  static playerNameToId(name: string) {
+    return `${this._playerNameToIdPrefix}:${name}`;
   }
 
   static playerState(characterId: string): string {

@@ -19,7 +19,7 @@ export class Character {
   @Field(() => ID, { description: 'ID персонажа' })
   id: string;
 
-  @Column()
+  @Column({ unique: true })
   @Field(() => String, { description: 'Имя персонажа' })
   name: string;
 

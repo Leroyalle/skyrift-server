@@ -92,9 +92,13 @@ export class ChatService {
       client.userData.characterId,
     );
 
-    const recipient = this.playerStateService.getCharacterState(
-      input.recipientId,
+    const recipientId = await this.redisService.get<string>(
+      RedisKeysFactory.playerNameToId(input.recipientName),
     );
+
+    if (!recipientId) return;
+
+    const recipient = this.playerStateService.getCharacterState(recipientId);
 
     if (!sender || !recipient) return;
 
@@ -105,10 +109,13 @@ export class ChatService {
       senderName: sender.name,
       message: input.message,
       ts,
-      recipientId: input.recipientId,
+      recipientId: input.recipientName,
     };
 
-    const redisKey = RedisKeysFactory.chatDirect(sender.id, input.recipientId);
+    const redisKey = RedisKeysFactory.chatDirect(
+      sender.id,
+      input.recipientName,
+    );
 
     await this.redisService.lpush(redisKey, directMessageData);
     await this.redisService.ltrim(redisKey, 0, 99);

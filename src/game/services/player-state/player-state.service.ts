@@ -29,6 +29,11 @@ export class PlayerStateService {
       character.id,
     );
 
+    await this.redisService.set(
+      RedisKeysFactory.playerNameToId(character.name),
+      character.id,
+    );
+
     if (!this.playersStates.has(character.id)) {
       this.playersStates.set(character.id, {
         id: character.id,
