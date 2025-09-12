@@ -3,4 +3,5 @@ export type MessageData = {
   senderName: string;
   message: string;
   ts: number;
+  type: 'world' | 'location' | 'direct';
 };

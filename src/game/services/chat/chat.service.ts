@@ -39,6 +39,7 @@ export class ChatService {
       senderName: sender.name,
       message,
       ts,
+      type: 'world',
     };
 
     const redisKey = RedisKeysFactory.chatWorld();
@@ -68,6 +69,7 @@ export class ChatService {
       senderName: sender.name,
       message,
       ts,
+      type: 'location',
     };
 
     const redisKey = RedisKeysFactory.chatLocation(sender.locationId);
@@ -109,6 +111,7 @@ export class ChatService {
       senderName: sender.name,
       message: input.message,
       ts,
+      type: 'direct',
       recipientId: input.recipientName,
     };
 
