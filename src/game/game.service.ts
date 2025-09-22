@@ -178,6 +178,7 @@ export class GameService implements OnModuleInit {
         userId: findCharacter.user.id,
         isAttacking: false,
         currentTarget: null,
+        type: 'player',
       };
 
       await this.playerStateService.join(

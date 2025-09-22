@@ -148,12 +148,6 @@ export class MovementService {
 
       const direction = getDirection(prevPosition, position);
 
-      // let updates = updatesByLocation.get(locationId);
-      // if (!updates) {
-      //   updates = [];
-      //   updatesByLocation.set(locationId, updates);
-      // }
-
       const updates = this.getOrCreateBatchUpdate(
         locationId,
         updatesByLocation,
@@ -207,6 +201,13 @@ export class MovementService {
 
       const movedMob = this.runtimeMobService.moveTo(runtimeMob, step, now);
 
+      this.spatialGridService.update(
+        runtimeMob,
+        locationId,
+        prevPosition.x,
+        prevPosition.y,
+      );
+
       const currentPosition = {
         x: Math.floor(movedMob.x * 32),
         y: Math.floor(movedMob.y * 32),
@@ -247,7 +248,6 @@ export class MovementService {
       updates = [];
       updatesByLocation.set(locationId, updates);
     }
-
     return updates;
   }
 

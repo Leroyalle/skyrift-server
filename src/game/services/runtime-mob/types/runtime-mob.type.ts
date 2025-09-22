@@ -1,5 +1,6 @@
 import { CurrentTarget } from 'src/character/types/live-character-state.type';
 import { PositionDto } from 'src/common/dto/position.dto';
+import { EntityType } from 'src/game/types/entity-type.type';
 import { Mob } from 'src/mob/entities/mob.entity';
 import { MobSpawn } from 'src/mob/mob-spawn/entities/mob-spawn.entity';
 
@@ -7,7 +8,10 @@ export type RuntimeMob = RuntimeMobSpawn & {
   mob: Mob & RuntimeMobStats;
 };
 
-type RuntimeMobSpawn = Omit<MobSpawn, 'location'> & { locationId: string };
+type RuntimeMobSpawn = Omit<MobSpawn, 'location'> & {
+  locationId: string;
+  type: EntityType;
+};
 
 type RuntimeMobStats = {
   x: number;

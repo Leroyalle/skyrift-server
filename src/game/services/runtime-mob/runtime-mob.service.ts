@@ -81,6 +81,7 @@ export class RuntimeMobService implements OnModuleInit {
     return {
       ...mobSpawnStats,
       locationId: mobSpawn.location.id,
+      type: 'mob',
       mob: {
         ...mobSpawn.mob,
         x: mobSpawn.x,

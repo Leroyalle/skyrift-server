@@ -73,6 +73,7 @@ export class PlayerStateService {
     character.x = position.x;
     character.y = position.y;
     character.lastMoveAt = lastMoveAt;
+    return character;
   }
 
   async leave(userId: string, playerId: string, locationId: string) {

@@ -3,6 +3,7 @@ import { decodeGridKey } from './lib/decode-grid-key.lib';
 import { DecodedGridKey } from './types/decoed-grid-key.type';
 import { QueryRadiusResult } from './types/query-radius-result.type';
 import { getTileByPosition } from 'src/game/lib/get-tile-by-position.lib';
+import { EntityType } from 'src/game/types/entity-type.type';
 
 @Injectable()
 export class SpatialGridService<
@@ -11,6 +12,7 @@ export class SpatialGridService<
     locationId: string;
     x: number;
     y: number;
+    type: EntityType;
   },
 > {
   private readonly tileSize: number = 32;
@@ -25,17 +27,29 @@ export class SpatialGridService<
     return `${locationId}_${cx}_${cy}`;
   }
 
+  private generateEntityKey(entity: T) {
+    return `${entity.type}_${entity.id}`;
+  }
+
+  private decodeEntityKey(key: string) {
+    const values = key.split('_');
+    return {
+      type: values[0],
+      id: values[1],
+    };
+  }
+
   add(entity: T) {
     const key = this.getCellKey(entity.locationId, entity.x, entity.y);
     if (!this.cells.has(key)) {
       this.cells.set(key, new Set());
     }
-    this.cells.get(key)!.add(entity.id);
+    this.cells.get(key)!.add(this.generateEntityKey(entity));
   }
 
   remove(entity: T) {
     const key = this.getCellKey(entity.locationId, entity.x, entity.y);
-    this.cells.get(key)?.delete(entity.id);
+    this.cells.get(key)?.delete(this.generateEntityKey(entity));
   }
 
   update(entity: T, oldLocationId: string, oldX: number, oldY: number) {
@@ -68,7 +82,10 @@ export class SpatialGridService<
         const bucket = this.cells.get(key);
         if (!bucket) continue;
         affectedCells.push(decodeGridKey(key));
-        bucket.forEach((eId) => enemiesIds.push(eId));
+        bucket.forEach((stringValues) => {
+          const { id: eId } = this.decodeEntityKey(stringValues);
+          return enemiesIds.push(eId);
+        });
       }
     }
     return {

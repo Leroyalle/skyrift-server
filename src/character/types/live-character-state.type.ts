@@ -1,3 +1,4 @@
+import { EntityType } from 'src/game/types/entity-type.type';
 import { CharacterSkill } from '../character-skill/entities/character-skill.entity';
 import { CharacterClass } from 'src/character-class/entities/character-class.entity';
 
@@ -24,12 +25,11 @@ export type LiveCharacter = {
   currentTarget: CurrentTarget | null;
   characterSkills: CharacterSkill[];
   characterClass: CharacterClass;
+  type: EntityType;
   // TODO: add the damage(now) - sum all damage items
 };
 
 export type CurrentTarget = {
   id: string;
-  type: TargetType;
+  type: EntityType;
 };
-
-export type TargetType = 'player' | 'mob';
