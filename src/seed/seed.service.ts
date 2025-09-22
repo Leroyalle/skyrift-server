@@ -3,11 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../user/entities/user.entity';
 import { Repository } from 'typeorm';
 import { Location } from 'src/location/entities/location.entity';
-import {
-  Property,
-  TiledMap,
-  TiledObject,
-} from 'src/common/types/tiled-map.type';
+import { Property, TiledMap } from 'src/common/types/tiled-map.type';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as xml2js from 'xml2js';
@@ -23,6 +19,8 @@ import { isTileLayer } from './guards/is-tile-layer';
 import { v4 as uuidv4 } from 'uuid';
 import { isObjectsLayer } from './guards/is-objects-layer';
 import { FactionEnum } from 'src/faction/types/faction.enum';
+import { Mob } from 'src/mob/entities/mob.entity';
+import { MobSpawn } from 'src/mob/mob-spawn/entities/mob-spawn.entity';
 
 @Injectable()
 export class SeedService {
@@ -41,6 +39,10 @@ export class SeedService {
     private skillRepository: Repository<Skill>,
     @InjectRepository(CharacterSkill)
     private characterSkillRepository: Repository<CharacterSkill>,
+    @InjectRepository(Mob)
+    private mobRepository: Repository<Mob>,
+    @InjectRepository(MobSpawn)
+    private mobSpawnRepository: Repository<MobSpawn>,
   ) {}
 
   public async run() {
@@ -186,9 +188,8 @@ export class SeedService {
     });
 
     const { mapEntries } = await this.readFiles();
-    let location;
-    await Promise.all(
-      mapEntries.map(async ({ parsedMap, filename }, i) => {
+    const savedLocations = await Promise.all(
+      mapEntries.map(async ({ parsedMap, filename }) => {
         console.log(parsedMap.tilesets);
         const tiledMap = this.optimizeTilesets(parsedMap);
         const passableMap = this.createPassableMap(tiledMap);
@@ -204,19 +205,39 @@ export class SeedService {
           tileWidth: tiledMap.tilewidth,
           tileHeight: tiledMap.tileheight,
         });
-        if (i === 0) location = savedLocation;
-        await this.locationRepository.save(savedLocation);
-
         console.log('Location saved', savedLocation.name);
+        return await this.locationRepository.save(savedLocation);
       }),
     );
+
+    const demonMob = this.mobRepository.create({
+      name: 'Огненный демон',
+      damage: 25,
+      magicDefense: 1,
+      physicalDefense: 1,
+      attackRange: 1,
+      exp_reward: 5,
+      walkSpeed: 300,
+      chaseSpeed: 450,
+      triggerRange: 3,
+      spawn: [
+        this.mobSpawnRepository.create({
+          x: 2016,
+          y: 960,
+          areaRadius: 3,
+          location: savedLocations[0],
+        }),
+      ],
+    });
+
+    await this.mobRepository.save(demonMob);
 
     const firstCharacter = await this.characterRepository.save({
       name: 'Leroyalle',
       user: firstUser,
       characterClass: lunarClass,
       level: 1,
-      location,
+      location: savedLocations[0],
       x: 2016,
       y: 960,
       maxHp: 1000,
@@ -232,7 +253,7 @@ export class SeedService {
       user: secondUser,
       characterClass: fireMagClass,
       level: 1,
-      location,
+      location: savedLocations[0],
       x: 2016,
       y: 960,
       maxHp: 1000,

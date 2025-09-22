@@ -11,7 +11,7 @@ export class LocationResolver {
 
   @Query(() => [Location], { name: 'location' })
   findAll() {
-    return this.locationService.findAll();
+    return this.locationService.findAndCacheAll();
   }
 
   @Query(() => Location, { name: 'findLocationById' })

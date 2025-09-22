@@ -248,6 +248,27 @@ type TiledMap {
   width: Int!
 }
 
+type Mob {
+  id: ID!
+  name: String!
+  damage: Int!
+  physicalDefense: Int!
+  magicDefense: Int!
+  attackRange: Int!
+  triggerRange: Int!
+  moveSpeed: Int!
+  exp_reward: Int!
+  spawn: [MobSpawn!]!
+}
+
+type MobSpawn {
+  id: ID!
+  x: Int!
+  y: Int!
+  location: Location!
+  mob: Mob!
+}
+
 type Location {
   id: ID!
   name: String!
@@ -259,6 +280,7 @@ type Location {
   tileWidth: Int!
   tileHeight: Int!
   characters: [Character!]!
+  mobSpawn: [MobSpawn!]!
 }
 
 type Character {

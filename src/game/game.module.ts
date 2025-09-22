@@ -15,6 +15,9 @@ import { RegenerationService } from './services/regeneration/regeneration.servic
 import { InteractionService } from './services/interaction/interaction.service';
 import { PathFindingService } from './services/path-finding/path-finding.service';
 import { ChatService } from './services/chat/chat.service';
+import { RuntimeMobService } from './services/runtime-mob/runtime-mob.service';
+import { MobModule } from 'src/mob/mob.module';
+import { MobSpawnModule } from 'src/mob/mob-spawn/mob-spawn.module';
 
 @Module({
   imports: [
@@ -23,6 +26,8 @@ import { ChatService } from './services/chat/chat.service';
     CharacterModule,
     LocationModule,
     RedisModule,
+    MobModule,
+    MobSpawnModule,
   ],
   providers: [
     GameGateway,
@@ -36,6 +41,7 @@ import { ChatService } from './services/chat/chat.service';
     RegenerationService,
     InteractionService,
     ChatService,
+    RuntimeMobService,
   ],
 })
 export class GameModule {}

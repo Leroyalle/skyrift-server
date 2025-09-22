@@ -8,6 +8,8 @@ import { CharacterClass } from 'src/character-class/entities/character-class.ent
 import { Character } from 'src/character/entities/character.entity';
 import { Skill } from 'src/character-class/skill/entities/skill.entity';
 import { CharacterSkill } from 'src/character/character-skill/entities/character-skill.entity';
+import { Mob } from 'src/mob/entities/mob.entity';
+import { MobSpawn } from 'src/mob/mob-spawn/entities/mob-spawn.entity';
 
 @Module({
   imports: [
@@ -19,6 +21,8 @@ import { CharacterSkill } from 'src/character/character-skill/entities/character
       Character,
       Skill,
       CharacterSkill,
+      Mob,
+      MobSpawn,
     ]),
   ],
   providers: [SeedService],

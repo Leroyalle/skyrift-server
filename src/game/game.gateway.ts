@@ -97,7 +97,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     return await this.gameService.playerSendLocationMessage(client, input);
   }
 
-  @SubscribeMessage(ClientToServerEvents.PlayerSendWorldMessage)
+  @SubscribeMessage(ClientToServerEvents.PlayerSendDirectMessage)
   async playerSendDirectMessage(client: Socket, input: DirectMessageInput) {
     return await this.gameService.playerSendDirectMessage(client, input);
   }

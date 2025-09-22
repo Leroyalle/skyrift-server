@@ -1,6 +1,9 @@
 import { PositionDto } from 'src/common/dto/position.dto';
 
-export type MovementQueue = {
+export type MobMovementQueue = {
   steps: PositionDto[];
+};
+
+export type CharacterMovementQueue = MobMovementQueue & {
   userId: string;
 };

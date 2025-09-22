@@ -2,6 +2,7 @@ import { Field, ID, Int, ObjectType } from '@nestjs/graphql';
 import { Character } from 'src/character/entities/character.entity';
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { TiledMap } from 'src/common/types/tiled-map.type';
+import { MobSpawn } from 'src/mob/mob-spawn/entities/mob-spawn.entity';
 
 @Entity()
 @ObjectType()
@@ -45,4 +46,8 @@ export class Location {
   @OneToMany(() => Character, (character) => character.location)
   @Field(() => [Character])
   characters: Character[];
+
+  @OneToMany(() => MobSpawn, (spawn) => spawn.location)
+  @Field(() => [MobSpawn])
+  mobSpawn: MobSpawn[];
 }

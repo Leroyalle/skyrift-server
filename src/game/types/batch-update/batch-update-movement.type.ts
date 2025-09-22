@@ -1,9 +1,21 @@
-export type TBatchUpdateMovement = {
+export type BatchUpdateMovement =
+  | BatchUpdateCharactersMovement
+  | BatchUpdateMobsMovement;
+
+type BatchUpdateBasic = {
   locationId: string;
-  characterId: string;
   x: number;
   y: number;
   direction: TDirection;
+};
+
+type BatchUpdateCharactersMovement = BatchUpdateBasic & {
+  type: 'player';
+  characterId: string;
+};
+type BatchUpdateMobsMovement = BatchUpdateBasic & {
+  type: 'mob';
+  spawnMobId: string;
 };
 
 type TDirection = 'left' | 'right' | 'up' | 'down';

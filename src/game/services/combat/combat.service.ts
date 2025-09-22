@@ -48,6 +48,8 @@ export class CombatService {
     private readonly movementService: MovementService,
   ) {}
 
+  // FIXME: разделить на сервисы со своими мапами ActiveAoE / ActiveMobs, разгрузить сервисы
+
   private readonly activeAoEZones: Map<string, ActiveAoEZone> = new Map();
   private readonly pendingActionsQueue: Map<string, PendingAction[]> =
     new Map();

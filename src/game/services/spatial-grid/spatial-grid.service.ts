@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { decodeGridKey } from './lib/decode-grid-key.lib';
 import { DecodedGridKey } from './types/decoed-grid-key.type';
 import { QueryRadiusResult } from './types/query-radius-result.type';
+import { getTileByPosition } from 'src/game/lib/get-tile-by-position.lib';
 
 @Injectable()
 export class SpatialGridService<
@@ -20,7 +21,7 @@ export class SpatialGridService<
   }
 
   private getCellKey(locationId: string, x: number, y: number): string {
-    const { x: cx, y: cy } = this.getTileByPosition(x, y);
+    const { x: cx, y: cy } = getTileByPosition(x, y, this.tileSize);
     return `${locationId}_${cx}_${cy}`;
   }
 
@@ -52,7 +53,7 @@ export class SpatialGridService<
     y: number,
     radius: number,
   ): QueryRadiusResult {
-    const { x: centerX, y: centerY } = this.getTileByPosition(x, y);
+    const { x: centerX, y: centerY } = getTileByPosition(x, y, this.tileSize);
 
     const minX = centerX - radius;
     const maxX = centerX + radius;
@@ -75,10 +76,4 @@ export class SpatialGridService<
       affectedCells,
     };
   }
-
-  public getTileByPosition = (pixelX: number, pixelY: number) => {
-    const x = Math.floor(pixelX / this.tileSize);
-    const y = Math.floor(pixelY / this.tileSize);
-    return { x, y };
-  };
 }

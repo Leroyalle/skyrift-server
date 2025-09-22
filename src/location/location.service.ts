@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { CreateLocationInput } from './dto/create-location.input';
 import { Repository } from 'typeorm';
 import { Location } from './entities/location.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -19,12 +18,23 @@ export class LocationService {
   private readonly locationCache = new Map<string, CachedLocation>();
   private readonly filenameToLocationId = new Map<string, string>();
 
-  create(createLocationInput: CreateLocationInput) {
-    return 'This action adds a new location';
-  }
+  async findAndCacheAll() {
+    const findLocations = await this.locationRepository.find({
+      relations: {
+        mobSpawn: {
+          mob: true,
+          location: true,
+        },
+      },
+    });
 
-  findAll() {
-    return `This action returns all location`;
+    const cachedLocations = await Promise.all(
+      findLocations.map(
+        async (location) => await this.setLocationToCache(location),
+      ),
+    );
+
+    return cachedLocations;
   }
 
   public async findOne(id: string) {
@@ -33,8 +43,22 @@ export class LocationService {
     });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} location`;
+  private async setLocationToCache(
+    location: Location,
+    saveToRedis: boolean = true,
+  ) {
+    const teleportsMap = buildTeleportsMap(location.tiledMap);
+    const cachedLocation: CachedLocation = {
+      ...location,
+      teleportsMap,
+    };
+    this.locationCache.set(location.id, cachedLocation);
+    this.filenameToLocationId.set(location.filename, location.id);
+    if (saveToRedis) {
+      await this.redisService.set(RedisKeys.Location + location.id, location);
+    }
+
+    return cachedLocation;
   }
 
   public async loadLocationByFilename(filename: string) {
@@ -64,30 +88,36 @@ export class LocationService {
     );
 
     if (redisLocation) {
-      const teleportsMap = buildTeleportsMap(redisLocation.tiledMap);
-      const locationInMemory = {
-        ...redisLocation,
-        teleportsMap,
-      };
-      this.locationCache.set(locationId, locationInMemory);
-      this.filenameToLocationId.set(redisLocation.filename, locationId);
-      return redisLocation;
+      // const teleportsMap = buildTeleportsMap(redisLocation.tiledMap);
+      // const locationInMemory = {
+      //   ...redisLocation,
+      //   teleportsMap,
+      // };
+      // this.locationCache.set(locationId, locationInMemory);
+      // this.filenameToLocationId.set(redisLocation.filename, locationId);
+      const cachedLocation = await this.setLocationToCache(
+        redisLocation,
+        false,
+      );
+      return cachedLocation;
     }
 
     const dbLocation = await this.findOne(locationId);
 
     if (!dbLocation) return;
 
-    const teleportsMap = buildTeleportsMap(dbLocation.tiledMap);
-    const locationInMemory = {
-      ...dbLocation,
-      teleportsMap,
-    };
+    // const teleportsMap = buildTeleportsMap(dbLocation.tiledMap);
+    // const locationInMemory = {
+    //   ...dbLocation,
+    //   teleportsMap,
+    // };
 
-    this.locationCache.set(locationId, locationInMemory);
-    this.filenameToLocationId.set(locationInMemory.filename, locationId);
-    await this.redisService.set(RedisKeys.Location + locationId, dbLocation);
+    // this.locationCache.set(locationId, locationInMemory);
+    // this.filenameToLocationId.set(locationInMemory.filename, locationId);
+    // await this.redisService.set(RedisKeys.Location + locationId, dbLocation);
 
-    return locationInMemory;
+    const savedLocation = await this.setLocationToCache(dbLocation);
+
+    return savedLocation;
   }
 }
