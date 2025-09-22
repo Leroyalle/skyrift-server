@@ -7,6 +7,7 @@ import { RuntimeMob } from './types/runtime-mob.type';
 import { PositionDto } from 'src/common/dto/position.dto';
 import { getTileByPosition } from 'src/game/lib/get-tile-by-position.lib';
 import { SpatialGridService } from '../spatial-grid/spatial-grid.service';
+import { CombatService } from '../combat/combat.service';
 
 @Injectable()
 export class RuntimeMobService implements OnModuleInit {
@@ -15,6 +16,7 @@ export class RuntimeMobService implements OnModuleInit {
     private readonly mobSpawnService: MobSpawnService,
     private readonly spatialGridService: SpatialGridService<RuntimeMob>,
     private readonly locationService: LocationService,
+    private readonly combatService: CombatService,
   ) {}
 
   private readonly mobsByLocation = new Map<string, Set<string>>();
@@ -30,6 +32,28 @@ export class RuntimeMobService implements OnModuleInit {
         this.mobsById.set(runtimeMob.id, runtimeMob);
         this.spatialGridService.add(runtimeMob);
       });
+    }
+  }
+
+  tickAiMobs() {
+    const mobsEntries = Array.from(this.mobsById.values());
+
+    for (const runtimeMob of mobsEntries) {
+      if (runtimeMob.mob.respawnIn) return;
+
+      const { entities } = this.spatialGridService.queryRadius(
+        runtimeMob.locationId,
+        runtimeMob.mob.x,
+        runtimeMob.mob.y,
+        runtimeMob.mob.triggerRange,
+      );
+
+      const target = entities.find((ent) => ent.type === 'player');
+
+      if (!target) return;
+
+      // STOPPED: думаю сделать второй метод реквест аттак мувинга для мобов без передачи сокета, так же нужно расширить тип для просчета пути (schedule) добавив моба, чтобы игрок мог его атаковать
+      // await this.combatService.requestAttackMove(target);
     }
   }
 

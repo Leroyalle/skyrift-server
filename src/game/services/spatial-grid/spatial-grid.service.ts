@@ -4,6 +4,7 @@ import { DecodedGridKey } from './types/decoed-grid-key.type';
 import { QueryRadiusResult } from './types/query-radius-result.type';
 import { getTileByPosition } from 'src/game/lib/get-tile-by-position.lib';
 import { EntityType } from 'src/game/types/entity-type.type';
+import { DecodedEntityKey } from './types/decoed-entity-key.type';
 
 @Injectable()
 export class SpatialGridService<
@@ -27,14 +28,14 @@ export class SpatialGridService<
     return `${locationId}_${cx}_${cy}`;
   }
 
-  private generateEntityKey(entity: T) {
+  private generateEntityKey(entity: T): string {
     return `${entity.type}_${entity.id}`;
   }
 
-  private decodeEntityKey(key: string) {
+  private decodeEntityKey(key: string): DecodedEntityKey {
     const values = key.split('_');
     return {
-      type: values[0],
+      type: values[0] as EntityType,
       id: values[1],
     };
   }
@@ -74,7 +75,7 @@ export class SpatialGridService<
     const minY = centerY - radius;
     const maxY = centerY + radius;
 
-    const enemiesIds: string[] = [];
+    const entities: DecodedEntityKey[] = [];
     const affectedCells: DecodedGridKey[] = [];
     for (let cx = minX; cx <= maxX; cx++) {
       for (let cy = minY; cy <= maxY; cy++) {
@@ -83,13 +84,13 @@ export class SpatialGridService<
         if (!bucket) continue;
         affectedCells.push(decodeGridKey(key));
         bucket.forEach((stringValues) => {
-          const { id: eId } = this.decodeEntityKey(stringValues);
-          return enemiesIds.push(eId);
+          const decoded = this.decodeEntityKey(stringValues);
+          return entities.push(decoded);
         });
       }
     }
     return {
-      enemiesIds,
+      entities,
       affectedCells,
     };
   }

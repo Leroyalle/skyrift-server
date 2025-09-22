@@ -211,7 +211,7 @@ export class SeedService {
     );
 
     const demonMob = this.mobRepository.create({
-      name: 'Огненный демон',
+      name: 'Суленыч',
       damage: 25,
       magicDefense: 1,
       physicalDefense: 1,

@@ -3,10 +3,7 @@ import { PlayerStateService } from '../player-state/player-state.service';
 import { SkillType } from 'src/common/enums/skill/skill-type.enum';
 import { PositionDto } from 'src/common/dto/position.dto';
 import { SpatialGridService } from '../spatial-grid/spatial-grid.service';
-import {
-  LiveCharacter,
-  TargetType,
-} from 'src/character/types/live-character-state.type';
+import { LiveCharacter } from 'src/character/types/live-character-state.type';
 import { ActiveAoEZone } from './types/active-aoe-zone.type';
 import { CharacterSkill } from 'src/character/character-skill/entities/character-skill.entity';
 import { v4 as uuidv4 } from 'uuid';
@@ -35,6 +32,7 @@ import { CachedLocation } from 'src/location/types/cashed-location.type';
 import { pushTargetAction } from './lib/push-target-action.lib';
 import { PathFindingService } from '../path-finding/path-finding.service';
 import { isEnemyFaction } from './lib/is-enemy-faction.lib';
+import { EntityType } from 'src/game/types/entity-type.type';
 
 @Injectable()
 export class CombatService {
@@ -202,7 +200,7 @@ export class CombatService {
         continue;
       }
 
-      const { enemiesIds } = this.spatialGridService.queryRadius(
+      const { entities } = this.spatialGridService.queryRadius(
         zone.locationId,
         zone.x,
         zone.y,
@@ -216,7 +214,7 @@ export class CombatService {
       }
 
       const targets: Target[] = [];
-      enemiesIds.forEach((id) => {
+      entities.forEach(({ id }) => {
         const victim = this.playerStateService.getCharacterState(id);
         if (!victim || !cSkill.skill.damagePerSecond || !victim.isAlive) return;
         if (attacker.id === victim.id) return;
@@ -395,7 +393,7 @@ export class CombatService {
     location: CachedLocation,
   ): {
     tile: { x: number; y: number };
-    currentTarget: { id: string; type: TargetType } | null;
+    currentTarget: { id: string; type: EntityType } | null;
   } | null {
     if (target.kind === 'player') {
       const victim = this.playerStateService.getCharacterState(target.id);
