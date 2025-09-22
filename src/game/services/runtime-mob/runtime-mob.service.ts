@@ -6,12 +6,14 @@ import { MobService } from 'src/mob/mob.service';
 import { RuntimeMob } from './types/runtime-mob.type';
 import { PositionDto } from 'src/common/dto/position.dto';
 import { getTileByPosition } from 'src/game/lib/get-tile-by-position.lib';
+import { SpatialGridService } from '../spatial-grid/spatial-grid.service';
 
 @Injectable()
 export class RuntimeMobService implements OnModuleInit {
   constructor(
     private readonly mobService: MobService,
     private readonly mobSpawnService: MobSpawnService,
+    private readonly spatialGridService: SpatialGridService<RuntimeMob>,
     private readonly locationService: LocationService,
   ) {}
 
@@ -24,8 +26,9 @@ export class RuntimeMobService implements OnModuleInit {
       const mobsSet = this.getOrCreateActiveMobsLocationMap(location.id);
       location.mobSpawn.forEach((mobSpawn) => {
         const runtimeMob = this.buildRuntimeMob(mobSpawn);
-        mobsSet.add(mobSpawn.id);
-        this.mobsById.set(mobSpawn.id, runtimeMob);
+        mobsSet.add(runtimeMob.id);
+        this.mobsById.set(runtimeMob.id, runtimeMob);
+        this.spatialGridService.add(runtimeMob);
       });
     }
   }
