@@ -33,6 +33,10 @@ import { pushTargetAction } from './lib/push-target-action.lib';
 import { PathFindingService } from '../path-finding/path-finding.service';
 import { isEnemyFaction } from './lib/is-enemy-faction.lib';
 import { EntityType } from 'src/game/types/entity-type.type';
+import { RuntimeMob } from '../runtime-mob/types/runtime-mob.type';
+import { isPlayer } from './lib/is-player.lib';
+import { EntityKey } from 'src/game/types/entity/entity-key.type';
+import { generateEntityKey } from 'src/game/lib/entity/generate-entity-key.lib';
 
 @Injectable()
 export class CombatService {
@@ -49,7 +53,7 @@ export class CombatService {
   // FIXME: разделить на сервисы со своими мапами ActiveAoE / ActiveMobs, разгрузить сервисы
 
   private readonly activeAoEZones: Map<string, ActiveAoEZone> = new Map();
-  private readonly pendingActionsQueue: Map<string, PendingAction[]> =
+  private readonly pendingActionsQueue: Map<EntityKey, PendingAction[]> =
     new Map();
 
   public async tickActions() {
@@ -249,11 +253,11 @@ export class CombatService {
     }
   }
 
-  private getOrCreateActionQueue(characterId: string) {
-    let queue = this.pendingActionsQueue.get(characterId);
+  private getOrCreateActionQueue(key: EntityKey) {
+    let queue = this.pendingActionsQueue.get(key);
     if (!queue) {
       queue = [];
-      this.pendingActionsQueue.set(characterId, queue);
+      this.pendingActionsQueue.set(key, queue);
     }
     return queue;
   }
@@ -286,7 +290,9 @@ export class CombatService {
 
     if (!isEnemyFaction(attackerFactionName, victimFactionName)) return;
 
-    const queue = this.getOrCreateActionQueue(attacker.id);
+    const entityKey = generateEntityKey<LiveCharacter>(attacker);
+
+    const queue = this.getOrCreateActionQueue(entityKey);
 
     const hasAutoAttack = queue.some(
       (q) => q.actionType === ActionType.AutoAttack,
@@ -316,6 +322,41 @@ export class CombatService {
       null,
     );
     console.log('queue request auto attack', queue, pendingAction);
+  }
+
+  private async requestAttackMoveForMob() {}
+
+  private async processAttackMove(
+    attacker: LiveCharacter | RuntimeMob,
+    victim: LiveCharacter | RuntimeMob,
+  ) {
+    if (isPlayer(attacker) && isPlayer(victim)) {
+      const attackerFactionName = attacker.characterClass.faction.name;
+      const victimFactionName = victim.characterClass.faction.name;
+
+      if (!isEnemyFaction(attackerFactionName, victimFactionName)) return;
+    }
+
+    const entityKey = generateEntityKey<LiveCharacter | RuntimeMob>(attacker);
+
+    const queue = this.getOrCreateActionQueue(attacker.id);
+
+    const hasAutoAttack = queue.some(
+      (q) => q.actionType === ActionType.AutoAttack,
+    );
+
+    if (hasAutoAttack) return;
+
+    console.log('hasAutoAttack', hasAutoAttack);
+
+    await this.schedulePathUpdate(
+      attacker,
+      {
+        kind: 'player',
+        id: input.targetId,
+      },
+      null,
+    );
   }
 
   public async requestUseSkill(client: Socket, input: RequestSkillUseDto) {
