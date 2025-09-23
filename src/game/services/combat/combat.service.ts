@@ -40,6 +40,8 @@ import { isPlayer } from './lib/entity/guards/is-player.lib';
 import { setCurrentTarget } from './lib/entity/helpers/set-current-target.lib';
 import { getAttackerRange } from './lib/entity/helpers/get-attacker-range.lib';
 import { findEntitySkill } from './lib/entity/helpers/find-entity-skill.lib';
+import { RuntimeMob } from '../runtime-mob/types/runtime-mob.type';
+import { RuntimeMobService } from '../runtime-mob/runtime-mob.service';
 
 @Injectable()
 export class CombatService {
@@ -51,6 +53,7 @@ export class CombatService {
     private readonly socketService: SocketService,
     @Inject(forwardRef(() => MovementService))
     private readonly movementService: MovementService,
+    private readonly runtimeMobService: RuntimeMobService,
   ) {}
 
   // FIXME: разделить на сервисы со своими мапами ActiveAoE / ActiveMobs, разгрузить сервисы
@@ -268,7 +271,66 @@ export class CombatService {
     );
   }
 
-  public async requestAttackMove(client: Socket, input: RequestAttackMoveDto) {
+  // public async requestAttackMove(client: Socket, input: RequestAttackMoveDto) {
+  //   if (!this.socketService.verifyUserDataInSocket(client)) {
+  //     this.socketService.notifyDisconnection(client);
+  //     this.socketService.onDisconnect(client);
+  //     return;
+  //   }
+
+  //   const attacker = this.playerStateService.getCharacterState(
+  //     client.userData.characterId,
+  //   );
+
+  //   if (!attacker) return;
+
+  //   const victim = this.playerStateService.getCharacterState(input.targetId);
+
+  //   if (!victim) return;
+
+  //   const attackerFactionName = attacker.characterClass.faction.name;
+  //   const victimFactionName = victim.characterClass.faction.name;
+
+  //   if (!isEnemyFaction(attackerFactionName, victimFactionName)) return;
+
+  //   const entityKey = generateEntityKey<LiveCharacter>(attacker);
+
+  //   const queue = this.getOrCreateActionQueue(entityKey);
+
+  //   const hasAutoAttack = queue.some(
+  //     (q) => q.actionType === ActionType.AutoAttack,
+  //   );
+
+  //   if (hasAutoAttack) return;
+
+  //   console.log('hasAutoAttack', hasAutoAttack);
+
+  //   const pendingAction: PendingAction = {
+  //     actionType: ActionType.AutoAttack,
+  //     attackerId: client.userData.characterId,
+  //     target: {
+  //       kind: 'player',
+  //       id: input.targetId,
+  //     },
+  //     skillId: null,
+  //     state: 'attack',
+  //   };
+
+  //   await this.schedulePathUpdate(
+  //     attacker,
+  //     {
+  //       kind: 'player',
+  //       id: input.targetId,
+  //     },
+  //     null,
+  //   );
+  //   console.log('queue request auto attack', queue, pendingAction);
+  // }
+
+  public async requestAttackMoveForPlayer(
+    client: Socket,
+    input: RequestAttackMoveDto,
+  ) {
     if (!this.socketService.verifyUserDataInSocket(client)) {
       this.socketService.notifyDisconnection(client);
       this.socketService.onDisconnect(client);
@@ -285,46 +347,21 @@ export class CombatService {
 
     if (!victim) return;
 
-    const attackerFactionName = attacker.characterClass.faction.name;
-    const victimFactionName = victim.characterClass.faction.name;
-
-    if (!isEnemyFaction(attackerFactionName, victimFactionName)) return;
-
-    const entityKey = generateEntityKey<LiveCharacter>(attacker);
-
-    const queue = this.getOrCreateActionQueue(entityKey);
-
-    const hasAutoAttack = queue.some(
-      (q) => q.actionType === ActionType.AutoAttack,
-    );
-
-    if (hasAutoAttack) return;
-
-    console.log('hasAutoAttack', hasAutoAttack);
-
-    const pendingAction: PendingAction = {
-      actionType: ActionType.AutoAttack,
-      attackerId: client.userData.characterId,
-      target: {
-        kind: 'player',
-        id: input.targetId,
-      },
-      skillId: null,
-      state: 'attack',
-    };
-
-    await this.schedulePathUpdate(
-      attacker,
-      {
-        kind: 'player',
-        id: input.targetId,
-      },
-      null,
-    );
-    console.log('queue request auto attack', queue, pendingAction);
+    await this.processAttackMove(attacker, victim);
   }
 
-  private async requestAttackMoveForMob() {}
+  public async requestAttackMoveForMob(
+    runtimeMobId: string,
+    characterId: string,
+  ) {
+    const attacker = this.runtimeMobService.getById(runtimeMobId);
+
+    if (!attacker) return;
+    const victim = this.playerStateService.getCharacterState(characterId);
+    if (!victim) return;
+
+    await this.processAttackMove(attacker, victim);
+  }
 
   private async processAttackMove(attacker: WorldEntity, victim: WorldEntity) {
     if (isPlayer(attacker) && isPlayer(victim)) {

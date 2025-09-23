@@ -329,7 +329,7 @@ export class GameService implements OnModuleInit {
   }
 
   public async requestAttackMove(client: Socket, input: RequestAttackMoveDto) {
-    await this.combatService.requestAttackMove(client, input);
+    await this.combatService.requestAttackMoveForPlayer(client, input);
   }
 
   public async requestUseSkill(client: Socket, input: RequestSkillUseDto) {
