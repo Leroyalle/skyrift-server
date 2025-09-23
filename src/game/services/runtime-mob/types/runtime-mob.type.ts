@@ -1,6 +1,6 @@
 import { CurrentTarget } from 'src/character/types/live-character-state.type';
 import { PositionDto } from 'src/common/dto/position.dto';
-import { EntityType } from 'src/game/types/entity-type.type';
+import { EntityType } from 'src/game/types/entity/entity-type.type';
 import { Mob } from 'src/mob/entities/mob.entity';
 import { MobSpawn } from 'src/mob/mob-spawn/entities/mob-spawn.entity';
 

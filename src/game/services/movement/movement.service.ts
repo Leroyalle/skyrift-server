@@ -18,6 +18,12 @@ import { PathFindingService } from '../path-finding/path-finding.service';
 import { InteractionService } from '../interaction/interaction.service';
 import { RuntimeMobService } from '../runtime-mob/runtime-mob.service';
 import { RuntimeMob } from '../runtime-mob/types/runtime-mob.type';
+import { SetMovementQueueData } from './types/set-movement-queue.type';
+import { EntityType } from 'src/game/types/entity/entity-type.type';
+import { WorldEntity } from 'src/game/types/entity/world-entity.type';
+import { PositionDto } from 'src/common/dto/position.dto';
+import { isPlayer } from '../combat/lib/entity/guards/is-player.lib';
+import { isMob } from '../combat/lib/entity/guards/is-mob.lib';
 
 @Injectable()
 export class MovementService {
@@ -26,9 +32,7 @@ export class MovementService {
     private readonly playerStateService: PlayerStateService,
     private readonly socketService: SocketService,
     private readonly pathFindingService: PathFindingService,
-    private readonly spatialGridService: SpatialGridService<
-      LiveCharacter | RuntimeMob
-    >,
+    private readonly spatialGridService: SpatialGridService<WorldEntity>,
     private readonly interactionService: InteractionService,
     private readonly runtimeMobService: RuntimeMobService,
   ) {}
@@ -251,15 +255,39 @@ export class MovementService {
     return updates;
   }
 
-  public setMovementQueue(characterId: string, data: CharacterMovementQueue) {
-    return this.charactersMovementQueues.set(characterId, data);
+  // public setMovementQueue(data: SetMovementQueueData) {
+  //   if (data.type === 'player') {
+  //     return this.charactersMovementQueues.set(data.id, data.queue);
+  //   } else if (data.type === 'mob') {
+  //     return this.mobsMovementQueues.set(data.id, data.queue);
+  //   }
+  // }
+  public setMovementQueue(entity: WorldEntity, steps: PositionDto[]) {
+    if (isPlayer(entity)) {
+      const queue = {
+        steps,
+        userId: entity.userId,
+      };
+      return this.charactersMovementQueues.set(entity.id, queue);
+    } else if (isMob(entity)) {
+      return this.mobsMovementQueues.set(entity.id, { steps });
+    }
   }
 
-  public getMovementQueue(characterId: string) {
-    return this.charactersMovementQueues.get(characterId);
+  public getMovementQueue(type: EntityType, id: string) {
+    if (type === 'player') {
+      return this.charactersMovementQueues.get(id);
+    } else if (type === 'mob') {
+      return this.mobsMovementQueues.get(id);
+    }
   }
 
-  public deleteMovementQueue(characterId: string) {
-    return this.charactersMovementQueues.delete(characterId);
+  public deleteMovementQueue(entity: WorldEntity) {
+    if (isPlayer(entity)) {
+      return this.charactersMovementQueues.get(entity.id);
+    }
+    if (isMob(entity)) {
+      return this.mobsMovementQueues.get(entity.id);
+    }
   }
 }

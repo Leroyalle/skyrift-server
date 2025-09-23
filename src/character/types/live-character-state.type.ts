@@ -1,4 +1,4 @@
-import { EntityType } from 'src/game/types/entity-type.type';
+import { EntityType } from 'src/game/types/entity/entity-type.type';
 import { CharacterSkill } from '../character-skill/entities/character-skill.entity';
 import { CharacterClass } from 'src/character-class/entities/character-class.entity';
 

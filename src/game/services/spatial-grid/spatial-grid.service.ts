@@ -3,7 +3,7 @@ import { decodeGridKey } from './lib/decode-grid-key.lib';
 import { DecodedGridKey } from './types/decoed-grid-key.type';
 import { QueryRadiusResult } from './types/query-radius-result.type';
 import { getTileByPosition } from 'src/game/lib/get-tile-by-position.lib';
-import { EntityType } from 'src/game/types/entity-type.type';
+import { EntityType } from 'src/game/types/entity/entity-type.type';
 import { DecodedEntityKey } from '../../types/entity/decoded-entity-key.type';
 
 @Injectable()

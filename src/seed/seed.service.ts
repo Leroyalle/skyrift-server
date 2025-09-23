@@ -83,6 +83,7 @@ export class SeedService {
       logo: 'https://example.com/elf_logo.png',
     });
 
+    // TODO: Горные люди
     const flamebornFaction = await this.factionRepository.save({
       name: FactionEnum.Flameborn,
       description:
