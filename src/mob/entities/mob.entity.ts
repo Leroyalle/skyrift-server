@@ -1,38 +1,11 @@
 import { ObjectType, Field, Int, ID } from '@nestjs/graphql';
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, OneToMany } from 'typeorm';
 import { MobSpawn } from '../mob-spawn/entities/mob-spawn.entity';
+import { ActorEntity } from 'src/common/entities/actor-entity.entity';
 
 @Entity()
 @ObjectType()
-export class Mob {
-  @PrimaryGeneratedColumn('uuid')
-  @Field(() => ID)
-  id: string;
-
-  @Column()
-  @Field()
-  name: string;
-
-  @Column()
-  @Field(() => Int)
-  damage: number;
-
-  @Column()
-  @Field(() => Int)
-  physicalDefense: number;
-
-  @Column()
-  @Field(() => Int)
-  magicDefense: number;
-
-  @Column()
-  @Field(() => Int)
-  attackRange: number;
-
-  @Column()
-  @Field(() => Int)
-  attackSpeed: number;
-
+export class Mob extends ActorEntity {
   @Column()
   @Field(() => Int)
   triggerRange: number;
@@ -47,7 +20,7 @@ export class Mob {
 
   @Column()
   @Field(() => Int)
-  exp_reward: number;
+  expReward: number;
 
   @Column()
   @Field(() => Int)
