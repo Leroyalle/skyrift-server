@@ -31,6 +31,10 @@ export class Mob {
 
   @Column()
   @Field(() => Int)
+  attackSpeed: number;
+
+  @Column()
+  @Field(() => Int)
   triggerRange: number;
 
   @Column()

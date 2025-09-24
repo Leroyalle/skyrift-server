@@ -1,6 +1,7 @@
 import { EntityType } from 'src/game/types/entity/entity-type.type';
 import { CharacterSkill } from '../character-skill/entities/character-skill.entity';
 import { CharacterClass } from 'src/character-class/entities/character-class.entity';
+import { BaseEntityStates } from 'src/game/types/entity/base-entity-states.type';
 
 export type LiveCharacter = {
   id: string;
@@ -26,8 +27,12 @@ export type LiveCharacter = {
   characterSkills: CharacterSkill[];
   characterClass: CharacterClass;
   type: EntityType;
+  // FIXME: сделать state обязательным
+  state?: CharacterActionState;
   // TODO: add the damage(now) - sum all damage items
 };
+
+export type CharacterActionState = BaseEntityStates | 'pursue';
 
 export type CurrentTarget = {
   id: string;

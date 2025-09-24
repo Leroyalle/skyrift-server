@@ -1,3 +1,5 @@
+import { TDirection } from '../entity/direction.type';
+
 export type BatchUpdateMovement =
   | BatchUpdateCharactersMovement
   | BatchUpdateMobsMovement;
@@ -17,5 +19,3 @@ type BatchUpdateMobsMovement = BatchUpdateBasic & {
   type: 'mob';
   spawnMobId: string;
 };
-
-type TDirection = 'left' | 'right' | 'up' | 'down';

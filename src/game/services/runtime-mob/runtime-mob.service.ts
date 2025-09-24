@@ -1,22 +1,22 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { LocationService } from 'src/location/location.service';
 import { MobSpawn } from 'src/mob/mob-spawn/entities/mob-spawn.entity';
-import { MobSpawnService } from 'src/mob/mob-spawn/mob-spawn.service';
-import { MobService } from 'src/mob/mob.service';
 import { RuntimeMob } from './types/runtime-mob.type';
 import { PositionDto } from 'src/common/dto/position.dto';
 import { getTileByPosition } from 'src/game/lib/get-tile-by-position.lib';
 import { SpatialGridService } from '../spatial-grid/spatial-grid.service';
 import { CombatService } from '../combat/combat.service';
+import { PathFindingService } from '../path-finding/path-finding.service';
+import { MovementService } from '../movement/movement.service';
 
 @Injectable()
 export class RuntimeMobService implements OnModuleInit {
   constructor(
-    private readonly mobService: MobService,
-    private readonly mobSpawnService: MobSpawnService,
     private readonly spatialGridService: SpatialGridService<RuntimeMob>,
     private readonly locationService: LocationService,
     private readonly combatService: CombatService,
+    private readonly pathFindingService: PathFindingService,
+    private readonly movementService: MovementService,
   ) {}
 
   private readonly mobsByLocation = new Map<string, Set<string>>();
@@ -35,11 +35,47 @@ export class RuntimeMobService implements OnModuleInit {
     }
   }
 
-  tickAiMobs() {
+  async tickAiMobs() {
     const mobsEntries = Array.from(this.mobsById.values());
 
     for (const runtimeMob of mobsEntries) {
-      if (runtimeMob.mob.respawnIn) return;
+      if (runtimeMob.mob.respawnIn) continue;
+
+      if (runtimeMob.mob.currentTarget) {
+        const findLocation = await this.locationService.loadLocation(
+          runtimeMob.locationId,
+        );
+
+        if (!findLocation) continue;
+
+        const currentPosition = getTileByPosition(
+          runtimeMob.mob.x,
+          runtimeMob.mob.y,
+          findLocation.tileWidth,
+        );
+
+        const spawnPosition = getTileByPosition(
+          runtimeMob.x,
+          runtimeMob.y,
+          findLocation.tileWidth,
+        );
+
+        const path = await this.pathFindingService.getPlayerPath(
+          runtimeMob.locationId,
+          spawnPosition,
+          currentPosition,
+          findLocation.passableMap,
+        );
+
+        // TODO: если дистанция равна -1 по каким-то причинам (баг), тогда деспавним моба
+
+        if (path.length > 5) {
+          this.movementService.setMovementQueue(runtimeMob, path);
+          runtimeMob.mob.currentTarget = null;
+          runtimeMob.mob.state = 'return';
+          continue;
+        }
+      }
 
       const { entities } = this.spatialGridService.queryRadius(
         runtimeMob.locationId,
@@ -50,10 +86,12 @@ export class RuntimeMobService implements OnModuleInit {
 
       const target = entities.find((ent) => ent.type === 'player');
 
-      if (!target) return;
+      if (!target) continue;
 
-      // STOPPED: думаю сделать второй метод реквест аттак мувинга для мобов без передачи сокета, так же нужно расширить тип для просчета пути (schedule) добавив моба, чтобы игрок мог его атаковать
-      // await this.combatService.requestAttackMove(target);
+      await this.combatService.requestAttackMoveForMob(
+        runtimeMob.id,
+        target.id,
+      );
     }
   }
 
@@ -121,6 +159,7 @@ export class RuntimeMobService implements OnModuleInit {
         currentPath: null,
         currentTarget: null,
         isAttacking: false,
+        state: 'idle',
       },
     };
   }

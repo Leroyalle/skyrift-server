@@ -198,7 +198,6 @@ export class InteractionService {
       playerState.locationId,
       fromTile,
       targetTile,
-      currentLocation.tileWidth,
       currentLocation.passableMap,
     );
 

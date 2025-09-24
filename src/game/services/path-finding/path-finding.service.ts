@@ -21,6 +21,15 @@ export class PathFindingService {
     return easyStar;
   }
 
+  /**
+   * @description считает количество шагов из точки А в Б с учетом коллизий
+   * @param locationId айди текущей локации
+   * @param from стартовые tile-координаты
+   * @param to таргетные tile-координаты
+   * @param passableMap матрица проходимости текущей локации
+   * @returns числовое значение количества шагов к таргет позиции (@param to)
+   */
+
   getPathDistance(
     locationId: string,
     from: TCoord,
@@ -48,7 +57,6 @@ export class PathFindingService {
     locationId: string,
     from: TCoord,
     to: TCoord,
-    tileSize: number,
     map: number[][],
   ): Promise<{ x: number; y: number }[]> {
     const easyStar = this.getOrCreateEasyStar(locationId, map);
@@ -60,6 +68,8 @@ export class PathFindingService {
           resolve([]);
           return;
         }
+
+        // TODO: если путь не найден вообще то возвращать какой-нибудь флаг -1, чтобы например деспавнить моба из-за бага при возвращении
 
         const steps = path.slice(1).map((p) => ({ x: p.x, y: p.y }));
         console.log('steps', steps);

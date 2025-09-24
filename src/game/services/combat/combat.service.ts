@@ -33,15 +33,16 @@ import { pushTargetAction } from './lib/action/push-target-action.lib';
 import { PathFindingService } from '../path-finding/path-finding.service';
 import { isEnemyFaction } from './lib/entity/guards/is-enemy-faction.lib';
 import { EntityType } from 'src/game/types/entity/entity-type.type';
-import { EntityKey } from 'src/game/types/entity/entity-key.type';
 import { generateEntityKey } from 'src/game/lib/entity/generate-entity-key.lib';
 import { WorldEntity } from 'src/game/types/entity/world-entity.type';
 import { isPlayer } from './lib/entity/guards/is-player.lib';
-import { setCurrentTarget } from './lib/entity/helpers/set-current-target.lib';
-import { getAttackerRange } from './lib/entity/helpers/get-attacker-range.lib';
-import { findEntitySkill } from './lib/entity/helpers/find-entity-skill.lib';
-import { RuntimeMob } from '../runtime-mob/types/runtime-mob.type';
+import { setCurrentTarget } from './lib/entity/helpers/set/set-current-target.lib';
+import { getAttackerRange } from './lib/entity/helpers/get/get-attacker-range.lib';
+import { findEntitySkill } from './lib/entity/helpers/get/find-entity-skill.lib';
 import { RuntimeMobService } from '../runtime-mob/runtime-mob.service';
+import { setEntityState } from './lib/entity/helpers/set/set-entity-state.lib';
+import { EntityKey } from 'src/game/types/entity/keys/entity-key.type';
+import { getAttackStats } from './lib/entity/helpers/get/get-attack-stats';
 
 @Injectable()
 export class CombatService {
@@ -62,7 +63,7 @@ export class CombatService {
   private readonly pendingActionsQueue: Map<EntityKey, PendingAction[]> =
     new Map();
 
-  public async tickActions() {
+  public async tickActions(): Promise<void> {
     const updatesByLocation = new Map<string, BatchUpdateAction[]>();
 
     for (const queue of this.pendingActionsQueue.values()) {
@@ -71,11 +72,13 @@ export class CombatService {
       const action = queue[0];
       console.log('action', action);
 
-      const attacker = this.playerStateService.getCharacterState(
-        action.attackerId,
+      const attacker = this.getEntityByType(
+        action.attackerRef.type,
+        action.attackerRef.id,
       );
 
       if (!attacker) continue;
+
       const location = await this.locationService.loadLocation(
         attacker.locationId,
       );
@@ -91,10 +94,12 @@ export class CombatService {
 
       let targetTile: { x: number; y: number } | null = null;
 
-      if (action.target.kind === 'player') {
-        const victim = this.playerStateService.getCharacterState(
+      if (action.target.kind === 'target') {
+        const victim = this.getEntityByType(
+          action.target.type,
           action.target.id,
         );
+
         if (!victim) continue;
 
         targetTile = {
@@ -116,25 +121,25 @@ export class CombatService {
         attacker.locationId,
         attackerTile,
         targetTile,
-        location.tileWidth,
         location.passableMap,
       );
 
-      const characterSkill = attacker.characterSkills.find(
-        (skill) => skill.id === action.skillId,
-      );
+      const entitySkill = findEntitySkill(attacker, action.skillId);
+      // attacker.characterSkills.find((skill) => skill.id === action.skillId);
 
-      const range = characterSkill
-        ? characterSkill.skill.range
-        : attacker.attackRange;
+      const range = entitySkill
+        ? entitySkill.skill.range
+        : getAttackerRange(attacker);
 
       if (steps.length > range) {
-        attacker.isAttacking = false;
+        // attacker.isAttacking = false;
         this.movementService.setMovementQueue(attacker, steps);
+        setEntityState<WorldEntity>(attacker, 'pursue');
         continue;
       } else {
-        attacker.isAttacking = true;
+        // attacker.isAttacking = true;
         this.movementService.deleteMovementQueue(attacker);
+        setEntityState<WorldEntity>(attacker, 'attack');
       }
 
       let batchLocation = updatesByLocation.get(location.id);
@@ -148,7 +153,7 @@ export class CombatService {
       const actionCtx: ActionContext = {
         attacker,
         target: action.target,
-        characterSkill: characterSkill,
+        characterSkill: entitySkill,
         batchLocation,
         now,
         tileSize: location.tileWidth,
@@ -167,6 +172,18 @@ export class CombatService {
         update,
       );
     }
+  }
+
+  private getEntityByType(
+    type: EntityType,
+    id: string,
+  ): WorldEntity | undefined {
+    if (type === 'player') {
+      return this.playerStateService.getCharacterState(id);
+    } else if (type === 'mob') {
+      return this.runtimeMobService.getById(id);
+    }
+    return;
   }
 
   private despawnAoEZone(zone: ActiveAoEZone) {
@@ -357,7 +374,9 @@ export class CombatService {
     const attacker = this.runtimeMobService.getById(runtimeMobId);
 
     if (!attacker) return;
+
     const victim = this.playerStateService.getCharacterState(characterId);
+
     if (!victim) return;
 
     await this.processAttackMove(attacker, victim);
@@ -620,7 +639,6 @@ export class CombatService {
       findLocation.id,
       attackerTile,
       targetTile,
-      findLocation.tileWidth,
       findLocation.passableMap,
     );
 
@@ -671,6 +689,7 @@ export class CombatService {
     const inRange = steps.length <= range;
     if (!inRange) {
       this.movementService.setMovementQueue(attacker, steps);
+      setEntityState<WorldEntity>(attacker, 'pursue');
       pendingAction.state = 'move-to-target';
       console.log('[resolve_pending_action]: SET STEPS');
     } else {
@@ -682,6 +701,8 @@ export class CombatService {
   resolveAction(ctx: ActionContext, action: PendingAction): void {
     switch (action.actionType) {
       case ActionType.AutoAttack: {
+        const lastAttackAt = getAttackStats(ctx.attacker);
+        // STOPPED: в проекте полная каша, можно костыльно получать методы и изменять их через доп функции, но если появятся всяике ПЕТЫ, будет супер неудобно. пришла идея сделать абстрактный класс для ентити и наследоваться от него у персонажа и моба, тогда можно будет удобно управлять данными. так же при сеттинге мобов нужно переделать рантайм-моб структуру сохраняя объект в нужной для нас форме (плевать на второй обход тк он будет только при запуске проекта)
         if (ctx.now - ctx.attacker.lastAttackAt < ctx.attacker.attackSpeed)
           return;
 
@@ -737,7 +758,6 @@ export class CombatService {
 
       case ActionType.Skill: {
         if (!action.skillId || !ctx.characterSkill) return;
-
         // FIXME: мб удалить для того чтобы скилл юзался сразу
         if (ctx.now - ctx.attacker.lastAttackAt < ctx.attacker.attackSpeed)
           return;

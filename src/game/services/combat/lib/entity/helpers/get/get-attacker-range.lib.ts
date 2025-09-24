@@ -1,6 +1,6 @@
 import { WorldEntity } from 'src/game/types/entity/world-entity.type';
-import { isMob } from '../guards/is-mob.lib';
-import { isPlayer } from '../guards/is-player.lib';
+import { isMob } from '../../guards/is-mob.lib';
+import { isPlayer } from '../../guards/is-player.lib';
 
 export function getAttackerRange(attacker: WorldEntity): number {
   if (isPlayer(attacker)) {

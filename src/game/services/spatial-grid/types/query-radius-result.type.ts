@@ -1,4 +1,4 @@
-import { DecodedEntityKey } from '../../../types/entity/decoded-entity-key.type';
+import { DecodedEntityKey } from '../../../types/entity/keys/decoded-entity-key.type';
 import { DecodedGridKey } from './decoed-grid-key.type';
 
 export type QueryRadiusResult = {

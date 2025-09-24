@@ -1,4 +1,4 @@
-import { DecodedEntityKey } from 'src/game/types/entity/decoded-entity-key.type';
+import { DecodedEntityKey } from 'src/game/types/entity/keys/decoded-entity-key.type';
 import { EntityType } from 'src/game/types/entity/entity-type.type';
 import { EntityKey } from 'src/game/types/entity/entity-key.type';
 
