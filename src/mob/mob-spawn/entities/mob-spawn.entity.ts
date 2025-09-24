@@ -12,11 +12,11 @@ export class MobSpawn {
 
   @Column()
   @Field(() => Int)
-  x: number;
+  spawnX: number;
 
   @Column()
   @Field(() => Int)
-  y: number;
+  spawnY: number;
 
   @Column()
   @Field(() => Int)
