@@ -1,4 +1,4 @@
-import { LiveCharacter } from 'src/character/types/live-character-state.type';
+import { LiveCharacter } from 'src/character/types/runtime-character';
 
 export function parseLiveCharacterState(
   raw: Record<string, string>,

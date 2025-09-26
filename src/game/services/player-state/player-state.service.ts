@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { CharacterService } from 'src/character/character.service';
-import { LiveCharacter } from 'src/character/types/live-character-state.type';
+import { LiveCharacter } from 'src/character/types/runtime-character';
 import { RedisKeysFactory } from 'src/common/infra/redis-keys-factory.infra';
 import { RedisService } from 'src/redis/redis.service';
 import { ActionType } from '../../types/pending-actions.type';
@@ -58,6 +58,7 @@ export class PlayerStateService {
         currentTarget: null,
         characterSkills: character.characterSkills,
         characterClass: character.characterClass,
+        type: 'player',
       });
     }
   }

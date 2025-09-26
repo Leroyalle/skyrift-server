@@ -1,5 +1,5 @@
 import { CommonAttackerState } from '../../../types/common-attacker-state.type';
-import { WorldEntity } from 'src/game/types/entity/world-entity.type';
+import { WorldEntity } from 'src/game/types/entity/runtime-entity.type';
 import { isPlayer } from '../guards/is-player.lib';
 import { isMob } from '../guards/is-mob.lib';
 

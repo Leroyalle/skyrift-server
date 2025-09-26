@@ -1,5 +1,5 @@
 import { CharacterSkill } from 'src/character/character-skill/entities/character-skill.entity';
-import { CurrentTarget } from 'src/character/types/live-character-state.type';
+import { CurrentTarget } from 'src/character/types/runtime-character';
 import { EntityType } from 'src/game/types/entity/entity-type.type';
 
 export type CommonAttackerState = {

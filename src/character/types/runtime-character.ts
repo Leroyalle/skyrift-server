@@ -2,6 +2,8 @@ import { EntityType } from 'src/game/types/entity/entity-type.type';
 import { CharacterSkill } from '../character-skill/entities/character-skill.entity';
 import { CharacterClass } from 'src/character-class/entities/character-class.entity';
 import { BaseEntityStates } from 'src/game/types/entity/base-entity-states.type';
+import { Character } from '../entities/character.entity';
+import { RuntimeActorEntity } from 'src/common/types/actor-entity.type';
 
 export type LiveCharacter = {
   id: string;
@@ -38,3 +40,7 @@ export type CurrentTarget = {
   id: string;
   type: EntityType;
 };
+
+export interface IRuntimeCharacter
+  extends Character,
+    RuntimeActorEntity<IRuntimeCharacter> {}

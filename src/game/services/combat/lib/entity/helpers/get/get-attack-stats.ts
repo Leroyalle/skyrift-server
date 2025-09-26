@@ -1,4 +1,4 @@
-import { WorldEntity } from 'src/game/types/entity/world-entity.type';
+import { WorldEntity } from 'src/game/types/entity/runtime-entity.type';
 import { isMob } from '../../guards/is-mob.lib';
 import { isPlayer } from '../../guards/is-player.lib';
 

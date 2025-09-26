@@ -1,5 +1,5 @@
-import { LiveCharacter } from 'src/character/types/live-character-state.type';
-import { WorldEntity } from 'src/game/types/entity/world-entity.type';
+import { LiveCharacter } from 'src/character/types/runtime-character';
+import { WorldEntity } from 'src/game/types/entity/runtime-entity.type';
 
 export const isPlayer = (entity: WorldEntity): entity is LiveCharacter => {
   return entity.type === 'player';
