@@ -84,7 +84,6 @@ export class MovementService {
         y: Math.floor(character.y / findLocation.tileHeight),
       },
       { x: input.targetX, y: input.targetY },
-      findLocation.tileWidth,
       map,
     );
 
