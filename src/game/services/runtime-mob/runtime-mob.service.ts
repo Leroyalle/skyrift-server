@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { LocationService } from 'src/location/location.service';
 import { IRuntimeMob } from './types/runtime-mob.type';
 import { PositionDto } from 'src/common/dto/position.dto';
@@ -14,8 +14,10 @@ export class RuntimeMobService implements OnModuleInit {
   constructor(
     private readonly spatialGridService: SpatialGridService<IRuntimeMob>,
     private readonly locationService: LocationService,
+    @Inject(forwardRef(() => CombatService))
     private readonly combatService: CombatService,
     private readonly pathFindingService: PathFindingService,
+    @Inject(forwardRef(() => MovementService))
     private readonly movementService: MovementService,
   ) {}
 

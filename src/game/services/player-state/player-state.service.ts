@@ -36,10 +36,14 @@ export class PlayerStateService {
       character.id,
     );
 
-    if (!this.playersStates.has(character.id)) {
-      const runtimeCharacter = buildRuntimeCharacter(character);
+    let runtimeCharacter = this.playersStates.get(character.id);
+
+    if (!runtimeCharacter) {
+      runtimeCharacter = buildRuntimeCharacter(character);
       this.playersStates.set(character.id, runtimeCharacter);
     }
+
+    return runtimeCharacter;
   }
 
   public moveTo(
@@ -97,102 +101,102 @@ export class PlayerStateService {
     return Array.from(this.playersStates.values());
   }
 
-  public autoAttack(
-    attackerId: string,
-    victimId: string,
-    now: number,
-  ): ApplyAutoAttackResult | undefined {
-    const attacker = this.playersStates.get(attackerId);
-    const victim = this.playersStates.get(victimId);
+  // public autoAttack(
+  //   attackerId: string,
+  //   victimId: string,
+  //   now: number,
+  // ): ApplyAutoAttackResult | undefined {
+  //   const attacker = this.playersStates.get(attackerId);
+  //   const victim = this.playersStates.get(victimId);
 
-    if (!attacker || !victim || attacker.locationId !== victim.locationId)
-      return;
+  //   if (!attacker || !victim || attacker.locationId !== victim.locationId)
+  //     return;
 
-    // TODO: calculate received damage with defense and other stats
-    const receivedDamage = attacker.basePhysicalDamage;
-    console.log('receivedDamage', receivedDamage);
-    const remainingHp = Math.max(victim.hp - receivedDamage, 0);
-    const isAlive = remainingHp !== 0;
+  //   // TODO: calculate received damage with defense and other stats
+  //   const receivedDamage = attacker.basePhysicalDamage;
+  //   console.log('receivedDamage', receivedDamage);
+  //   const remainingHp = Math.max(victim.hp - receivedDamage, 0);
+  //   const isAlive = remainingHp !== 0;
 
-    victim.hp = remainingHp;
-    victim.isAlive = isAlive;
+  //   victim.hp = remainingHp;
+  //   victim.isAlive = isAlive;
 
-    attacker.lastAttackAt = now;
+  //   attacker.lastAttackAt = now;
 
-    return {
-      targets: [
-        { characterId: victim.id, hp: remainingHp, isAlive, receivedDamage },
-      ],
-      type: ActionType.AutoAttack,
-      skillId: null,
-      victimIsAlive: victim.isAlive,
-    };
-  }
+  //   return {
+  //     targets: [
+  //       { characterId: victim.id, hp: remainingHp, isAlive, receivedDamage },
+  //     ],
+  //     type: ActionType.AutoAttack,
+  //     skillId: null,
+  //     victimIsAlive: victim.isAlive,
+  //   };
+  // }
 
-  public applySkill(
-    attackerId: string,
-    victimId: string,
-    skillId: string,
-    now: number,
-  ): ApplySkillResult | undefined {
-    const attacker = this.playersStates.get(attackerId);
-    const victim = this.playersStates.get(victimId);
+  // public applySkill(
+  //   attackerId: string,
+  //   victimId: string,
+  //   skillId: string,
+  //   now: number,
+  // ): ApplySkillResult | undefined {
+  //   const attacker = this.playersStates.get(attackerId);
+  //   const victim = this.playersStates.get(victimId);
 
-    if (!attacker || !victim || attacker.locationId !== victim.locationId)
-      return;
+  //   if (!attacker || !victim || attacker.locationId !== victim.locationId)
+  //     return;
 
-    const characterSkill = attacker.characterSkills.find(
-      (skill) => skill.id === skillId,
-    );
+  //   const characterSkill = attacker.characterSkills.find(
+  //     (skill) => skill.id === skillId,
+  //   );
 
-    if (!characterSkill) return;
+  //   if (!characterSkill) return;
 
-    // TODO: return message with time for cooldown
-    if ((characterSkill.cooldownEnd ?? 0) > now) return;
+  //   // TODO: return message with time for cooldown
+  //   if ((characterSkill.cooldownEnd ?? 0) > now) return;
 
-    const receivedDamage = characterSkill.skill.damage;
-    const remainingHp = Math.max(victim.hp - receivedDamage, 0);
-    victim.hp = remainingHp;
-    victim.isAlive = remainingHp > 0;
+  //   const receivedDamage = characterSkill.skill.damage;
+  //   const remainingHp = Math.max(victim.hp - receivedDamage, 0);
+  //   victim.hp = remainingHp;
+  //   victim.isAlive = remainingHp > 0;
 
-    characterSkill.lastUsedAt = now;
-    characterSkill.cooldownEnd = now + characterSkill.skill.cooldownMs;
+  //   characterSkill.lastUsedAt = now;
+  //   characterSkill.cooldownEnd = now + characterSkill.skill.cooldownMs;
 
-    attacker.lastAttackAt = now;
+  //   attacker.lastAttackAt = now;
 
-    return {
-      attackResult: {
-        targets: [
-          {
-            characterId: victim.id,
-            hp: remainingHp,
-            isAlive: remainingHp > 0,
-            receivedDamage,
-          },
-        ],
-        type: ActionType.Skill,
-        skillId: characterSkill.id,
-      },
-      cooldown: {
-        cooldownEnd: characterSkill.cooldownEnd,
-        skillId: characterSkill.id,
-      },
-    };
-  }
+  //   return {
+  //     attackResult: {
+  //       targets: [
+  //         {
+  //           characterId: victim.id,
+  //           hp: remainingHp,
+  //           isAlive: remainingHp > 0,
+  //           receivedDamage,
+  //         },
+  //       ],
+  //       type: ActionType.Skill,
+  //       skillId: characterSkill.id,
+  //     },
+  //     cooldown: {
+  //       cooldownEnd: characterSkill.cooldownEnd,
+  //       skillId: characterSkill.id,
+  //     },
+  //   };
+  // }
 
   // FIXME: чек почему оборвалось
-  applyAoESkill(attackerId: string, skillId: string, area: PositionDto) {
-    const attacker = this.getCharacterState(attackerId);
-    if (!attacker) return;
+  // applyAoESkill(attackerId: string, skillId: string, area: PositionDto) {
+  //   const attacker = this.getCharacterState(attackerId);
+  //   if (!attacker) return;
 
-    const characterSkill = attacker.characterSkills.find(
-      (skill) => skill.id === skillId,
-    );
+  //   const characterSkill = attacker.characterSkills.find(
+  //     (skill) => skill.id === skillId,
+  //   );
 
-    if (!characterSkill) return;
+  //   if (!characterSkill) return;
 
-    if (characterSkill.skill.type !== SkillType.AoE) return;
-  }
+  //   if (characterSkill.skill.type !== SkillType.AoE) return;
+  // }
 
   public changeUserLocation(
     playerState: IRuntimeCharacter,

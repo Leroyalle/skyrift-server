@@ -23,6 +23,7 @@ import { RequestUseTeleportDto } from './dto/request-use-teleport.dto';
 import { InteractionService } from './services/interaction/interaction.service';
 import { ChatService } from './services/chat/chat.service';
 import { DirectMessageInput } from './services/chat/dto/direct-message.input';
+import { Character } from 'src/character/entities/character.entity';
 
 @Injectable()
 export class GameService implements OnModuleInit {
@@ -169,25 +170,14 @@ export class GameService implements OnModuleInit {
         },
       );
 
-      const liveCharacter: IRuntimeCharacter = {
+      const liveCharacter: Character = {
         ...findCharacter,
-        lastMoveAt: 0,
-        lastAttackAt: 0,
-        lastHpRegenerationTime: 0,
-        locationId: findCharacter.location.id,
-        userId: findCharacter.user.id,
-        isAttacking: false,
-        currentTarget: null,
-        type: 'player',
-        state: 'idle',
       };
 
-      await this.playerStateService.join(
-        liveCharacter,
-        findCharacter.location.id,
-      );
+      const runtimeCharacter =
+        await this.playerStateService.join(liveCharacter);
 
-      this.spatialGridService.add(liveCharacter);
+      this.spatialGridService.add(runtimeCharacter);
 
       await this.socketService.joinToRoom(
         findCharacter.user.id,

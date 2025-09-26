@@ -11,7 +11,7 @@ export function setCurrentTarget(
     attacker.currentTarget = target;
   }
   if (isMob(attacker)) {
-    attacker.mob.currentTarget = target;
+    attacker.currentTarget = target;
   }
 
   return attacker;

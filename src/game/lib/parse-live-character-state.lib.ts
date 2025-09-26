@@ -1,7 +1,4 @@
-import {
-  IRuntimeCharacter,
-  LiveCharacter,
-} from 'src/character/types/runtime-character';
+import { IRuntimeCharacter } from 'src/character/types/runtime-character';
 
 // FIXME: check
 export function parseLiveCharacterState(

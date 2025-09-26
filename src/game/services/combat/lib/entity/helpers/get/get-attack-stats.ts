@@ -20,9 +20,9 @@ export function getAttackStats(
   }
   if (isMob(attacker)) {
     return {
-      lastAttackAt: attacker.mob.lastAttackAt,
-      attackRange: attacker.mob.attackRange,
-      attackSpeed: attacker.mob.attackSpeed,
+      lastAttackAt: attacker.lastAttackAt,
+      attackRange: attacker.attackRange,
+      attackSpeed: attacker.attackSpeed,
     };
   }
 

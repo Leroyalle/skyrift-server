@@ -41,7 +41,6 @@ import { findEntitySkill } from './lib/entity/helpers/get/find-entity-skill.lib'
 import { RuntimeMobService } from '../runtime-mob/runtime-mob.service';
 import { setEntityState } from './lib/entity/helpers/set/set-entity-state.lib';
 import { EntityKey } from 'src/game/types/entity/keys/entity-key.type';
-import { getAttackStats } from './lib/entity/helpers/get/get-attack-stats';
 import { RuntimeEntity } from 'src/game/types/entity/runtime-entity.type';
 import { DecodedEntityKey } from 'src/game/types/entity/keys/decoded-entity-key.type';
 

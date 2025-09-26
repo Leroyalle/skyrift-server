@@ -7,7 +7,7 @@ export function getAttackerRange(attacker: RuntimeEntity): number {
     return attacker.attackRange;
   }
   if (isMob(attacker)) {
-    return attacker.mob.attackRange;
+    return attacker.attackRange;
   }
 
   return 0;

@@ -30,8 +30,8 @@ export const buildCommonAttackerState = (
     commonAttackerState = {
       ...baseStates,
       characterSkills: null,
-      currentTarget: attacker.mob.currentTarget,
-      attackRange: attacker.mob.attackRange,
+      currentTarget: attacker.currentTarget,
+      attackRange: attacker.attackRange,
     };
     return commonAttackerState;
   }

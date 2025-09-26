@@ -21,6 +21,6 @@ export const setEntityState = <T>(
   state: EntityState<T>,
 ) => {
   if (isMob(entity)) {
-    entity.mob.state = state;
+    entity.state = state;
   }
 };
