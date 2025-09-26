@@ -2,6 +2,7 @@ import { MobSpawn } from 'src/mob/mob-spawn/entities/mob-spawn.entity';
 import { IRuntimeMob } from '../types/runtime-mob.type';
 export function buildRuntimeMob(mobSpawn: MobSpawn): IRuntimeMob {
   if (!mobSpawn.mob) throw new Error('Mob is not loaded in spawn!');
+  if (!mobSpawn.location) throw new Error('Location is not loaded in spawn!');
   return {
     id: mobSpawn.id,
     mobId: mobSpawn.mob.id,
