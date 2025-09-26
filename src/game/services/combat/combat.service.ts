@@ -3,7 +3,7 @@ import { PlayerStateService } from '../player-state/player-state.service';
 import { SkillType } from 'src/common/enums/skill/skill-type.enum';
 import { PositionDto } from 'src/common/dto/position.dto';
 import { SpatialGridService } from '../spatial-grid/spatial-grid.service';
-import { LiveCharacter } from 'src/character/types/runtime-character';
+import { IRuntimeCharacter } from 'src/character/types/runtime-character';
 import { ActiveAoEZone } from './types/active-aoe-zone.type';
 import { CharacterSkill } from 'src/character/character-skill/entities/character-skill.entity';
 import { v4 as uuidv4 } from 'uuid';
@@ -48,7 +48,7 @@ import { getAttackStats } from './lib/entity/helpers/get/get-attack-stats';
 export class CombatService {
   constructor(
     private readonly playerStateService: PlayerStateService,
-    private readonly spatialGridService: SpatialGridService<LiveCharacter>,
+    private readonly spatialGridService: SpatialGridService<IRuntimeCharacter>,
     private readonly pathFindingService: PathFindingService,
     private readonly locationService: LocationService,
     private readonly socketService: SocketService,
@@ -987,7 +987,7 @@ export class CombatService {
   }
 
   spawnAoeZone(
-    caster: LiveCharacter,
+    caster: IRuntimeCharacter,
     cSkill: CharacterSkill,
     area: PositionDto,
     now: number,

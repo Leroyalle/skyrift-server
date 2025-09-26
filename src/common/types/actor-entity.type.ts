@@ -1,8 +1,7 @@
 import {
   CharacterActionState,
   CurrentTarget,
-  ILiveCharacter,
-  LiveCharacter,
+  IRuntimeCharacter,
 } from 'src/character/types/runtime-character';
 import {
   MobActionState,
@@ -11,7 +10,9 @@ import {
 import { BaseEntityStates } from 'src/game/types/entity/base-entity-states.type';
 import { EntityType } from 'src/game/types/entity/entity-type.type';
 
-export interface RuntimeActorEntity<E> extends ActorRuntimeStats<E> {
+export interface RuntimeActorEntity<E>
+  extends ActorRuntimeStats<E>,
+    UniqueFields {
   type: EntityType;
 }
 
@@ -24,7 +25,11 @@ export interface ActorRuntimeStats<E> {
   state: ActorState<E>;
 }
 
-type ActorState<E> = E extends ILiveCharacter
+export interface UniqueFields {
+  locationId: string;
+}
+
+type ActorState<E> = E extends IRuntimeCharacter
   ? CharacterActionState
   : E extends IRuntimeMob
     ? MobActionState

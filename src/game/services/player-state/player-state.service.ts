@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { CharacterService } from 'src/character/character.service';
-import { LiveCharacter } from 'src/character/types/runtime-character';
+import { IRuntimeCharacter } from 'src/character/types/runtime-character';
 import { RedisKeysFactory } from 'src/common/infra/redis-keys-factory.infra';
 import { RedisService } from 'src/redis/redis.service';
 import { ActionType } from '../../types/pending-actions.type';
@@ -19,9 +19,9 @@ export class PlayerStateService {
     private readonly characterService: CharacterService,
   ) {}
 
-  private readonly playersStates: Map<string, LiveCharacter> = new Map();
+  private readonly playersStates: Map<string, IRuntimeCharacter> = new Map();
 
-  async join(character: LiveCharacter, locationId: string) {
+  async join(character: IRuntimeCharacter, locationId: string) {
     console.log('[join]', character);
 
     await this.redisService.sadd(
@@ -64,7 +64,7 @@ export class PlayerStateService {
   }
 
   public moveTo(
-    character: LiveCharacter,
+    character: IRuntimeCharacter,
     position: {
       x: number;
       y: number;
@@ -215,7 +215,7 @@ export class PlayerStateService {
   }
 
   public changeUserLocation(
-    playerState: LiveCharacter,
+    playerState: IRuntimeCharacter,
     targetLocation: CachedLocation,
     teleport: Teleport,
     client: Socket,

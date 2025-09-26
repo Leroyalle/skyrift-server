@@ -13,7 +13,7 @@ import { RedisKeysFactory } from 'src/common/infra/redis-keys-factory.infra';
 import { RequestAttackMoveDto } from './dto/request-attack-move.dto';
 import { JwtPayload } from 'src/common/types/jwt-payload.type';
 import { RequestSkillUseDto } from './dto/request-use-skill.dto';
-import { LiveCharacter } from 'src/character/types/runtime-character';
+import { IRuntimeCharacter } from 'src/character/types/runtime-character';
 import { MovementService } from './services/movement/movement.service';
 import { CombatService } from './services/combat/combat.service';
 import { RegenerationService } from './services/regeneration/regeneration.service';
@@ -36,7 +36,7 @@ export class GameService implements OnModuleInit {
     private readonly combatService: CombatService,
     private readonly regenerationService: RegenerationService,
     private readonly socketService: SocketService,
-    private readonly spatialGridService: SpatialGridService<LiveCharacter>,
+    private readonly spatialGridService: SpatialGridService<IRuntimeCharacter>,
     private readonly locationService: LocationService,
     private readonly interactionService: InteractionService,
     private readonly chatService: ChatService,
@@ -169,7 +169,7 @@ export class GameService implements OnModuleInit {
         },
       );
 
-      const liveCharacter: LiveCharacter = {
+      const liveCharacter: IRuntimeCharacter = {
         ...findCharacter,
         lastMoveAt: 0,
         lastAttackAt: 0,
@@ -179,6 +179,7 @@ export class GameService implements OnModuleInit {
         isAttacking: false,
         currentTarget: null,
         type: 'player',
+        state: 'idle',
       };
 
       await this.playerStateService.join(
@@ -292,16 +293,15 @@ export class GameService implements OnModuleInit {
       RedisKeysFactory.locationPlayers(locationId),
     );
 
-    const otherPlayers: LiveCharacter[] = playersIds.reduce<LiveCharacter[]>(
-      (acc, id) => {
-        const character = this.playerStateService.getCharacterState(id);
-        if (character && character.id !== characterId) {
-          acc.push(character);
-        }
-        return acc;
-      },
-      [],
-    );
+    const otherPlayers: IRuntimeCharacter[] = playersIds.reduce<
+      IRuntimeCharacter[]
+    >((acc, id) => {
+      const character = this.playerStateService.getCharacterState(id);
+      if (character && character.id !== characterId) {
+        acc.push(character);
+      }
+      return acc;
+    }, []);
 
     const aoeZones = this.combatService.getActiveAoeZones(
       findCharacter.locationId,

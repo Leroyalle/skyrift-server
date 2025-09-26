@@ -43,4 +43,9 @@ export type CurrentTarget = {
 
 export interface IRuntimeCharacter
   extends Character,
-    RuntimeActorEntity<IRuntimeCharacter> {}
+    RuntimeActorEntity<IRuntimeCharacter>,
+    UniqueStats {}
+
+interface UniqueStats {
+  userId: string;
+}

@@ -1,8 +1,8 @@
-import { LiveCharacter } from 'src/character/types/runtime-character';
+import { IRuntimeCharacter } from 'src/character/types/runtime-character';
 import { Teleport } from 'src/location/types/teleport.type';
 
 export const isPlayerInTeleportArea = (
-  playerState: LiveCharacter,
+  playerState: IRuntimeCharacter,
   teleport: Teleport,
 ) => {
   const px = Math.floor(playerState.x);

@@ -1,6 +1,8 @@
-import { LiveCharacter } from 'src/character/types/runtime-character';
-import { WorldEntity } from 'src/game/types/entity/runtime-entity.type';
+import { IRuntimeCharacter } from 'src/character/types/runtime-character';
+import { RuntimeEntity } from 'src/game/types/entity/runtime-entity.type';
 
-export const isPlayer = (entity: WorldEntity): entity is LiveCharacter => {
+export const isPlayer = (
+  entity: RuntimeEntity,
+): entity is IRuntimeCharacter => {
   return entity.type === 'player';
 };
