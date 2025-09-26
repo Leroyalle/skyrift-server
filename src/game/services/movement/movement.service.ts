@@ -32,7 +32,7 @@ export class MovementService {
     private readonly playerStateService: PlayerStateService,
     private readonly socketService: SocketService,
     private readonly pathFindingService: PathFindingService,
-    private readonly spatialGridService: SpatialGridService<WorldEntity>,
+    private readonly spatialGridService: SpatialGridService<RuntimeEntity>,
     private readonly interactionService: InteractionService,
     private readonly runtimeMobService: RuntimeMobService,
   ) {}
@@ -262,7 +262,7 @@ export class MovementService {
   //     return this.mobsMovementQueues.set(data.id, data.queue);
   //   }
   // }
-  public setMovementQueue(entity: WorldEntity, steps: PositionDto[]) {
+  public setMovementQueue(entity: RuntimeEntity, steps: PositionDto[]) {
     if (isPlayer(entity)) {
       const queue = {
         steps,
@@ -282,7 +282,7 @@ export class MovementService {
     }
   }
 
-  public deleteMovementQueue(entity: WorldEntity) {
+  public deleteMovementQueue(entity: RuntimeEntity) {
     if (isPlayer(entity)) {
       return this.charactersMovementQueues.get(entity.id);
     }

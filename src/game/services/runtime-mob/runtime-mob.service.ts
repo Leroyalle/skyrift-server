@@ -1,6 +1,6 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { LocationService } from 'src/location/location.service';
-import { RuntimeMob } from './types/runtime-mob.type';
+import { IRuntimeMob } from './types/runtime-mob.type';
 import { PositionDto } from 'src/common/dto/position.dto';
 import { getTileByPosition } from 'src/game/lib/get-tile-by-position.lib';
 import { SpatialGridService } from '../spatial-grid/spatial-grid.service';
@@ -12,7 +12,7 @@ import { buildRuntimeMob } from './lib/build-runtime-mob.lib';
 @Injectable()
 export class RuntimeMobService implements OnModuleInit {
   constructor(
-    private readonly spatialGridService: SpatialGridService<RuntimeMob>,
+    private readonly spatialGridService: SpatialGridService<IRuntimeMob>,
     private readonly locationService: LocationService,
     private readonly combatService: CombatService,
     private readonly pathFindingService: PathFindingService,
@@ -20,7 +20,7 @@ export class RuntimeMobService implements OnModuleInit {
   ) {}
 
   private readonly mobsByLocation = new Map<string, Set<string>>();
-  private readonly mobsById = new Map<string, RuntimeMob>();
+  private readonly mobsById = new Map<string, IRuntimeMob>();
 
   async onModuleInit() {
     const locations = await this.locationService.findAndCacheAll();
@@ -103,7 +103,7 @@ export class RuntimeMobService implements OnModuleInit {
     return this.mobsById.get(spawnMobId);
   }
 
-  getRandomTileInArea(runtimeMob: RuntimeMob, tileSize: number) {
+  getRandomTileInArea(runtimeMob: IRuntimeMob, tileSize: number) {
     const { x: tileX, y: tileY } = getTileByPosition(
       runtimeMob.x,
       runtimeMob.y,
@@ -154,10 +154,10 @@ export class RuntimeMobService implements OnModuleInit {
   }
 
   public moveTo(
-    runtimeMob: RuntimeMob,
+    runtimeMob: IRuntimeMob,
     to: PositionDto,
     now: number,
-  ): RuntimeMob {
+  ): IRuntimeMob {
     runtimeMob.x = to.x;
     runtimeMob.y = to.y;
     runtimeMob.lastMoveAt = now;

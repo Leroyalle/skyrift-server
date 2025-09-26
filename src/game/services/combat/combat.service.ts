@@ -34,7 +34,7 @@ import { PathFindingService } from '../path-finding/path-finding.service';
 import { isEnemyFaction } from './lib/entity/guards/is-enemy-faction.lib';
 import { EntityType } from 'src/game/types/entity/entity-type.type';
 import { generateEntityKey } from 'src/game/lib/entity/generate-entity-key.lib';
-import { WorldEntity } from 'src/game/types/entity/runtime-entity.type';
+import { RuntimeEntity } from 'src/game/types/entity/runtime-entity.type';
 import { isPlayer } from './lib/entity/guards/is-player.lib';
 import { setCurrentTarget } from './lib/entity/helpers/set/set-current-target.lib';
 import { getAttackerRange } from './lib/entity/helpers/get/get-attacker-range.lib';
@@ -134,12 +134,12 @@ export class CombatService {
       if (steps.length > range) {
         // attacker.isAttacking = false;
         this.movementService.setMovementQueue(attacker, steps);
-        setEntityState<WorldEntity>(attacker, 'pursue');
+        setEntityState<RuntimeEntity>(attacker, 'pursue');
         continue;
       } else {
         // attacker.isAttacking = true;
         this.movementService.deleteMovementQueue(attacker);
-        setEntityState<WorldEntity>(attacker, 'attack');
+        setEntityState<RuntimeEntity>(attacker, 'attack');
       }
 
       let batchLocation = updatesByLocation.get(location.id);
@@ -177,7 +177,7 @@ export class CombatService {
   private getEntityByType(
     type: EntityType,
     id: string,
-  ): WorldEntity | undefined {
+  ): RuntimeEntity | undefined {
     if (type === 'player') {
       return this.playerStateService.getCharacterState(id);
     } else if (type === 'mob') {
@@ -382,7 +382,10 @@ export class CombatService {
     await this.processAttackMove(attacker, victim);
   }
 
-  private async processAttackMove(attacker: WorldEntity, victim: WorldEntity) {
+  private async processAttackMove(
+    attacker: RuntimeEntity,
+    victim: RuntimeEntity,
+  ) {
     if (isPlayer(attacker) && isPlayer(victim)) {
       const attackerFactionName = attacker.characterClass.faction.name;
       const victimFactionName = victim.characterClass.faction.name;
@@ -390,7 +393,7 @@ export class CombatService {
       if (!isEnemyFaction(attackerFactionName, victimFactionName)) return;
     }
 
-    const entityKey = generateEntityKey<WorldEntity>(attacker);
+    const entityKey = generateEntityKey<RuntimeEntity>(attacker);
 
     const queue = this.getOrCreateActionQueue(entityKey);
 
@@ -601,7 +604,7 @@ export class CombatService {
   // }
 
   private async schedulePathUpdate(
-    attacker: WorldEntity,
+    attacker: RuntimeEntity,
     target: TargetAction,
     skillId: string | null = null,
   ) {
@@ -656,7 +659,7 @@ export class CombatService {
       state: 'wait-path',
     };
 
-    const attackerKey = generateEntityKey<WorldEntity>(attacker);
+    const attackerKey = generateEntityKey<RuntimeEntity>(attacker);
     const queue = this.getOrCreateActionQueue(attackerKey);
 
     const hasAutoAttack = queue.some(
@@ -681,7 +684,7 @@ export class CombatService {
   }
 
   private resolvePendingActionState(
-    attacker: WorldEntity,
+    attacker: RuntimeEntity,
     pendingAction: PendingAction,
     range: number,
     steps: PositionDto[],
@@ -689,7 +692,7 @@ export class CombatService {
     const inRange = steps.length <= range;
     if (!inRange) {
       this.movementService.setMovementQueue(attacker, steps);
-      setEntityState<WorldEntity>(attacker, 'pursue');
+      setEntityState<RuntimeEntity>(attacker, 'pursue');
       pendingAction.state = 'move-to-target';
       console.log('[resolve_pending_action]: SET STEPS');
     } else {

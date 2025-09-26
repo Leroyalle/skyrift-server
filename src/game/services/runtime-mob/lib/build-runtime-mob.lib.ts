@@ -1,7 +1,7 @@
 import { MobSpawn } from 'src/mob/mob-spawn/entities/mob-spawn.entity';
-import { RuntimeMob } from '../types/runtime-mob.type';
+import { IRuntimeMob } from '../types/runtime-mob.type';
 
-export function buildRuntimeMob(mobSpawn: MobSpawn): RuntimeMob {
+export function buildRuntimeMob(mobSpawn: MobSpawn): IRuntimeMob {
   if (!mobSpawn.mob) throw new Error('Mob is not loaded in spawn!');
   const {
     location: _,
