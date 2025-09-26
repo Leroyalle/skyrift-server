@@ -249,7 +249,8 @@ export class CombatService {
         victim.isAlive = remainingHp > 0;
         zone.lastUsedAt = now;
         targets.push({
-          characterId: victim.id,
+          id: victim.id,
+          type: victim.type,
           hp: victim.hp,
           isAlive: victim.isAlive,
           receivedDamage,
@@ -786,18 +787,16 @@ export class CombatService {
 
         if ((ctx.characterSkill.cooldownEnd ?? 0) > ctx.now) return;
 
-        // FIXME: нужно передавать срразу тайлы либо локацию / тайлсайз
+        // FIXME: нужно передавать сразу тайлы либо локацию / тайлсайз
         const attackerTile = {
           x: Math.floor(ctx.attacker.x / ctx.tileSize),
           y: Math.floor(ctx.attacker.y / ctx.tileSize),
         };
 
         let targetTile: { x: number; y: number } | null = null;
-
-        if (action.target.kind === 'player') {
-          const victim = this.playerStateService.getCharacterState(
-            action.target.id,
-          );
+        let victim: RuntimeEntity | undefined;
+        if (action.target.kind === 'target') {
+          victim = this.getEntityByType(action.target.type, action.target.id);
           if (!victim || !victim.isAlive) return;
           targetTile = {
             x: Math.floor(victim.x / ctx.tileSize),
@@ -816,28 +815,40 @@ export class CombatService {
 
         const skillType = ctx.characterSkill.skill.type;
 
-        if (skillType === SkillType.Target && action.target.kind === 'player') {
-          const victim = this.playerStateService.getCharacterState(
-            action.target.id,
-          );
-
+        if (skillType === SkillType.Target && action.target.kind === 'target') {
           if (!victim) return;
+
+          const attackerRef = {
+            id: ctx.attacker.id,
+            type: ctx.attacker.type,
+          };
+
+          const victimRef = {
+            id: victim.id,
+            type: victim.type,
+          };
 
           this.socketService.sendTo(
             RedisKeys.Location + ctx.attacker.locationId,
             ServerToClientEvents.EntityAttackStart,
             {
-              attackerId: ctx.attacker.id,
-              victimId: victim.id,
+              attackerRef: {
+                ...attackerRef,
+                direction: attackerDirection,
+              },
+              victimRef,
               actionType: ActionType.Skill,
               skillId: action.skillId,
-              attackerDirection,
+
+              // attackerId: ctx.attacker.id,
+              // victimId: victim.id,
+              // attackerDirection,
             },
           );
 
           const applySkillResult = this.applySkill(
-            ctx.attacker.id,
-            victim.id,
+            attackerRef,
+            victimRef,
             action.skillId,
             ctx.now,
           );
@@ -846,25 +857,33 @@ export class CombatService {
 
           ctx.batchLocation.push(applySkillResult.attackResult);
 
-          this.sendUserSkillCooldown(
-            ctx.attacker.userId,
-            applySkillResult.cooldown,
-          );
+          // TODO: update set cooldown for mob & player
+          if (isPlayer(ctx.attacker)) {
+            this.sendUserSkillCooldown(
+              ctx.attacker.userId,
+              applySkillResult.cooldown,
+            );
+          }
         } else if (
           skillType === SkillType.AoE &&
           action.target.kind === 'aoe'
         ) {
           const { kind: _, ...area } = action.target;
           const applyAoeSkillResult = this.applyAoESkill(
-            action.attackerId,
+            action.attackerRef.id,
             action.skillId,
             area,
           );
           if (!applyAoeSkillResult) return;
-          this.sendUserSkillCooldown(
-            ctx.attacker.userId,
-            applyAoeSkillResult.cooldown,
-          );
+
+          // TODO: update set cooldown for mob & player
+
+          if (isPlayer(ctx.attacker)) {
+            this.sendUserSkillCooldown(
+              ctx.attacker.userId,
+              applyAoeSkillResult.cooldown,
+            );
+          }
         }
 
         ctx.removeAction();
@@ -911,10 +930,10 @@ export class CombatService {
     const targets = [
       {
         id: victim.id,
+        type: victim.type,
         hp: remainingHp,
         isAlive,
         receivedDamage,
-        type: victim.type,
       },
     ];
 
@@ -927,13 +946,14 @@ export class CombatService {
   }
 
   public applySkill(
-    attackerId: string,
-    victimId: string,
+    attackerRef: DecodedEntityKey,
+    victimRef: DecodedEntityKey,
     skillId: string,
     now: number,
   ): ApplySkillResult | undefined {
-    const attacker = this.playerStateService.getCharacterState(attackerId);
-    const victim = this.playerStateService.getCharacterState(victimId);
+    // TODO: update for mob skills
+    const attacker = this.playerStateService.getCharacterState(attackerRef.id);
+    const victim = this.getEntityByType(victimRef.type, victimRef.id);
 
     if (!attacker || !victim || attacker.locationId !== victim.locationId)
       return;
@@ -952,21 +972,28 @@ export class CombatService {
     victim.hp = remainingHp;
     victim.isAlive = remainingHp > 0;
 
+    if (victim.isAlive && victim.type === 'mob') {
+      this.runtimeMobService.setRespawn(victim.id);
+    }
+
     characterSkill.lastUsedAt = now;
     characterSkill.cooldownEnd = now + characterSkill.skill.cooldownMs;
 
     attacker.lastAttackAt = now;
 
+    const targets = [
+      {
+        id: victim.id,
+        type: victim.type,
+        hp: remainingHp,
+        isAlive: remainingHp > 0,
+        receivedDamage,
+      },
+    ];
+
     return {
       attackResult: {
-        targets: [
-          {
-            characterId: victim.id,
-            hp: remainingHp,
-            isAlive: remainingHp > 0,
-            receivedDamage,
-          },
-        ],
+        targets,
         type: ActionType.Skill,
         skillId: characterSkill.id,
       },
@@ -977,6 +1004,7 @@ export class CombatService {
     };
   }
 
+  // TODO: update for mobs
   applyAoESkill(
     attackerId: string,
     skillId: string,
