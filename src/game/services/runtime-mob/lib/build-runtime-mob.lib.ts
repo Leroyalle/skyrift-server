@@ -1,0 +1,44 @@
+import { MobSpawn } from 'src/mob/mob-spawn/entities/mob-spawn.entity';
+import { IRuntimeMob } from '../types/runtime-mob.type';
+export function buildRuntimeMob(mobSpawn: MobSpawn): IRuntimeMob {
+  if (!mobSpawn.mob) throw new Error('Mob is not loaded in spawn!');
+  if (!mobSpawn.location) throw new Error('Location is not loaded in spawn!');
+  return {
+    id: mobSpawn.id,
+    mobId: mobSpawn.mob.id,
+    name: mobSpawn.mob.name,
+    x: mobSpawn.spawnX,
+    y: mobSpawn.spawnY,
+    spawnX: mobSpawn.spawnX,
+    spawnY: mobSpawn.spawnY,
+    walkSpeed: mobSpawn.mob.walkSpeed,
+    triggerRange: mobSpawn.mob.triggerRange,
+    respawnTime: mobSpawn.mob.respawnTime,
+    type: 'mob',
+    state: 'idle',
+    respawnIn: null,
+    physicalDefense: mobSpawn.mob.physicalDefense,
+    magicDefense: mobSpawn.mob.magicDefense,
+    maxHp: mobSpawn.mob.maxHp,
+    locationId: mobSpawn.location.id,
+    level: mobSpawn.mob.level,
+    lastMoveAt: 0,
+    lastHpRegenerationTime: 0,
+    lastAttackAt: 0,
+    lastDirection: 'down',
+    isInSpawnArea: true,
+    isAttacking: false,
+    isAlive: true,
+    hp: mobSpawn.mob.hp,
+    expReward: mobSpawn.mob.expReward,
+    currentTarget: null,
+    currentPath: null,
+    critMultiplier: mobSpawn.mob.critMultiplier,
+    chaseSpeed: mobSpawn.mob.chaseSpeed,
+    basePhysicalDamage: mobSpawn.mob.basePhysicalDamage,
+    baseMagicDamage: mobSpawn.mob.baseMagicDamage,
+    attackSpeed: mobSpawn.mob.attackSpeed,
+    attackRange: mobSpawn.mob.attackRange,
+    areaRadius: mobSpawn.areaRadius,
+  };
+}

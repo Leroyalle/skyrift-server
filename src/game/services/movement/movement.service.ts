@@ -6,7 +6,7 @@ import { RequestMoveToDto } from 'src/game/dto/request-move-to.dto';
 import { Socket } from 'socket.io';
 import { BatchUpdateMovement } from 'src/game/types/batch-update/batch-update-movement.type';
 import { SpatialGridService } from '../spatial-grid/spatial-grid.service';
-import { LiveCharacter } from 'src/character/types/live-character-state.type';
+import { IRuntimeCharacter } from 'src/character/types/runtime-character';
 import { getDirection } from 'src/game/lib/get-direction.lib';
 import { RedisKeys } from 'src/common/enums/redis-keys.enum';
 import { ServerToClientEvents } from 'src/common/enums/game-socket-events.enum';
@@ -17,10 +17,10 @@ import {
 import { PathFindingService } from '../path-finding/path-finding.service';
 import { InteractionService } from '../interaction/interaction.service';
 import { RuntimeMobService } from '../runtime-mob/runtime-mob.service';
-import { RuntimeMob } from '../runtime-mob/types/runtime-mob.type';
+import { IRuntimeMob } from '../runtime-mob/types/runtime-mob.type';
 import { SetMovementQueueData } from './types/set-movement-queue.type';
 import { EntityType } from 'src/game/types/entity/entity-type.type';
-import { WorldEntity } from 'src/game/types/entity/world-entity.type';
+import { RuntimeEntity } from 'src/game/types/entity/runtime-entity.type';
 import { PositionDto } from 'src/common/dto/position.dto';
 import { isPlayer } from '../combat/lib/entity/guards/is-player.lib';
 import { isMob } from '../combat/lib/entity/guards/is-mob.lib';
@@ -32,7 +32,7 @@ export class MovementService {
     private readonly playerStateService: PlayerStateService,
     private readonly socketService: SocketService,
     private readonly pathFindingService: PathFindingService,
-    private readonly spatialGridService: SpatialGridService<WorldEntity>,
+    private readonly spatialGridService: SpatialGridService<RuntimeEntity>,
     private readonly interactionService: InteractionService,
     private readonly runtimeMobService: RuntimeMobService,
   ) {}
@@ -84,7 +84,6 @@ export class MovementService {
         y: Math.floor(character.y / findLocation.tileHeight),
       },
       { x: input.targetX, y: input.targetY },
-      findLocation.tileWidth,
       map,
     );
 
@@ -180,14 +179,14 @@ export class MovementService {
         return;
       }
 
-      if (runtimeMob.mob.respawnIn) return;
+      if (runtimeMob.respawnIn) return;
       const now = Date.now();
 
-      const moveSpeed = runtimeMob.mob.isAttacking
-        ? runtimeMob.mob.chaseSpeed
-        : runtimeMob.mob.walkSpeed;
+      const moveSpeed = runtimeMob.isAttacking
+        ? runtimeMob.chaseSpeed
+        : runtimeMob.walkSpeed;
 
-      if (now - runtimeMob.mob.lastMoveAt < moveSpeed) return;
+      if (now - runtimeMob.lastMoveAt < moveSpeed) return;
 
       const step = steps.shift();
 
@@ -262,7 +261,7 @@ export class MovementService {
   //     return this.mobsMovementQueues.set(data.id, data.queue);
   //   }
   // }
-  public setMovementQueue(entity: WorldEntity, steps: PositionDto[]) {
+  public setMovementQueue(entity: RuntimeEntity, steps: PositionDto[]) {
     if (isPlayer(entity)) {
       const queue = {
         steps,
@@ -282,7 +281,7 @@ export class MovementService {
     }
   }
 
-  public deleteMovementQueue(entity: WorldEntity) {
+  public deleteMovementQueue(entity: RuntimeEntity) {
     if (isPlayer(entity)) {
       return this.charactersMovementQueues.get(entity.id);
     }

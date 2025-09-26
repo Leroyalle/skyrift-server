@@ -5,6 +5,9 @@ import { QueryRadiusResult } from './types/query-radius-result.type';
 import { getTileByPosition } from 'src/game/lib/get-tile-by-position.lib';
 import { EntityType } from 'src/game/types/entity/entity-type.type';
 import { DecodedEntityKey } from '../../types/entity/keys/decoded-entity-key.type';
+import { generateEntityKey } from 'src/game/lib/entity/generate-entity-key.lib';
+import { decodeEntityKey } from 'src/game/lib/entity/decode-entity-key.lib';
+import { EntityKey } from 'src/game/types/entity/keys/entity-key.type';
 
 @Injectable()
 export class SpatialGridService<
@@ -17,7 +20,7 @@ export class SpatialGridService<
   },
 > {
   private readonly tileSize: number = 32;
-  private cells: Map<string, Set<string>>;
+  private cells: Map<string, Set<EntityKey>>;
 
   constructor() {
     this.cells = new Map();
@@ -28,29 +31,17 @@ export class SpatialGridService<
     return `${locationId}_${cx}_${cy}`;
   }
 
-  private generateEntityKey(entity: T): string {
-    return `${entity.type}_${entity.id}`;
-  }
-
-  private decodeEntityKey(key: string): DecodedEntityKey {
-    const values = key.split('_');
-    return {
-      type: values[0] as EntityType,
-      id: values[1],
-    };
-  }
-
   add(entity: T) {
     const key = this.getCellKey(entity.locationId, entity.x, entity.y);
     if (!this.cells.has(key)) {
       this.cells.set(key, new Set());
     }
-    this.cells.get(key)!.add(this.generateEntityKey(entity));
+    this.cells.get(key)!.add(generateEntityKey(entity));
   }
 
   remove(entity: T) {
     const key = this.getCellKey(entity.locationId, entity.x, entity.y);
-    this.cells.get(key)?.delete(this.generateEntityKey(entity));
+    this.cells.get(key)?.delete(generateEntityKey(entity));
   }
 
   update(entity: T, oldLocationId: string, oldX: number, oldY: number) {
@@ -84,7 +75,7 @@ export class SpatialGridService<
         if (!bucket) continue;
         affectedCells.push(decodeGridKey(key));
         bucket.forEach((stringValues) => {
-          const decoded = this.decodeEntityKey(stringValues);
+          const decoded = decodeEntityKey(stringValues);
           return entities.push(decoded);
         });
       }

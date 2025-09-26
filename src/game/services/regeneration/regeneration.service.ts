@@ -11,6 +11,7 @@ export class RegenerationService {
     private readonly playerStateService: PlayerStateService,
     private readonly socketService: SocketService,
   ) {}
+  // TODO: add for mobs
   public tickRegeneration() {
     const updatesByLocation = new Map<string, BatchUpdateRegeneration[]>();
 

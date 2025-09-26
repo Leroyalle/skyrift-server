@@ -1,33 +1,35 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { LocationService } from 'src/location/location.service';
-import { MobSpawn } from 'src/mob/mob-spawn/entities/mob-spawn.entity';
-import { RuntimeMob } from './types/runtime-mob.type';
+import { IRuntimeMob } from './types/runtime-mob.type';
 import { PositionDto } from 'src/common/dto/position.dto';
 import { getTileByPosition } from 'src/game/lib/get-tile-by-position.lib';
 import { SpatialGridService } from '../spatial-grid/spatial-grid.service';
 import { CombatService } from '../combat/combat.service';
 import { PathFindingService } from '../path-finding/path-finding.service';
 import { MovementService } from '../movement/movement.service';
+import { buildRuntimeMob } from './lib/build-runtime-mob.lib';
 
 @Injectable()
 export class RuntimeMobService implements OnModuleInit {
   constructor(
-    private readonly spatialGridService: SpatialGridService<RuntimeMob>,
+    private readonly spatialGridService: SpatialGridService<IRuntimeMob>,
     private readonly locationService: LocationService,
+    @Inject(forwardRef(() => CombatService))
     private readonly combatService: CombatService,
     private readonly pathFindingService: PathFindingService,
+    @Inject(forwardRef(() => MovementService))
     private readonly movementService: MovementService,
   ) {}
 
   private readonly mobsByLocation = new Map<string, Set<string>>();
-  private readonly mobsById = new Map<string, RuntimeMob>();
+  private readonly mobsById = new Map<string, IRuntimeMob>();
 
   async onModuleInit() {
     const locations = await this.locationService.findAndCacheAll();
     for (const location of locations) {
       const mobsSet = this.getOrCreateActiveMobsLocationMap(location.id);
       location.mobSpawn.forEach((mobSpawn) => {
-        const runtimeMob = this.buildRuntimeMob(mobSpawn);
+        const runtimeMob = buildRuntimeMob(mobSpawn);
         mobsSet.add(runtimeMob.id);
         this.mobsById.set(runtimeMob.id, runtimeMob);
         this.spatialGridService.add(runtimeMob);
@@ -39,9 +41,9 @@ export class RuntimeMobService implements OnModuleInit {
     const mobsEntries = Array.from(this.mobsById.values());
 
     for (const runtimeMob of mobsEntries) {
-      if (runtimeMob.mob.respawnIn) continue;
+      if (runtimeMob.respawnIn) continue;
 
-      if (runtimeMob.mob.currentTarget) {
+      if (runtimeMob.currentTarget) {
         const findLocation = await this.locationService.loadLocation(
           runtimeMob.locationId,
         );
@@ -49,14 +51,14 @@ export class RuntimeMobService implements OnModuleInit {
         if (!findLocation) continue;
 
         const currentPosition = getTileByPosition(
-          runtimeMob.mob.x,
-          runtimeMob.mob.y,
+          runtimeMob.x,
+          runtimeMob.y,
           findLocation.tileWidth,
         );
 
         const spawnPosition = getTileByPosition(
-          runtimeMob.x,
-          runtimeMob.y,
+          runtimeMob.spawnX,
+          runtimeMob.spawnY,
           findLocation.tileWidth,
         );
 
@@ -71,17 +73,17 @@ export class RuntimeMobService implements OnModuleInit {
 
         if (path.length > 5) {
           this.movementService.setMovementQueue(runtimeMob, path);
-          runtimeMob.mob.currentTarget = null;
-          runtimeMob.mob.state = 'return';
+          runtimeMob.currentTarget = null;
+          runtimeMob.state = 'return';
           continue;
         }
       }
 
       const { entities } = this.spatialGridService.queryRadius(
         runtimeMob.locationId,
-        runtimeMob.mob.x,
-        runtimeMob.mob.y,
-        runtimeMob.mob.triggerRange,
+        runtimeMob.x,
+        runtimeMob.y,
+        runtimeMob.triggerRange,
       );
 
       const target = entities.find((ent) => ent.type === 'player');
@@ -103,7 +105,7 @@ export class RuntimeMobService implements OnModuleInit {
     return this.mobsById.get(spawnMobId);
   }
 
-  getRandomTileInArea(runtimeMob: RuntimeMob, tileSize: number) {
+  getRandomTileInArea(runtimeMob: IRuntimeMob, tileSize: number) {
     const { x: tileX, y: tileY } = getTileByPosition(
       runtimeMob.x,
       runtimeMob.y,
@@ -140,51 +142,27 @@ export class RuntimeMobService implements OnModuleInit {
     return mobsSet;
   }
 
-  private buildRuntimeMob(mobSpawn: MobSpawn): RuntimeMob {
-    if (!mobSpawn.mob) throw new Error('Mob is not loaded in spawn!');
-    const { location: _, ...mobSpawnStats } = mobSpawn;
-    return {
-      ...mobSpawnStats,
-      locationId: mobSpawn.location.id,
-      type: 'mob',
-      mob: {
-        ...mobSpawn.mob,
-        x: mobSpawn.x,
-        y: mobSpawn.y,
-        isInSpawnArea: true,
-        lastMoveAt: 123123,
-        lastDirection: 'down',
-        lastAttackAt: 3423,
-        respawnIn: null,
-        currentPath: null,
-        currentTarget: null,
-        isAttacking: false,
-        state: 'idle',
-      },
-    };
-  }
-
-  public resetRespawnTime(locationId: string, spawnMobId: string) {
-    const spawnMob = this.mobsById.get(spawnMobId);
+  public resetRespawnTime(runtimeMobId: string) {
+    const spawnMob = this.mobsById.get(runtimeMobId);
     if (!spawnMob) return;
-    spawnMob.mob.respawnIn = null;
+    spawnMob.respawnIn = null;
   }
 
-  public setRespawn(locationId: string, spawnMobId: string) {
-    const spawnMob = this.mobsById.get(spawnMobId);
+  public setRespawn(runtimeMobId: string) {
+    const spawnMob = this.mobsById.get(runtimeMobId);
     if (!spawnMob) return;
     const now = Date.now();
-    spawnMob.mob.respawnIn = now + spawnMob.mob.respawnTime;
+    spawnMob.respawnIn = now + spawnMob.respawnTime;
   }
 
   public moveTo(
-    runtimeMob: RuntimeMob,
+    runtimeMob: IRuntimeMob,
     to: PositionDto,
     now: number,
-  ): RuntimeMob {
-    runtimeMob.mob.x = to.x;
-    runtimeMob.mob.y = to.y;
-    runtimeMob.mob.lastMoveAt = now;
+  ): IRuntimeMob {
+    runtimeMob.x = to.x;
+    runtimeMob.y = to.y;
+    runtimeMob.lastMoveAt = now;
     return runtimeMob;
   }
 }

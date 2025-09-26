@@ -13,7 +13,7 @@ import { RedisKeysFactory } from 'src/common/infra/redis-keys-factory.infra';
 import { RequestAttackMoveDto } from './dto/request-attack-move.dto';
 import { JwtPayload } from 'src/common/types/jwt-payload.type';
 import { RequestSkillUseDto } from './dto/request-use-skill.dto';
-import { LiveCharacter } from 'src/character/types/live-character-state.type';
+import { IRuntimeCharacter } from 'src/character/types/runtime-character';
 import { MovementService } from './services/movement/movement.service';
 import { CombatService } from './services/combat/combat.service';
 import { RegenerationService } from './services/regeneration/regeneration.service';
@@ -23,6 +23,7 @@ import { RequestUseTeleportDto } from './dto/request-use-teleport.dto';
 import { InteractionService } from './services/interaction/interaction.service';
 import { ChatService } from './services/chat/chat.service';
 import { DirectMessageInput } from './services/chat/dto/direct-message.input';
+import { Character } from 'src/character/entities/character.entity';
 
 @Injectable()
 export class GameService implements OnModuleInit {
@@ -36,7 +37,7 @@ export class GameService implements OnModuleInit {
     private readonly combatService: CombatService,
     private readonly regenerationService: RegenerationService,
     private readonly socketService: SocketService,
-    private readonly spatialGridService: SpatialGridService<LiveCharacter>,
+    private readonly spatialGridService: SpatialGridService<IRuntimeCharacter>,
     private readonly locationService: LocationService,
     private readonly interactionService: InteractionService,
     private readonly chatService: ChatService,
@@ -169,24 +170,14 @@ export class GameService implements OnModuleInit {
         },
       );
 
-      const liveCharacter: LiveCharacter = {
+      const liveCharacter: Character = {
         ...findCharacter,
-        lastMoveAt: 0,
-        lastAttackAt: 0,
-        lastHpRegenerationTime: 0,
-        locationId: findCharacter.location.id,
-        userId: findCharacter.user.id,
-        isAttacking: false,
-        currentTarget: null,
-        type: 'player',
       };
 
-      await this.playerStateService.join(
-        liveCharacter,
-        findCharacter.location.id,
-      );
+      const runtimeCharacter =
+        await this.playerStateService.join(liveCharacter);
 
-      this.spatialGridService.add(liveCharacter);
+      this.spatialGridService.add(runtimeCharacter);
 
       await this.socketService.joinToRoom(
         findCharacter.user.id,
@@ -292,16 +283,15 @@ export class GameService implements OnModuleInit {
       RedisKeysFactory.locationPlayers(locationId),
     );
 
-    const otherPlayers: LiveCharacter[] = playersIds.reduce<LiveCharacter[]>(
-      (acc, id) => {
-        const character = this.playerStateService.getCharacterState(id);
-        if (character && character.id !== characterId) {
-          acc.push(character);
-        }
-        return acc;
-      },
-      [],
-    );
+    const otherPlayers: IRuntimeCharacter[] = playersIds.reduce<
+      IRuntimeCharacter[]
+    >((acc, id) => {
+      const character = this.playerStateService.getCharacterState(id);
+      if (character && character.id !== characterId) {
+        acc.push(character);
+      }
+      return acc;
+    }, []);
 
     const aoeZones = this.combatService.getActiveAoeZones(
       findCharacter.locationId,

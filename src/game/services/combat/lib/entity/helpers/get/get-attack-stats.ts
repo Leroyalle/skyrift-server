@@ -1,4 +1,4 @@
-import { WorldEntity } from 'src/game/types/entity/world-entity.type';
+import { RuntimeEntity } from 'src/game/types/entity/runtime-entity.type';
 import { isMob } from '../../guards/is-mob.lib';
 import { isPlayer } from '../../guards/is-player.lib';
 
@@ -8,7 +8,9 @@ type AttackStats = {
   attackSpeed: number;
 };
 
-export function getAttackStats(attacker: WorldEntity): AttackStats | undefined {
+export function getAttackStats(
+  attacker: RuntimeEntity,
+): AttackStats | undefined {
   if (isPlayer(attacker)) {
     return {
       lastAttackAt: attacker.lastAttackAt,
@@ -18,9 +20,9 @@ export function getAttackStats(attacker: WorldEntity): AttackStats | undefined {
   }
   if (isMob(attacker)) {
     return {
-      lastAttackAt: attacker.mob.lastAttackAt,
-      attackRange: attacker.mob.attackRange,
-      attackSpeed: attacker.mob.attackSpeed,
+      lastAttackAt: attacker.lastAttackAt,
+      attackRange: attacker.attackRange,
+      attackSpeed: attacker.attackSpeed,
     };
   }
 

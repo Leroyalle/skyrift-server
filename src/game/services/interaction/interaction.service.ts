@@ -10,7 +10,7 @@ import { Socket } from 'socket.io';
 import { RequestUseTeleportDto } from 'src/game/dto/request-use-teleport.dto';
 import { verifyUserDataInSocket } from 'src/game/lib/verify-user-data-in-socket.lib';
 import { isPlayerInTeleportArea } from 'src/game/lib/teleport/is-player-in-teleport-radius.lib';
-import { LiveCharacter } from 'src/character/types/live-character-state.type';
+import { IRuntimeCharacter } from 'src/character/types/runtime-character';
 import { SpatialGridService } from '../spatial-grid/spatial-grid.service';
 import { MovementService } from '../movement/movement.service';
 import { RedisService } from 'src/redis/redis.service';
@@ -22,6 +22,7 @@ import { CachedLocation } from 'src/location/types/cashed-location.type';
 import { PositionDto } from 'src/common/dto/position.dto';
 import { Teleport } from 'src/location/types/teleport.type';
 import { PathFindingService } from '../path-finding/path-finding.service';
+import { getTileByPosition } from 'src/game/lib/get-tile-by-position.lib';
 
 @Injectable()
 export class InteractionService {
@@ -30,7 +31,7 @@ export class InteractionService {
     private readonly socketService: SocketService,
     private readonly locationService: LocationService,
     private readonly pathFindingService: PathFindingService,
-    private readonly spatialGridService: SpatialGridService<LiveCharacter>,
+    private readonly spatialGridService: SpatialGridService<IRuntimeCharacter>,
     private readonly redisService: RedisService,
     @Inject(forwardRef(() => MovementService))
     private readonly movementService: MovementService,
@@ -77,20 +78,9 @@ export class InteractionService {
 
             if (!teleport) continue;
 
-            console.log(
-              '[tick interactions positions]',
-              Math.floor(playerState.x),
-              Math.floor(playerState.y),
-              Math.floor(teleport.x),
-              Math.floor(teleport.y),
-              teleport.width,
-              teleport.height,
-              isPlayerInTeleportArea(playerState, teleport),
-            );
-
             if (isPlayerInTeleportArea(playerState, teleport)) {
               console.log('use teleport');
-              this.movementService.deleteMovementQueue(playerState.id);
+              this.movementService.deleteMovementQueue(playerState);
               this.pendingInteractions.delete(playerState.id);
               await this.useTeleport(playerState, teleport);
               console.log('teleport used, after use teleport');
@@ -177,20 +167,26 @@ export class InteractionService {
   }
 
   private async startInteractionMovement(
-    playerState: LiveCharacter,
+    playerState: IRuntimeCharacter,
     area: PositionDto,
     currentLocation: CachedLocation,
   ) {
-    const fromTile = this.spatialGridService.getTileByPosition(
+    const fromTile = getTileByPosition(
       playerState.x,
       playerState.y,
+      currentLocation.tileWidth,
     );
 
-    const targetTile = this.spatialGridService.getTileByPosition(
+    const targetTile = getTileByPosition(
       area.x,
       area.y,
+      currentLocation.tileWidth,
     );
-    const prevSteps = this.movementService.getMovementQueue(playerState.id);
+
+    const prevSteps = this.movementService.getMovementQueue(
+      playerState.type,
+      playerState.id,
+    );
 
     if (prevSteps?.steps[-1] === targetTile) return;
 
@@ -201,15 +197,15 @@ export class InteractionService {
       currentLocation.passableMap,
     );
 
-    this.movementService.setMovementQueue(playerState.id, {
-      steps,
-      userId: playerState.userId,
-    });
+    this.movementService.setMovementQueue(playerState, steps);
 
     return steps;
   }
 
-  private async useTeleport(playerState: LiveCharacter, teleport: Teleport) {
+  private async useTeleport(
+    playerState: IRuntimeCharacter,
+    teleport: Teleport,
+  ) {
     const targetLocation = await this.locationService.loadLocationByFilename(
       teleport.targetMap,
     );
@@ -280,16 +276,15 @@ export class InteractionService {
       RedisKeysFactory.locationPlayers(targetLocation.id),
     );
 
-    const otherPlayers: LiveCharacter[] = playersIds.reduce<LiveCharacter[]>(
-      (acc, id) => {
-        const character = this.playerStateService.getCharacterState(id);
-        if (character && character.id !== playerState.id) {
-          acc.push(character);
-        }
-        return acc;
-      },
-      [],
-    );
+    const otherPlayers: IRuntimeCharacter[] = playersIds.reduce<
+      IRuntimeCharacter[]
+    >((acc, id) => {
+      const character = this.playerStateService.getCharacterState(id);
+      if (character && character.id !== playerState.id) {
+        acc.push(character);
+      }
+      return acc;
+    }, []);
 
     const aoeZones = this.combatService.getActiveAoeZones(targetLocation.id);
 

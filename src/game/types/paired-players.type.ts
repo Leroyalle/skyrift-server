@@ -1,8 +1,8 @@
-import { LiveCharacter } from 'src/character/types/live-character-state.type';
+import { IRuntimeCharacter } from 'src/character/types/runtime-character';
 import { PendingAction } from './pending-actions.type';
 
 export type PairedPlayers = {
-  victim: LiveCharacter;
-  attacker: LiveCharacter;
+  victim: IRuntimeCharacter;
+  attacker: IRuntimeCharacter;
   action: PendingAction;
 };

@@ -1,3 +1,4 @@
+import { EntityType } from '../entity/entity-type.type';
 import { ActionType } from '../pending-actions.type';
 
 export type BatchUpdateAction = {
@@ -7,7 +8,8 @@ export type BatchUpdateAction = {
 };
 
 export type Target = {
-  characterId: string;
+  id: string;
+  type: EntityType;
   hp: number;
   isAlive: boolean;
   receivedDamage: number;

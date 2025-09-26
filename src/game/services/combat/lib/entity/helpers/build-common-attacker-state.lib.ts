@@ -1,10 +1,10 @@
 import { CommonAttackerState } from '../../../types/common-attacker-state.type';
-import { WorldEntity } from 'src/game/types/entity/world-entity.type';
+import { RuntimeEntity } from 'src/game/types/entity/runtime-entity.type';
 import { isPlayer } from '../guards/is-player.lib';
 import { isMob } from '../guards/is-mob.lib';
 
 export const buildCommonAttackerState = (
-  attacker: WorldEntity,
+  attacker: RuntimeEntity,
 ): CommonAttackerState | undefined => {
   let commonAttackerState: CommonAttackerState;
 
@@ -30,8 +30,8 @@ export const buildCommonAttackerState = (
     commonAttackerState = {
       ...baseStates,
       characterSkills: null,
-      currentTarget: attacker.mob.currentTarget,
-      attackRange: attacker.mob.attackRange,
+      currentTarget: attacker.currentTarget,
+      attackRange: attacker.attackRange,
     };
     return commonAttackerState;
   }

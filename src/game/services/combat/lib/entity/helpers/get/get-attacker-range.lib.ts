@@ -1,13 +1,13 @@
-import { WorldEntity } from 'src/game/types/entity/world-entity.type';
+import { RuntimeEntity } from 'src/game/types/entity/runtime-entity.type';
 import { isMob } from '../../guards/is-mob.lib';
 import { isPlayer } from '../../guards/is-player.lib';
 
-export function getAttackerRange(attacker: WorldEntity): number {
+export function getAttackerRange(attacker: RuntimeEntity): number {
   if (isPlayer(attacker)) {
     return attacker.attackRange;
   }
   if (isMob(attacker)) {
-    return attacker.mob.attackRange;
+    return attacker.attackRange;
   }
 
   return 0;

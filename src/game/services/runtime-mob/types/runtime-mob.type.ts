@@ -1,32 +1,31 @@
-import { CurrentTarget } from 'src/character/types/live-character-state.type';
 import { PositionDto } from 'src/common/dto/position.dto';
+import { RuntimeActorEntity } from 'src/common/types/actor-entity.type';
 import { TDirection } from 'src/game/types/entity/direction.type';
-import { EntityType } from 'src/game/types/entity/entity-type.type';
 import { Mob } from 'src/mob/entities/mob.entity';
 import { MobSpawn } from 'src/mob/mob-spawn/entities/mob-spawn.entity';
 
-export type RuntimeMob = RuntimeMobSpawn & {
-  mob: Mob & RuntimeMobStats;
-};
+export interface IRuntimeMob
+  extends MobSummary,
+    MobSpawnSummary,
+    RuntimeActorEntity<IRuntimeMob>,
+    RuntimeMobStats,
+    UniqueStats {}
 
-type RuntimeMobSpawn = Omit<MobSpawn, 'location'> & {
-  locationId: string;
-  type: EntityType;
-};
+type MobSpawnSummary = Omit<MobSpawn, 'location' | 'mob'>;
+type MobSummary = Omit<Mob, 'spawn' | 'updatedAt' | 'createdAt'>;
 
-type RuntimeMobStats = {
+interface RuntimeMobStats {
   x: number;
   y: number;
-  lastAttackAt: number;
-  lastMoveAt: number;
   lastDirection: TDirection;
   isInSpawnArea: boolean;
   respawnIn: number | null;
   currentPath: PositionDto[] | null;
-  currentTarget: CurrentTarget | null;
-  isAttacking: boolean;
-  state: MobActionState;
-};
+}
+
+interface UniqueStats {
+  mobId: Mob['id'];
+}
 
 export type MobActionState =
   | 'idle'

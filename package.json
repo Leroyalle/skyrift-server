@@ -41,6 +41,7 @@
     "@types/easystarjs": "^0.1.29",
     "@types/xml2js": "^0.4.14",
     "argon2": "^0.41.1",
+    "class-transformer": "^0.5.1",
     "cookie-parser": "^1.4.7",
     "easystarjs": "^0.4.4",
     "graphql": "^16.10.0",
