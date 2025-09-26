@@ -7,7 +7,7 @@ import { MobSpawn } from 'src/mob/mob-spawn/entities/mob-spawn.entity';
 export interface IRuntimeMob
   extends MobSummary,
     MobSpawnSummary,
-    RuntimeActorEntity<Mob>,
+    RuntimeActorEntity<IRuntimeMob>,
     RuntimeMobStats,
     UniqueStats {}
 
