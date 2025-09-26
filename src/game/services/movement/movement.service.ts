@@ -179,14 +179,14 @@ export class MovementService {
         return;
       }
 
-      if (runtimeMob.mob.respawnIn) return;
+      if (runtimeMob.respawnIn) return;
       const now = Date.now();
 
-      const moveSpeed = runtimeMob.mob.isAttacking
-        ? runtimeMob.mob.chaseSpeed
-        : runtimeMob.mob.walkSpeed;
+      const moveSpeed = runtimeMob.isAttacking
+        ? runtimeMob.chaseSpeed
+        : runtimeMob.walkSpeed;
 
-      if (now - runtimeMob.mob.lastMoveAt < moveSpeed) return;
+      if (now - runtimeMob.lastMoveAt < moveSpeed) return;
 
       const step = steps.shift();
 
