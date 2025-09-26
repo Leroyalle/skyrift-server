@@ -34,7 +34,6 @@ import { PathFindingService } from '../path-finding/path-finding.service';
 import { isEnemyFaction } from './lib/entity/guards/is-enemy-faction.lib';
 import { EntityType } from 'src/game/types/entity/entity-type.type';
 import { generateEntityKey } from 'src/game/lib/entity/generate-entity-key.lib';
-import { RuntimeEntity } from 'src/game/types/entity/runtime-entity.type';
 import { isPlayer } from './lib/entity/guards/is-player.lib';
 import { setCurrentTarget } from './lib/entity/helpers/set/set-current-target.lib';
 import { getAttackerRange } from './lib/entity/helpers/get/get-attacker-range.lib';
@@ -43,6 +42,8 @@ import { RuntimeMobService } from '../runtime-mob/runtime-mob.service';
 import { setEntityState } from './lib/entity/helpers/set/set-entity-state.lib';
 import { EntityKey } from 'src/game/types/entity/keys/entity-key.type';
 import { getAttackStats } from './lib/entity/helpers/get/get-attack-stats';
+import { RuntimeEntity } from 'src/game/types/entity/runtime-entity.type';
+import { DecodedEntityKey } from 'src/game/types/entity/keys/decoded-entity-key.type';
 
 @Injectable()
 export class CombatService {
@@ -412,7 +413,8 @@ export class CombatService {
     await this.schedulePathUpdate(
       attacker,
       {
-        kind: 'player',
+        kind: 'target',
+        type: attacker.type,
         id: victim.id,
       },
       null,
@@ -448,7 +450,8 @@ export class CombatService {
       await this.schedulePathUpdate(
         attacker,
         {
-          kind: 'player',
+          kind: 'target',
+          type: attacker.type,
           id: input.targetId,
         },
         characterSkill.id,
@@ -498,10 +501,10 @@ export class CombatService {
     target: TargetAction,
     location: CachedLocation,
   ): {
-    tile: { x: number; y: number };
+    tile: PositionDto;
     currentTarget: { id: string; type: EntityType } | null;
   } | null {
-    if (target.kind === 'player') {
+    if (target.kind === 'target') {
       const victim = this.playerStateService.getCharacterState(target.id);
       if (!victim || !victim.isAlive) return null;
       return {
@@ -509,7 +512,7 @@ export class CombatService {
           x: Math.floor(victim.x / location.tileWidth) | 0,
           y: Math.floor(victim.y / location.tileHeight) | 0,
         },
-        currentTarget: { id: victim.id, type: target.kind },
+        currentTarget: { id: victim.id, type: target.type },
       };
     }
     if (target.kind === 'aoe') {
@@ -653,7 +656,11 @@ export class CombatService {
 
     const pendingAction: PendingAction = {
       actionType: skillId ? ActionType.Skill : ActionType.AutoAttack,
-      attackerId: attacker.id,
+      // attackerId: attacker.id,
+      attackerRef: {
+        id: attacker.id,
+        type: attacker.type,
+      },
       target,
       skillId,
       state: 'wait-path',
@@ -704,16 +711,21 @@ export class CombatService {
   resolveAction(ctx: ActionContext, action: PendingAction): void {
     switch (action.actionType) {
       case ActionType.AutoAttack: {
-        const lastAttackAt = getAttackStats(ctx.attacker);
+        // const lastAttackAt = getAttackStats(ctx.attacker);
         // STOPPED: в проекте полная каша, можно костыльно получать методы и изменять их через доп функции, но если появятся всяике ПЕТЫ, будет супер неудобно. пришла идея сделать абстрактный класс для ентити и наследоваться от него у персонажа и моба, тогда можно будет удобно управлять данными. так же при сеттинге мобов нужно переделать рантайм-моб структуру сохраняя объект в нужной для нас форме (плевать на второй обход тк он будет только при запуске проекта)
         if (ctx.now - ctx.attacker.lastAttackAt < ctx.attacker.attackSpeed)
           return;
 
-        if (action.target.kind !== 'player') return;
+        if (action.target.kind !== 'target' || !action.victimRef) return;
 
-        const victim = this.playerStateService.getCharacterState(
+        const victim = this.getEntityByType(
+          action.target.type,
           action.target.id,
         );
+
+        // const victim = this.playerStateService.getCharacterState(
+        //   action.target.id,
+        // );
 
         if (!victim) return;
 
@@ -728,21 +740,28 @@ export class CombatService {
           },
         );
 
+        // FIXME: check action.attacker/victimRef
+
         this.socketService.sendTo(
           RedisKeys.Location + ctx.attacker.locationId,
-          ServerToClientEvents.PlayerAttackStart,
+          ServerToClientEvents.EntityAttackStart,
           {
-            attackerId: ctx.attacker.id,
-            victimId: victim.id,
+            attackerRef: {
+              ...action.attackerRef,
+              direction: attackerDirection,
+            },
+            victimRef: action.victimRef,
             actionType: ActionType.AutoAttack,
             skillId: action.skillId,
-            attackerDirection,
+            // attackerId: ctx.attacker.id,
+            // victimId: victim.id,
+            // attackerDirection,
           },
         );
 
         const attackResult = this.autoAttack(
-          ctx.attacker.id,
-          victim.id,
+          action.attackerRef,
+          action.victimRef,
           ctx.now,
         );
 
@@ -806,7 +825,7 @@ export class CombatService {
 
           this.socketService.sendTo(
             RedisKeys.Location + ctx.attacker.locationId,
-            ServerToClientEvents.PlayerAttackStart,
+            ServerToClientEvents.EntityAttackStart,
             {
               attackerId: ctx.attacker.id,
               victimId: victim.id,
@@ -864,12 +883,12 @@ export class CombatService {
   }
 
   public autoAttack(
-    attackerId: string,
-    victimId: string,
+    attackerRef: DecodedEntityKey,
+    victimRef: DecodedEntityKey,
     now: number,
   ): ApplyAutoAttackResult | undefined {
-    const attacker = this.playerStateService.getCharacterState(attackerId);
-    const victim = this.playerStateService.getCharacterState(victimId);
+    const attacker = this.getEntityByType(attackerRef.type, attackerRef.id);
+    const victim = this.getEntityByType(victimRef.type, victimRef.id);
 
     if (!attacker || !victim || attacker.locationId !== victim.locationId)
       return;
@@ -883,12 +902,24 @@ export class CombatService {
     victim.hp = remainingHp;
     victim.isAlive = isAlive;
 
+    if (!victim.isAlive && victim.type === 'mob') {
+      this.runtimeMobService.setRespawn(victim.id);
+    }
+
     attacker.lastAttackAt = now;
 
+    const targets = [
+      {
+        id: victim.id,
+        hp: remainingHp,
+        isAlive,
+        receivedDamage,
+        type: victim.type,
+      },
+    ];
+
     return {
-      targets: [
-        { characterId: victim.id, hp: remainingHp, isAlive, receivedDamage },
-      ],
+      targets,
       type: ActionType.AutoAttack,
       skillId: null,
       victimIsAlive: victim.isAlive,
