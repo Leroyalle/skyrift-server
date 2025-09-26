@@ -180,6 +180,7 @@ export class PlayerStateService {
     };
   }
 
+  // FIXME: чек почему оборвалось
   applyAoESkill(attackerId: string, skillId: string, area: PositionDto) {
     const attacker = this.getCharacterState(attackerId);
     if (!attacker) return;
