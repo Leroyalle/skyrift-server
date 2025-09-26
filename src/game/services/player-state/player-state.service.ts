@@ -11,6 +11,8 @@ import { SkillType } from 'src/common/enums/skill/skill-type.enum';
 import { CachedLocation } from 'src/location/types/cashed-location.type';
 import { Teleport } from 'src/location/types/teleport.type';
 import { Socket } from 'socket.io';
+import { Character } from 'src/character/entities/character.entity';
+import { buildRuntimeCharacter } from './lib/build-runtime-character.lib';
 
 @Injectable()
 export class PlayerStateService {
@@ -21,11 +23,11 @@ export class PlayerStateService {
 
   private readonly playersStates: Map<string, IRuntimeCharacter> = new Map();
 
-  async join(character: IRuntimeCharacter, locationId: string) {
+  async join(character: Character) {
     console.log('[join]', character);
 
     await this.redisService.sadd(
-      RedisKeysFactory.locationPlayers(locationId),
+      RedisKeysFactory.locationPlayers(character.locationId),
       character.id,
     );
 
@@ -35,31 +37,8 @@ export class PlayerStateService {
     );
 
     if (!this.playersStates.has(character.id)) {
-      this.playersStates.set(character.id, {
-        id: character.id,
-        name: character.name,
-        x: character.x,
-        y: character.y,
-        level: character.level,
-        maxHp: character.maxHp,
-        hp: character.hp,
-        defense: character.defense,
-        attackRange: character.attackRange,
-        isAlive: character.isAlive,
-        basePhysicalDamage: character.basePhysicalDamage,
-        baseMagicDamage: character.baseMagicDamage,
-        locationId: character.locationId,
-        attackSpeed: character.attackSpeed,
-        lastMoveAt: character.lastMoveAt,
-        lastAttackAt: character.lastAttackAt,
-        lastHpRegenerationTime: character.lastHpRegenerationTime,
-        userId: character.userId,
-        isAttacking: false,
-        currentTarget: null,
-        characterSkills: character.characterSkills,
-        characterClass: character.characterClass,
-        type: 'player',
-      });
+      const runtimeCharacter = buildRuntimeCharacter(character);
+      this.playersStates.set(character.id, runtimeCharacter);
     }
   }
 
