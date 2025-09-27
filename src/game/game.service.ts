@@ -173,31 +173,27 @@ export class GameService implements OnModuleInit {
         },
       );
 
-      const liveCharacter: Character = {
-        ...findCharacter,
-      };
-
       const runtimeCharacter =
-        await this.playerStateService.join(liveCharacter);
+        await this.playerStateService.join(findCharacter);
 
       this.spatialGridService.add(runtimeCharacter);
 
       await this.socketService.joinToRoom(
-        findCharacter.user.id,
-        RedisKeys.Location + findCharacter.location.id,
+        runtimeCharacter.userId,
+        RedisKeys.Location + runtimeCharacter.locationId,
       );
 
       this.socketService.sendToUser(
-        findCharacter.user.id,
+        runtimeCharacter.userId,
         ServerToClientEvents.PlayerConnected,
-        findCharacter,
+        runtimeCharacter,
       );
 
       this.socketService.broadcastToOthers(
         client,
-        RedisKeys.Location + findCharacter.locationId,
+        RedisKeys.Location + runtimeCharacter.locationId,
         ServerToClientEvents.PlayerJoined,
-        findCharacter,
+        runtimeCharacter,
       );
 
       console.log(

@@ -767,6 +767,8 @@ export class CombatService {
 
         if (!attackResult) return;
 
+        console.log('attack result', attackResult);
+
         const { victimIsAlive, ...croppedAttackResult } = attackResult;
 
         ctx.batchLocation.push(croppedAttackResult);
