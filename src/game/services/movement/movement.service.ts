@@ -280,10 +280,10 @@ export class MovementService {
 
   public deleteMovementQueue(entity: RuntimeEntity) {
     if (isPlayer(entity)) {
-      return this.charactersMovementQueues.get(entity.id);
+      return this.charactersMovementQueues.delete(entity.id);
     }
     if (isMob(entity)) {
-      return this.mobsMovementQueues.get(entity.id);
+      return this.mobsMovementQueues.delete(entity.id);
     }
   }
 }

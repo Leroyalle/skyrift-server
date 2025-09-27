@@ -129,7 +129,7 @@ export class CombatService {
 
       const range = entitySkill
         ? entitySkill.skill.range
-        : getAttackerRange(attacker);
+        : attacker.attackRange;
 
       if (steps.length > range) {
         // attacker.isAttacking = false;
