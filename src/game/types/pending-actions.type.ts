@@ -5,7 +5,7 @@ import { DecodedEntityKey } from './entity/keys/decoded-entity-key.type';
 export type PendingAction = {
   // attackerId: string;
   attackerRef: DecodedEntityKey;
-  victimRef?: DecodedEntityKey;
+  // victimRef: DecodedEntityKey;
   // victimId?: string;
   target: TargetAction;
   area?: PositionDto;
