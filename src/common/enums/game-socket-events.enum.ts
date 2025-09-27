@@ -14,7 +14,7 @@ export enum ServerToClientEvents {
   PlayerEntered = 'player:entered',
   PlayerUseTeleport = 'player:use-teleport',
   GameInitialState = 'game:initial-state',
-  MovementBath = 'movement-batch',
+  MovementBatch = 'movement-batch',
   AoESpawn = 'aoe:spawn',
   AoERemove = 'aoe:remove',
   ChatWorld = 'chat:world',

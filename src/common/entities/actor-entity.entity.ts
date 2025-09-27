@@ -1,7 +1,8 @@
-import { Field, ID, Int } from '@nestjs/graphql';
+import { Field, ID, Int, ObjectType } from '@nestjs/graphql';
 import { Column, PrimaryGeneratedColumn } from 'typeorm';
 import { Timestamp } from './timestamp.entity';
 
+@ObjectType()
 export abstract class ActorEntity extends Timestamp {
   @PrimaryGeneratedColumn('uuid')
   @Field(() => ID)
