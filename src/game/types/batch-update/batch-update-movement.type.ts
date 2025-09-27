@@ -1,19 +1,9 @@
 import { TDirection } from '../entity/direction.type';
+import { EntityType } from '../entity/entity-type.type';
 
-export type BatchUpdateMovement =
-  | BatchUpdateCharactersMovement
-  | BatchUpdateMobsMovement;
-
-type BatchUpdateCharactersMovement = BatchUpdateBasic & {
-  type: 'player';
-  characterId: string;
-};
-type BatchUpdateMobsMovement = BatchUpdateBasic & {
-  type: 'mob';
-  spawnMobId: string;
-};
-
-type BatchUpdateBasic = {
+export type BatchUpdateMovement = {
+  id: string;
+  type: EntityType;
   locationId: string;
   x: number;
   y: number;

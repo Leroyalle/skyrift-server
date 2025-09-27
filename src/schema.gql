@@ -250,21 +250,61 @@ type TiledMap {
 
 type Mob {
   id: ID!
+
+  """Имя"""
   name: String!
-  damage: Int!
+
+  """Уровень"""
+  level: Int!
+
+  """Максимальное здоровье"""
+  maxHp: Int!
+
+  """Текущее здоровье"""
+  hp: Int!
+
+  """Физический урон"""
+  basePhysicalDamage: Int!
+
+  """Магический урон"""
+  baseMagicDamage: Int!
+
+  """Физическая защита (снижает физ. урон)"""
   physicalDefense: Int!
+
+  """Магическая защита (снижает маг. урон)"""
   magicDefense: Int!
+
+  """Множитель крит. урона"""
+  critMultiplier: Float!
+
+  """Скорость атаки (уд/сек)"""
+  attackSpeed: Float!
+
+  """Дистанция атаки (в тайлах)"""
   attackRange: Int!
+
+  """Жив ли персонаж"""
+  isAlive: Boolean!
+
+  """X координата позиции игрока"""
+  x: Int!
+
+  """Y координата позиции игрока"""
+  y: Int!
   triggerRange: Int!
-  moveSpeed: Int!
-  exp_reward: Int!
+  walkSpeed: Int!
+  chaseSpeed: Int!
+  expReward: Int!
+  respawnTime: Int!
   spawn: [MobSpawn!]!
 }
 
 type MobSpawn {
   id: ID!
-  x: Int!
-  y: Int!
+  spawnX: Int!
+  spawnY: Int!
+  areaRadius: Int!
   location: Location!
   mob: Mob!
 }
@@ -284,19 +324,18 @@ type Location {
 }
 
 type Character {
-  """ID персонажа"""
   id: ID!
 
-  """Имя персонажа"""
+  """Имя"""
   name: String!
 
-  """Уровень персонажа"""
+  """Уровень"""
   level: Int!
 
-  """Максимальное здоровье персонажа"""
+  """Максимальное здоровье"""
   maxHp: Int!
 
-  """Текущее здоровье персонажа"""
+  """Текущее здоровье"""
   hp: Int!
 
   """Физический урон"""
@@ -305,8 +344,8 @@ type Character {
   """Магический урон"""
   baseMagicDamage: Int!
 
-  """Броня персонажа (снижает физ. урон)"""
-  defense: Int!
+  """Физическая защита (снижает физ. урон)"""
+  physicalDefense: Int!
 
   """Магическая защита (снижает маг. урон)"""
   magicDefense: Int!
@@ -320,6 +359,15 @@ type Character {
   """Дистанция атаки (в тайлах)"""
   attackRange: Int!
 
+  """Жив ли персонаж"""
+  isAlive: Boolean!
+
+  """X координата позиции игрока"""
+  x: Int!
+
+  """Y координата позиции игрока"""
+  y: Int!
+
   """Опыт персонажа"""
   experience: Int!
 
@@ -328,9 +376,6 @@ type Character {
 
   """Очки навыков"""
   skillPoints: Int!
-
-  """Жив ли персонаж"""
-  isAlive: Boolean!
 
   """Статус удален или нет"""
   isDeleted: Boolean!
@@ -346,12 +391,6 @@ type Character {
 
   """Локация персонажа"""
   location: Location
-
-  """X координата позиции игрока"""
-  x: Int!
-
-  """Y координата позиции игрока"""
-  y: Int!
 
   """Айди локации в которой находится игрок"""
   locationId: String!

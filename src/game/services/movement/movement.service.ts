@@ -6,7 +6,6 @@ import { RequestMoveToDto } from 'src/game/dto/request-move-to.dto';
 import { Socket } from 'socket.io';
 import { BatchUpdateMovement } from 'src/game/types/batch-update/batch-update-movement.type';
 import { SpatialGridService } from '../spatial-grid/spatial-grid.service';
-import { IRuntimeCharacter } from 'src/character/types/runtime-character';
 import { getDirection } from 'src/game/lib/get-direction.lib';
 import { RedisKeys } from 'src/common/enums/redis-keys.enum';
 import { ServerToClientEvents } from 'src/common/enums/game-socket-events.enum';
@@ -17,8 +16,6 @@ import {
 import { PathFindingService } from '../path-finding/path-finding.service';
 import { InteractionService } from '../interaction/interaction.service';
 import { RuntimeMobService } from '../runtime-mob/runtime-mob.service';
-import { IRuntimeMob } from '../runtime-mob/types/runtime-mob.type';
-import { SetMovementQueueData } from './types/set-movement-queue.type';
 import { EntityType } from 'src/game/types/entity/entity-type.type';
 import { RuntimeEntity } from 'src/game/types/entity/runtime-entity.type';
 import { PositionDto } from 'src/common/dto/position.dto';
@@ -157,7 +154,7 @@ export class MovementService {
       );
 
       updates.push({
-        characterId,
+        id: characterId,
         locationId,
         x: position.x,
         y: position.y,
@@ -229,14 +226,14 @@ export class MovementService {
         x: movedMob.x,
         y: movedMob.y,
         type: 'mob',
-        spawnMobId: runtimeMob.id,
+        id: runtimeMob.id,
       });
     }
 
     for (const [locationId, updates] of updatesByLocation.entries()) {
       this.socketService.sendTo(
         RedisKeys.Location + locationId,
-        ServerToClientEvents.MovementBath,
+        ServerToClientEvents.MovementBatch,
         updates,
       );
     }
