@@ -24,6 +24,8 @@ import { InteractionService } from './services/interaction/interaction.service';
 import { ChatService } from './services/chat/chat.service';
 import { DirectMessageInput } from './services/chat/dto/direct-message.input';
 import { Character } from 'src/character/entities/character.entity';
+import { RuntimeMobService } from './services/runtime-mob/runtime-mob.service';
+import { GameInitialData } from './types/game-initial-data.type';
 
 @Injectable()
 export class GameService implements OnModuleInit {
@@ -41,6 +43,7 @@ export class GameService implements OnModuleInit {
     private readonly locationService: LocationService,
     private readonly interactionService: InteractionService,
     private readonly chatService: ChatService,
+    private readonly runtimeMobService: RuntimeMobService,
   ) {}
 
   private readonly logger = new Logger(GameService.name);
@@ -170,31 +173,27 @@ export class GameService implements OnModuleInit {
         },
       );
 
-      const liveCharacter: Character = {
-        ...findCharacter,
-      };
-
       const runtimeCharacter =
-        await this.playerStateService.join(liveCharacter);
+        await this.playerStateService.join(findCharacter);
 
       this.spatialGridService.add(runtimeCharacter);
 
       await this.socketService.joinToRoom(
-        findCharacter.user.id,
-        RedisKeys.Location + findCharacter.location.id,
+        runtimeCharacter.userId,
+        RedisKeys.Location + runtimeCharacter.locationId,
       );
 
       this.socketService.sendToUser(
-        findCharacter.user.id,
+        runtimeCharacter.userId,
         ServerToClientEvents.PlayerConnected,
-        findCharacter,
+        runtimeCharacter,
       );
 
       this.socketService.broadcastToOthers(
         client,
-        RedisKeys.Location + findCharacter.locationId,
+        RedisKeys.Location + runtimeCharacter.locationId,
         ServerToClientEvents.PlayerJoined,
-        findCharacter,
+        runtimeCharacter,
       );
 
       console.log(
@@ -260,10 +259,8 @@ export class GameService implements OnModuleInit {
       return;
     }
 
-    const findCharacter = await this.characterService.findOwnedCharacter(
-      userId,
-      characterId,
-    );
+    const findCharacter =
+      this.playerStateService.getCharacterState(characterId);
 
     if (!findCharacter) {
       this.socketService.onDisconnect(client);
@@ -296,21 +293,29 @@ export class GameService implements OnModuleInit {
     const aoeZones = this.combatService.getActiveAoeZones(
       findCharacter.locationId,
     );
+
+    const mobs = this.runtimeMobService.getMobsByLocation(
+      findCharacter.locationId,
+    );
+
     console.log('initialZones', aoeZones);
     await this.socketService.joinToRoom(
       userId,
       RedisKeys.Location + findLocation.id,
     );
 
+    const gameInitialData: GameInitialData = {
+      character: findCharacter,
+      location: findLocation,
+      players: otherPlayers,
+      aoeZones,
+      mobs,
+    };
+
     this.socketService.sendToUser(
       userId,
       ServerToClientEvents.GameInitialState,
-      {
-        character: findCharacter,
-        location: findLocation,
-        players: otherPlayers,
-        aoeZones,
-      },
+      gameInitialData,
     );
   }
 

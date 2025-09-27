@@ -37,6 +37,17 @@ export class RuntimeMobService implements OnModuleInit {
     }
   }
 
+  public getMobsByLocation(locationId: string): IRuntimeMob[] {
+    const mobsIds = this.mobsByLocation.get(locationId) ?? [];
+    const mobs: IRuntimeMob[] = [];
+    for (const mId of mobsIds.values()) {
+      const mob = this.getById(mId);
+      if (!mob) continue;
+      mobs.push(mob);
+    }
+    return mobs;
+  }
+
   async tickAiMobs() {
     const mobsEntries = Array.from(this.mobsById.values());
 
