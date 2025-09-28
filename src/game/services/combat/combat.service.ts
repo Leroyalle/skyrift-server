@@ -15,7 +15,7 @@ import { ActionType, PendingAction } from 'src/game/types/pending-actions.type';
 import { LocationService } from 'src/location/location.service';
 import { SocketService } from '../socket/socket.service';
 import { ActionContext } from 'src/game/lib/actions/resolve-action.lib';
-import { getDirection } from 'src/game/lib/get-direction.lib';
+import { getDirection } from 'src/game/lib/helpers/get-direction.lib';
 import { ServerToClientEvents } from 'src/common/enums/game-socket-events.enum';
 import { RedisKeys } from 'src/common/enums/redis-keys.enum';
 import { ApplyAutoAttackResult } from 'src/game/types/attack/apply-auto-attack-result.type';
@@ -35,8 +35,6 @@ import { isEnemyFaction } from './lib/entity/guards/is-enemy-faction.lib';
 import { EntityType } from 'src/game/types/entity/entity-type.type';
 import { generateEntityKey } from 'src/game/lib/entity/generate-entity-key.lib';
 import { isPlayer } from './lib/entity/guards/is-player.lib';
-import { setCurrentTarget } from './lib/entity/helpers/set/set-current-target.lib';
-import { getAttackerRange } from './lib/entity/helpers/get/get-attacker-range.lib';
 import { findEntitySkill } from './lib/entity/helpers/get/find-entity-skill.lib';
 import { RuntimeMobService } from '../runtime-mob/runtime-mob.service';
 import { setEntityState } from './lib/entity/helpers/set/set-entity-state.lib';
@@ -68,9 +66,9 @@ export class CombatService {
 
     for (const queue of this.pendingActionsQueue.values()) {
       if (queue.length === 0) continue;
-      console.log('queue', queue);
+      // console.log('queue', queue);
       const action = queue[0];
-      console.log('action', action);
+      // console.log('action', action);
 
       const attacker = this.getEntityByType(
         action.attackerRef.type,
@@ -131,6 +129,13 @@ export class CombatService {
         ? entitySkill.skill.range
         : attacker.attackRange;
 
+      if (!steps) {
+        this.pendingActionsQueue.delete(
+          generateEntityKey({ type: attacker.type, id: attacker.id }),
+        );
+        continue;
+      }
+
       if (steps.length > range) {
         // attacker.isAttacking = false;
         this.movementService.setMovementQueue(attacker, steps);
@@ -160,7 +165,7 @@ export class CombatService {
         removeAction: () => queue.shift(),
       };
 
-      console.log('tick action', action);
+      // console.log('tick action', action);
 
       this.resolveAction(actionCtx, action);
     }
@@ -289,62 +294,6 @@ export class CombatService {
     );
   }
 
-  // public async requestAttackMove(client: Socket, input: RequestAttackMoveDto) {
-  //   if (!this.socketService.verifyUserDataInSocket(client)) {
-  //     this.socketService.notifyDisconnection(client);
-  //     this.socketService.onDisconnect(client);
-  //     return;
-  //   }
-
-  //   const attacker = this.playerStateService.getCharacterState(
-  //     client.userData.characterId,
-  //   );
-
-  //   if (!attacker) return;
-
-  //   const victim = this.playerStateService.getCharacterState(input.targetId);
-
-  //   if (!victim) return;
-
-  //   const attackerFactionName = attacker.characterClass.faction.name;
-  //   const victimFactionName = victim.characterClass.faction.name;
-
-  //   if (!isEnemyFaction(attackerFactionName, victimFactionName)) return;
-
-  //   const entityKey = generateEntityKey<LiveCharacter>(attacker);
-
-  //   const queue = this.getOrCreateActionQueue(entityKey);
-
-  //   const hasAutoAttack = queue.some(
-  //     (q) => q.actionType === ActionType.AutoAttack,
-  //   );
-
-  //   if (hasAutoAttack) return;
-
-  //   console.log('hasAutoAttack', hasAutoAttack);
-
-  //   const pendingAction: PendingAction = {
-  //     actionType: ActionType.AutoAttack,
-  //     attackerId: client.userData.characterId,
-  //     target: {
-  //       kind: 'player',
-  //       id: input.targetId,
-  //     },
-  //     skillId: null,
-  //     state: 'attack',
-  //   };
-
-  //   await this.schedulePathUpdate(
-  //     attacker,
-  //     {
-  //       kind: 'player',
-  //       id: input.targetId,
-  //     },
-  //     null,
-  //   );
-  //   console.log('queue request auto attack', queue, pendingAction);
-  // }
-
   public async requestAttackMoveForPlayer(
     client: Socket,
     input: RequestAttackMoveDto,
@@ -406,15 +355,11 @@ export class CombatService {
 
     console.log('hasAutoAttack', hasAutoAttack);
 
-    // const commonAttackerState = buildCommonAttackerState(attacker);
-
-    // if (!commonAttackerState) return;
-
     await this.schedulePathUpdate(
       attacker,
       {
         kind: 'target',
-        type: attacker.type,
+        type: victim.type,
         id: victim.id,
       },
       null,
@@ -527,85 +472,6 @@ export class CombatService {
     return null;
   }
 
-  // private async schedulePathUpdate(
-  //   attacker: LiveCharacter,
-  //   target: TargetAction,
-  //   skillId: string | null = null,
-  // ) {
-  //   const characterSkill = attacker.characterSkills.find(
-  //     (skill) => skill.id === skillId,
-  //   );
-
-  //   if (skillId && !characterSkill) {
-  //     console.log(
-  //       `Character ${attacker.id} doesn't have skill ${skillId} to use`,
-  //     );
-  //     return;
-  //   }
-
-  //   const findLocation = await this.locationService.loadLocation(
-  //     attacker.locationId,
-  //   );
-
-  //   if (!findLocation) return;
-
-  //   const attackerTile = {
-  //     x: Math.floor(attacker.x / findLocation.tileWidth),
-  //     y: Math.floor(attacker.y / findLocation.tileHeight),
-  //   };
-
-  //   const result = this.resolveTarget(target, findLocation);
-
-  //   if (!result) return;
-
-  //   attacker.currentTarget = result.currentTarget;
-  //   const targetTile = result.tile;
-
-  //   const steps = await this.pathFindingService.getPlayerPath(
-  //     findLocation.id,
-  //     attackerTile,
-  //     targetTile,
-  //     findLocation.tileWidth,
-  //     findLocation.passableMap,
-  //   );
-
-  //   if (steps.length === 0) return;
-
-  //   const range = characterSkill
-  //     ? characterSkill.skill.range
-  //     : attacker.attackRange;
-
-  //   const pendingAction: PendingAction = {
-  //     actionType: skillId ? ActionType.Skill : ActionType.AutoAttack,
-  //     attackerId: attacker.id,
-  //     target,
-  //     skillId,
-  //     state: 'wait-path',
-  //   };
-
-  //   const queue = this.getOrCreateActionQueue(attacker.id);
-
-  //   const hasAutoAttack = queue.some(
-  //     (q) => q.actionType === ActionType.AutoAttack,
-  //   );
-
-  //   if (hasAutoAttack && !skillId) return;
-
-  //   switch (characterSkill?.skill.type) {
-  //     case SkillType.AoE: {
-  //       this.resolvePendingActionState(attacker, pendingAction, range, steps);
-  //       console.log('push aoe skill', pendingAction);
-  //       pushTargetAction(queue, hasAutoAttack, pendingAction, characterSkill);
-  //       break;
-  //     }
-  //     default: {
-  //       this.resolvePendingActionState(attacker, pendingAction, range, steps);
-  //       pushTargetAction(queue, hasAutoAttack, pendingAction, characterSkill);
-  //       break;
-  //     }
-  //   }
-  // }
-
   private async schedulePathUpdate(
     attacker: RuntimeEntity,
     target: TargetAction,
@@ -636,8 +502,8 @@ export class CombatService {
     if (!result) return;
 
     // FIXME: объект передается не по ссылке, нужно получить атаккера и только потом менять таргет
-    // attacker.currentTarget = result.currentTarget;
-    setCurrentTarget(attacker, result.currentTarget);
+    attacker.currentTarget = result.currentTarget;
+    // attacker.currentTarget = target;
 
     const targetTile = result.tile;
 
@@ -648,15 +514,18 @@ export class CombatService {
       findLocation.passableMap,
     );
 
+    console.log('schedulePathUpdate', steps);
+
+    if (!steps) return;
+
     if (steps.length === 0) return;
 
     const range = attackerSkill
       ? attackerSkill.skill.range
-      : getAttackerRange(attacker);
+      : attacker.attackRange;
 
     const pendingAction: PendingAction = {
       actionType: skillId ? ActionType.Skill : ActionType.AutoAttack,
-      // attackerId: attacker.id,
       attackerRef: {
         id: attacker.id,
         type: attacker.type,
@@ -708,30 +577,21 @@ export class CombatService {
     }
   }
 
-  resolveAction(ctx: ActionContext, action: PendingAction): void {
+  private resolveAction(ctx: ActionContext, action: PendingAction): void {
     switch (action.actionType) {
       case ActionType.AutoAttack: {
-        // const lastAttackAt = getAttackStats(ctx.attacker);
-        console.log('[resolveAction] START', ctx, action);
         // STOPPED: в проекте полная каша, можно костыльно получать методы и изменять их через доп функции, но если появятся всяике ПЕТЫ, будет супер неудобно. пришла идея сделать абстрактный класс для ентити и наследоваться от него у персонажа и моба, тогда можно будет удобно управлять данными. так же при сеттинге мобов нужно переделать рантайм-моб структуру сохраняя объект в нужной для нас форме (плевать на второй обход тк он будет только при запуске проекта)
         if (ctx.now - ctx.attacker.lastAttackAt < ctx.attacker.attackSpeed)
           return;
-        console.log('[resolveAction] BEFORE FIRST');
 
         if (action.target.kind !== 'target') return;
-        console.log('[resolveAction] BEFORE SECOND');
 
         const victim = this.getEntityByType(
           action.target.type,
           action.target.id,
         );
 
-        // const victim = this.playerStateService.getCharacterState(
-        //   action.target.id,
-        // );
-
         if (!victim) return;
-        console.log('[resolveAction] BEFORE THIRD');
 
         const attackerDirection = getDirection(
           {
@@ -743,8 +603,6 @@ export class CombatService {
             y: victim.y,
           },
         );
-
-        // FIXME: check action.attacker/victimRef
 
         const victimRef = {
           id: action.target.id,
@@ -762,16 +620,8 @@ export class CombatService {
             victimRef,
             actionType: ActionType.AutoAttack,
             skillId: action.skillId,
-            // attackerId: ctx.attacker.id,
-            // victimId: victim.id,
-            // attackerDirection,
           },
         );
-
-        console.log('before autoAttack', action.attackerRef, {
-          id: action.target.id,
-          type: action.target.type,
-        });
 
         const attackResult = this.autoAttack(
           action.attackerRef,
@@ -780,8 +630,6 @@ export class CombatService {
         );
 
         if (!attackResult) return;
-
-        console.log('attack result', attackResult);
 
         const { victimIsAlive, ...croppedAttackResult } = attackResult;
 
@@ -854,10 +702,6 @@ export class CombatService {
               victimRef,
               actionType: ActionType.Skill,
               skillId: action.skillId,
-
-              // attackerId: ctx.attacker.id,
-              // victimId: victim.id,
-              // attackerDirection,
             },
           );
 
@@ -916,15 +760,13 @@ export class CombatService {
     );
   }
 
-  public autoAttack(
+  private autoAttack(
     attackerRef: DecodedEntityKey,
     victimRef: DecodedEntityKey,
     now: number,
   ): ApplyAutoAttackResult | undefined {
     const attacker = this.getEntityByType(attackerRef.type, attackerRef.id);
     const victim = this.getEntityByType(victimRef.type, victimRef.id);
-
-    console.log('autoAttack members', attacker, victim);
 
     if (!attacker || !victim || attacker.locationId !== victim.locationId)
       return;
@@ -962,7 +804,7 @@ export class CombatService {
     };
   }
 
-  public applySkill(
+  private applySkill(
     attackerRef: DecodedEntityKey,
     victimRef: DecodedEntityKey,
     skillId: string,
@@ -1022,7 +864,7 @@ export class CombatService {
   }
 
   // TODO: update for mobs
-  applyAoESkill(
+  private applyAoESkill(
     attackerId: string,
     skillId: string,
     area: PositionDto,
@@ -1065,7 +907,7 @@ export class CombatService {
     // });
   }
 
-  spawnAoeZone(
+  private spawnAoeZone(
     caster: IRuntimeCharacter,
     cSkill: CharacterSkill,
     area: PositionDto,
@@ -1104,5 +946,10 @@ export class CombatService {
         expiresAt: cSkill.skill.duration + now,
       },
     );
+  }
+
+  public clearPendingActions(entityRef: DecodedEntityKey): boolean {
+    const entityKey = generateEntityKey(entityRef);
+    return this.pendingActionsQueue.delete(entityKey);
   }
 }

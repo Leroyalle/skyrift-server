@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { decodeGridKey } from './lib/decode-grid-key.lib';
 import { DecodedGridKey } from './types/decoed-grid-key.type';
 import { QueryRadiusResult } from './types/query-radius-result.type';
-import { getTileByPosition } from 'src/game/lib/get-tile-by-position.lib';
+import { getTileByPosition } from 'src/game/lib/helpers/get-tile-by-position.lib';
 import { EntityType } from 'src/game/types/entity/entity-type.type';
 import { DecodedEntityKey } from '../../types/entity/keys/decoded-entity-key.type';
 import { generateEntityKey } from 'src/game/lib/entity/generate-entity-key.lib';

@@ -55,26 +55,38 @@ export class PathFindingService {
 
   getPlayerPath(
     locationId: string,
-    from: TCoord,
-    to: TCoord,
+    tilesFrom: TCoord,
+    tilesTo: TCoord,
     map: number[][],
-  ): Promise<{ x: number; y: number }[]> {
+  ): Promise<{ x: number; y: number }[] | null> {
     const easyStar = this.getOrCreateEasyStar(locationId, map);
 
     return new Promise((resolve) => {
-      easyStar.findPath(from.x, from.y, to.x, to.y, (path) => {
-        console.log('path', path);
-        if (!path || path.length <= 1) {
-          resolve([]);
-          return;
-        }
+      easyStar.findPath(
+        tilesFrom.x,
+        tilesFrom.y,
+        tilesTo.x,
+        tilesTo.y,
+        (path) => {
+          console.log('path', path);
 
-        // TODO: если путь не найден вообще то возвращать какой-нибудь флаг -1, чтобы например деспавнить моба из-за бага при возвращении
+          if (!path) {
+            resolve(null);
+            return;
+          }
 
-        const steps = path.slice(1).map((p) => ({ x: p.x, y: p.y }));
-        console.log('steps', steps);
-        resolve(steps);
-      });
+          if (path.length <= 1) {
+            resolve([]);
+            return;
+          }
+
+          // TODO: если путь не найден вообще то возвращать какой-нибудь флаг -1, чтобы например деспавнить моба из-за бага при возвращении
+
+          const steps = path.slice(1).map((p) => ({ x: p.x, y: p.y }));
+          console.log('steps', steps);
+          resolve(steps);
+        },
+      );
       easyStar.calculate();
     });
   }

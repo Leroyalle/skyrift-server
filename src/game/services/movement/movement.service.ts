@@ -6,7 +6,7 @@ import { RequestMoveToDto } from 'src/game/dto/request-move-to.dto';
 import { Socket } from 'socket.io';
 import { BatchUpdateMovement } from 'src/game/types/batch-update/batch-update-movement.type';
 import { SpatialGridService } from '../spatial-grid/spatial-grid.service';
-import { getDirection } from 'src/game/lib/get-direction.lib';
+import { getDirection } from 'src/game/lib/helpers/get-direction.lib';
 import { RedisKeys } from 'src/common/enums/redis-keys.enum';
 import { ServerToClientEvents } from 'src/common/enums/game-socket-events.enum';
 import {
@@ -21,6 +21,7 @@ import { RuntimeEntity } from 'src/game/types/entity/runtime-entity.type';
 import { PositionDto } from 'src/common/dto/position.dto';
 import { isPlayer } from '../combat/lib/entity/guards/is-player.lib';
 import { isMob } from '../combat/lib/entity/guards/is-mob.lib';
+import { getPixelByTile } from 'src/game/lib/helpers/get-pixels-by-tile.lib';
 
 @Injectable()
 export class MovementService {
@@ -84,6 +85,8 @@ export class MovementService {
       map,
     );
 
+    if (!steps) return;
+
     this.interactionService.deletePendingInteraction(character.id);
     this.charactersMovementQueues.set(characterId, {
       steps,
@@ -126,14 +129,16 @@ export class MovementService {
       const prevPosition = client.userData.position;
       const locationId = character.locationId;
 
-      const position = {
-        // FIXME: change 32 to tileSize
-        x: Math.floor(pathStep.x * 32),
-        y: Math.floor(pathStep.y * 32),
-      };
+      // const position = {
+      //   // FIXME: change 32 to tileSize
+      //   x: Math.floor(pathStep.x * 32),
+      //   y: Math.floor(pathStep.y * 32),
+      // };
 
-      client.userData = { ...client.userData, position };
-      this.playerStateService.moveTo(character, position, now);
+      const pixelPosition = getPixelByTile(pathStep);
+
+      client.userData = { ...client.userData, position: pixelPosition };
+      this.playerStateService.moveTo(character, pixelPosition, now);
 
       if (prevPosition) {
         this.spatialGridService.update(
@@ -146,7 +151,7 @@ export class MovementService {
         this.spatialGridService.add(character);
       }
 
-      const direction = getDirection(prevPosition, position);
+      const direction = getDirection(prevPosition, pixelPosition);
 
       const updates = this.getOrCreateBatchUpdate(
         locationId,
@@ -156,8 +161,8 @@ export class MovementService {
       updates.push({
         id: characterId,
         locationId,
-        x: position.x,
-        y: position.y,
+        x: pixelPosition.x,
+        y: pixelPosition.y,
         direction,
         type: 'player',
       });
@@ -171,25 +176,32 @@ export class MovementService {
     for (const [id, { steps }] of mobsEntries) {
       const runtimeMob = this.runtimeMobService.getById(id);
 
+      console.log('[MOVEMENT] mov loop', Boolean(runtimeMob));
+
       if (!runtimeMob) {
         this.mobsMovementQueues.delete(id);
-        return;
+        continue;
       }
 
-      if (runtimeMob.respawnIn) return;
+      if (runtimeMob.respawnIn) continue;
       const now = Date.now();
 
       const moveSpeed = runtimeMob.isAttacking
         ? runtimeMob.chaseSpeed
         : runtimeMob.walkSpeed;
 
-      if (now - runtimeMob.lastMoveAt < moveSpeed) return;
+      if (now - runtimeMob.lastMoveAt < moveSpeed) {
+        console.log('[MOVEMENT] mob loop SKIP BY SPEED');
+        continue;
+      }
 
       const step = steps.shift();
 
       if (!step) {
         this.mobsMovementQueues.delete(id);
-        return;
+        console.log('[MOVEMENT] mob loop SKIP BY !STEP');
+
+        continue;
       }
 
       const locationId = runtimeMob.locationId;
@@ -199,7 +211,13 @@ export class MovementService {
         y: runtimeMob.y,
       };
 
-      const movedMob = this.runtimeMobService.moveTo(runtimeMob, step, now);
+      const pixelPosition = getPixelByTile(step);
+
+      const movedMob = this.runtimeMobService.moveTo(
+        runtimeMob,
+        pixelPosition,
+        now,
+      );
 
       this.spatialGridService.update(
         runtimeMob,
@@ -208,17 +226,13 @@ export class MovementService {
         prevPosition.y,
       );
 
-      const currentPosition = {
-        x: Math.floor(movedMob.x * 32),
-        y: Math.floor(movedMob.y * 32),
-      };
-
-      const direction = getDirection(prevPosition, currentPosition);
+      const direction = getDirection(prevPosition, pixelPosition);
 
       const updates = this.getOrCreateBatchUpdate(
         locationId,
         updatesByLocation,
       );
+      console.log('[MOVEMENT] mob loop END', Boolean(runtimeMob));
 
       updates.push({
         locationId,
