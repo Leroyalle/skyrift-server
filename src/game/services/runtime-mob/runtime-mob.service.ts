@@ -204,15 +204,15 @@ export class RuntimeMobService implements OnModuleInit {
 
     console.log(affectedCells);
 
-    // const { x: tileX, y: tileY } = getTileByPosition(mob.x, mob.y, tileSize);
+    const { x: tileX, y: tileY } = getTileByPosition(mob.x, mob.y, tileSize);
 
-    // const uniqueTiles = affectedCells.filter(
-    //   (tile) => tile.x !== tileX || tile.y !== tileY,
-    // );
+    const uniqueTiles = affectedCells.filter(
+      (tile) => tile.x !== tileX || tile.y !== tileY,
+    );
 
-    const tileIndex = getRandomValue(0, affectedCells.length - 1);
+    const tileIndex = getRandomValue(0, uniqueTiles.length - 1);
 
-    return affectedCells[tileIndex];
+    return uniqueTiles[tileIndex];
   }
 
   private getOrCreateActiveMobsLocationMap(locationId: string): Set<string> {
