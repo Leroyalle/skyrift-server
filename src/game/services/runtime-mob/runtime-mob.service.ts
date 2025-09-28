@@ -8,6 +8,7 @@ import { CombatService } from '../combat/combat.service';
 import { PathFindingService } from '../path-finding/path-finding.service';
 import { MovementService } from '../movement/movement.service';
 import { buildRuntimeMob } from './lib/build-runtime-mob.lib';
+import { getRandomTileValue } from 'src/common/lib/get-random-value.lib';
 
 @Injectable()
 export class RuntimeMobService implements OnModuleInit {
@@ -54,40 +55,17 @@ export class RuntimeMobService implements OnModuleInit {
     for (const runtimeMob of mobsEntries) {
       if (runtimeMob.respawnIn) continue;
 
+      const currentMobPath = this.movementService.getMovementQueue(
+        runtimeMob.type,
+        runtimeMob.id,
+      );
+
+      if (!currentMobPath || currentMobPath.steps.length === 0) {
+        runtimeMob.state = 'idle';
+      }
+
       if (runtimeMob.currentTarget) {
-        const findLocation = await this.locationService.loadLocation(
-          runtimeMob.locationId,
-        );
-
-        if (!findLocation) continue;
-
-        const currentPosition = getTileByPosition(
-          runtimeMob.x,
-          runtimeMob.y,
-          findLocation.tileWidth,
-        );
-
-        const spawnPosition = getTileByPosition(
-          runtimeMob.spawnX,
-          runtimeMob.spawnY,
-          findLocation.tileWidth,
-        );
-
-        const path = await this.pathFindingService.getPlayerPath(
-          runtimeMob.locationId,
-          spawnPosition,
-          currentPosition,
-          findLocation.passableMap,
-        );
-
-        // TODO: если дистанция равна -1 по каким-то причинам (баг), тогда деспавним моба
-
-        if (path.length > 5) {
-          this.movementService.setMovementQueue(runtimeMob, path);
-          runtimeMob.currentTarget = null;
-          runtimeMob.state = 'return';
-          continue;
-        }
+        await this.checkDistance(runtimeMob);
       }
 
       const { entities } = this.spatialGridService.queryRadius(
@@ -99,13 +77,88 @@ export class RuntimeMobService implements OnModuleInit {
 
       const target = entities.find((ent) => ent.type === 'player');
 
-      if (!target) continue;
+      if (target) {
+        await this.combatService.requestAttackMoveForMob(
+          runtimeMob.id,
+          target.id,
+        );
+        continue;
+      }
 
-      await this.combatService.requestAttackMoveForMob(
-        runtimeMob.id,
-        target.id,
-      );
+      await this.patrol(runtimeMob);
     }
+  }
+
+  private async patrol(mob: IRuntimeMob): Promise<void> {
+    if (mob.state !== 'idle') return;
+
+    const findLocation = await this.locationService.loadLocation(
+      mob.locationId,
+    );
+
+    if (!findLocation) return;
+
+    const { affectedCells } = this.spatialGridService.queryRadius(
+      mob.locationId,
+      mob.x,
+      mob.y,
+      mob.triggerRange,
+    );
+
+    const tileIndex = getRandomTileValue(0, affectedCells.length - 1);
+    const nextTile = affectedCells[tileIndex];
+
+    const path = await this.pathFindingService.getPlayerPath(
+      mob.locationId,
+      { x: mob.x, y: mob.y },
+      { x: nextTile.x, y: nextTile.y },
+      findLocation.passableMap,
+    );
+
+    if (!path || path.length === 0) return;
+
+    this.movementService.setMovementQueue(mob, path);
+    mob.state = 'move';
+  }
+
+  private async checkDistance(runtimeMob: IRuntimeMob) {
+    const findLocation = await this.locationService.loadLocation(
+      runtimeMob.locationId,
+    );
+
+    if (!findLocation) return;
+
+    // FIXME: нжуно вовзращать какое-то значение нужно ли скипать на некст моба
+
+    const currentPosition = getTileByPosition(
+      runtimeMob.x,
+      runtimeMob.y,
+      findLocation.tileWidth,
+    );
+
+    const spawnPosition = getTileByPosition(
+      runtimeMob.spawnX,
+      runtimeMob.spawnY,
+      findLocation.tileWidth,
+    );
+
+    const path = await this.pathFindingService.getPlayerPath(
+      runtimeMob.locationId,
+      spawnPosition,
+      currentPosition,
+      findLocation.passableMap,
+    );
+
+    // TODO: если дистанция равна -1 по каким-то причинам (баг), тогда деспавним моба
+
+    if (path.length > 5) {
+      this.movementService.setMovementQueue(runtimeMob, path);
+      runtimeMob.currentTarget = null;
+      runtimeMob.state = 'return';
+      return;
+    }
+
+    runtimeMob.state = 'pursue';
   }
 
   get mobsArray() {

@@ -23,7 +23,6 @@ import { RequestUseTeleportDto } from './dto/request-use-teleport.dto';
 import { InteractionService } from './services/interaction/interaction.service';
 import { ChatService } from './services/chat/chat.service';
 import { DirectMessageInput } from './services/chat/dto/direct-message.input';
-import { Character } from 'src/character/entities/character.entity';
 import { RuntimeMobService } from './services/runtime-mob/runtime-mob.service';
 import { GameInitialData } from './types/game-initial-data.type';
 
