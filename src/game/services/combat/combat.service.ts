@@ -35,8 +35,6 @@ import { isEnemyFaction } from './lib/entity/guards/is-enemy-faction.lib';
 import { EntityType } from 'src/game/types/entity/entity-type.type';
 import { generateEntityKey } from 'src/game/lib/entity/generate-entity-key.lib';
 import { isPlayer } from './lib/entity/guards/is-player.lib';
-import { setCurrentTarget } from './lib/entity/helpers/set/set-current-target.lib';
-import { getAttackerRange } from './lib/entity/helpers/get/get-attacker-range.lib';
 import { findEntitySkill } from './lib/entity/helpers/get/find-entity-skill.lib';
 import { RuntimeMobService } from '../runtime-mob/runtime-mob.service';
 import { setEntityState } from './lib/entity/helpers/set/set-entity-state.lib';
@@ -579,10 +577,9 @@ export class CombatService {
     }
   }
 
-  resolveAction(ctx: ActionContext, action: PendingAction): void {
+  private resolveAction(ctx: ActionContext, action: PendingAction): void {
     switch (action.actionType) {
       case ActionType.AutoAttack: {
-        // const lastAttackAt = getAttackStats(ctx.attacker);
         // STOPPED: в проекте полная каша, можно костыльно получать методы и изменять их через доп функции, но если появятся всяике ПЕТЫ, будет супер неудобно. пришла идея сделать абстрактный класс для ентити и наследоваться от него у персонажа и моба, тогда можно будет удобно управлять данными. так же при сеттинге мобов нужно переделать рантайм-моб структуру сохраняя объект в нужной для нас форме (плевать на второй обход тк он будет только при запуске проекта)
         if (ctx.now - ctx.attacker.lastAttackAt < ctx.attacker.attackSpeed)
           return;
@@ -593,10 +590,6 @@ export class CombatService {
           action.target.type,
           action.target.id,
         );
-
-        // const victim = this.playerStateService.getCharacterState(
-        //   action.target.id,
-        // );
 
         if (!victim) return;
 
@@ -610,8 +603,6 @@ export class CombatService {
             y: victim.y,
           },
         );
-
-        // FIXME: check action.attacker/victimRef
 
         const victimRef = {
           id: action.target.id,
@@ -629,9 +620,6 @@ export class CombatService {
             victimRef,
             actionType: ActionType.AutoAttack,
             skillId: action.skillId,
-            // attackerId: ctx.attacker.id,
-            // victimId: victim.id,
-            // attackerDirection,
           },
         );
 
@@ -714,10 +702,6 @@ export class CombatService {
               victimRef,
               actionType: ActionType.Skill,
               skillId: action.skillId,
-
-              // attackerId: ctx.attacker.id,
-              // victimId: victim.id,
-              // attackerDirection,
             },
           );
 
@@ -776,7 +760,7 @@ export class CombatService {
     );
   }
 
-  public autoAttack(
+  private autoAttack(
     attackerRef: DecodedEntityKey,
     victimRef: DecodedEntityKey,
     now: number,
@@ -820,7 +804,7 @@ export class CombatService {
     };
   }
 
-  public applySkill(
+  private applySkill(
     attackerRef: DecodedEntityKey,
     victimRef: DecodedEntityKey,
     skillId: string,
@@ -880,7 +864,7 @@ export class CombatService {
   }
 
   // TODO: update for mobs
-  applyAoESkill(
+  private applyAoESkill(
     attackerId: string,
     skillId: string,
     area: PositionDto,
@@ -923,7 +907,7 @@ export class CombatService {
     // });
   }
 
-  spawnAoeZone(
+  private spawnAoeZone(
     caster: IRuntimeCharacter,
     cSkill: CharacterSkill,
     area: PositionDto,
@@ -962,5 +946,10 @@ export class CombatService {
         expiresAt: cSkill.skill.duration + now,
       },
     );
+  }
+
+  public clearPendingActions(entityRef: DecodedEntityKey): boolean {
+    const entityKey = generateEntityKey(entityRef);
+    return this.pendingActionsQueue.delete(entityKey);
   }
 }

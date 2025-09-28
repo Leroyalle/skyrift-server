@@ -168,17 +168,17 @@ export class RuntimeMobService implements OnModuleInit {
 
     // TODO: если дистанция равна -1 по каким-то причинам (баг), тогда деспавним моба
 
-    return this.switchMobToReturnOrPursue(runtimeMob, path);
+    return this.handleSwitchMobToReturnOrPursue(runtimeMob, path);
   }
 
-  private switchMobToReturnOrPursue(
+  private handleSwitchMobToReturnOrPursue(
     mob: IRuntimeMob,
     path: PositionDto[],
   ): boolean {
     if (path.length > 5) {
-      this.movementService.setMovementQueue(mob, path);
-      // this.combatService.del
+      this.combatService.clearPendingActions({ id: mob.id, type: mob.type });
       mob.currentTarget = null;
+      this.movementService.setMovementQueue(mob, path);
       mob.state = 'return';
       return true;
     }
