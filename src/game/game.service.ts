@@ -53,12 +53,14 @@ export class GameService implements OnModuleInit {
   private lastTickTimeAoE = 0;
   private lastTickTimeRegeneration = 0;
   private lastTickTimeInteraction = 0;
+  private lastTickTimeAiMobs = 0;
 
   private readonly intervalMovement = 150;
   private readonly intervalActions = 200;
   private readonly intervalAoE = 200;
   private readonly intervalRegeneration = 1000;
   private readonly intervalInteraction = 300;
+  private readonly intervalAiMobs = 300;
 
   onModuleInit() {
     this.gameTickInterval = setInterval(() => {
@@ -99,6 +101,11 @@ export class GameService implements OnModuleInit {
     if (now - this.lastTickTimeInteraction >= this.intervalInteraction) {
       await this.interactionService.tickInteractions();
       this.lastTickTimeInteraction = now;
+    }
+
+    if (now - this.lastTickTimeAiMobs >= this.intervalAiMobs) {
+      await this.runtimeMobService.tickAiMobs();
+      this.lastTickTimeAiMobs = now;
     }
   }
 

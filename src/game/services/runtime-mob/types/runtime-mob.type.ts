@@ -20,6 +20,7 @@ interface RuntimeMobStats {
   lastDirection: TDirection;
   isInSpawnArea: boolean;
   respawnIn: number | null;
+  nextThinkAt: number;
   currentPath: PositionDto[] | null;
 }
 

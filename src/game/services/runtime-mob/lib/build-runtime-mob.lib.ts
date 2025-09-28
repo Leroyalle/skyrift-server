@@ -25,6 +25,7 @@ export function buildRuntimeMob(mobSpawn: MobSpawn): IRuntimeMob {
     lastMoveAt: 0,
     lastHpRegenerationTime: 0,
     lastAttackAt: 0,
+    nextThinkAt: 0,
     lastDirection: 'down',
     isInSpawnArea: true,
     isAttacking: false,

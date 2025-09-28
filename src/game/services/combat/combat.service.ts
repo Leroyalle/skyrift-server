@@ -289,62 +289,6 @@ export class CombatService {
     );
   }
 
-  // public async requestAttackMove(client: Socket, input: RequestAttackMoveDto) {
-  //   if (!this.socketService.verifyUserDataInSocket(client)) {
-  //     this.socketService.notifyDisconnection(client);
-  //     this.socketService.onDisconnect(client);
-  //     return;
-  //   }
-
-  //   const attacker = this.playerStateService.getCharacterState(
-  //     client.userData.characterId,
-  //   );
-
-  //   if (!attacker) return;
-
-  //   const victim = this.playerStateService.getCharacterState(input.targetId);
-
-  //   if (!victim) return;
-
-  //   const attackerFactionName = attacker.characterClass.faction.name;
-  //   const victimFactionName = victim.characterClass.faction.name;
-
-  //   if (!isEnemyFaction(attackerFactionName, victimFactionName)) return;
-
-  //   const entityKey = generateEntityKey<LiveCharacter>(attacker);
-
-  //   const queue = this.getOrCreateActionQueue(entityKey);
-
-  //   const hasAutoAttack = queue.some(
-  //     (q) => q.actionType === ActionType.AutoAttack,
-  //   );
-
-  //   if (hasAutoAttack) return;
-
-  //   console.log('hasAutoAttack', hasAutoAttack);
-
-  //   const pendingAction: PendingAction = {
-  //     actionType: ActionType.AutoAttack,
-  //     attackerId: client.userData.characterId,
-  //     target: {
-  //       kind: 'player',
-  //       id: input.targetId,
-  //     },
-  //     skillId: null,
-  //     state: 'attack',
-  //   };
-
-  //   await this.schedulePathUpdate(
-  //     attacker,
-  //     {
-  //       kind: 'player',
-  //       id: input.targetId,
-  //     },
-  //     null,
-  //   );
-  //   console.log('queue request auto attack', queue, pendingAction);
-  // }
-
   public async requestAttackMoveForPlayer(
     client: Socket,
     input: RequestAttackMoveDto,
@@ -406,15 +350,11 @@ export class CombatService {
 
     console.log('hasAutoAttack', hasAutoAttack);
 
-    // const commonAttackerState = buildCommonAttackerState(attacker);
-
-    // if (!commonAttackerState) return;
-
     await this.schedulePathUpdate(
       attacker,
       {
         kind: 'target',
-        type: attacker.type,
+        type: victim.type,
         id: victim.id,
       },
       null,
@@ -526,85 +466,6 @@ export class CombatService {
     }
     return null;
   }
-
-  // private async schedulePathUpdate(
-  //   attacker: LiveCharacter,
-  //   target: TargetAction,
-  //   skillId: string | null = null,
-  // ) {
-  //   const characterSkill = attacker.characterSkills.find(
-  //     (skill) => skill.id === skillId,
-  //   );
-
-  //   if (skillId && !characterSkill) {
-  //     console.log(
-  //       `Character ${attacker.id} doesn't have skill ${skillId} to use`,
-  //     );
-  //     return;
-  //   }
-
-  //   const findLocation = await this.locationService.loadLocation(
-  //     attacker.locationId,
-  //   );
-
-  //   if (!findLocation) return;
-
-  //   const attackerTile = {
-  //     x: Math.floor(attacker.x / findLocation.tileWidth),
-  //     y: Math.floor(attacker.y / findLocation.tileHeight),
-  //   };
-
-  //   const result = this.resolveTarget(target, findLocation);
-
-  //   if (!result) return;
-
-  //   attacker.currentTarget = result.currentTarget;
-  //   const targetTile = result.tile;
-
-  //   const steps = await this.pathFindingService.getPlayerPath(
-  //     findLocation.id,
-  //     attackerTile,
-  //     targetTile,
-  //     findLocation.tileWidth,
-  //     findLocation.passableMap,
-  //   );
-
-  //   if (steps.length === 0) return;
-
-  //   const range = characterSkill
-  //     ? characterSkill.skill.range
-  //     : attacker.attackRange;
-
-  //   const pendingAction: PendingAction = {
-  //     actionType: skillId ? ActionType.Skill : ActionType.AutoAttack,
-  //     attackerId: attacker.id,
-  //     target,
-  //     skillId,
-  //     state: 'wait-path',
-  //   };
-
-  //   const queue = this.getOrCreateActionQueue(attacker.id);
-
-  //   const hasAutoAttack = queue.some(
-  //     (q) => q.actionType === ActionType.AutoAttack,
-  //   );
-
-  //   if (hasAutoAttack && !skillId) return;
-
-  //   switch (characterSkill?.skill.type) {
-  //     case SkillType.AoE: {
-  //       this.resolvePendingActionState(attacker, pendingAction, range, steps);
-  //       console.log('push aoe skill', pendingAction);
-  //       pushTargetAction(queue, hasAutoAttack, pendingAction, characterSkill);
-  //       break;
-  //     }
-  //     default: {
-  //       this.resolvePendingActionState(attacker, pendingAction, range, steps);
-  //       pushTargetAction(queue, hasAutoAttack, pendingAction, characterSkill);
-  //       break;
-  //     }
-  //   }
-  // }
 
   private async schedulePathUpdate(
     attacker: RuntimeEntity,
