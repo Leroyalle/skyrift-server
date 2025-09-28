@@ -141,8 +141,6 @@ export class RuntimeMobService implements OnModuleInit {
     // TODO: деспавнить моба и слать клиенту ошибку в try/catch
     if (!findLocation) throw new Error('Location is not found');
 
-    // FIXME: нжуно вовзращать какое-то значение нужно ли скипать на некст моба
-
     const currentPosition = getTileByPosition(
       runtimeMob.x,
       runtimeMob.y,
@@ -199,8 +197,8 @@ export class RuntimeMobService implements OnModuleInit {
     console.log('INPUT', mob.locationId, mob.x, mob.y, mob.triggerRange);
     const { affectedCells } = this.spatialGridService.queryRadius(
       mob.locationId,
-      mob.x,
-      mob.y,
+      mob.spawnX,
+      mob.spawnY,
       mob.triggerRange,
     );
 
