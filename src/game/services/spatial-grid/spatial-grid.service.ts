@@ -72,12 +72,13 @@ export class SpatialGridService<
       for (let cy = minY; cy <= maxY; cy++) {
         const key = `${locationId}_${cx}_${cy}`;
         const bucket = this.cells.get(key);
-        if (!bucket) continue;
         affectedCells.push(decodeGridKey(key));
-        bucket.forEach((stringValues) => {
-          const decoded = decodeEntityKey(stringValues);
-          return entities.push(decoded);
-        });
+        if (bucket) {
+          bucket.forEach((stringValues) => {
+            const decoded = decodeEntityKey(stringValues);
+            entities.push(decoded);
+          });
+        }
       }
     }
     return {

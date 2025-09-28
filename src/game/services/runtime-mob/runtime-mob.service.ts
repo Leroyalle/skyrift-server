@@ -199,12 +199,12 @@ export class RuntimeMobService implements OnModuleInit {
       mob.locationId,
       mob.spawnX,
       mob.spawnY,
-      mob.triggerRange,
+      5, // TODO: перенести в отдельное поле в бд моба
     );
 
     console.log(affectedCells);
 
-    const { x: tileX, y: tileY } = getTileByPosition(mob.x, mob.y, tileSize);
+    // const { x: tileX, y: tileY } = getTileByPosition(mob.x, mob.y, tileSize);
 
     // const uniqueTiles = affectedCells.filter(
     //   (tile) => tile.x !== tileX || tile.y !== tileY,
