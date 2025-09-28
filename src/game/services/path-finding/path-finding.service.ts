@@ -58,7 +58,7 @@ export class PathFindingService {
     tilesFrom: TCoord,
     tilesTo: TCoord,
     map: number[][],
-  ): Promise<{ x: number; y: number }[]> {
+  ): Promise<{ x: number; y: number }[] | null> {
     const easyStar = this.getOrCreateEasyStar(locationId, map);
 
     return new Promise((resolve) => {
@@ -69,7 +69,13 @@ export class PathFindingService {
         tilesTo.y,
         (path) => {
           console.log('path', path);
-          if (!path || path.length <= 1) {
+
+          if (!path) {
+            resolve(null);
+            return;
+          }
+
+          if (path.length <= 1) {
             resolve([]);
             return;
           }

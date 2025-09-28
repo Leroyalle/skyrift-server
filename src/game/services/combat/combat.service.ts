@@ -15,7 +15,7 @@ import { ActionType, PendingAction } from 'src/game/types/pending-actions.type';
 import { LocationService } from 'src/location/location.service';
 import { SocketService } from '../socket/socket.service';
 import { ActionContext } from 'src/game/lib/actions/resolve-action.lib';
-import { getDirection } from 'src/game/lib/get-direction.lib';
+import { getDirection } from 'src/game/lib/helpers/get-direction.lib';
 import { ServerToClientEvents } from 'src/common/enums/game-socket-events.enum';
 import { RedisKeys } from 'src/common/enums/redis-keys.enum';
 import { ApplyAutoAttackResult } from 'src/game/types/attack/apply-auto-attack-result.type';
@@ -68,9 +68,9 @@ export class CombatService {
 
     for (const queue of this.pendingActionsQueue.values()) {
       if (queue.length === 0) continue;
-      console.log('queue', queue);
+      // console.log('queue', queue);
       const action = queue[0];
-      console.log('action', action);
+      // console.log('action', action);
 
       const attacker = this.getEntityByType(
         action.attackerRef.type,
@@ -131,6 +131,13 @@ export class CombatService {
         ? entitySkill.skill.range
         : attacker.attackRange;
 
+      if (!steps) {
+        this.pendingActionsQueue.delete(
+          generateEntityKey({ type: attacker.type, id: attacker.id }),
+        );
+        continue;
+      }
+
       if (steps.length > range) {
         // attacker.isAttacking = false;
         this.movementService.setMovementQueue(attacker, steps);
@@ -160,7 +167,7 @@ export class CombatService {
         removeAction: () => queue.shift(),
       };
 
-      console.log('tick action', action);
+      // console.log('tick action', action);
 
       this.resolveAction(actionCtx, action);
     }
@@ -497,8 +504,8 @@ export class CombatService {
     if (!result) return;
 
     // FIXME: объект передается не по ссылке, нужно получить атаккера и только потом менять таргет
-    // attacker.currentTarget = result.currentTarget;
-    setCurrentTarget(attacker, result.currentTarget);
+    attacker.currentTarget = result.currentTarget;
+    // attacker.currentTarget = target;
 
     const targetTile = result.tile;
 
@@ -509,15 +516,18 @@ export class CombatService {
       findLocation.passableMap,
     );
 
+    console.log('schedulePathUpdate', steps);
+
+    if (!steps) return;
+
     if (steps.length === 0) return;
 
     const range = attackerSkill
       ? attackerSkill.skill.range
-      : getAttackerRange(attacker);
+      : attacker.attackRange;
 
     const pendingAction: PendingAction = {
       actionType: skillId ? ActionType.Skill : ActionType.AutoAttack,
-      // attackerId: attacker.id,
       attackerRef: {
         id: attacker.id,
         type: attacker.type,
@@ -573,14 +583,11 @@ export class CombatService {
     switch (action.actionType) {
       case ActionType.AutoAttack: {
         // const lastAttackAt = getAttackStats(ctx.attacker);
-        console.log('[resolveAction] START', ctx, action);
         // STOPPED: в проекте полная каша, можно костыльно получать методы и изменять их через доп функции, но если появятся всяике ПЕТЫ, будет супер неудобно. пришла идея сделать абстрактный класс для ентити и наследоваться от него у персонажа и моба, тогда можно будет удобно управлять данными. так же при сеттинге мобов нужно переделать рантайм-моб структуру сохраняя объект в нужной для нас форме (плевать на второй обход тк он будет только при запуске проекта)
         if (ctx.now - ctx.attacker.lastAttackAt < ctx.attacker.attackSpeed)
           return;
-        console.log('[resolveAction] BEFORE FIRST');
 
         if (action.target.kind !== 'target') return;
-        console.log('[resolveAction] BEFORE SECOND');
 
         const victim = this.getEntityByType(
           action.target.type,
@@ -592,7 +599,6 @@ export class CombatService {
         // );
 
         if (!victim) return;
-        console.log('[resolveAction] BEFORE THIRD');
 
         const attackerDirection = getDirection(
           {
@@ -629,11 +635,6 @@ export class CombatService {
           },
         );
 
-        console.log('before autoAttack', action.attackerRef, {
-          id: action.target.id,
-          type: action.target.type,
-        });
-
         const attackResult = this.autoAttack(
           action.attackerRef,
           victimRef,
@@ -641,8 +642,6 @@ export class CombatService {
         );
 
         if (!attackResult) return;
-
-        console.log('attack result', attackResult);
 
         const { victimIsAlive, ...croppedAttackResult } = attackResult;
 
@@ -784,8 +783,6 @@ export class CombatService {
   ): ApplyAutoAttackResult | undefined {
     const attacker = this.getEntityByType(attackerRef.type, attackerRef.id);
     const victim = this.getEntityByType(victimRef.type, victimRef.id);
-
-    console.log('autoAttack members', attacker, victim);
 
     if (!attacker || !victim || attacker.locationId !== victim.locationId)
       return;

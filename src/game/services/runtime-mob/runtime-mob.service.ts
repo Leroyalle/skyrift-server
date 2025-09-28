@@ -2,7 +2,7 @@ import { forwardRef, Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { LocationService } from 'src/location/location.service';
 import { IRuntimeMob } from './types/runtime-mob.type';
 import { PositionDto } from 'src/common/dto/position.dto';
-import { getTileByPosition } from 'src/game/lib/get-tile-by-position.lib';
+import { getTileByPosition } from 'src/game/lib/helpers/get-tile-by-position.lib';
 import { SpatialGridService } from '../spatial-grid/spatial-grid.service';
 import { CombatService } from '../combat/combat.service';
 import { PathFindingService } from '../path-finding/path-finding.service';
@@ -162,6 +162,10 @@ export class RuntimeMobService implements OnModuleInit {
       findLocation.passableMap,
     );
 
+    if (!path) {
+      throw new Error('path not found');
+    }
+
     // TODO: если дистанция равна -1 по каким-то причинам (баг), тогда деспавним моба
 
     return this.switchMobToReturnOrPursue(runtimeMob, path);
@@ -173,6 +177,7 @@ export class RuntimeMobService implements OnModuleInit {
   ): boolean {
     if (path.length > 5) {
       this.movementService.setMovementQueue(mob, path);
+      // this.combatService.del
       mob.currentTarget = null;
       mob.state = 'return';
       return true;

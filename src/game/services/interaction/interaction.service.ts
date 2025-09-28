@@ -22,7 +22,7 @@ import { CachedLocation } from 'src/location/types/cashed-location.type';
 import { PositionDto } from 'src/common/dto/position.dto';
 import { Teleport } from 'src/location/types/teleport.type';
 import { PathFindingService } from '../path-finding/path-finding.service';
-import { getTileByPosition } from 'src/game/lib/get-tile-by-position.lib';
+import { getTileByPosition } from 'src/game/lib/helpers/get-tile-by-position.lib';
 
 @Injectable()
 export class InteractionService {
@@ -196,6 +196,8 @@ export class InteractionService {
       targetTile,
       currentLocation.passableMap,
     );
+
+    if (!steps) return;
 
     this.movementService.setMovementQueue(playerState, steps);
 
