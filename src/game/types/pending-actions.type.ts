@@ -1,12 +1,9 @@
 import { PositionDto } from 'src/common/dto/position.dto';
 import { TargetAction } from '../services/combat/types/target-action.type';
-import { DecodedEntityKey } from './entity/keys/decoded-entity-key.type';
+import { EntityRef } from './entity/entity-ref.type';
 
 export type PendingAction = {
-  // attackerId: string;
-  attackerRef: DecodedEntityKey;
-  // victimRef: DecodedEntityKey;
-  // victimId?: string;
+  attackerRef: EntityRef;
   target: TargetAction;
   area?: PositionDto;
   actionType: ActionType;
