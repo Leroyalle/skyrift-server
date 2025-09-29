@@ -11,6 +11,7 @@ import { buildRuntimeMob } from './lib/build-runtime-mob.lib';
 import { getRandomValue } from 'src/common/lib/get-random-value.lib';
 import { CachedLocation } from 'src/location/types/cashed-location.type';
 import { RangeArea } from './types/range-area.type';
+import { isEntityCombatStatus } from 'src/game/lib/entity/is-entity-combat-status.lib';
 
 @Injectable()
 export class RuntimeMobService implements OnModuleInit {
@@ -67,9 +68,11 @@ export class RuntimeMobService implements OnModuleInit {
         runtimeMob.id,
       );
 
-      if (!currentMobPath || currentMobPath.steps.length === 0) {
+      if (
+        (!currentMobPath || currentMobPath.steps.length === 0) &&
+        !isEntityCombatStatus(runtimeMob.state)
+      ) {
         console.log('[TICK_AI_MOBS], set idle');
-
         runtimeMob.state = 'idle';
       }
 
