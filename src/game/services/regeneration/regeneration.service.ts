@@ -53,11 +53,14 @@ export class RegenerationService {
 
     const mobs = this.runtimeMobService.mobsArray;
 
-    for (const mob of mobs) {
+    mobs.forEach((mob) => {
       if (now - mob.lastHpRegenerationTime < 5000) return;
 
+      let hpDelta = 100;
       if (mob.hp >= mob.maxHp || !mob.isAlive) return;
-      const hpDelta = 100;
+      if (mob.state === 'return' && mob.hp < mob.maxHp) {
+        hpDelta = mob.maxHp - mob.hp;
+      }
 
       mob.hp = Math.min(mob.hp + hpDelta, mob.maxHp);
       mob.lastHpRegenerationTime = now;
@@ -70,7 +73,7 @@ export class RegenerationService {
         hp: mob.hp,
         hpDelta,
       });
-    }
+    });
     for (const [locationId, updates] of updatesByLocation.entries()) {
       this.socketService.sendTo(
         RedisKeys.Location + locationId,
