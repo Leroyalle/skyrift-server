@@ -9,6 +9,8 @@ import { PathFindingService } from '../path-finding/path-finding.service';
 import { MovementService } from '../movement/movement.service';
 import { buildRuntimeMob } from './lib/build-runtime-mob.lib';
 import { getRandomValue } from 'src/common/lib/get-random-value.lib';
+import { CachedLocation } from 'src/location/types/cashed-location.type';
+import { RangeArea } from './types/range-area.type';
 
 @Injectable()
 export class RuntimeMobService implements OnModuleInit {
@@ -54,7 +56,7 @@ export class RuntimeMobService implements OnModuleInit {
     const mobsEntries = Array.from(this.mobsById.values());
 
     for (const runtimeMob of mobsEntries) {
-      if (runtimeMob.respawnIn) continue;
+      if (runtimeMob.respawnIn || runtimeMob.state === 'dead') continue;
 
       const now = Date.now();
 
@@ -66,10 +68,13 @@ export class RuntimeMobService implements OnModuleInit {
       );
 
       if (!currentMobPath || currentMobPath.steps.length === 0) {
+        console.log('[TICK_AI_MOBS], set idle');
+
         runtimeMob.state = 'idle';
       }
 
-      if (runtimeMob.currentTarget) {
+      if (runtimeMob.state === 'pursue') {
+        console.log('[TICK_AI_MOBS], check leash distance');
         const result = await this.hasExceededLeashDistance(runtimeMob);
         if (result) continue;
       }
@@ -83,7 +88,13 @@ export class RuntimeMobService implements OnModuleInit {
 
       const target = entities.find((ent) => ent.type === 'player');
 
-      if (target && !runtimeMob.currentTarget) {
+      if (
+        target &&
+        !runtimeMob.currentTarget &&
+        runtimeMob.state !== 'return'
+      ) {
+        console.log('[TICK_AI_MOBS], request attack move');
+        this.movementService.deleteMovementQueue(runtimeMob);
         await this.combatService.requestAttackMoveForMob(
           runtimeMob.id,
           target.id,
@@ -101,13 +112,19 @@ export class RuntimeMobService implements OnModuleInit {
   private async patrol(mob: IRuntimeMob): Promise<void> {
     if (mob.state !== 'idle') return;
 
+    console.log('[TICK_AI_MOBS], start patrol');
+
     const findLocation = await this.locationService.loadLocation(
       mob.locationId,
     );
 
     if (!findLocation) return;
 
-    const nextTile = this.getRandomTileInRange(mob, findLocation.tileWidth);
+    const nextTile = this.getRandomTileInRange(
+      { x: mob.spawnX, y: mob.spawnY, radius: 5 },
+      { x: mob.x, y: mob.y },
+      findLocation,
+    );
 
     console.log({ x: mob.x, y: mob.y }, { x: nextTile.x, y: nextTile.y });
 
@@ -137,7 +154,6 @@ export class RuntimeMobService implements OnModuleInit {
       runtimeMob.locationId,
     );
 
-    // TODO: деспавнить моба и слать клиенту ошибку в try/catch
     if (!findLocation) throw new Error('Location is not found');
 
     const currentPosition = getTileByPosition(
@@ -173,10 +189,12 @@ export class RuntimeMobService implements OnModuleInit {
     path: PositionDto[],
   ): boolean {
     if (path.length > 5) {
-      this.combatService.clearPendingActions({ id: mob.id, type: mob.type });
-      mob.currentTarget = null;
-      this.movementService.setMovementQueue(mob, path);
+      this.combatService.processRequestAttackCancel({
+        type: mob.type,
+        id: mob.id,
+      });
       mob.state = 'return';
+      this.movementService.setMovementQueue(mob, path);
       return true;
     }
     mob.state = 'pursue';
@@ -191,21 +209,28 @@ export class RuntimeMobService implements OnModuleInit {
     return this.mobsById.get(spawnMobId);
   }
 
-  private getRandomTileInRange(mob: IRuntimeMob, tileSize: number) {
-    console.log('INPUT', mob.locationId, mob.x, mob.y, mob.triggerRange);
+  private getRandomTileInRange(
+    rangeArea: RangeArea,
+    currentTile: PositionDto,
+    location: CachedLocation,
+  ) {
     const { affectedCells } = this.spatialGridService.queryRadius(
-      mob.locationId,
-      mob.spawnX,
-      mob.spawnY,
-      5, // TODO: перенести в отдельное поле в бд моба
+      location.id,
+      rangeArea.x,
+      rangeArea.y,
+      rangeArea.radius,
     );
 
-    console.log(affectedCells);
-
-    const { x: tileX, y: tileY } = getTileByPosition(mob.x, mob.y, tileSize);
+    const { x: tileX, y: tileY } = getTileByPosition(
+      currentTile.x,
+      currentTile.y,
+      location.tileWidth,
+    );
 
     const uniqueTiles = affectedCells.filter(
-      (tile) => tile.x !== tileX || tile.y !== tileY,
+      (tile) =>
+        (tile.x !== tileX || tile.y !== tileY) &&
+        location.passableMap[tile.y][tile.x] === 1,
     );
 
     const tileIndex = getRandomValue(0, uniqueTiles.length - 1);

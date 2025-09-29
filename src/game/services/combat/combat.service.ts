@@ -418,7 +418,7 @@ export class CombatService {
     }
   }
 
-  public requestAttackCancel(client: Socket) {
+  public requestAttackCancelForPlayer(client: Socket) {
     if (!this.socketService.verifyUserDataInSocket(client)) {
       this.socketService.notifyDisconnection(client);
       this.socketService.onDisconnect(client);
@@ -426,17 +426,18 @@ export class CombatService {
     }
 
     const { characterId } = client.userData;
+    this.processRequestAttackCancel({ type: 'player', id: characterId });
+  }
 
-    this.pendingActionsQueue.set(
-      generateEntityKey({ type: 'player', id: characterId }),
-      [],
-    );
-
-    const attacker = this.playerStateService.getCharacterState(
-      client.userData.characterId,
-    );
+  public processRequestAttackCancel(ref: EntityRef) {
+    const attacker = this.getEntityByType(ref.type, ref.id);
 
     if (!attacker) return;
+
+    this.pendingActionsQueue.set(
+      generateEntityKey({ type: ref.type, id: ref.id }),
+      [],
+    );
 
     attacker.currentTarget = null;
     attacker.isAttacking = false;
