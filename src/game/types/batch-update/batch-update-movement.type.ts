@@ -1,11 +1,9 @@
 import { TDirection } from '../entity/direction.type';
-import { EntityType } from '../entity/entity-type.type';
+import { EntityRef } from '../entity/entity-ref.type';
 
-export type BatchUpdateMovement = {
-  id: string;
-  type: EntityType;
+export interface BatchUpdateMovement extends EntityRef {
   locationId: string;
   x: number;
   y: number;
   direction: TDirection;
-};
+}

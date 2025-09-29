@@ -1,16 +1,14 @@
-import { EntityType } from '../entity/entity-type.type';
+import { EntityRef } from '../entity/entity-ref.type';
 import { ActionType } from '../pending-actions.type';
 
-export type BatchUpdateAction = {
+export interface BatchUpdateAction {
   targets: Target[];
   type: ActionType;
   skillId: string | null;
-};
+}
 
-export type Target = {
-  id: string;
-  type: EntityType;
+export interface Target extends EntityRef {
   hp: number;
   isAlive: boolean;
   receivedDamage: number;
-};
+}

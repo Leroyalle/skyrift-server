@@ -25,7 +25,7 @@ export class RuntimeMobService implements OnModuleInit {
   private readonly mobsByLocation = new Map<string, Set<string>>();
   private readonly mobsById = new Map<string, IRuntimeMob>();
 
-  async onModuleInit() {
+  public async onModuleInit() {
     const locations = await this.locationService.findAndCacheAll();
     for (const location of locations) {
       const mobsSet = this.getOrCreateActiveMobsLocationMap(location.id);
@@ -49,8 +49,7 @@ export class RuntimeMobService implements OnModuleInit {
     return mobs;
   }
 
-  // TODO: добавить в главный тик   + пересмотри полностбю логику
-  // делать паузу между патрулями
+  // TODO: делать паузу между патрулями
   async tickAiMobs() {
     const mobsEntries = Array.from(this.mobsById.values());
 
@@ -180,13 +179,12 @@ export class RuntimeMobService implements OnModuleInit {
       mob.state = 'return';
       return true;
     }
-
     mob.state = 'pursue';
     return false;
   }
 
-  get mobsArray() {
-    return Array.from(this.mobsById.entries());
+  public get mobsArray() {
+    return Array.from(this.mobsById.values());
   }
 
   public getById(spawnMobId: string) {

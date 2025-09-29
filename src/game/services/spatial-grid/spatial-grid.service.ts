@@ -4,7 +4,7 @@ import { DecodedGridKey } from './types/decoed-grid-key.type';
 import { QueryRadiusResult } from './types/query-radius-result.type';
 import { getTileByPosition } from 'src/game/lib/helpers/get-tile-by-position.lib';
 import { EntityType } from 'src/game/types/entity/entity-type.type';
-import { DecodedEntityKey } from '../../types/entity/keys/decoded-entity-key.type';
+import { EntityRef } from '../../types/entity/entity-ref.type';
 import { generateEntityKey } from 'src/game/lib/entity/generate-entity-key.lib';
 import { decodeEntityKey } from 'src/game/lib/entity/decode-entity-key.lib';
 import { EntityKey } from 'src/game/types/entity/keys/entity-key.type';
@@ -66,7 +66,7 @@ export class SpatialGridService<
     const minY = centerY - radius;
     const maxY = centerY + radius;
 
-    const entities: DecodedEntityKey[] = [];
+    const entities: EntityRef[] = [];
     const affectedCells: DecodedGridKey[] = [];
     for (let cx = minX; cx <= maxX; cx++) {
       for (let cy = minY; cy <= maxY; cy++) {

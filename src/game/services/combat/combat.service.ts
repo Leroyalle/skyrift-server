@@ -40,7 +40,7 @@ import { RuntimeMobService } from '../runtime-mob/runtime-mob.service';
 import { setEntityState } from './lib/entity/helpers/set/set-entity-state.lib';
 import { EntityKey } from 'src/game/types/entity/keys/entity-key.type';
 import { RuntimeEntity } from 'src/game/types/entity/runtime-entity.type';
-import { DecodedEntityKey } from 'src/game/types/entity/keys/decoded-entity-key.type';
+import { EntityRef } from 'src/game/types/entity/entity-ref.type';
 
 @Injectable()
 export class CombatService {
@@ -761,8 +761,8 @@ export class CombatService {
   }
 
   private autoAttack(
-    attackerRef: DecodedEntityKey,
-    victimRef: DecodedEntityKey,
+    attackerRef: EntityRef,
+    victimRef: EntityRef,
     now: number,
   ): ApplyAutoAttackResult | undefined {
     const attacker = this.getEntityByType(attackerRef.type, attackerRef.id);
@@ -805,8 +805,8 @@ export class CombatService {
   }
 
   private applySkill(
-    attackerRef: DecodedEntityKey,
-    victimRef: DecodedEntityKey,
+    attackerRef: EntityRef,
+    victimRef: EntityRef,
     skillId: string,
     now: number,
   ): ApplySkillResult | undefined {
@@ -948,7 +948,7 @@ export class CombatService {
     );
   }
 
-  public clearPendingActions(entityRef: DecodedEntityKey): boolean {
+  public clearPendingActions(entityRef: EntityRef): boolean {
     const entityKey = generateEntityKey(entityRef);
     return this.pendingActionsQueue.delete(entityKey);
   }

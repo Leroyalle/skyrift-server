@@ -4,12 +4,15 @@ import { BatchUpdateRegeneration } from 'src/game/types/batch-update/batch-updat
 import { SocketService } from '../socket/socket.service';
 import { RedisKeys } from 'src/common/enums/redis-keys.enum';
 import { ServerToClientEvents } from 'src/common/enums/game-socket-events.enum';
+import { RuntimeMobService } from '../runtime-mob/runtime-mob.service';
+import { getOrCreateArray } from 'src/game/lib/helpers/get-or-create-array.lib';
 
 @Injectable()
 export class RegenerationService {
   constructor(
     private readonly playerStateService: PlayerStateService,
     private readonly socketService: SocketService,
+    private readonly runtimeMobService: RuntimeMobService,
   ) {}
   // TODO: add for mobs
   public tickRegeneration() {
@@ -28,20 +31,46 @@ export class RegenerationService {
       char.hp = Math.min(char.hp + hpDelta, char.maxHp);
       char.lastHpRegenerationTime = now;
 
-      let locationBatch = updatesByLocation.get(char.locationId);
+      // let locationBatch = updatesByLocation.get(char.locationId);
 
-      if (!locationBatch) {
-        locationBatch = [];
-        updatesByLocation.set(char.locationId, locationBatch);
-      }
+      // if (!locationBatch) {
+      //   locationBatch = [];
+      //   updatesByLocation.set(char.locationId, locationBatch);
+      // }
+
+      const locationBatch = getOrCreateArray(
+        updatesByLocation,
+        char.locationId,
+      );
 
       locationBatch.push({
-        characterId: char.id,
+        id: char.id,
+        type: 'player',
         hp: char.hp,
         hpDelta,
       });
     });
 
+    const mobs = this.runtimeMobService.mobsArray;
+
+    for (const mob of mobs) {
+      if (now - mob.lastHpRegenerationTime < 5000) return;
+
+      if (mob.hp >= mob.maxHp || !mob.isAlive) return;
+      const hpDelta = 100;
+
+      mob.hp = Math.min(mob.hp + hpDelta, mob.maxHp);
+      mob.lastHpRegenerationTime = now;
+
+      const locationBatch = getOrCreateArray(updatesByLocation, mob.locationId);
+
+      locationBatch.push({
+        id: mob.id,
+        type: 'mob',
+        hp: mob.hp,
+        hpDelta,
+      });
+    }
     for (const [locationId, updates] of updatesByLocation.entries()) {
       this.socketService.sendTo(
         RedisKeys.Location + locationId,

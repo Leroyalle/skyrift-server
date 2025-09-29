@@ -33,18 +33,18 @@ export class SocketService {
   //   socket.disconnect(true);
   // }
 
-  sendToUser(userId: string, event: string, payload: unknown) {
+  sendToUser(userId: string, event: ServerToClientEvents, payload: unknown) {
     const socketId = this.userIdToSocketId.get(userId);
     if (!socketId || !this.server) return;
     this.server.to(socketId).emit(event, payload);
   }
 
-  sendTo(key: string, event: string, payload: unknown) {
+  sendTo(key: string, event: ServerToClientEvents, payload: unknown) {
     if (!this.server) return;
     this.server.to(key).emit(event, payload);
   }
 
-  broadcast(event: string, payload: any) {
+  broadcast(event: ServerToClientEvents, payload: any) {
     if (!this.server) return;
     this.server.emit(event, payload);
   }
@@ -52,7 +52,7 @@ export class SocketService {
   broadcastToOthers(
     client: Socket,
     key: string,
-    event: string,
+    event: ServerToClientEvents,
     payload: unknown,
   ) {
     client.to(key).emit(event, payload);
