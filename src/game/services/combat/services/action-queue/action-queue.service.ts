@@ -13,10 +13,10 @@ export class ActionQueueService {
   private readonly pendingActionsQueue: Map<EntityKey, PendingAction[]> =
     new Map();
 
-  public getPendingAction(entityRef: EntityRef) {
-    const entityKey = generateEntityKey(entityRef);
-    return this.pendingActionsQueue.get(entityKey);
-  }
+  // public getPendingAction(entityRef: EntityRef) {
+  //   const entityKey = generateEntityKey(entityRef);
+  //   return this.pendingActionsQueue.get(entityKey);
+  // }
 
   public setPendingAction(entityRef: EntityRef, pendingAction: PendingAction) {
     const entityKey = generateEntityKey(entityRef);
@@ -24,7 +24,7 @@ export class ActionQueueService {
     return queue.push(pendingAction);
   }
 
-  public shiftPendingAction(entityRef: EntityRef) {
+  public shiftPendingAction(entityRef: EntityRef): PendingAction | undefined {
     const key = generateEntityKey(entityRef);
     const queue = this.getOrCreateActionQueue(key);
     return queue.shift();
@@ -39,11 +39,11 @@ export class ActionQueueService {
     return this.pendingActionsQueue.delete(entityKey);
   }
 
-  public getIterablePendingActions() {
+  public getIterablePendingActions(): PendingAction[][] {
     return Array.from(this.pendingActionsQueue.values());
   }
 
-  private getOrCreateActionQueue(key: EntityKey) {
+  private getOrCreateActionQueue(key: EntityKey): PendingAction[] {
     let queue = this.pendingActionsQueue.get(key);
     if (!queue) {
       queue = [];
@@ -52,19 +52,23 @@ export class ActionQueueService {
     return queue;
   }
 
-  public findActionType(entityRef: EntityRef, actionType: ActionType) {
+  public findActionType(entityRef: EntityRef, actionType: ActionType): boolean {
     const entityKey = generateEntityKey(entityRef);
     const queue = this.getOrCreateActionQueue(entityKey);
-
     return queue.some((q) => q.actionType === actionType);
   }
 
   public pushPendingAction(
-    queue: PendingAction[],
-    hasAutoAttack: boolean,
+    entityRef: EntityRef,
     pendingAction: PendingAction,
     characterSkill?: CharacterSkill,
-  ) {
+  ): void {
+    const key = generateEntityKey(entityRef);
+    const queue = this.getOrCreateActionQueue(key);
+    const hasAutoAttack = this.findActionType(entityRef, ActionType.AutoAttack);
+
+    if (hasAutoAttack && !characterSkill) return;
+
     if (hasAutoAttack) {
       queue.splice(-1, 0, pendingAction);
       return;

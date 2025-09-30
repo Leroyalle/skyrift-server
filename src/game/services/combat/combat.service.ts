@@ -440,25 +440,38 @@ export class CombatService {
       state: 'wait-path',
     };
 
-    const attackerKey = generateEntityKey<RuntimeEntity>(attacker);
-    const queue = this.getOrCreateActionQueue(attackerKey);
+    // const attackerKey = generateEntityKey<RuntimeEntity>(attacker);
+    // const queue = this.getOrCreateActionQueue(attackerKey);
 
-    const hasAutoAttack = queue.some(
-      (q) => q.actionType === ActionType.AutoAttack,
-    );
+    // const hasAutoAttack = queue.some(
+    //   (q) => q.actionType === ActionType.AutoAttack,
+    // );
 
-    if (hasAutoAttack && !skillId) return;
+    // if (hasAutoAttack && !skillId) return;
 
+    const entityRef: EntityRef = {
+      id: attacker.id,
+      type: attacker.type,
+    };
     switch (attackerSkill?.skill.type) {
       case SkillType.AoE: {
         this.resolvePendingActionState(attacker, pendingAction, range, steps);
         console.log('push aoe skill', pendingAction);
-        pushTargetAction(queue, hasAutoAttack, pendingAction, attackerSkill);
+        // pushTargetAction(entityRef, pendingAction, attackerSkill);
+        this.actionQueueService.pushPendingAction(
+          entityRef,
+          pendingAction,
+          attackerSkill,
+        );
         break;
       }
       default: {
         this.resolvePendingActionState(attacker, pendingAction, range, steps);
-        pushTargetAction(queue, hasAutoAttack, pendingAction, attackerSkill);
+        this.actionQueueService.pushPendingAction(
+          entityRef,
+          pendingAction,
+          attackerSkill,
+        );
         break;
       }
     }
