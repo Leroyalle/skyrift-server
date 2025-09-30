@@ -8,7 +8,7 @@ type TCoord = { x: number; y: number };
 export class PathFindingService {
   private easyStarMap = new Map<string, EasyStar.js>();
 
-  getOrCreateEasyStar(
+  private getOrCreateEasyStar(
     locationId: string,
     passableMap: number[][],
   ): EasyStar.js {
@@ -30,7 +30,7 @@ export class PathFindingService {
    * @returns числовое значение количества шагов к таргет позиции (@param to)
    */
 
-  getPathDistance(
+  public getPathDistance(
     locationId: string,
     from: TCoord,
     to: TCoord,
@@ -51,7 +51,7 @@ export class PathFindingService {
     });
   }
 
-  getPlayerPath(
+  public getPlayerPath(
     locationId: string,
     tilesFrom: TCoord,
     tilesTo: TCoord,
@@ -66,8 +66,6 @@ export class PathFindingService {
         tilesTo.x,
         tilesTo.y,
         (path) => {
-          // console.log('[pathFinding]', path);
-
           if (!path) {
             resolve(null);
             return;
@@ -78,17 +76,11 @@ export class PathFindingService {
             return;
           }
 
-          // TODO: если путь не найден вообще то возвращать какой-нибудь флаг -1, чтобы например деспавнить моба из-за бага при возвращении
-
           const steps = path.slice(1).map((p) => ({ x: p.x, y: p.y }));
           resolve(steps);
         },
       );
       easyStar.calculate();
     });
-  }
-
-  clearAll() {
-    this.easyStarMap.clear();
   }
 }

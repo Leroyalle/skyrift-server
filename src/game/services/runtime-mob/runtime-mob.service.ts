@@ -53,7 +53,7 @@ export class RuntimeMobService implements OnModuleInit {
   }
 
   // TODO: делать паузу между патрулями
-  async tickAiMobs() {
+  public async tickAiMobs() {
     const mobsEntries = Array.from(this.mobsById.values());
 
     for (const runtimeMob of mobsEntries) {
@@ -102,6 +102,7 @@ export class RuntimeMobService implements OnModuleInit {
           runtimeMob.id,
           target.id,
         );
+        runtimeMob.state = 'pursue';
         continue;
       }
 

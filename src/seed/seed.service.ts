@@ -21,6 +21,7 @@ import { isObjectsLayer } from './guards/is-objects-layer';
 import { FactionEnum } from 'src/faction/types/faction.enum';
 import { Mob } from 'src/mob/entities/mob.entity';
 import { MobSpawn } from 'src/mob/mob-spawn/entities/mob-spawn.entity';
+import { Effect } from 'src/effect/entities/effect.entity';
 
 @Injectable()
 export class SeedService {
@@ -43,6 +44,8 @@ export class SeedService {
     private mobRepository: Repository<Mob>,
     @InjectRepository(MobSpawn)
     private mobSpawnRepository: Repository<MobSpawn>,
+    @InjectRepository(Effect)
+    private effectRepository: Repository<Effect>,
   ) {}
 
   public async run() {
@@ -274,6 +277,11 @@ export class SeedService {
       isAlive: true,
     });
 
+    const stanEffect = await this.effectRepository.save({
+      durationMs: 1250,
+      type: EffectType.Stun,
+    });
+
     const fireArrowSkill = await this.skillRepository.save({
       name: 'Огненная стрела',
       damage: 92,
@@ -291,6 +299,7 @@ export class SeedService {
           durationMs: 3000,
         },
       ],
+      effects: [stanEffect],
       type: SkillType.Target,
     });
 
@@ -347,6 +356,9 @@ export class SeedService {
     await this.skillRepository.query('TRUNCATE TABLE "skill" CASCADE');
     await this.characterSkillRepository.query(
       'TRUNCATE TABLE "character_skill" CASCADE',
+    );
+    await this.characterSkillRepository.query(
+      'TRUNCATE TABLE "effect" CASCADE',
     );
     console.log('Listings cleared');
   }

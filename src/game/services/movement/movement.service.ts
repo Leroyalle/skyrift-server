@@ -110,6 +110,8 @@ export class MovementService {
 
       if (now - character.lastMoveAt < PLAYER_SPEED) return;
 
+      if (character.state === 'attack') return;
+
       const pathStep = steps.shift();
 
       if (!pathStep) return;
@@ -121,19 +123,13 @@ export class MovementService {
       if (!client) return;
 
       if (!this.socketService.verifyUserDataInSocket(client)) {
-        // FIXME: this.notifyDisconnection(client) ;
+        this.socketService.notifyDisconnection(client);
         client.disconnect();
         return;
       }
 
       const prevPosition = client.userData.position;
       const locationId = character.locationId;
-
-      // const position = {
-      //   // FIXME: change 32 to tileSize
-      //   x: Math.floor(pathStep.x * 32),
-      //   y: Math.floor(pathStep.y * 32),
-      // };
 
       const pixelPosition = getPixelByTile(pathStep);
 
@@ -181,7 +177,8 @@ export class MovementService {
         continue;
       }
 
-      if (runtimeMob.respawnIn) continue;
+      if (runtimeMob.respawnIn || runtimeMob.state === 'attack') continue;
+
       const now = Date.now();
 
       const moveSpeed = runtimeMob.isAttacking

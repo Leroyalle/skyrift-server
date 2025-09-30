@@ -3,6 +3,7 @@ import {
   CurrentTarget,
   IRuntimeCharacter,
 } from 'src/character/types/runtime-character';
+import { Effect } from 'src/effect/entities/effect.entity';
 import {
   MobActionState,
   IRuntimeMob,
@@ -23,6 +24,7 @@ export interface ActorRuntimeStats<E> {
   isAttacking: boolean;
   currentTarget: CurrentTarget | null;
   state: ActorState<E>;
+  effects: Effect[];
 }
 
 export interface UniqueFields {

@@ -25,6 +25,7 @@ import { ChatService } from './services/chat/chat.service';
 import { DirectMessageInput } from './services/chat/dto/direct-message.input';
 import { RuntimeMobService } from './services/runtime-mob/runtime-mob.service';
 import { GameInitialData } from './types/game-initial-data.type';
+import { AoeService } from './services/combat/services/aoe/aoe-service.service';
 
 @Injectable()
 export class GameService implements OnModuleInit {
@@ -43,6 +44,7 @@ export class GameService implements OnModuleInit {
     private readonly interactionService: InteractionService,
     private readonly chatService: ChatService,
     private readonly runtimeMobService: RuntimeMobService,
+    private readonly aoeService: AoeService,
   ) {}
 
   private readonly logger = new Logger(GameService.name);
@@ -62,7 +64,7 @@ export class GameService implements OnModuleInit {
   private readonly intervalInteraction = 300;
   private readonly intervalAiMobs = 300;
 
-  onModuleInit() {
+  public onModuleInit() {
     this.gameTickInterval = setInterval(() => {
       try {
         void this.tick();
@@ -72,7 +74,7 @@ export class GameService implements OnModuleInit {
     }, 150);
   }
 
-  onModuleDestroy() {
+  public onModuleDestroy() {
     clearInterval(this.gameTickInterval);
   }
 
@@ -89,7 +91,7 @@ export class GameService implements OnModuleInit {
     }
 
     if (now - this.lastTickTimeAoE >= this.intervalAoE) {
-      this.combatService.tickAoE();
+      this.aoeService.tickAoE();
       this.lastTickTimeAoE = now;
     }
 
@@ -109,7 +111,7 @@ export class GameService implements OnModuleInit {
     }
   }
 
-  async handleConnection(client: Socket) {
+  public async handleConnection(client: Socket) {
     try {
       const { token: accessToken, characterId } = client.handshake.auth as {
         token?: string;
@@ -296,7 +298,7 @@ export class GameService implements OnModuleInit {
       return acc;
     }, []);
 
-    const aoeZones = this.combatService.getActiveAoeZones(
+    const aoeZones = this.aoeService.getActiveAoeZones(
       findCharacter.locationId,
     );
 

@@ -41,23 +41,27 @@ import { setEntityState } from './lib/entity/helpers/set/set-entity-state.lib';
 import { EntityKey } from 'src/game/types/entity/keys/entity-key.type';
 import { RuntimeEntity } from 'src/game/types/entity/runtime-entity.type';
 import { EntityRef } from 'src/game/types/entity/entity-ref.type';
+import { EffectService } from 'src/effect/effect.service';
+import { EffectType } from 'src/common/enums/skill/effect-type.enum';
+import { Effect } from 'src/effect/entities/effect.entity';
+import { AoeService } from './services/aoe/aoe-service.service';
 
 @Injectable()
 export class CombatService {
   constructor(
     private readonly playerStateService: PlayerStateService,
-    private readonly spatialGridService: SpatialGridService<IRuntimeCharacter>,
     private readonly pathFindingService: PathFindingService,
     private readonly locationService: LocationService,
     private readonly socketService: SocketService,
     @Inject(forwardRef(() => MovementService))
     private readonly movementService: MovementService,
     private readonly runtimeMobService: RuntimeMobService,
+    private readonly effectService: EffectService,
+    private readonly aoeService: AoeService,
   ) {}
 
   // FIXME: разделить на сервисы со своими мапами ActiveAoE / ActiveMobs, разгрузить сервисы
 
-  private readonly activeAoEZones: Map<string, ActiveAoEZone> = new Map();
   private readonly pendingActionsQueue: Map<EntityKey, PendingAction[]> =
     new Map();
 
@@ -66,9 +70,7 @@ export class CombatService {
 
     for (const queue of this.pendingActionsQueue.values()) {
       if (queue.length === 0) continue;
-      // console.log('queue', queue);
       const action = queue[0];
-      // console.log('action', action);
 
       const attacker = this.getEntityByType(
         action.attackerRef.type,
@@ -122,13 +124,6 @@ export class CombatService {
         location.passableMap,
       );
 
-      const entitySkill = findEntitySkill(attacker, action.skillId);
-      // attacker.characterSkills.find((skill) => skill.id === action.skillId);
-
-      const range = entitySkill
-        ? entitySkill.skill.range
-        : attacker.attackRange;
-
       if (!steps) {
         this.pendingActionsQueue.delete(
           generateEntityKey({ type: attacker.type, id: attacker.id }),
@@ -136,15 +131,19 @@ export class CombatService {
         continue;
       }
 
+      const entitySkill = findEntitySkill(attacker, action.skillId);
+
+      const range = entitySkill
+        ? entitySkill.skill.range
+        : attacker.attackRange;
+
       if (steps.length > range) {
-        // attacker.isAttacking = false;
         this.movementService.setMovementQueue(attacker, steps);
-        setEntityState<RuntimeEntity>(attacker, 'pursue');
+        attacker.state = 'pursue';
         continue;
       } else {
-        // attacker.isAttacking = true;
         this.movementService.deleteMovementQueue(attacker);
-        setEntityState<RuntimeEntity>(attacker, 'attack');
+        attacker.state = 'attack';
       }
 
       let batchLocation = updatesByLocation.get(location.id);
@@ -164,8 +163,6 @@ export class CombatService {
         tileSize: location.tileWidth,
         removeAction: () => queue.shift(),
       };
-
-      // console.log('tick action', action);
 
       this.resolveAction(actionCtx, action);
     }
@@ -191,94 +188,6 @@ export class CombatService {
     return;
   }
 
-  private despawnAoEZone(zone: ActiveAoEZone) {
-    console.log('despawnAoEZone', zone);
-    this.activeAoEZones.delete(zone.id);
-    this.socketService.sendTo(
-      RedisKeys.Location + zone.locationId,
-      ServerToClientEvents.AoERemove,
-      { id: zone.id },
-    );
-  }
-
-  public tickAoE() {
-    const updatesByLocation = new Map<string, BatchUpdateAction[]>();
-    for (const zone of this.activeAoEZones.values()) {
-      console.log('tickAoE', zone);
-      const now = Date.now();
-
-      if (now >= zone.expiresAt) {
-        this.despawnAoEZone(zone);
-        continue;
-      }
-
-      if (zone.lastUsedAt && now - zone.lastUsedAt <= 1000) continue;
-
-      const attacker = this.playerStateService.getCharacterState(zone.casterId);
-      if (!attacker) {
-        this.despawnAoEZone(zone);
-        continue;
-      }
-
-      const cSkill = attacker.characterSkills.find(
-        (cSkill) => cSkill.id === zone.skillId,
-      );
-
-      if (!cSkill) {
-        this.despawnAoEZone(zone);
-        continue;
-      }
-
-      const { entities } = this.spatialGridService.queryRadius(
-        zone.locationId,
-        zone.x,
-        zone.y,
-        zone.radius,
-      );
-
-      let batchLocation = updatesByLocation.get(zone.locationId);
-      if (!batchLocation) {
-        batchLocation = [];
-        updatesByLocation.set(zone.locationId, batchLocation);
-      }
-
-      const targets: Target[] = [];
-      entities.forEach(({ id }) => {
-        const victim = this.playerStateService.getCharacterState(id);
-        if (!victim || !cSkill.skill.damagePerSecond || !victim.isAlive) return;
-        if (attacker.id === victim.id) return;
-        const receivedDamage = cSkill.skill.damagePerSecond;
-        const remainingHp = Math.max(victim.hp - receivedDamage, 0);
-        victim.hp = remainingHp;
-        victim.isAlive = remainingHp > 0;
-        zone.lastUsedAt = now;
-        targets.push({
-          id: victim.id,
-          type: victim.type,
-          hp: victim.hp,
-          isAlive: victim.isAlive,
-          receivedDamage,
-        });
-
-        console.log('TICK AOE', victim.name, receivedDamage);
-      });
-
-      batchLocation.push({
-        targets,
-        type: ActionType.Skill,
-        skillId: cSkill.id,
-      });
-    }
-
-    for (const [locationId, update] of updatesByLocation.entries()) {
-      this.socketService.sendTo(
-        RedisKeys.Location + locationId,
-        ServerToClientEvents.PlayerStateUpdate,
-        update,
-      );
-    }
-  }
-
   private getOrCreateActionQueue(key: EntityKey) {
     let queue = this.pendingActionsQueue.get(key);
     if (!queue) {
@@ -286,12 +195,6 @@ export class CombatService {
       this.pendingActionsQueue.set(key, queue);
     }
     return queue;
-  }
-
-  public getActiveAoeZones(locationId: string) {
-    return Array.from(this.activeAoEZones.values()).filter(
-      (zone) => zone.locationId === locationId,
-    );
   }
 
   public async requestAttackMoveForPlayer(
@@ -581,7 +484,6 @@ export class CombatService {
   private resolveAction(ctx: ActionContext, action: PendingAction): void {
     switch (action.actionType) {
       case ActionType.AutoAttack: {
-        // STOPPED: в проекте полная каша, можно костыльно получать методы и изменять их через доп функции, но если появятся всяике ПЕТЫ, будет супер неудобно. пришла идея сделать абстрактный класс для ентити и наследоваться от него у персонажа и моба, тогда можно будет удобно управлять данными. так же при сеттинге мобов нужно переделать рантайм-моб структуру сохраняя объект в нужной для нас форме (плевать на второй обход тк он будет только при запуске проекта)
         if (ctx.now - ctx.attacker.lastAttackAt < ctx.attacker.attackSpeed)
           return;
 
@@ -761,6 +663,10 @@ export class CombatService {
     );
   }
 
+  private applyEffect(entity: RuntimeEntity, effect: Effect) {
+    entity.effects.push(effect);
+  }
+
   private autoAttack(
     attackerRef: EntityRef,
     victimRef: EntityRef,
@@ -773,6 +679,15 @@ export class CombatService {
       return;
 
     // TODO: calculate received damage with defense and other stats
+    const autoAttackEffect = this.effectService.getEffectByType({
+      type: EffectType.Stun,
+      durationMs: 1250,
+    });
+
+    if (!autoAttackEffect) return;
+
+    this.applyEffect(victim, autoAttackEffect);
+
     const receivedDamage = attacker.basePhysicalDamage;
     console.log('receivedDamage', receivedDamage);
     const remainingHp = Math.max(victim.hp - receivedDamage, 0);
@@ -889,7 +804,7 @@ export class CombatService {
 
     const now = Date.now();
 
-    this.spawnAoeZone(attacker, characterSkill, area, now);
+    this.aoeService.spawnAoeZone(attacker, characterSkill, area, now);
 
     characterSkill.lastUsedAt = now;
     characterSkill.cooldownEnd = now + characterSkill.skill.cooldownMs;
@@ -906,47 +821,6 @@ export class CombatService {
     //   if (effect.type === EffectType.DamageOverTime) {
     //   }
     // });
-  }
-
-  private spawnAoeZone(
-    caster: IRuntimeCharacter,
-    cSkill: CharacterSkill,
-    area: PositionDto,
-    now: number,
-  ) {
-    if (!cSkill.skill.areaRadius || !cSkill.skill.duration) return;
-
-    console.log('spawn AOE zone');
-
-    const zoneId = uuidv4() as string;
-    this.activeAoEZones.set(zoneId, {
-      id: zoneId,
-      casterId: caster.id,
-      locationId: caster.locationId,
-      skillId: cSkill.id,
-      radius: cSkill.skill.areaRadius,
-      x: area.x,
-      y: area.y,
-      expiresAt: cSkill.skill.duration + now,
-      effects: cSkill.skill.effects ?? [],
-      lastUsedAt: null,
-    });
-
-    console.log('[spawnAoeZone] locationId', caster.locationId);
-
-    this.socketService.sendTo(
-      RedisKeys.Location + caster.locationId,
-      ServerToClientEvents.AoESpawn,
-      {
-        id: zoneId,
-        casterId: caster.id,
-        skillId: cSkill.id,
-        radius: cSkill.skill.areaRadius,
-        x: area.x,
-        y: area.y,
-        expiresAt: cSkill.skill.duration + now,
-      },
-    );
   }
 
   public clearPendingActions(entityRef: EntityRef): boolean {

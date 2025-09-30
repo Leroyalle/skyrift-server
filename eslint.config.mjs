@@ -43,6 +43,19 @@ export default tseslint.config(
           varsIgnorePattern: '^_',
         },
       ],
+
+      '@typescript-eslint/explicit-member-accessibility': [
+        'error',
+        {
+          accessibility: 'explicit',
+          overrides: {
+            accessors: 'off',
+            constructors: 'off',
+            methods: 'explicit',
+            properties: 'off',
+          },
+        },
+      ],
     },
   },
 );
