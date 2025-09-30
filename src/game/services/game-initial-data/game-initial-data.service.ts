@@ -18,7 +18,7 @@ export class GameInitialDataService {
     private readonly aoeService: AoeService,
   ) {}
 
-  public async gameInitialData(
+  public async loadInitialData(
     characterId: string,
     locationId: string,
   ): Promise<GameInitialData | undefined> {
@@ -31,7 +31,7 @@ export class GameInitialDataService {
     if (!location) return;
 
     const otherPlayersIds = await this.redisService.smembers(
-      RedisKeysFactory.locationPlayers(characterId),
+      RedisKeysFactory.locationPlayers(locationId),
     );
 
     const otherPlayers: IRuntimeCharacter[] = otherPlayersIds.reduce<

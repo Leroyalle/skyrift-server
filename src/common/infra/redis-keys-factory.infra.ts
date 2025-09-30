@@ -17,31 +17,31 @@ export class RedisKeysFactory {
     return this._connectedPlayersPrefix;
   }
 
-  static locationPlayers(locationId: string): string {
+  public static locationPlayers(locationId: string): string {
     return `${this._locationPrefix}:${locationId}:${this._playersPrefix}`;
   }
 
-  static connectedPlayer(playerId: string): string {
+  public static connectedPlayer(playerId: string): string {
     return `${this._connectedPlayersPrefix}:${playerId}`;
   }
 
-  static playerNameToId(name: string) {
+  public static playerNameToId(name: string) {
     return `${this._playerNameToIdPrefix}:${name}`;
   }
 
-  static playerState(characterId: string): string {
+  public static playerState(characterId: string): string {
     return `${this._playersPrefix}:${characterId}:${this._statePrefix}`;
   }
 
-  static chatWorld(): string {
+  public static chatWorld(): string {
     return `${this._chatPrefix}:${this._chatWorldPrefix}`;
   }
 
-  static chatLocation(locationId: string): string {
+  public static chatLocation(locationId: string): string {
     return `${this._chatPrefix}:${this._chatLocationPrefix}:${locationId}`;
   }
 
-  static chatDirect(senderId: string, recipientId: string) {
+  public static chatDirect(senderId: string, recipientId: string) {
     return `${this._chatPrefix}:${this._chatDirectPrefix}:${senderId}:${recipientId}`;
   }
 }
