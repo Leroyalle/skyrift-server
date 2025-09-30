@@ -13,11 +13,6 @@ export class ActionQueueService {
   private readonly pendingActionsQueue: Map<EntityKey, PendingAction[]> =
     new Map();
 
-  // public getPendingAction(entityRef: EntityRef) {
-  //   const entityKey = generateEntityKey(entityRef);
-  //   return this.pendingActionsQueue.get(entityKey);
-  // }
-
   public setPendingAction(entityRef: EntityRef, pendingAction: PendingAction) {
     const entityKey = generateEntityKey(entityRef);
     const queue = this.getOrCreateActionQueue(entityKey);

@@ -214,7 +214,7 @@ export class SeedService {
       }),
     );
 
-    const demonMob = this.mobRepository.create({
+    const demonMob = this.mobRepository.save({
       name: 'Суленыч',
       magicDefense: 1,
       physicalDefense: 1,
@@ -242,8 +242,6 @@ export class SeedService {
         }),
       ],
     });
-
-    await this.mobRepository.save(demonMob);
 
     const firstCharacter = await this.characterRepository.save({
       name: 'Leroyalle',
@@ -356,6 +354,10 @@ export class SeedService {
     await this.skillRepository.query('TRUNCATE TABLE "skill" CASCADE');
     await this.characterSkillRepository.query(
       'TRUNCATE TABLE "character_skill" CASCADE',
+    );
+    await this.characterSkillRepository.query('TRUNCATE TABLE "mob" CASCADE');
+    await this.characterSkillRepository.query(
+      'TRUNCATE TABLE "mob_spawn" CASCADE',
     );
     await this.characterSkillRepository.query(
       'TRUNCATE TABLE "effect" CASCADE',
