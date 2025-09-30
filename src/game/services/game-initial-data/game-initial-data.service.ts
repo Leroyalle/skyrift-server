@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { RedisService } from 'src/redis/redis.service';
-import { SocketService } from '../socket/socket.service';
 import { PlayerStateService } from '../player-state/player-state.service';
 import { RuntimeMobService } from '../runtime-mob/runtime-mob.service';
 import { LocationService } from 'src/location/location.service';
@@ -10,10 +9,9 @@ import { IRuntimeCharacter } from 'src/character/types/runtime-character';
 import { GameInitialData } from 'src/game/types/game-initial-data.type';
 
 @Injectable()
-export class RuntimeSpawnService {
+export class GameInitialDataService {
   constructor(
     private readonly redisService: RedisService,
-    private readonly socketService: SocketService,
     private readonly playerStateService: PlayerStateService,
     private readonly runtimeMobService: RuntimeMobService,
     private readonly locationService: LocationService,
