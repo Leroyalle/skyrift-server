@@ -110,8 +110,6 @@ export class MovementService {
 
       if (now - character.lastMoveAt < PLAYER_SPEED) return;
 
-      if (character.state === 'attack') return;
-
       const pathStep = steps.shift();
 
       if (!pathStep) return;

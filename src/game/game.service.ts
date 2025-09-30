@@ -306,7 +306,6 @@ export class GameService implements OnModuleInit {
       findCharacter.locationId,
     );
 
-    console.log('initialZones', aoeZones);
     await this.socketService.joinToRoom(
       userId,
       RedisKeys.Location + findLocation.id,
