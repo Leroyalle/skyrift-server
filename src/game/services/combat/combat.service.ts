@@ -21,7 +21,6 @@ import { RequestSkillUseDto } from 'src/game/dto/request-use-skill.dto';
 import { MovementService } from '../movement/movement.service';
 import { TargetAction } from './types/target-action.type';
 import { CachedLocation } from 'src/location/types/cashed-location.type';
-import { pushTargetAction } from './lib/action/push-target-action.lib';
 import { PathFindingService } from '../path-finding/path-finding.service';
 import { isEnemyFaction } from './lib/entity/guards/is-enemy-faction.lib';
 import { EntityType } from 'src/game/types/entity/entity-type.type';
@@ -29,8 +28,6 @@ import { generateEntityKey } from 'src/game/lib/entity/generate-entity-key.lib';
 import { isPlayer } from './lib/entity/guards/is-player.lib';
 import { findEntitySkill } from './lib/entity/helpers/get/find-entity-skill.lib';
 import { RuntimeMobService } from '../runtime-mob/runtime-mob.service';
-import { setEntityState } from './lib/entity/helpers/set/set-entity-state.lib';
-import { EntityKey } from 'src/game/types/entity/keys/entity-key.type';
 import { RuntimeEntity } from 'src/game/types/entity/runtime-entity.type';
 import { EntityRef } from 'src/game/types/entity/entity-ref.type';
 import { EffectService } from 'src/effect/effect.service';
@@ -49,17 +46,13 @@ export class CombatService {
     private readonly socketService: SocketService,
     @Inject(forwardRef(() => MovementService))
     private readonly movementService: MovementService,
+    @Inject(forwardRef(() => RuntimeMobService))
     private readonly runtimeMobService: RuntimeMobService,
     private readonly effectService: EffectService,
     private readonly aoeService: AoeService,
     private readonly runtimeEntityService: RuntimeEntityService,
     private readonly actionQueueService: ActionQueueService,
   ) {}
-
-  // FIXME: разделить на сервисы со своими мапами ActiveAoE / ActiveMobs, разгрузить сервисы
-
-  // private readonly pendingActionsQueue: Map<EntityKey, PendingAction[]> =
-  //   new Map();
 
   public async tickActions(): Promise<void> {
     const updatesByLocation = new Map<string, BatchUpdateAction[]>();

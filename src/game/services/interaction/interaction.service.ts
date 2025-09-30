@@ -17,13 +17,12 @@ import { RedisService } from 'src/redis/redis.service';
 import { RedisKeysFactory } from 'src/common/infra/redis-keys-factory.infra';
 import { RedisKeys } from 'src/common/enums/redis-keys.enum';
 import { ServerToClientEvents } from 'src/common/enums/game-socket-events.enum';
-import { CombatService } from '../combat/combat.service';
 import { CachedLocation } from 'src/location/types/cashed-location.type';
 import { PositionDto } from 'src/common/dto/position.dto';
 import { Teleport } from 'src/location/types/teleport.type';
 import { PathFindingService } from '../path-finding/path-finding.service';
 import { getTileByPosition } from 'src/game/lib/helpers/get-tile-by-position.lib';
-import { AoeService } from '../combat/services/aoe/aoe.service';
+import { GameInitialDataService } from '../game-initial-data/game-initial-data.service';
 
 @Injectable()
 export class InteractionService {
@@ -36,7 +35,7 @@ export class InteractionService {
     private readonly redisService: RedisService,
     @Inject(forwardRef(() => MovementService))
     private readonly movementService: MovementService,
-    private readonly aoeService: AoeService,
+    private readonly gameInitialDataService: GameInitialDataService,
   ) {}
 
   private readonly pendingInteractions = new Map<string, PendingInteraction>();
@@ -222,7 +221,7 @@ export class InteractionService {
     const client = this.socketService.getSocketByUserId(playerState.userId);
 
     console.log('client', Boolean(client));
-    if (!client) {
+    if (!client || !this.socketService.verifyUserDataInSocket(client)) {
       this.pendingInteractions.delete(playerState.id);
       return;
     }
@@ -254,7 +253,13 @@ export class InteractionService {
       playerState,
       targetLocation,
       teleport,
-      client,
+    );
+
+    this.socketService.setClientUserData(
+      playerState.userId,
+      playerState.id,
+      playerState.locationId,
+      { x: playerState.x, y: playerState.y },
     );
 
     await this.redisService.sadd(
@@ -274,31 +279,15 @@ export class InteractionService {
       prevPosition.y,
     );
 
-    const playersIds = await this.redisService.smembers(
-      RedisKeysFactory.locationPlayers(targetLocation.id),
+    const gameInitialData = await this.gameInitialDataService.loadInitialData(
+      playerState.id,
+      playerState.locationId,
     );
-
-    const otherPlayers: IRuntimeCharacter[] = playersIds.reduce<
-      IRuntimeCharacter[]
-    >((acc, id) => {
-      const character = this.playerStateService.getCharacterState(id);
-      if (character && character.id !== playerState.id) {
-        acc.push(character);
-      }
-      return acc;
-    }, []);
-
-    const aoeZones = this.aoeService.getActiveAoeZones(targetLocation.id);
 
     this.socketService.sendToUser(
       playerState.userId,
       ServerToClientEvents.PlayerUseTeleport,
-      {
-        character: playerState,
-        location: targetLocation,
-        players: otherPlayers,
-        aoeZones,
-      },
+      gameInitialData,
     );
 
     this.socketService.broadcastToOthers(

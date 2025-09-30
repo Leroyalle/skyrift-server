@@ -4,12 +4,10 @@ import { AuthService } from 'src/auth/auth.service';
 import { UserService } from 'src/user/user.service';
 import { CharacterService } from 'src/character/character.service';
 import { ServerToClientEvents } from 'src/common/enums/game-socket-events.enum';
-import { LocationService } from 'src/location/location.service';
 import { RedisService } from 'src/redis/redis.service';
 import { RedisKeys } from 'src/common/enums/redis-keys.enum';
 import { RequestMoveToDto } from './dto/request-move-to.dto';
 import { PlayerStateService } from './services/player-state/player-state.service';
-import { RedisKeysFactory } from 'src/common/infra/redis-keys-factory.infra';
 import { RequestAttackMoveDto } from './dto/request-attack-move.dto';
 import { JwtPayload } from 'src/common/types/jwt-payload.type';
 import { RequestSkillUseDto } from './dto/request-use-skill.dto';
@@ -24,7 +22,6 @@ import { InteractionService } from './services/interaction/interaction.service';
 import { ChatService } from './services/chat/chat.service';
 import { DirectMessageInput } from './services/chat/dto/direct-message.input';
 import { RuntimeMobService } from './services/runtime-mob/runtime-mob.service';
-import { GameInitialData } from './types/game-initial-data.type';
 import { AoeService } from './services/combat/services/aoe/aoe.service';
 import { GameInitialDataService } from './services/game-initial-data/game-initial-data.service';
 
@@ -41,7 +38,6 @@ export class GameService implements OnModuleInit {
     private readonly regenerationService: RegenerationService,
     private readonly socketService: SocketService,
     private readonly spatialGridService: SpatialGridService<IRuntimeCharacter>,
-    private readonly locationService: LocationService,
     private readonly interactionService: InteractionService,
     private readonly chatService: ChatService,
     private readonly runtimeMobService: RuntimeMobService,
