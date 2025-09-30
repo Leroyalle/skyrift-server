@@ -155,4 +155,10 @@ export class AoeService {
       { id: zone.id },
     );
   }
+
+  public getActiveAoeZones(locationId: string) {
+    return Array.from(this.activeAoEZones.values()).filter(
+      (zone) => zone.locationId === locationId,
+    );
+  }
 }
