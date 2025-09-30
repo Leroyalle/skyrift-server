@@ -35,13 +35,14 @@ type CharacterSkill {
   level: Int!
 }
 
-type SkillEffectConfig {
-  """Тип эффекта скилла"""
+type Effect {
+  id: ID!
   type: EffectType!
   damagePerSecond: Int
-  durationMs: Int
+  durationMs: Int!
   amount: Int
   slowPercent: Int
+  skill: Skill!
 }
 
 """Тип эффекта"""
@@ -98,9 +99,7 @@ type Skill {
 
   """Ключ тайлсета"""
   tilesetKey: String!
-
-  """Геймплейные эффекты"""
-  effects: [SkillEffectConfig!]
+  effects: [Effect!]!
 
   """Визуальные эффекты"""
   visualEffects: String

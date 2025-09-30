@@ -1,8 +1,9 @@
 import { ObjectType, Field, ID, Int } from '@nestjs/graphql';
 import { Skill } from 'src/character-class/skill/entities/skill.entity';
 import { EffectType } from 'src/common/enums/skill/effect-type.enum';
-import { Column, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
+@Entity()
 @ObjectType()
 export class Effect {
   @PrimaryGeneratedColumn('uuid')
@@ -13,19 +14,19 @@ export class Effect {
   @Field(() => EffectType)
   type: EffectType;
 
-  @Column()
+  @Column({ nullable: true })
   @Field(() => Int, { nullable: true })
   damagePerSecond?: number;
 
-  @Column()
+  @Column({ nullable: true })
   @Field(() => Int)
   durationMs: number;
 
-  @Column()
+  @Column({ nullable: true })
   @Field(() => Int, { nullable: true })
   amount?: number;
 
-  @Column()
+  @Column({ nullable: true })
   @Field(() => Int, { nullable: true })
   slowPercent?: number;
 

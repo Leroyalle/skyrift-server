@@ -5,6 +5,8 @@ import { SkillType } from 'src/common/enums/skill/skill-type.enum';
 import {
   Column,
   Entity,
+  JoinTable,
+  ManyToMany,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -90,7 +92,8 @@ export class Skill {
   @Field({ description: 'Ключ тайлсета' })
   tilesetKey: string;
 
-  @ManyToOne(() => Effect, (effect) => effect.skill)
+  @ManyToMany(() => Effect, (effect) => effect.skill)
+  @JoinTable()
   @Field(() => [Effect])
   effects: Effect[];
 
