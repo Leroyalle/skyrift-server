@@ -36,8 +36,6 @@ export class InteractionService {
     private readonly redisService: RedisService,
     @Inject(forwardRef(() => MovementService))
     private readonly movementService: MovementService,
-    @Inject(forwardRef(() => CombatService))
-    private readonly combatService: CombatService,
     private readonly aoeService: AoeService,
   ) {}
 

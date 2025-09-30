@@ -26,6 +26,7 @@ import { DirectMessageInput } from './services/chat/dto/direct-message.input';
 import { RuntimeMobService } from './services/runtime-mob/runtime-mob.service';
 import { GameInitialData } from './types/game-initial-data.type';
 import { AoeService } from './services/combat/services/aoe/aoe.service';
+import { GameInitialDataService } from './services/game-initial-data/game-initial-data.service';
 
 @Injectable()
 export class GameService implements OnModuleInit {
@@ -45,6 +46,7 @@ export class GameService implements OnModuleInit {
     private readonly chatService: ChatService,
     private readonly runtimeMobService: RuntimeMobService,
     private readonly aoeService: AoeService,
+    private readonly gameInitialDataService: GameInitialDataService,
   ) {}
 
   private readonly logger = new Logger(GameService.name);
@@ -260,70 +262,35 @@ export class GameService implements OnModuleInit {
     );
 
     if (storedClientId !== client.id) {
-      this.logger.warn(`Invalid connection for user ${userId}`);
       this.socketService.notifyDisconnection(client);
       console.log('Disconnect by storedClientId');
       client.disconnect();
       return;
     }
 
-    const findCharacter =
-      this.playerStateService.getCharacterState(characterId);
+    const initialData = await this.gameInitialDataService.loadInitialData(
+      characterId,
+      locationId,
+    );
 
-    if (!findCharacter) {
+    if (!initialData) {
       this.socketService.onDisconnect(client);
-      this.socketService.notifyDisconnection(client, 'Character not found');
+      this.socketService.notifyDisconnection(
+        client,
+        'Initial data is not found',
+      );
       return;
     }
 
-    const findLocation = await this.locationService.loadLocation(locationId);
-
-    if (!findLocation) {
-      this.socketService.notifyDisconnection(client, 'Location not found');
-      this.socketService.onDisconnect(client);
-      return;
-    }
-
-    const playersIds = await this.redisService.smembers(
-      RedisKeysFactory.locationPlayers(locationId),
-    );
-
-    const otherPlayers: IRuntimeCharacter[] = playersIds.reduce<
-      IRuntimeCharacter[]
-    >((acc, id) => {
-      const character = this.playerStateService.getCharacterState(id);
-      if (character && character.id !== characterId) {
-        acc.push(character);
-      }
-      return acc;
-    }, []);
-
-    const aoeZones = this.aoeService.getActiveAoeZones(
-      findCharacter.locationId,
-    );
-
-    const mobs = this.runtimeMobService.getMobsByLocation(
-      findCharacter.locationId,
-    );
-
-    console.log('initialZones', aoeZones);
     await this.socketService.joinToRoom(
       userId,
-      RedisKeys.Location + findLocation.id,
+      RedisKeys.Location + initialData.location.id,
     );
-
-    const gameInitialData: GameInitialData = {
-      character: findCharacter,
-      location: findLocation,
-      players: otherPlayers,
-      aoeZones,
-      mobs,
-    };
 
     this.socketService.sendToUser(
       userId,
       ServerToClientEvents.GameInitialState,
-      gameInitialData,
+      initialData,
     );
   }
 

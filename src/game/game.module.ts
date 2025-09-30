@@ -22,6 +22,7 @@ import { EffectModule } from 'src/effect/effect.module';
 import { AoeService } from './services/combat/services/aoe/aoe.service';
 import { RuntimeEntityService } from './services/runtime-entity/runtime-entity.service';
 import { ActionQueueService } from './services/combat/services/action-queue/action-queue.service';
+import { GameInitialDataService } from './services/game-initial-data/game-initial-data.service';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { ActionQueueService } from './services/combat/services/action-queue/acti
     AoeService,
     RuntimeEntityService,
     ActionQueueService,
+    GameInitialDataService,
   ],
 })
 export class GameModule {}

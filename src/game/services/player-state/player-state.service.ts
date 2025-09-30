@@ -23,7 +23,7 @@ export class PlayerStateService {
 
   private readonly playersStates: Map<string, IRuntimeCharacter> = new Map();
 
-  async join(character: Character) {
+  public async join(character: Character) {
     console.log('[join]', character);
 
     await this.redisService.sadd(
@@ -60,7 +60,7 @@ export class PlayerStateService {
     return character;
   }
 
-  async leave(userId: string, playerId: string, locationId: string) {
+  public async leave(userId: string, playerId: string, locationId: string) {
     this.playersStates.delete(playerId);
 
     await this.redisService.srem(
@@ -71,7 +71,7 @@ export class PlayerStateService {
     await this.redisService.del(RedisKeysFactory.connectedPlayer(userId));
   }
 
-  async syncCharacterToDb(characterId: string) {
+  public async syncCharacterToDb(characterId: string) {
     const playerState = this.playersStates.get(characterId);
 
     if (!playerState) return;
