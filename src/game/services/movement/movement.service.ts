@@ -176,8 +176,6 @@ export class MovementService {
     for (const [id, { steps }] of mobsEntries) {
       const runtimeMob = this.runtimeMobService.getById(id);
 
-      console.log('[MOVEMENT] mov loop', Boolean(runtimeMob));
-
       if (!runtimeMob) {
         this.mobsMovementQueues.delete(id);
         continue;
@@ -191,7 +189,6 @@ export class MovementService {
         : runtimeMob.walkSpeed;
 
       if (now - runtimeMob.lastMoveAt < moveSpeed) {
-        console.log('[MOVEMENT] mob loop SKIP BY SPEED');
         continue;
       }
 
@@ -199,8 +196,6 @@ export class MovementService {
 
       if (!step) {
         this.mobsMovementQueues.delete(id);
-        console.log('[MOVEMENT] mob loop SKIP BY !STEP');
-
         continue;
       }
 
@@ -232,7 +227,6 @@ export class MovementService {
         locationId,
         updatesByLocation,
       );
-      console.log('[MOVEMENT] mob loop END', Boolean(runtimeMob));
 
       updates.push({
         locationId,

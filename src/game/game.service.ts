@@ -338,7 +338,7 @@ export class GameService implements OnModuleInit {
   }
 
   public requestAttackCancelled(client: Socket) {
-    this.combatService.requestAttackCancel(client);
+    this.combatService.requestAttackCancelForPlayer(client);
   }
 
   public async requestUseTeleport(

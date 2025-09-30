@@ -38,8 +38,6 @@ export class PathFindingService {
   ): Promise<number> {
     const easyStar = this.getOrCreateEasyStar(locationId, passableMap);
 
-    console.log('[get_path_distance]', from, to);
-
     return new Promise((resolve) => {
       easyStar.findPath(from.x, from.y, to.x, to.y, (path) => {
         if (!path) {
@@ -68,7 +66,7 @@ export class PathFindingService {
         tilesTo.x,
         tilesTo.y,
         (path) => {
-          console.log('path', path);
+          // console.log('[pathFinding]', path);
 
           if (!path) {
             resolve(null);
@@ -83,7 +81,6 @@ export class PathFindingService {
           // TODO: если путь не найден вообще то возвращать какой-нибудь флаг -1, чтобы например деспавнить моба из-за бага при возвращении
 
           const steps = path.slice(1).map((p) => ({ x: p.x, y: p.y }));
-          console.log('steps', steps);
           resolve(steps);
         },
       );
