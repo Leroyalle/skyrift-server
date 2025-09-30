@@ -18,8 +18,8 @@ export class Effect {
   damagePerSecond?: number;
 
   @Column()
-  @Field(() => Int, { nullable: true })
-  durationMs?: number;
+  @Field(() => Int)
+  durationMs: number;
 
   @Column()
   @Field(() => Int, { nullable: true })

@@ -2,7 +2,9 @@ import { Injectable, OnModuleInit } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { Effect } from './entities/effect.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { EffectType } from 'src/common/enums/skill/effect-type.enum';
+import { EffectKey } from './types/effect-key.type';
+import { generateEffectKey } from './lib/generate-effect-key.lib';
+import { EffectRef } from './types/effect-ref.type';
 
 @Injectable()
 export class EffectService implements OnModuleInit {
@@ -11,26 +13,22 @@ export class EffectService implements OnModuleInit {
     private readonly effectRepository: Repository<Effect>,
   ) {}
 
-  private readonly effectsMap: Map<string, Effect> = new Map();
+  private readonly effectsMapById: Map<string, Effect> = new Map();
+  private readonly effectsMapByTypeDuration: Map<EffectKey, Effect> = new Map();
 
   async onModuleInit() {
     const effects = await this.effectRepository.find();
-    effects.forEach((e) => this.effectsMap.set(e.id, e));
+    effects.forEach((e) => {
+      this.effectsMapById.set(e.id, e);
+      this.effectsMapByTypeDuration.set(generateEffectKey(e), e);
+    });
   }
 
   public getEffectById(id: string): Effect | undefined {
-    return this.effectsMap.get(id);
+    return this.effectsMapById.get(id);
   }
 
-  public getEffectsByType(type: EffectType): Effect[] {
-    const effects: Effect[] = [];
-
-    this.effectsMap.forEach((e) => {
-      if (e.type === type) {
-        effects.push(e);
-      }
-    });
-
-    return effects;
+  public getEffectByType(ref: EffectRef): Effect | undefined {
+    return this.effectsMapByTypeDuration.get(generateEffectKey(ref));
   }
 }
