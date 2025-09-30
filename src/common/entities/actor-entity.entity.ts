@@ -12,7 +12,7 @@ export abstract class ActorEntity extends Timestamp {
   @Field(() => String, { description: 'Имя' })
   name: string;
 
-  @Column()
+  @Column({ default: 1 })
   @Field(() => Int, { description: 'Уровень', defaultValue: 1 })
   level: number;
 

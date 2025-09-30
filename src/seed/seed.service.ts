@@ -194,7 +194,6 @@ export class SeedService {
     const { mapEntries } = await this.readFiles();
     const savedLocations = await Promise.all(
       mapEntries.map(async ({ parsedMap, filename }) => {
-        console.log(parsedMap.tilesets);
         const tiledMap = this.optimizeTilesets(parsedMap);
         const passableMap = this.createPassableMap(tiledMap);
         this.setNameToTeleportObjects(tiledMap);
@@ -214,7 +213,7 @@ export class SeedService {
       }),
     );
 
-    const demonMob = this.mobRepository.save({
+    const demonMob = this.mobRepository.create({
       name: 'Суленыч',
       magicDefense: 1,
       physicalDefense: 1,
@@ -243,6 +242,8 @@ export class SeedService {
       ],
     });
 
+    await this.mobRepository.save(demonMob);
+
     const firstCharacter = await this.characterRepository.save({
       name: 'Leroyalle',
       user: firstUser,
@@ -253,7 +254,10 @@ export class SeedService {
       y: 960,
       maxHp: 1000,
       hp: 1000,
+      baseMagicDamage: 20,
       basePhysicalDamage: 50,
+      critMultiplier: 1,
+      experienceToNextLevel: 400,
       attackRange: 4,
       attackSpeed: 1000,
       isAlive: true,
@@ -275,16 +279,21 @@ export class SeedService {
       isAlive: true,
     });
 
+    console.log('Characters saved');
+
     const stanEffect = await this.effectRepository.save({
       durationMs: 1250,
       type: EffectType.Stun,
     });
+
+    console.log('effects saved');
 
     const fireArrowSkill = await this.skillRepository.save({
       name: 'Огненная стрела',
       damage: 92,
       cooldownMs: 5000,
       manaCost: 10,
+      effects: [stanEffect],
       characterClass: lunarClass,
       icon: '/sprites/skills/archer/fire-arrow.png',
       range: 8,
@@ -297,7 +306,6 @@ export class SeedService {
           durationMs: 3000,
         },
       ],
-      effects: [stanEffect],
       type: SkillType.Target,
     });
 
@@ -321,13 +329,6 @@ export class SeedService {
       duration: 5000,
       damagePerSecond: 40,
       areaRadius: 1,
-      effects: [
-        {
-          damagePerSecond: 37,
-          durationMs: 5000,
-          type: EffectType.DamageOverTime,
-        },
-      ],
     });
 
     await this.characterSkillRepository.save({
@@ -469,7 +470,6 @@ export class SeedService {
 
     map.tilesets.forEach((tileset) => {
       const { firstgid } = tileset;
-      console.log(tileset.tiles);
       tileset.tiles = tileset.tiles?.filter((tile) =>
         usesIds.has(firstgid + tile.id),
       );
