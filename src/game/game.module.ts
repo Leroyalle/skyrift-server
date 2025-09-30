@@ -19,6 +19,9 @@ import { RuntimeMobService } from './services/runtime-mob/runtime-mob.service';
 import { MobModule } from 'src/mob/mob.module';
 import { MobSpawnModule } from 'src/mob/mob-spawn/mob-spawn.module';
 import { EffectModule } from 'src/effect/effect.module';
+import { AoeService } from './services/combat/services/aoe/aoe.service';
+import { RuntimeEntityService } from './services/runtime-entity/runtime-entity.service';
+import { ActionQueueService } from './services/combat/services/action-queue/action-queue.service';
 
 @Module({
   imports: [
@@ -44,6 +47,9 @@ import { EffectModule } from 'src/effect/effect.module';
     InteractionService,
     ChatService,
     RuntimeMobService,
+    AoeService,
+    RuntimeEntityService,
+    ActionQueueService,
   ],
 })
 export class GameModule {}
