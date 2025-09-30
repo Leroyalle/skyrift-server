@@ -45,6 +45,7 @@ import { EffectService } from 'src/effect/effect.service';
 import { EffectType } from 'src/common/enums/skill/effect-type.enum';
 import { Effect } from 'src/effect/entities/effect.entity';
 import { AoeService } from './services/aoe/aoe-service.service';
+import { RuntimeEntityService } from '../runtime-entity/runtime-entity.service';
 
 @Injectable()
 export class CombatService {
@@ -58,6 +59,7 @@ export class CombatService {
     private readonly runtimeMobService: RuntimeMobService,
     private readonly effectService: EffectService,
     private readonly aoeService: AoeService,
+    private readonly runtimeEntityService: RuntimeEntityService,
   ) {}
 
   // FIXME: разделить на сервисы со своими мапами ActiveAoE / ActiveMobs, разгрузить сервисы
@@ -72,7 +74,7 @@ export class CombatService {
       if (queue.length === 0) continue;
       const action = queue[0];
 
-      const attacker = this.getEntityByType(
+      const attacker = this.runtimeEntityService.getEntityByType(
         action.attackerRef.type,
         action.attackerRef.id,
       );
@@ -95,7 +97,7 @@ export class CombatService {
       let targetTile: { x: number; y: number } | null = null;
 
       if (action.target.kind === 'target') {
-        const victim = this.getEntityByType(
+        const victim = this.runtimeEntityService.getEntityByType(
           action.target.type,
           action.target.id,
         );
@@ -174,18 +176,6 @@ export class CombatService {
         update,
       );
     }
-  }
-
-  private getEntityByType(
-    type: EntityType,
-    id: string,
-  ): RuntimeEntity | undefined {
-    if (type === 'player') {
-      return this.playerStateService.getCharacterState(id);
-    } else if (type === 'mob') {
-      return this.runtimeMobService.getById(id);
-    }
-    return;
   }
 
   private getOrCreateActionQueue(key: EntityKey) {
@@ -333,7 +323,10 @@ export class CombatService {
   }
 
   public processRequestAttackCancel(ref: EntityRef) {
-    const attacker = this.getEntityByType(ref.type, ref.id);
+    const attacker = this.runtimeEntityService.getEntityByType(
+      ref.type,
+      ref.id,
+    );
 
     if (!attacker) return;
 
@@ -489,7 +482,7 @@ export class CombatService {
 
         if (action.target.kind !== 'target') return;
 
-        const victim = this.getEntityByType(
+        const victim = this.runtimeEntityService.getEntityByType(
           action.target.type,
           action.target.id,
         );
@@ -562,7 +555,10 @@ export class CombatService {
         let targetTile: { x: number; y: number } | null = null;
         let victim: RuntimeEntity | undefined;
         if (action.target.kind === 'target') {
-          victim = this.getEntityByType(action.target.type, action.target.id);
+          victim = this.runtimeEntityService.getEntityByType(
+            action.target.type,
+            action.target.id,
+          );
           if (!victim || !victim.isAlive) return;
           targetTile = {
             x: Math.floor(victim.x / ctx.tileSize),
@@ -672,8 +668,14 @@ export class CombatService {
     victimRef: EntityRef,
     now: number,
   ): ApplyAutoAttackResult | undefined {
-    const attacker = this.getEntityByType(attackerRef.type, attackerRef.id);
-    const victim = this.getEntityByType(victimRef.type, victimRef.id);
+    const attacker = this.runtimeEntityService.getEntityByType(
+      attackerRef.type,
+      attackerRef.id,
+    );
+    const victim = this.runtimeEntityService.getEntityByType(
+      victimRef.type,
+      victimRef.id,
+    );
 
     if (!attacker || !victim || attacker.locationId !== victim.locationId)
       return;
@@ -728,7 +730,10 @@ export class CombatService {
   ): ApplySkillResult | undefined {
     // TODO: update for mob skills
     const attacker = this.playerStateService.getCharacterState(attackerRef.id);
-    const victim = this.getEntityByType(victimRef.type, victimRef.id);
+    const victim = this.runtimeEntityService.getEntityByType(
+      victimRef.type,
+      victimRef.id,
+    );
 
     if (!attacker || !victim || attacker.locationId !== victim.locationId)
       return;
