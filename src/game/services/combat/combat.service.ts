@@ -472,6 +472,7 @@ export class CombatService {
           pendingAction,
           attackerSkill,
         );
+        // pushTargetAction(entityRef, pendingAction, attackerSkill);
         break;
       }
     }
@@ -486,7 +487,8 @@ export class CombatService {
     const inRange = steps.length <= range;
     if (!inRange) {
       this.movementService.setMovementQueue(attacker, steps);
-      setEntityState<RuntimeEntity>(attacker, 'pursue');
+      // setEntityState<RuntimeEntity>(attacker, 'pursue');
+      attacker.state = 'pursue';
       pendingAction.state = 'move-to-target';
       console.log('[resolve_pending_action]: SET STEPS');
     } else {
@@ -849,8 +851,8 @@ export class CombatService {
     // });
   }
 
-  public clearPendingActions(entityRef: EntityRef): boolean {
-    const entityKey = generateEntityKey(entityRef);
-    return this.pendingActionsQueue.delete(entityKey);
-  }
+  // public clearPendingActions(entityRef: EntityRef): boolean {
+  //   const entityKey = generateEntityKey(entityRef);
+  //   return this.pendingActionsQueue.delete(entityKey);
+  // }
 }

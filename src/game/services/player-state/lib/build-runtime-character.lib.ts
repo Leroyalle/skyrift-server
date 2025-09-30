@@ -34,5 +34,6 @@ export const buildRuntimeCharacter = (
     characterSkills: character.characterSkills,
     characterClass: character.characterClass,
     type: 'player',
+    effects: [],
   };
 };

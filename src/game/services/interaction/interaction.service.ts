@@ -23,6 +23,7 @@ import { PositionDto } from 'src/common/dto/position.dto';
 import { Teleport } from 'src/location/types/teleport.type';
 import { PathFindingService } from '../path-finding/path-finding.service';
 import { getTileByPosition } from 'src/game/lib/helpers/get-tile-by-position.lib';
+import { AoeService } from '../combat/services/aoe/aoe.service';
 
 @Injectable()
 export class InteractionService {
@@ -37,19 +38,20 @@ export class InteractionService {
     private readonly movementService: MovementService,
     @Inject(forwardRef(() => CombatService))
     private readonly combatService: CombatService,
+    private readonly aoeService: AoeService,
   ) {}
 
   private readonly pendingInteractions = new Map<string, PendingInteraction>();
 
-  setPendingInteraction(interaction: PendingInteraction) {
+  public setPendingInteraction(interaction: PendingInteraction) {
     return this.pendingInteractions.set(interaction.characterId, interaction);
   }
 
-  deletePendingInteraction(characterId: string) {
+  public deletePendingInteraction(characterId: string) {
     return this.pendingInteractions.delete(characterId);
   }
 
-  async tickInteractions() {
+  public async tickInteractions() {
     for (const interaction of this.pendingInteractions.values()) {
       console.log('[tickInteractions]', interaction);
       const playerState = this.playerStateService.getCharacterState(
@@ -288,7 +290,7 @@ export class InteractionService {
       return acc;
     }, []);
 
-    const aoeZones = this.combatService.getActiveAoeZones(targetLocation.id);
+    const aoeZones = this.aoeService.getActiveAoeZones(targetLocation.id);
 
     this.socketService.sendToUser(
       playerState.userId,
