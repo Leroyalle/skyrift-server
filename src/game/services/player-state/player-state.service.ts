@@ -197,16 +197,16 @@ export class PlayerStateService {
     playerState: IRuntimeCharacter,
     targetLocation: CachedLocation,
     teleport: Teleport,
-    client: Socket,
+    // client: Socket,
   ) {
     playerState.locationId = targetLocation.id;
     playerState.x = teleport.targetX;
     playerState.y = teleport.targetY;
 
-    client.userData = {
-      ...client.userData,
-      position: { x: playerState.x, y: playerState.y },
-      locationId: playerState.locationId,
-    };
+    // client.userData = {
+    //   ...client.userData,
+    //   position: { x: playerState.x, y: playerState.y },
+    //   locationId: playerState.locationId,
+    // };
   }
 }

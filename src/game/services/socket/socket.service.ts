@@ -11,16 +11,16 @@ export class SocketService {
   private userIdToSocketId = new Map<string, string>();
   private socketIdToUserId = new Map<string, string>();
 
-  setServer(server: Namespace) {
+  public setServer(server: Namespace) {
     this.server = server;
   }
 
-  onConnection(socket: Socket, userId: string) {
+  public onConnection(socket: Socket, userId: string) {
     this.userIdToSocketId.set(userId, socket.id);
     this.socketIdToUserId.set(socket.id, userId);
   }
 
-  onDisconnect(socket: Socket) {
+  public onDisconnect(socket: Socket) {
     const userId = this.socketIdToUserId.get(socket.id);
     if (userId) {
       this.userIdToSocketId.delete(userId);
@@ -33,23 +33,27 @@ export class SocketService {
   //   socket.disconnect(true);
   // }
 
-  sendToUser(userId: string, event: ServerToClientEvents, payload: unknown) {
+  public sendToUser(
+    userId: string,
+    event: ServerToClientEvents,
+    payload: unknown,
+  ) {
     const socketId = this.userIdToSocketId.get(userId);
     if (!socketId || !this.server) return;
     this.server.to(socketId).emit(event, payload);
   }
 
-  sendTo(key: string, event: ServerToClientEvents, payload: unknown) {
+  public sendTo(key: string, event: ServerToClientEvents, payload: unknown) {
     if (!this.server) return;
     this.server.to(key).emit(event, payload);
   }
 
-  broadcast(event: ServerToClientEvents, payload: any) {
+  public broadcast(event: ServerToClientEvents, payload: any) {
     if (!this.server) return;
     this.server.emit(event, payload);
   }
 
-  broadcastToOthers(
+  public broadcastToOthers(
     client: Socket,
     key: string,
     event: ServerToClientEvents,
@@ -58,25 +62,25 @@ export class SocketService {
     client.to(key).emit(event, payload);
   }
 
-  getUserId(socketId: string): string | undefined {
+  public getUserId(socketId: string): string | undefined {
     return this.socketIdToUserId.get(socketId);
   }
 
-  getSocketId(userId: string): string | undefined {
+  public getSocketId(userId: string): string | undefined {
     return this.userIdToSocketId.get(userId);
   }
 
-  getSocket(socketId: string) {
+  public getSocket(socketId: string) {
     if (!this.server) return;
     return this.server.sockets.get(socketId);
   }
 
-  getSocketByUserId(userId: string) {
+  public getSocketByUserId(userId: string) {
     const socketId = this.getSocketId(userId);
     return socketId ? this.getSocket(socketId) : undefined;
   }
 
-  async joinToRoom(userId: string, roomId: string) {
+  public async joinToRoom(userId: string, roomId: string) {
     const socketId = this.userIdToSocketId.get(userId);
     if (!socketId) return;
     const socket = this.getSocket(socketId);
@@ -84,7 +88,7 @@ export class SocketService {
     await socket.join(roomId);
   }
 
-  async leaveTheRoom(userId: string, roomId: string) {
+  public async leaveTheRoom(userId: string, roomId: string) {
     const socketId = this.userIdToSocketId.get(userId);
     if (!socketId) return;
     const socket = this.getSocket(socketId);
@@ -92,7 +96,7 @@ export class SocketService {
     await socket.leave(roomId);
   }
 
-  setClientUserData(
+  public setClientUserData(
     userId: string,
     characterId: string,
     locationId: string,
@@ -116,7 +120,7 @@ export class SocketService {
     return socket.userData;
   }
 
-  verifyUserDataInSocket(client: Socket): client is Socket & {
+  public verifyUserDataInSocket(client: Socket): client is Socket & {
     userData: PlayerData;
   } {
     const userData = client.userData;

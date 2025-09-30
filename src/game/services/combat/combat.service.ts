@@ -54,11 +54,6 @@ export class CombatService {
     private readonly actionQueueService: ActionQueueService,
   ) {}
 
-  // FIXME: разделить на сервисы со своими мапами ActiveAoE / ActiveMobs, разгрузить сервисы
-
-  // private readonly pendingActionsQueue: Map<EntityKey, PendingAction[]> =
-  //   new Map();
-
   public async tickActions(): Promise<void> {
     const updatesByLocation = new Map<string, BatchUpdateAction[]>();
 
