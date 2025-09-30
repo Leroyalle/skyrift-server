@@ -102,6 +102,7 @@ export class RuntimeMobService implements OnModuleInit {
           runtimeMob.id,
           target.id,
         );
+        runtimeMob.state = 'pursue';
         continue;
       }
 

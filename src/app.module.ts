@@ -16,6 +16,8 @@ import { GameModule } from './game/game.module';
 import { CharacterModule } from './character/character.module';
 import { RedisModule } from './redis/redis.module';
 import { MobModule } from './mob/mob.module';
+import { EffectModule } from './skill/effect/effect.module';
+import { EffectModule } from './effect/effect.module';
 
 @Module({
   imports: [
@@ -61,6 +63,7 @@ import { MobModule } from './mob/mob.module';
     GameModule,
     RedisModule,
     MobModule,
+    EffectModule,
   ],
 })
 export class AppModule {}

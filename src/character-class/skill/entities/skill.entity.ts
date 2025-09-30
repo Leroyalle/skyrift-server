@@ -10,6 +10,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { SkillEffectConfig } from '../dto/skill-effect-config.input';
+import { Effect } from 'src/effect/entities/effect.entity';
 
 @Entity()
 @ObjectType()
@@ -89,12 +90,9 @@ export class Skill {
   @Field({ description: 'Ключ тайлсета' })
   tilesetKey: string;
 
-  @Column({ type: 'jsonb', nullable: true })
-  @Field(() => [SkillEffectConfig], {
-    nullable: true,
-    description: 'Геймплейные эффекты',
-  })
-  effects?: SkillEffectConfig[];
+  @ManyToOne(() => Effect, (effect) => effect.skill)
+  @Field(() => [Effect])
+  effects: Effect[];
 
   @Column({ type: 'json', nullable: true })
   @Field(() => String, { nullable: true, description: 'Визуальные эффекты' })

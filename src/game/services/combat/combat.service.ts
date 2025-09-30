@@ -66,9 +66,7 @@ export class CombatService {
 
     for (const queue of this.pendingActionsQueue.values()) {
       if (queue.length === 0) continue;
-      // console.log('queue', queue);
       const action = queue[0];
-      // console.log('action', action);
 
       const attacker = this.getEntityByType(
         action.attackerRef.type,
@@ -122,13 +120,6 @@ export class CombatService {
         location.passableMap,
       );
 
-      const entitySkill = findEntitySkill(attacker, action.skillId);
-      // attacker.characterSkills.find((skill) => skill.id === action.skillId);
-
-      const range = entitySkill
-        ? entitySkill.skill.range
-        : attacker.attackRange;
-
       if (!steps) {
         this.pendingActionsQueue.delete(
           generateEntityKey({ type: attacker.type, id: attacker.id }),
@@ -136,15 +127,24 @@ export class CombatService {
         continue;
       }
 
+      const entitySkill = findEntitySkill(attacker, action.skillId);
+      // attacker.characterSkills.find((skill) => skill.id === action.skillId);
+
+      const range = entitySkill
+        ? entitySkill.skill.range
+        : attacker.attackRange;
+
       if (steps.length > range) {
-        // attacker.isAttacking = false;
         this.movementService.setMovementQueue(attacker, steps);
-        setEntityState<RuntimeEntity>(attacker, 'pursue');
+        attacker.state = 'pursue';
         continue;
+        // attacker.isAttacking = false;
+        // setEntityState<RuntimeEntity>(attacker, 'pursue');
       } else {
-        // attacker.isAttacking = true;
         this.movementService.deleteMovementQueue(attacker);
-        setEntityState<RuntimeEntity>(attacker, 'attack');
+        attacker.state = 'attack';
+        // attacker.isAttacking = true;
+        // setEntityState<RuntimeEntity>(attacker, 'attack');
       }
 
       let batchLocation = updatesByLocation.get(location.id);
@@ -164,8 +164,6 @@ export class CombatService {
         tileSize: location.tileWidth,
         removeAction: () => queue.shift(),
       };
-
-      // console.log('tick action', action);
 
       this.resolveAction(actionCtx, action);
     }
@@ -581,7 +579,6 @@ export class CombatService {
   private resolveAction(ctx: ActionContext, action: PendingAction): void {
     switch (action.actionType) {
       case ActionType.AutoAttack: {
-        // STOPPED: в проекте полная каша, можно костыльно получать методы и изменять их через доп функции, но если появятся всяике ПЕТЫ, будет супер неудобно. пришла идея сделать абстрактный класс для ентити и наследоваться от него у персонажа и моба, тогда можно будет удобно управлять данными. так же при сеттинге мобов нужно переделать рантайм-моб структуру сохраняя объект в нужной для нас форме (плевать на второй обход тк он будет только при запуске проекта)
         if (ctx.now - ctx.attacker.lastAttackAt < ctx.attacker.attackSpeed)
           return;
 
