@@ -16,7 +16,7 @@ export class EffectService implements OnModuleInit {
   private readonly effectsMapById: Map<string, Effect> = new Map();
   private readonly effectsMapByTypeDuration: Map<EffectKey, Effect> = new Map();
 
-  async onModuleInit() {
+  public async onModuleInit(): Promise<void> {
     const effects = await this.effectRepository.find();
     effects.forEach((e) => {
       this.effectsMapById.set(e.id, e);

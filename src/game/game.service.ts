@@ -62,7 +62,7 @@ export class GameService implements OnModuleInit {
   private readonly intervalInteraction = 300;
   private readonly intervalAiMobs = 300;
 
-  onModuleInit() {
+  public onModuleInit() {
     this.gameTickInterval = setInterval(() => {
       try {
         void this.tick();
@@ -72,7 +72,7 @@ export class GameService implements OnModuleInit {
     }, 150);
   }
 
-  onModuleDestroy() {
+  public onModuleDestroy() {
     clearInterval(this.gameTickInterval);
   }
 
@@ -109,7 +109,7 @@ export class GameService implements OnModuleInit {
     }
   }
 
-  async handleConnection(client: Socket) {
+  public async handleConnection(client: Socket) {
     try {
       const { token: accessToken, characterId } = client.handshake.auth as {
         token?: string;
