@@ -25,7 +25,7 @@ import { ChatService } from './services/chat/chat.service';
 import { DirectMessageInput } from './services/chat/dto/direct-message.input';
 import { RuntimeMobService } from './services/runtime-mob/runtime-mob.service';
 import { GameInitialData } from './types/game-initial-data.type';
-import { AoeService } from './services/combat/services/aoe/aoe-service.service';
+import { AoeService } from './services/combat/services/aoe/aoe.service';
 
 @Injectable()
 export class GameService implements OnModuleInit {

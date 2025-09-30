@@ -2,15 +2,7 @@ import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { PlayerStateService } from '../player-state/player-state.service';
 import { SkillType } from 'src/common/enums/skill/skill-type.enum';
 import { PositionDto } from 'src/common/dto/position.dto';
-import { SpatialGridService } from '../spatial-grid/spatial-grid.service';
-import { IRuntimeCharacter } from 'src/character/types/runtime-character';
-import { ActiveAoEZone } from './types/active-aoe-zone.type';
-import { CharacterSkill } from 'src/character/character-skill/entities/character-skill.entity';
-import { v4 as uuidv4 } from 'uuid';
-import {
-  BatchUpdateAction,
-  Target,
-} from 'src/game/types/batch-update/batch-update-action.type';
+import { BatchUpdateAction } from 'src/game/types/batch-update/batch-update-action.type';
 import { ActionType, PendingAction } from 'src/game/types/pending-actions.type';
 import { LocationService } from 'src/location/location.service';
 import { SocketService } from '../socket/socket.service';
@@ -44,7 +36,9 @@ import { EntityRef } from 'src/game/types/entity/entity-ref.type';
 import { EffectService } from 'src/effect/effect.service';
 import { EffectType } from 'src/common/enums/skill/effect-type.enum';
 import { Effect } from 'src/effect/entities/effect.entity';
-import { AoeService } from './services/aoe/aoe-service.service';
+import { AoeService } from './services/aoe/aoe.service';
+import { RuntimeEntityService } from '../runtime-entity/runtime-entity.service';
+import { ActionQueueService } from './services/action-queue/action-queue.service';
 
 @Injectable()
 export class CombatService {
@@ -58,21 +52,23 @@ export class CombatService {
     private readonly runtimeMobService: RuntimeMobService,
     private readonly effectService: EffectService,
     private readonly aoeService: AoeService,
+    private readonly runtimeEntityService: RuntimeEntityService,
+    private readonly actionQueueService: ActionQueueService,
   ) {}
 
   // FIXME: разделить на сервисы со своими мапами ActiveAoE / ActiveMobs, разгрузить сервисы
 
-  private readonly pendingActionsQueue: Map<EntityKey, PendingAction[]> =
-    new Map();
+  // private readonly pendingActionsQueue: Map<EntityKey, PendingAction[]> =
+  //   new Map();
 
   public async tickActions(): Promise<void> {
     const updatesByLocation = new Map<string, BatchUpdateAction[]>();
 
-    for (const queue of this.pendingActionsQueue.values()) {
+    for (const queue of this.actionQueueService.getIterablePendingActions()) {
       if (queue.length === 0) continue;
       const action = queue[0];
 
-      const attacker = this.getEntityByType(
+      const attacker = this.runtimeEntityService.getEntityByType(
         action.attackerRef.type,
         action.attackerRef.id,
       );
@@ -95,7 +91,7 @@ export class CombatService {
       let targetTile: { x: number; y: number } | null = null;
 
       if (action.target.kind === 'target') {
-        const victim = this.getEntityByType(
+        const victim = this.runtimeEntityService.getEntityByType(
           action.target.type,
           action.target.id,
         );
@@ -125,9 +121,13 @@ export class CombatService {
       );
 
       if (!steps) {
-        this.pendingActionsQueue.delete(
-          generateEntityKey({ type: attacker.type, id: attacker.id }),
-        );
+        // this.pendingActionsQueue.delete(
+        //   generateEntityKey({ type: attacker.type, id: attacker.id }),
+        // );
+        this.actionQueueService.clearPendingActions({
+          type: attacker.type,
+          id: attacker.id,
+        });
         continue;
       }
 
@@ -176,26 +176,14 @@ export class CombatService {
     }
   }
 
-  private getEntityByType(
-    type: EntityType,
-    id: string,
-  ): RuntimeEntity | undefined {
-    if (type === 'player') {
-      return this.playerStateService.getCharacterState(id);
-    } else if (type === 'mob') {
-      return this.runtimeMobService.getById(id);
-    }
-    return;
-  }
-
-  private getOrCreateActionQueue(key: EntityKey) {
-    let queue = this.pendingActionsQueue.get(key);
-    if (!queue) {
-      queue = [];
-      this.pendingActionsQueue.set(key, queue);
-    }
-    return queue;
-  }
+  // private getOrCreateActionQueue(key: EntityKey) {
+  //   let queue = this.pendingActionsQueue.get(key);
+  //   if (!queue) {
+  //     queue = [];
+  //     this.pendingActionsQueue.set(key, queue);
+  //   }
+  //   return queue;
+  // }
 
   public async requestAttackMoveForPlayer(
     client: Socket,
@@ -248,10 +236,15 @@ export class CombatService {
 
     const entityKey = generateEntityKey<RuntimeEntity>(attacker);
 
-    const queue = this.getOrCreateActionQueue(entityKey);
+    // const queue = this.getOrCreateActionQueue(entityKey);
 
-    const hasAutoAttack = queue.some(
-      (q) => q.actionType === ActionType.AutoAttack,
+    // const hasAutoAttack = queue.some(
+    //   (q) => q.actionType === ActionType.AutoAttack,
+    // );
+
+    const hasAutoAttack = this.actionQueueService.findActionType(
+      { id: attacker.id, type: attacker.type },
+      ActionType.AutoAttack,
     );
 
     if (hasAutoAttack) return;
@@ -290,7 +283,7 @@ export class CombatService {
 
     if (characterSkill.skill.type === SkillType.Target) {
       if (!input.targetId) return;
-
+      // FIXME: сделать универсальным и для мобов
       const victim = this.playerStateService.getCharacterState(input.targetId);
 
       if (!victim) return;
@@ -299,7 +292,7 @@ export class CombatService {
         attacker,
         {
           kind: 'target',
-          type: attacker.type,
+          type: victim.type,
           id: input.targetId,
         },
         characterSkill.id,
@@ -333,12 +326,20 @@ export class CombatService {
   }
 
   public processRequestAttackCancel(ref: EntityRef) {
-    const attacker = this.getEntityByType(ref.type, ref.id);
+    const attacker = this.runtimeEntityService.getEntityByType(
+      ref.type,
+      ref.id,
+    );
 
     if (!attacker) return;
 
-    this.pendingActionsQueue.set(
-      generateEntityKey({ type: ref.type, id: ref.id }),
+    // this.pendingActionsQueue.set(
+    //   generateEntityKey({ type: ref.type, id: ref.id }),
+    //   [],
+    // );
+
+    this.actionQueueService.clearPendingActions(
+      { type: ref.type, id: ref.id },
       [],
     );
 
@@ -439,25 +440,39 @@ export class CombatService {
       state: 'wait-path',
     };
 
-    const attackerKey = generateEntityKey<RuntimeEntity>(attacker);
-    const queue = this.getOrCreateActionQueue(attackerKey);
+    // const attackerKey = generateEntityKey<RuntimeEntity>(attacker);
+    // const queue = this.getOrCreateActionQueue(attackerKey);
 
-    const hasAutoAttack = queue.some(
-      (q) => q.actionType === ActionType.AutoAttack,
-    );
+    // const hasAutoAttack = queue.some(
+    //   (q) => q.actionType === ActionType.AutoAttack,
+    // );
 
-    if (hasAutoAttack && !skillId) return;
+    // if (hasAutoAttack && !skillId) return;
 
+    const entityRef: EntityRef = {
+      id: attacker.id,
+      type: attacker.type,
+    };
     switch (attackerSkill?.skill.type) {
       case SkillType.AoE: {
         this.resolvePendingActionState(attacker, pendingAction, range, steps);
         console.log('push aoe skill', pendingAction);
-        pushTargetAction(queue, hasAutoAttack, pendingAction, attackerSkill);
+        // pushTargetAction(entityRef, pendingAction, attackerSkill);
+        this.actionQueueService.pushPendingAction(
+          entityRef,
+          pendingAction,
+          attackerSkill,
+        );
         break;
       }
       default: {
         this.resolvePendingActionState(attacker, pendingAction, range, steps);
-        pushTargetAction(queue, hasAutoAttack, pendingAction, attackerSkill);
+        this.actionQueueService.pushPendingAction(
+          entityRef,
+          pendingAction,
+          attackerSkill,
+        );
+        // pushTargetAction(entityRef, pendingAction, attackerSkill);
         break;
       }
     }
@@ -472,7 +487,8 @@ export class CombatService {
     const inRange = steps.length <= range;
     if (!inRange) {
       this.movementService.setMovementQueue(attacker, steps);
-      setEntityState<RuntimeEntity>(attacker, 'pursue');
+      // setEntityState<RuntimeEntity>(attacker, 'pursue');
+      attacker.state = 'pursue';
       pendingAction.state = 'move-to-target';
       console.log('[resolve_pending_action]: SET STEPS');
     } else {
@@ -489,7 +505,7 @@ export class CombatService {
 
         if (action.target.kind !== 'target') return;
 
-        const victim = this.getEntityByType(
+        const victim = this.runtimeEntityService.getEntityByType(
           action.target.type,
           action.target.id,
         );
@@ -562,7 +578,10 @@ export class CombatService {
         let targetTile: { x: number; y: number } | null = null;
         let victim: RuntimeEntity | undefined;
         if (action.target.kind === 'target') {
-          victim = this.getEntityByType(action.target.type, action.target.id);
+          victim = this.runtimeEntityService.getEntityByType(
+            action.target.type,
+            action.target.id,
+          );
           if (!victim || !victim.isAlive) return;
           targetTile = {
             x: Math.floor(victim.x / ctx.tileSize),
@@ -672,8 +691,14 @@ export class CombatService {
     victimRef: EntityRef,
     now: number,
   ): ApplyAutoAttackResult | undefined {
-    const attacker = this.getEntityByType(attackerRef.type, attackerRef.id);
-    const victim = this.getEntityByType(victimRef.type, victimRef.id);
+    const attacker = this.runtimeEntityService.getEntityByType(
+      attackerRef.type,
+      attackerRef.id,
+    );
+    const victim = this.runtimeEntityService.getEntityByType(
+      victimRef.type,
+      victimRef.id,
+    );
 
     if (!attacker || !victim || attacker.locationId !== victim.locationId)
       return;
@@ -728,7 +753,10 @@ export class CombatService {
   ): ApplySkillResult | undefined {
     // TODO: update for mob skills
     const attacker = this.playerStateService.getCharacterState(attackerRef.id);
-    const victim = this.getEntityByType(victimRef.type, victimRef.id);
+    const victim = this.runtimeEntityService.getEntityByType(
+      victimRef.type,
+      victimRef.id,
+    );
 
     if (!attacker || !victim || attacker.locationId !== victim.locationId)
       return;
@@ -823,8 +851,8 @@ export class CombatService {
     // });
   }
 
-  public clearPendingActions(entityRef: EntityRef): boolean {
-    const entityKey = generateEntityKey(entityRef);
-    return this.pendingActionsQueue.delete(entityKey);
-  }
+  // public clearPendingActions(entityRef: EntityRef): boolean {
+  //   const entityKey = generateEntityKey(entityRef);
+  //   return this.pendingActionsQueue.delete(entityKey);
+  // }
 }
