@@ -41,6 +41,9 @@ import { setEntityState } from './lib/entity/helpers/set/set-entity-state.lib';
 import { EntityKey } from 'src/game/types/entity/keys/entity-key.type';
 import { RuntimeEntity } from 'src/game/types/entity/runtime-entity.type';
 import { EntityRef } from 'src/game/types/entity/entity-ref.type';
+import { EffectService } from 'src/effect/effect.service';
+import { EffectType } from 'src/common/enums/skill/effect-type.enum';
+import { Effect } from 'src/effect/entities/effect.entity';
 
 @Injectable()
 export class CombatService {
@@ -53,6 +56,7 @@ export class CombatService {
     @Inject(forwardRef(() => MovementService))
     private readonly movementService: MovementService,
     private readonly runtimeMobService: RuntimeMobService,
+    private readonly effectService: EffectService,
   ) {}
 
   // FIXME: разделить на сервисы со своими мапами ActiveAoE / ActiveMobs, разгрузить сервисы
@@ -128,7 +132,6 @@ export class CombatService {
       }
 
       const entitySkill = findEntitySkill(attacker, action.skillId);
-      // attacker.characterSkills.find((skill) => skill.id === action.skillId);
 
       const range = entitySkill
         ? entitySkill.skill.range
@@ -138,13 +141,9 @@ export class CombatService {
         this.movementService.setMovementQueue(attacker, steps);
         attacker.state = 'pursue';
         continue;
-        // attacker.isAttacking = false;
-        // setEntityState<RuntimeEntity>(attacker, 'pursue');
       } else {
         this.movementService.deleteMovementQueue(attacker);
         attacker.state = 'attack';
-        // attacker.isAttacking = true;
-        // setEntityState<RuntimeEntity>(attacker, 'attack');
       }
 
       let batchLocation = updatesByLocation.get(location.id);
@@ -758,6 +757,10 @@ export class CombatService {
     );
   }
 
+  private applyEffect(entity: RuntimeEntity, effect: Effect) {
+    entity.effects.push(effect);
+  }
+
   private autoAttack(
     attackerRef: EntityRef,
     victimRef: EntityRef,
@@ -770,6 +773,15 @@ export class CombatService {
       return;
 
     // TODO: calculate received damage with defense and other stats
+    const autoAttackEffect = this.effectService.getEffectByType({
+      type: EffectType.Stun,
+      durationMs: 1250,
+    });
+
+    if (!autoAttackEffect) return;
+
+    this.applyEffect(victim, autoAttackEffect);
+
     const receivedDamage = attacker.basePhysicalDamage;
     console.log('receivedDamage', receivedDamage);
     const remainingHp = Math.max(victim.hp - receivedDamage, 0);

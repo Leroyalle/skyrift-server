@@ -18,6 +18,7 @@ import { ChatService } from './services/chat/chat.service';
 import { RuntimeMobService } from './services/runtime-mob/runtime-mob.service';
 import { MobModule } from 'src/mob/mob.module';
 import { MobSpawnModule } from 'src/mob/mob-spawn/mob-spawn.module';
+import { EffectModule } from 'src/effect/effect.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { MobSpawnModule } from 'src/mob/mob-spawn/mob-spawn.module';
     RedisModule,
     MobModule,
     MobSpawnModule,
+    EffectModule,
   ],
   providers: [
     GameGateway,

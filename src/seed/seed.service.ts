@@ -278,7 +278,7 @@ export class SeedService {
     });
 
     const stanEffect = await this.effectRepository.save({
-      durationMs: 1.25,
+      durationMs: 1250,
       type: EffectType.Stun,
     });
 
