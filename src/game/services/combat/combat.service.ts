@@ -2,15 +2,7 @@ import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { PlayerStateService } from '../player-state/player-state.service';
 import { SkillType } from 'src/common/enums/skill/skill-type.enum';
 import { PositionDto } from 'src/common/dto/position.dto';
-import { SpatialGridService } from '../spatial-grid/spatial-grid.service';
-import { IRuntimeCharacter } from 'src/character/types/runtime-character';
-import { ActiveAoEZone } from './types/active-aoe-zone.type';
-import { CharacterSkill } from 'src/character/character-skill/entities/character-skill.entity';
-import { v4 as uuidv4 } from 'uuid';
-import {
-  BatchUpdateAction,
-  Target,
-} from 'src/game/types/batch-update/batch-update-action.type';
+import { BatchUpdateAction } from 'src/game/types/batch-update/batch-update-action.type';
 import { ActionType, PendingAction } from 'src/game/types/pending-actions.type';
 import { LocationService } from 'src/location/location.service';
 import { SocketService } from '../socket/socket.service';
@@ -44,8 +36,9 @@ import { EntityRef } from 'src/game/types/entity/entity-ref.type';
 import { EffectService } from 'src/effect/effect.service';
 import { EffectType } from 'src/common/enums/skill/effect-type.enum';
 import { Effect } from 'src/effect/entities/effect.entity';
-import { AoeService } from './services/aoe/aoe-service.service';
+import { AoeService } from './services/aoe/aoe.service';
 import { RuntimeEntityService } from '../runtime-entity/runtime-entity.service';
+import { ActionQueueService } from './services/action-queue/action-queue.service';
 
 @Injectable()
 export class CombatService {
@@ -60,17 +53,18 @@ export class CombatService {
     private readonly effectService: EffectService,
     private readonly aoeService: AoeService,
     private readonly runtimeEntityService: RuntimeEntityService,
+    private readonly actionQueueService: ActionQueueService,
   ) {}
 
   // FIXME: разделить на сервисы со своими мапами ActiveAoE / ActiveMobs, разгрузить сервисы
 
-  private readonly pendingActionsQueue: Map<EntityKey, PendingAction[]> =
-    new Map();
+  // private readonly pendingActionsQueue: Map<EntityKey, PendingAction[]> =
+  //   new Map();
 
   public async tickActions(): Promise<void> {
     const updatesByLocation = new Map<string, BatchUpdateAction[]>();
 
-    for (const queue of this.pendingActionsQueue.values()) {
+    for (const queue of this.actionQueueService.getIterablePendingActions()) {
       if (queue.length === 0) continue;
       const action = queue[0];
 
@@ -127,9 +121,13 @@ export class CombatService {
       );
 
       if (!steps) {
-        this.pendingActionsQueue.delete(
-          generateEntityKey({ type: attacker.type, id: attacker.id }),
-        );
+        // this.pendingActionsQueue.delete(
+        //   generateEntityKey({ type: attacker.type, id: attacker.id }),
+        // );
+        this.actionQueueService.clearPendingActions({
+          type: attacker.type,
+          id: attacker.id,
+        });
         continue;
       }
 
@@ -178,14 +176,14 @@ export class CombatService {
     }
   }
 
-  private getOrCreateActionQueue(key: EntityKey) {
-    let queue = this.pendingActionsQueue.get(key);
-    if (!queue) {
-      queue = [];
-      this.pendingActionsQueue.set(key, queue);
-    }
-    return queue;
-  }
+  // private getOrCreateActionQueue(key: EntityKey) {
+  //   let queue = this.pendingActionsQueue.get(key);
+  //   if (!queue) {
+  //     queue = [];
+  //     this.pendingActionsQueue.set(key, queue);
+  //   }
+  //   return queue;
+  // }
 
   public async requestAttackMoveForPlayer(
     client: Socket,
@@ -238,10 +236,15 @@ export class CombatService {
 
     const entityKey = generateEntityKey<RuntimeEntity>(attacker);
 
-    const queue = this.getOrCreateActionQueue(entityKey);
+    // const queue = this.getOrCreateActionQueue(entityKey);
 
-    const hasAutoAttack = queue.some(
-      (q) => q.actionType === ActionType.AutoAttack,
+    // const hasAutoAttack = queue.some(
+    //   (q) => q.actionType === ActionType.AutoAttack,
+    // );
+
+    const hasAutoAttack = this.actionQueueService.findActionType(
+      { id: attacker.id, type: attacker.type },
+      ActionType.AutoAttack,
     );
 
     if (hasAutoAttack) return;
@@ -280,7 +283,7 @@ export class CombatService {
 
     if (characterSkill.skill.type === SkillType.Target) {
       if (!input.targetId) return;
-
+      // FIXME: сделать универсальным и для мобов
       const victim = this.playerStateService.getCharacterState(input.targetId);
 
       if (!victim) return;
@@ -289,7 +292,7 @@ export class CombatService {
         attacker,
         {
           kind: 'target',
-          type: attacker.type,
+          type: victim.type,
           id: input.targetId,
         },
         characterSkill.id,
@@ -330,8 +333,13 @@ export class CombatService {
 
     if (!attacker) return;
 
-    this.pendingActionsQueue.set(
-      generateEntityKey({ type: ref.type, id: ref.id }),
+    // this.pendingActionsQueue.set(
+    //   generateEntityKey({ type: ref.type, id: ref.id }),
+    //   [],
+    // );
+
+    this.actionQueueService.clearPendingActions(
+      { type: ref.type, id: ref.id },
       [],
     );
 
