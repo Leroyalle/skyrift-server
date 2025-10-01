@@ -696,7 +696,7 @@ export class CombatService {
     // TODO: calculate received damage with defense and other stats
     const autoAttackEffect = this.effectService.getEffectByType({
       type: EffectType.Stun,
-      durationMs: 1250,
+      durationMs: 300,
     });
 
     if (!autoAttackEffect) return;
