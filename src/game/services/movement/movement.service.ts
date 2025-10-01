@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { PlayerStateService } from 'src/game/services/player-state/player-state.service';
 import { LocationService } from 'src/location/location.service';
 import { SocketService } from '../socket/socket.service';
