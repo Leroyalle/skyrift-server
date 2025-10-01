@@ -522,6 +522,8 @@ export class CombatService {
           type: action.target.type,
         };
 
+        this.applyMiniRoot(ctx.attacker, 200);
+
         this.socketService.sendTo(
           RedisKeys.Location + ctx.attacker.locationId,
           ServerToClientEvents.EntityAttackStart,
@@ -694,21 +696,22 @@ export class CombatService {
       return;
 
     // TODO: calculate received damage with defense and other stats
-    const autoAttackEffect = this.effectService.getEffectByType({
-      type: EffectType.Stun,
-      durationMs: 300,
-    });
+    // const autoAttackEffect = this.effectService.getEffectByType({
+    //   type: EffectType.Stun,
+    //   durationMs: 300,
+    // });
 
-    if (!autoAttackEffect) return;
+    // if (!autoAttackEffect) return;
 
-    this.runtimeEffectService.addEffect(victim, autoAttackEffect);
+    // this.runtimeEffectService.addEffect(victim, autoAttackEffect);
     // this.applyEffect(victim, autoAttackEffect);
 
     const receivedDamage = attacker.basePhysicalDamage;
     console.log('receivedDamage', receivedDamage);
     const remainingHp = Math.max(victim.hp - receivedDamage, 0);
     const isAlive = remainingHp !== 0;
-
+    this.applyMiniRoot(victim, 200, now);
+    // victim.lastMoveAt = now + 250;
     victim.hp = remainingHp;
     victim.isAlive = isAlive;
 
@@ -734,6 +737,14 @@ export class CombatService {
       skillId: null,
       victimIsAlive: victim.isAlive,
     };
+  }
+
+  private applyMiniRoot(
+    entity: TRuntimeEntity,
+    rootTime: number = 200,
+    now: number = Date.now(),
+  ) {
+    entity.lastMoveAt = now + rootTime;
   }
 
   private applySkill(

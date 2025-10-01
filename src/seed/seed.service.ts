@@ -228,14 +228,14 @@ export class SeedService {
       respawnTime: 5000,
       level: 3,
       expReward: 20,
-      attackSpeed: 450,
+      attackSpeed: 1000,
       critMultiplier: 1,
       baseMagicDamage: 30,
       basePhysicalDamage: 41,
       spawn: [
         this.mobSpawnRepository.create({
-          spawnX: 2016,
-          spawnY: 960,
+          spawnX: 1900,
+          spawnY: 1000,
           areaRadius: 3,
           location: savedLocations[0],
         }),

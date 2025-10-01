@@ -52,7 +52,6 @@ export class RuntimeMobService implements OnModuleInit {
     return mobs;
   }
 
-  // TODO: делать паузу между патрулями
   public async tickAiMobs() {
     const mobsEntries = Array.from(this.mobsById.values());
 
@@ -68,47 +67,60 @@ export class RuntimeMobService implements OnModuleInit {
         runtimeMob.id,
       );
 
+      const currentPos = getTileByPosition(runtimeMob.x, runtimeMob.y, 32);
+      const spawnPos = getTileByPosition(
+        runtimeMob.spawnX,
+        runtimeMob.spawnY,
+        32,
+      );
+
+      if (
+        currentPos.x === spawnPos.x &&
+        currentPos.y === spawnPos.y &&
+        runtimeMob.state === 'return'
+      ) {
+        runtimeMob.state = 'idle';
+      }
+
       if (
         (!currentMobPath || currentMobPath.steps.length === 0) &&
         !isEntityCombatStatus(runtimeMob.state)
       ) {
-        console.log('[TICK_AI_MOBS], set idle');
         runtimeMob.state = 'idle';
       }
 
-      if (runtimeMob.state === 'pursue') {
-        console.log('[TICK_AI_MOBS], check leash distance');
+      if (runtimeMob.state === 'pursue' || runtimeMob.state === 'attack') {
         const result = await this.hasExceededLeashDistance(runtimeMob);
         if (result) continue;
       }
 
-      const { entities } = this.spatialGridService.queryRadius(
-        runtimeMob.locationId,
-        runtimeMob.x,
-        runtimeMob.y,
-        runtimeMob.triggerRange,
-      );
-
-      const target = entities.find((ent) => ent.type === 'player');
-
       if (
-        target &&
         !runtimeMob.currentTarget &&
-        runtimeMob.state !== 'return'
+        runtimeMob.state !== 'return' &&
+        runtimeMob.state !== 'pursue'
       ) {
-        console.log('[TICK_AI_MOBS], request attack move');
-        this.movementService.deleteMovementQueue(runtimeMob);
-        await this.combatService.requestAttackMoveForMob(
-          runtimeMob.id,
-          target.id,
+        const { entities } = this.spatialGridService.queryRadius(
+          runtimeMob.locationId,
+          runtimeMob.x,
+          runtimeMob.y,
+          runtimeMob.triggerRange,
         );
-        runtimeMob.state = 'pursue';
-        continue;
+        const target = entities.find((ent) => ent.type === 'player');
+
+        if (target) {
+          this.movementService.deleteMovementQueue(runtimeMob);
+          await this.combatService.requestAttackMoveForMob(
+            runtimeMob.id,
+            target.id,
+          );
+          runtimeMob.state = 'pursue';
+          continue;
+        }
       }
 
       await this.patrol(runtimeMob);
 
-      const randomDelay = getRandomValue(3000, 6000);
+      const randomDelay = getRandomValue(3000, 5000);
       runtimeMob.nextThinkAt = now + randomDelay;
     }
   }
