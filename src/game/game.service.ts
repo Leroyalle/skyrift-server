@@ -23,11 +23,11 @@ import { ChatService } from './services/chat/chat.service';
 import { DirectMessageInput } from './services/chat/dto/direct-message.input';
 import { RuntimeMobService } from './services/runtime-mob/runtime-mob.service';
 import { AoeService } from './services/combat/services/aoe/aoe.service';
-import { GameInitialDataService } from './services/game-initial-data/game-initial-data.service';
 import { BaseLogger } from 'src/common/infra/logger.infra';
+import { GameInitialDataService } from './services/game-core/game-initial-data/game-initial-data.service';
 
 @Injectable()
-export class GameService extends BaseLogger implements OnModuleInit {
+export class GameService extends BaseLogger {
   constructor(
     private readonly authService: AuthService,
     private readonly userService: UserService,
@@ -36,79 +36,76 @@ export class GameService extends BaseLogger implements OnModuleInit {
     private readonly playerStateService: PlayerStateService,
     private readonly movementService: MovementService,
     private readonly combatService: CombatService,
-    private readonly regenerationService: RegenerationService,
     private readonly socketService: SocketService,
     private readonly spatialGridService: SpatialGridService<IRuntimeCharacter>,
     private readonly interactionService: InteractionService,
     private readonly chatService: ChatService,
-    private readonly runtimeMobService: RuntimeMobService,
-    private readonly aoeService: AoeService,
     private readonly gameInitialDataService: GameInitialDataService,
   ) {
     super();
   }
 
-  private gameTickInterval: NodeJS.Timeout;
-  private lastTickTimeMovement = 0;
-  private lastTickTimeActions = 0;
-  private lastTickTimeAoE = 0;
-  private lastTickTimeRegeneration = 0;
-  private lastTickTimeInteraction = 0;
-  private lastTickTimeAiMobs = 0;
+  // private gameTickInterval: NodeJS.Timeout;
+  // private lastTickTimeMovement = 0;
+  // private lastTickTimeActions = 0;
+  // private lastTickTimeAoE = 0;
+  // private lastTickTimeRegeneration = 0;
+  // private lastTickTimeInteraction = 0;
+  // private lastTickTimeAiMobs = 0;
 
-  private readonly intervalMovement = 150;
-  private readonly intervalActions = 200;
-  private readonly intervalAoE = 200;
-  private readonly intervalRegeneration = 1000;
-  private readonly intervalInteraction = 300;
-  private readonly intervalAiMobs = 300;
+  // private readonly intervalMovement = 150;
+  // private readonly intervalActions = 200;
+  // private readonly intervalAoE = 200;
+  // private readonly intervalRegeneration = 1000;
+  // private readonly intervalInteraction = 300;
+  // private readonly intervalAiMobs = 300;
 
-  public onModuleInit() {
-    this.gameTickInterval = setInterval(() => {
-      try {
-        void this.tick();
-      } catch (error) {
-        this.log(`Error in game tick: ${error.message}`);
-      }
-    }, 150);
-  }
+  // public onModuleInit() {
+  //   this.gameTickInterval = setInterval(() => {
+  //     try {
+  //       void this.tick();
+  //     } catch (error) {
+  //       this.log(`Error in game tick: ${error.message}`);
+  //     }
+  //   }, 150);
+  // }
 
-  public onModuleDestroy() {
-    clearInterval(this.gameTickInterval);
-  }
+  // public onModuleDestroy() {
+  //   clearInterval(this.gameTickInterval);
+  // }
 
-  private async tick() {
-    const now = Date.now();
+  // private async tick() {
+  //   const now = Date.now();
 
-    if (now - this.lastTickTimeMovement >= this.intervalMovement) {
-      this.movementService.tickMovement();
-      this.lastTickTimeMovement = now;
-    }
-    if (now - this.lastTickTimeActions >= this.intervalActions) {
-      await this.combatService.tickActions();
-      this.lastTickTimeActions = now;
-    }
+  //   if (now - this.lastTickTimeMovement >= this.intervalMovement) {
+  //     this.movementService.tickMovement();
+  //     this.lastTickTimeMovement = now;
+  //   }
+  //   if (now - this.lastTickTimeActions >= this.intervalActions) {
+  //     await this.combatService.tickActions();
+  //     this.lastTickTimeActions = now;
+  //   }
 
-    if (now - this.lastTickTimeAoE >= this.intervalAoE) {
-      this.aoeService.tickAoE();
-      this.lastTickTimeAoE = now;
-    }
+  //   if (now - this.lastTickTimeAoE >= this.intervalAoE) {
+  //     this.aoeService.tickAoE();
+  //     this.lastTickTimeAoE = now;
+  //   }
 
-    if (now - this.lastTickTimeRegeneration >= this.intervalRegeneration) {
-      this.regenerationService.tickRegeneration();
-      this.lastTickTimeRegeneration = now;
-    }
+  //   if (now - this.lastTickTimeRegeneration >= this.intervalRegeneration) {
+  //     this.regenerationService.tickRegeneration();
+  //     this.lastTickTimeRegeneration = now;
+  //   }
 
-    if (now - this.lastTickTimeInteraction >= this.intervalInteraction) {
-      await this.interactionService.tickInteractions();
-      this.lastTickTimeInteraction = now;
-    }
+  //   if (now - this.lastTickTimeInteraction >= this.intervalInteraction) {
+  //     await this.interactionService.tickInteractions();
+  //     this.lastTickTimeInteraction = now;
+  //   }
 
-    if (now - this.lastTickTimeAiMobs >= this.intervalAiMobs) {
-      await this.runtimeMobService.tickAiMobs();
-      this.lastTickTimeAiMobs = now;
-    }
-  }
+  //   if (now - this.lastTickTimeAiMobs >= this.intervalAiMobs) {
+  //     await this.runtimeMobService.tickAiMobs();
+  //     this.lastTickTimeAiMobs = now;
+  //   }
+  // }
 
   public async handleConnection(client: Socket) {
     try {

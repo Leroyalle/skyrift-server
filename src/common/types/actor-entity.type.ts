@@ -24,7 +24,6 @@ export interface ActorRuntimeStats<E> {
   isAttacking: boolean;
   currentTarget: CurrentTarget | null;
   state: ActorState<E>;
-  effects: Effect[];
 }
 
 export interface UniqueFields {

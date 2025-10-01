@@ -12,10 +12,6 @@ export class Mob extends ActorEntity {
 
   @Column()
   @Field(() => Int)
-  walkSpeed: number;
-
-  @Column()
-  @Field(() => Int)
   chaseSpeed: number;
 
   @Column()

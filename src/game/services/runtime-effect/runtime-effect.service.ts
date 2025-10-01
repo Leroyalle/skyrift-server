@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { IRuntimeEffect } from './types/runtime-effect.type';
 import { EntityKey } from 'src/game/types/entity/keys/entity-key.type';
 import { RuntimeEntityService } from '../runtime-entity/runtime-entity.service';

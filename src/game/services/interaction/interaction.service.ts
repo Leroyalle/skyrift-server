@@ -22,7 +22,7 @@ import { PositionDto } from 'src/common/dto/position.dto';
 import { Teleport } from 'src/location/types/teleport.type';
 import { PathFindingService } from '../path-finding/path-finding.service';
 import { getTileByPosition } from 'src/game/lib/helpers/get-tile-by-position.lib';
-import { GameInitialDataService } from '../game-initial-data/game-initial-data.service';
+import { GameInitialDataService } from '../game-core/game-initial-data/game-initial-data.service';
 
 @Injectable()
 export class InteractionService {

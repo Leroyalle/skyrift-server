@@ -41,6 +41,5 @@ export function buildRuntimeMob(mobSpawn: MobSpawn): IRuntimeMob {
     attackSpeed: mobSpawn.mob.attackSpeed,
     attackRange: mobSpawn.mob.attackRange,
     areaRadius: mobSpawn.areaRadius,
-    effects: [],
   };
 }

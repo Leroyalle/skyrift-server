@@ -22,7 +22,9 @@ import { EffectModule } from 'src/effect/effect.module';
 import { AoeService } from './services/combat/services/aoe/aoe.service';
 import { RuntimeEntityService } from './services/runtime-entity/runtime-entity.service';
 import { ActionQueueService } from './services/combat/services/action-queue/action-queue.service';
-import { GameInitialDataService } from './services/game-initial-data/game-initial-data.service';
+import { GameLoopService } from './services/game-core/game-loop/game-loop.service';
+import { GameInitialDataService } from './services/game-core/game-initial-data/game-initial-data.service';
+import { RuntimeEffectService } from './services/runtime-effect/runtime-effect.service';
 
 @Module({
   imports: [
@@ -52,6 +54,8 @@ import { GameInitialDataService } from './services/game-initial-data/game-initia
     RuntimeEntityService,
     ActionQueueService,
     GameInitialDataService,
+    RuntimeEffectService,
+    GameLoopService,
   ],
 })
 export class GameModule {}

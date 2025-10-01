@@ -282,8 +282,6 @@ type Mob {
 
   """Дистанция атаки (в тайлах)"""
   attackRange: Int!
-
-  """Жив ли персонаж"""
   isAlive: Boolean!
 
   """X координата позиции игрока"""
@@ -291,8 +289,8 @@ type Mob {
 
   """Y координата позиции игрока"""
   y: Int!
-  triggerRange: Int!
   walkSpeed: Int!
+  triggerRange: Int!
   chaseSpeed: Int!
   expReward: Int!
   respawnTime: Int!
@@ -357,8 +355,6 @@ type Character {
 
   """Дистанция атаки (в тайлах)"""
   attackRange: Int!
-
-  """Жив ли персонаж"""
   isAlive: Boolean!
 
   """X координата позиции игрока"""
@@ -366,6 +362,7 @@ type Character {
 
   """Y координата позиции игрока"""
   y: Int!
+  walkSpeed: Int!
 
   """Опыт персонажа"""
   experience: Int!

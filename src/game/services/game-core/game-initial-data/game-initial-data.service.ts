@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { RedisService } from 'src/redis/redis.service';
-import { PlayerStateService } from '../player-state/player-state.service';
-import { RuntimeMobService } from '../runtime-mob/runtime-mob.service';
 import { LocationService } from 'src/location/location.service';
-import { AoeService } from '../combat/services/aoe/aoe.service';
 import { RedisKeysFactory } from 'src/common/infra/redis-keys-factory.infra';
 import { IRuntimeCharacter } from 'src/character/types/runtime-character';
 import { GameInitialData } from 'src/game/types/game-initial-data.type';
+import { PlayerStateService } from '../../player-state/player-state.service';
+import { RuntimeMobService } from '../../runtime-mob/runtime-mob.service';
+import { AoeService } from '../../combat/services/aoe/aoe.service';
 
 @Injectable()
 export class GameInitialDataService {
