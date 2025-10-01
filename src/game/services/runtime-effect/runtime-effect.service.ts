@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { IRuntimeEffect } from './types/runtime-effect.type';
 import { EntityKey } from 'src/game/types/entity/keys/entity-key.type';
 import { RuntimeEntityService } from '../runtime-entity/runtime-entity.service';
@@ -72,11 +72,9 @@ export class RuntimeEffectService {
   }
 
   public addEffect(entityRef: EntityRef, effect: Effect): void {
+    console.log('[RUNTIME_EFFECT] addEffect');
     const runtimeEffect: IRuntimeEffect = buildRuntimeEffect(effect);
-    const entityKey = generateEntityKey(entityRef);
-    const effectsMap =
-      this.activeEffects.get(entityKey) ??
-      new Map<EffectType, IRuntimeEffect[]>();
+    const effectsMap = this.findOrCreateMap(entityRef);
     const effectsArray = getOrCreateArray(effectsMap, effect.type);
     effectsArray.push(runtimeEffect);
   }
@@ -108,6 +106,8 @@ export class RuntimeEffectService {
     now: number = Date.now(),
   ): BatchUpdateAction | undefined {
     if (now - effect.lastUsedAt < 1000) return;
+
+    console.log('[RUNTIME_EFFECT] applyEffect');
 
     const entityRef = decodeEntityKey(entityKey);
     const entity = this.runtimeEntityService.getEntityByType(

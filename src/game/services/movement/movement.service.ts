@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PlayerStateService } from 'src/game/services/player-state/player-state.service';
 import { LocationService } from 'src/location/location.service';
 import { SocketService } from '../socket/socket.service';
@@ -124,6 +124,8 @@ export class MovementService {
         },
         EffectType.Stun,
       );
+
+      console.log('[MOVEMENT] tick / hasStun', hasStun);
 
       if (hasStun && hasStun.length) return;
 

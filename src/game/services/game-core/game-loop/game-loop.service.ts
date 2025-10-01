@@ -5,9 +5,20 @@ import { AoeService } from '../../combat/services/aoe/aoe.service';
 import { RegenerationService } from '../../regeneration/regeneration.service';
 import { InteractionService } from '../../interaction/interaction.service';
 import { RuntimeMobService } from '../../runtime-mob/runtime-mob.service';
+import { RuntimeEffectService } from '../../runtime-effect/runtime-effect.service';
 
 @Injectable()
 export class GameLoopService implements OnModuleInit, OnModuleDestroy {
+  constructor(
+    private readonly movementService: MovementService,
+    private readonly combatService: CombatService,
+    private readonly aoeService: AoeService,
+    private readonly regenerationService: RegenerationService,
+    private readonly interactionService: InteractionService,
+    private readonly runtimeMobService: RuntimeMobService,
+    private readonly runtimeEffectService: RuntimeEffectService,
+  ) {}
+
   private gameTickInterval: NodeJS.Timeout;
   private lastTickTimes = {
     movement: 0,
@@ -16,6 +27,7 @@ export class GameLoopService implements OnModuleInit, OnModuleDestroy {
     regeneration: 0,
     interaction: 0,
     aiMobs: 0,
+    effects: 0,
   };
 
   private readonly intervals = {
@@ -25,16 +37,8 @@ export class GameLoopService implements OnModuleInit, OnModuleDestroy {
     regeneration: 1000,
     interaction: 300,
     aiMobs: 300,
+    effects: 200,
   };
-
-  constructor(
-    private readonly movementService: MovementService,
-    private readonly combatService: CombatService,
-    private readonly aoeService: AoeService,
-    private readonly regenerationService: RegenerationService,
-    private readonly interactionService: InteractionService,
-    private readonly runtimeMobService: RuntimeMobService,
-  ) {}
 
   public onModuleInit() {
     this.gameTickInterval = setInterval(() => void this.tick(), 50);
@@ -44,7 +48,7 @@ export class GameLoopService implements OnModuleInit, OnModuleDestroy {
     clearInterval(this.gameTickInterval);
   }
 
-  private async tick() {
+  private async tick(): Promise<void> {
     const now = Date.now();
 
     if (now - this.lastTickTimes.movement >= this.intervals.movement) {
@@ -70,6 +74,10 @@ export class GameLoopService implements OnModuleInit, OnModuleDestroy {
     if (now - this.lastTickTimes.aiMobs >= this.intervals.aiMobs) {
       await this.runtimeMobService.tickAiMobs();
       this.lastTickTimes.aiMobs = now;
+    }
+    if (now - this.lastTickTimes.effects >= this.intervals.effects) {
+      this.runtimeEffectService.effectTick();
+      this.lastTickTimes.effects = now;
     }
   }
 }
