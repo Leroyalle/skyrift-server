@@ -17,7 +17,7 @@ import { PathFindingService } from '../path-finding/path-finding.service';
 import { InteractionService } from '../interaction/interaction.service';
 import { RuntimeMobService } from '../runtime-mob/runtime-mob.service';
 import { EntityType } from 'src/game/types/entity/entity-type.type';
-import { RuntimeEntity } from 'src/game/types/entity/runtime-entity.type';
+import { TRuntimeEntity } from 'src/game/types/entity/runtime-entity.type';
 import { PositionDto } from 'src/common/dto/position.dto';
 import { isPlayer } from '../combat/lib/entity/guards/is-player.lib';
 import { isMob } from '../combat/lib/entity/guards/is-mob.lib';
@@ -30,7 +30,7 @@ export class MovementService {
     private readonly playerStateService: PlayerStateService,
     private readonly socketService: SocketService,
     private readonly pathFindingService: PathFindingService,
-    private readonly spatialGridService: SpatialGridService<RuntimeEntity>,
+    private readonly spatialGridService: SpatialGridService<TRuntimeEntity>,
     private readonly interactionService: InteractionService,
     private readonly runtimeMobService: RuntimeMobService,
   ) {}
@@ -100,7 +100,7 @@ export class MovementService {
       this.charactersMovementQueues.entries(),
     );
     // FIXME: add payer walk speed field to entity
-    const PLAYER_SPEED = 450;
+    // const PLAYER_SPEED = 450;
 
     charactersEntries.forEach(([characterId, { steps, userId }]) => {
       const character = this.playerStateService.getCharacterState(characterId);
@@ -108,7 +108,7 @@ export class MovementService {
 
       const now = Date.now();
 
-      if (now - character.lastMoveAt < PLAYER_SPEED) return;
+      if (now - character.lastMoveAt < character.walkSpeed) return;
 
       const pathStep = steps.shift();
 
@@ -261,7 +261,7 @@ export class MovementService {
   //     return this.mobsMovementQueues.set(data.id, data.queue);
   //   }
   // }
-  public setMovementQueue(entity: RuntimeEntity, steps: PositionDto[]) {
+  public setMovementQueue(entity: TRuntimeEntity, steps: PositionDto[]) {
     if (isPlayer(entity)) {
       const queue = {
         steps,
@@ -281,7 +281,7 @@ export class MovementService {
     }
   }
 
-  public deleteMovementQueue(entity: RuntimeEntity) {
+  public deleteMovementQueue(entity: TRuntimeEntity) {
     if (isPlayer(entity)) {
       return this.charactersMovementQueues.delete(entity.id);
     }

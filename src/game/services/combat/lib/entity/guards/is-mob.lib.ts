@@ -1,6 +1,6 @@
 import { IRuntimeMob } from 'src/game/services/runtime-mob/types/runtime-mob.type';
-import { RuntimeEntity } from 'src/game/types/entity/runtime-entity.type';
+import { TRuntimeEntity } from 'src/game/types/entity/runtime-entity.type';
 
-export const isMob = (entity: RuntimeEntity): entity is IRuntimeMob => {
+export const isMob = (entity: TRuntimeEntity): entity is IRuntimeMob => {
   return entity.type === 'mob';
 };

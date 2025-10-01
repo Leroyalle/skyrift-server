@@ -28,7 +28,7 @@ import { generateEntityKey } from 'src/game/lib/entity/generate-entity-key.lib';
 import { isPlayer } from './lib/entity/guards/is-player.lib';
 import { findEntitySkill } from './lib/entity/helpers/get/find-entity-skill.lib';
 import { RuntimeMobService } from '../runtime-mob/runtime-mob.service';
-import { RuntimeEntity } from 'src/game/types/entity/runtime-entity.type';
+import { TRuntimeEntity } from 'src/game/types/entity/runtime-entity.type';
 import { EntityRef } from 'src/game/types/entity/entity-ref.type';
 import { EffectService } from 'src/effect/effect.service';
 import { EffectType } from 'src/common/enums/skill/effect-type.enum';
@@ -217,8 +217,8 @@ export class CombatService {
   }
 
   private async processAttackMove(
-    attacker: RuntimeEntity,
-    victim: RuntimeEntity,
+    attacker: TRuntimeEntity,
+    victim: TRuntimeEntity,
   ) {
     if (isPlayer(attacker) && isPlayer(victim)) {
       const attackerFactionName = attacker.characterClass.faction.name;
@@ -227,7 +227,7 @@ export class CombatService {
       if (!isEnemyFaction(attackerFactionName, victimFactionName)) return;
     }
 
-    const entityKey = generateEntityKey<RuntimeEntity>(attacker);
+    const entityKey = generateEntityKey<TRuntimeEntity>(attacker);
 
     // const queue = this.getOrCreateActionQueue(entityKey);
 
@@ -371,7 +371,7 @@ export class CombatService {
   }
 
   private async schedulePathUpdate(
-    attacker: RuntimeEntity,
+    attacker: TRuntimeEntity,
     target: TargetAction,
     skillId: string | null = null,
   ) {
@@ -472,7 +472,7 @@ export class CombatService {
   }
 
   private resolvePendingActionState(
-    attacker: RuntimeEntity,
+    attacker: TRuntimeEntity,
     pendingAction: PendingAction,
     range: number,
     steps: PositionDto[],
@@ -569,7 +569,7 @@ export class CombatService {
         };
 
         let targetTile: { x: number; y: number } | null = null;
-        let victim: RuntimeEntity | undefined;
+        let victim: TRuntimeEntity | undefined;
         if (action.target.kind === 'target') {
           victim = this.runtimeEntityService.getEntityByType(
             action.target.type,
@@ -675,7 +675,7 @@ export class CombatService {
     );
   }
 
-  private applyEffect(entity: RuntimeEntity, effect: Effect) {
+  private applyEffect(entity: TRuntimeEntity, effect: Effect) {
     entity.effects.push(effect);
   }
 
