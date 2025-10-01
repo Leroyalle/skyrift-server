@@ -74,7 +74,7 @@ export class MovementService {
       return;
     }
 
-    const isPermissible = map[input.targetY][input.targetX] === 1;
+    const isPermissible = map?.[input.targetY]?.[input.targetX] === 1;
 
     if (!isPermissible) return;
 
