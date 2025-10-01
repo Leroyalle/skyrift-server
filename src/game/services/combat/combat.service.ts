@@ -32,10 +32,10 @@ import { TRuntimeEntity } from 'src/game/types/entity/runtime-entity.type';
 import { EntityRef } from 'src/game/types/entity/entity-ref.type';
 import { EffectService } from 'src/effect/effect.service';
 import { EffectType } from 'src/common/enums/skill/effect-type.enum';
-import { Effect } from 'src/effect/entities/effect.entity';
 import { AoeService } from './services/aoe/aoe.service';
 import { RuntimeEntityService } from '../runtime-entity/runtime-entity.service';
 import { ActionQueueService } from './services/action-queue/action-queue.service';
+import { RuntimeEffectService } from '../runtime-effect/runtime-effect.service';
 
 @Injectable()
 export class CombatService {
@@ -52,6 +52,7 @@ export class CombatService {
     private readonly aoeService: AoeService,
     private readonly runtimeEntityService: RuntimeEntityService,
     private readonly actionQueueService: ActionQueueService,
+    private readonly runtimeEffectService: RuntimeEffectService,
   ) {}
 
   public async tickActions(): Promise<void> {
@@ -675,10 +676,6 @@ export class CombatService {
     );
   }
 
-  private applyEffect(entity: TRuntimeEntity, effect: Effect) {
-    entity.effects.push(effect);
-  }
-
   private autoAttack(
     attackerRef: EntityRef,
     victimRef: EntityRef,
@@ -704,7 +701,8 @@ export class CombatService {
 
     if (!autoAttackEffect) return;
 
-    this.applyEffect(victim, autoAttackEffect);
+    this.runtimeEffectService.addEffect(victim, autoAttackEffect);
+    // this.applyEffect(victim, autoAttackEffect);
 
     const receivedDamage = attacker.basePhysicalDamage;
     console.log('receivedDamage', receivedDamage);
