@@ -1,4 +1,4 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { Socket } from 'socket.io';
 import { AuthService } from 'src/auth/auth.service';
 import { UserService } from 'src/user/user.service';
@@ -24,9 +24,10 @@ import { DirectMessageInput } from './services/chat/dto/direct-message.input';
 import { RuntimeMobService } from './services/runtime-mob/runtime-mob.service';
 import { AoeService } from './services/combat/services/aoe/aoe.service';
 import { GameInitialDataService } from './services/game-initial-data/game-initial-data.service';
+import { BaseLogger } from 'src/common/infra/logger.infra';
 
 @Injectable()
-export class GameService implements OnModuleInit {
+export class GameService extends BaseLogger implements OnModuleInit {
   constructor(
     private readonly authService: AuthService,
     private readonly userService: UserService,
@@ -43,9 +44,9 @@ export class GameService implements OnModuleInit {
     private readonly runtimeMobService: RuntimeMobService,
     private readonly aoeService: AoeService,
     private readonly gameInitialDataService: GameInitialDataService,
-  ) {}
-
-  private readonly logger = new Logger(GameService.name);
+  ) {
+    super();
+  }
 
   private gameTickInterval: NodeJS.Timeout;
   private lastTickTimeMovement = 0;
@@ -67,7 +68,7 @@ export class GameService implements OnModuleInit {
       try {
         void this.tick();
       } catch (error) {
-        this.logger.error(`Error in game tick: ${error.message}`);
+        this.log(`Error in game tick: ${error.message}`);
       }
     }, 150);
   }
