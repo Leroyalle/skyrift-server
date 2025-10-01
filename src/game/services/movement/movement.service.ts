@@ -113,10 +113,6 @@ export class MovementService {
 
       if (now - character.lastMoveAt < character.walkSpeed) return;
 
-      const pathStep = steps.shift();
-
-      if (!pathStep) return;
-
       const hasStun = this.runtimeEffectService.findByType(
         {
           type: character.type,
@@ -128,6 +124,10 @@ export class MovementService {
       console.log('[MOVEMENT] tick / hasStun', hasStun);
 
       if (hasStun && hasStun.length) return;
+
+      const pathStep = steps.shift();
+
+      if (!pathStep) return;
 
       const socketId = this.socketService.getSocketId(userId);
       if (!socketId) return;

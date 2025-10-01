@@ -14,13 +14,16 @@ import { EntityRef } from 'src/game/types/entity/entity-ref.type';
 import { Effect } from 'src/effect/entities/effect.entity';
 import { buildRuntimeEffect } from './lib/build-runtime-effect.lib';
 import { generateEntityKey } from 'src/game/lib/entity/generate-entity-key.lib';
+import { BaseLogger } from 'src/common/infra/logger.infra';
 
 @Injectable()
-export class RuntimeEffectService {
+export class RuntimeEffectService extends BaseLogger {
   constructor(
     private readonly runtimeEntityService: RuntimeEntityService,
     private readonly socketService: SocketService,
-  ) {}
+  ) {
+    super();
+  }
 
   private activeEffects: Map<EntityKey, Map<EffectType, IRuntimeEffect[]>> =
     new Map();
@@ -28,6 +31,7 @@ export class RuntimeEffectService {
   public effectTick(): void {
     const batchUpdateEffects: Map<string, BatchUpdateAction[]> = new Map();
     for (const [entityKey, effectsMap] of this.activeEffects.entries()) {
+      console.log('[EFFECT_TICK]', Array.from(this.activeEffects.values())[0]);
       const now = Date.now();
 
       const entityRef = decodeEntityKey(entityKey);
@@ -51,9 +55,12 @@ export class RuntimeEffectService {
         effects.forEach((effect) => {
           // TODO: слать запррос что эффект снят
           if (effect.expiresAt > now) {
+            this.log('before apply effect');
             const effectResult = this.applyEffect(entityKey, effect, now);
-            if (!effectResult) return;
-            batchUpdate.push(effectResult);
+            if (effectResult) {
+              batchUpdate.push(effectResult);
+            }
+            // TODO: нужно добваить множество кейсов в эпли эффект и перенести пуш актуальных эффектов выше
             actualEffectsArray.push(effect);
           }
         });
@@ -72,18 +79,23 @@ export class RuntimeEffectService {
   }
 
   public addEffect(entityRef: EntityRef, effect: Effect): void {
-    console.log('[RUNTIME_EFFECT] addEffect');
+    this.log('addEffect');
     const runtimeEffect: IRuntimeEffect = buildRuntimeEffect(effect);
     const effectsMap = this.findOrCreateMap(entityRef);
     const effectsArray = getOrCreateArray(effectsMap, effect.type);
     effectsArray.push(runtimeEffect);
+    const entityKey = generateEntityKey(entityRef);
+
+    this.activeEffects.set(entityKey, effectsMap);
   }
 
   public findByType(
     entityRef: EntityRef,
     type: EffectType,
   ): IRuntimeEffect[] | undefined {
-    const map = this.findOrCreateMap(entityRef);
+    const map = this.activeEffects.get(generateEntityKey(entityRef));
+    if (!map) return;
+    console.log('FINDBYMAP', Boolean(map));
     return map.get(type);
   }
 
@@ -107,14 +119,16 @@ export class RuntimeEffectService {
   ): BatchUpdateAction | undefined {
     if (now - effect.lastUsedAt < 1000) return;
 
-    console.log('[RUNTIME_EFFECT] applyEffect');
+    this.log('applyEffect');
 
     const entityRef = decodeEntityKey(entityKey);
     const entity = this.runtimeEntityService.getEntityByType(
       entityRef.type,
       entityRef.id,
     );
+
     if (!entity) return;
+
     switch (effect.type) {
       case EffectType.DamageOverTime: {
         if (!effect.damagePerSecond) return;

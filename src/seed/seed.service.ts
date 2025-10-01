@@ -282,7 +282,7 @@ export class SeedService {
     console.log('Characters saved');
 
     const stanEffect = await this.effectRepository.save({
-      durationMs: 1250,
+      durationMs: 300,
       type: EffectType.Stun,
     });
 
