@@ -56,7 +56,6 @@ export class RuntimeMobService implements OnModuleInit {
     const mobsEntries = Array.from(this.mobsById.values());
 
     for (const runtimeMob of mobsEntries) {
-      console.log('TICK AI', runtimeMob.state);
       if (runtimeMob.respawnIn || runtimeMob.state === 'dead') continue;
 
       const now = Date.now();
@@ -87,12 +86,10 @@ export class RuntimeMobService implements OnModuleInit {
         (!currentMobPath || currentMobPath.steps.length === 0) &&
         !isEntityCombatStatus(runtimeMob.state)
       ) {
-        console.log('[TICK_AI_MOBS], set idle');
         runtimeMob.state = 'idle';
       }
 
-      if (runtimeMob.state === 'pursue') {
-        console.log('[TICK_AI_MOBS], check leash distance');
+      if (runtimeMob.state === 'pursue' || runtimeMob.state === 'attack') {
         const result = await this.hasExceededLeashDistance(runtimeMob);
         if (result) continue;
       }
@@ -111,7 +108,6 @@ export class RuntimeMobService implements OnModuleInit {
         const target = entities.find((ent) => ent.type === 'player');
 
         if (target) {
-          console.log('[TICK_AI_MOBS], request attack move');
           this.movementService.deleteMovementQueue(runtimeMob);
           await this.combatService.requestAttackMoveForMob(
             runtimeMob.id,
