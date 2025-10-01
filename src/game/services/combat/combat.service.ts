@@ -24,17 +24,14 @@ import { CachedLocation } from 'src/location/types/cashed-location.type';
 import { PathFindingService } from '../path-finding/path-finding.service';
 import { isEnemyFaction } from './lib/entity/guards/is-enemy-faction.lib';
 import { EntityType } from 'src/game/types/entity/entity-type.type';
-import { generateEntityKey } from 'src/game/lib/entity/generate-entity-key.lib';
 import { isPlayer } from './lib/entity/guards/is-player.lib';
 import { findEntitySkill } from './lib/entity/helpers/get/find-entity-skill.lib';
 import { RuntimeMobService } from '../runtime-mob/runtime-mob.service';
 import { TRuntimeEntity } from 'src/game/types/entity/runtime-entity.type';
 import { EntityRef } from 'src/game/types/entity/entity-ref.type';
-import { EffectService } from 'src/effect/effect.service';
 import { AoeService } from './services/aoe/aoe.service';
 import { RuntimeEntityService } from '../runtime-entity/runtime-entity.service';
 import { ActionQueueService } from './services/action-queue/action-queue.service';
-import { RuntimeEffectService } from '../runtime-effect/runtime-effect.service';
 
 @Injectable()
 export class CombatService {
@@ -47,11 +44,9 @@ export class CombatService {
     private readonly movementService: MovementService,
     @Inject(forwardRef(() => RuntimeMobService))
     private readonly runtimeMobService: RuntimeMobService,
-    private readonly effectService: EffectService,
     private readonly aoeService: AoeService,
     private readonly runtimeEntityService: RuntimeEntityService,
     private readonly actionQueueService: ActionQueueService,
-    private readonly runtimeEffectService: RuntimeEffectService,
   ) {}
 
   public async tickActions(): Promise<void> {
@@ -169,15 +164,6 @@ export class CombatService {
     }
   }
 
-  // private getOrCreateActionQueue(key: EntityKey) {
-  //   let queue = this.pendingActionsQueue.get(key);
-  //   if (!queue) {
-  //     queue = [];
-  //     this.pendingActionsQueue.set(key, queue);
-  //   }
-  //   return queue;
-  // }
-
   public async requestAttackMoveForPlayer(
     client: Socket,
     input: RequestAttackMoveDto,
@@ -227,14 +213,6 @@ export class CombatService {
       if (!isEnemyFaction(attackerFactionName, victimFactionName)) return;
     }
 
-    const entityKey = generateEntityKey<TRuntimeEntity>(attacker);
-
-    // const queue = this.getOrCreateActionQueue(entityKey);
-
-    // const hasAutoAttack = queue.some(
-    //   (q) => q.actionType === ActionType.AutoAttack,
-    // );
-
     const hasAutoAttack = this.actionQueueService.findActionType(
       { id: attacker.id, type: attacker.type },
       ActionType.AutoAttack,
@@ -275,9 +253,13 @@ export class CombatService {
     if (!characterSkill) return;
 
     if (characterSkill.skill.type === SkillType.Target) {
-      if (!input.targetId) return;
+      if (!input.targetRef) return;
       // FIXME: сделать универсальным и для мобов
-      const victim = this.playerStateService.getCharacterState(input.targetId);
+      // const victim = this.playerStateService.getCharacterState(input.targetId);
+      const victim = this.runtimeEntityService.getEntityByType(
+        input.targetRef.type,
+        input.targetRef.id,
+      );
 
       if (!victim) return;
 
@@ -286,7 +268,7 @@ export class CombatService {
         {
           kind: 'target',
           type: victim.type,
-          id: input.targetId,
+          id: victim.id,
         },
         characterSkill.id,
       );
