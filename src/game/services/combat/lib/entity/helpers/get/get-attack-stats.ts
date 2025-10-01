@@ -1,4 +1,4 @@
-import { RuntimeEntity } from 'src/game/types/entity/runtime-entity.type';
+import { TRuntimeEntity } from 'src/game/types/entity/runtime-entity.type';
 import { isMob } from '../../guards/is-mob.lib';
 import { isPlayer } from '../../guards/is-player.lib';
 
@@ -9,7 +9,7 @@ type AttackStats = {
 };
 
 export function getAttackStats(
-  attacker: RuntimeEntity,
+  attacker: TRuntimeEntity,
 ): AttackStats | undefined {
   if (isPlayer(attacker)) {
     return {

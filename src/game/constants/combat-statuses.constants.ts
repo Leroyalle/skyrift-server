@@ -1,10 +1,10 @@
-import { RuntimeEntity } from 'src/game/types/entity/runtime-entity.type';
+import { TRuntimeEntity } from 'src/game/types/entity/runtime-entity.type';
 
-function makeStatuses<T extends RuntimeEntity['state']>() {
+function makeStatuses<T extends TRuntimeEntity['state']>() {
   return <U extends T[]>(arr: U) => arr;
 }
 
-export const combatStatuses = makeStatuses<RuntimeEntity['state']>()([
+export const combatStatuses = makeStatuses<TRuntimeEntity['state']>()([
   'return',
   'attack',
   'pursue',

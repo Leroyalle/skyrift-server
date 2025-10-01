@@ -74,7 +74,7 @@ export abstract class ActorEntity extends Timestamp {
   attackRange: number;
 
   @Column({ default: true })
-  @Field(() => Boolean, { description: 'Жив ли персонаж', defaultValue: true })
+  @Field(() => Boolean, { defaultValue: true })
   isAlive: boolean;
 
   @Column()
@@ -84,4 +84,8 @@ export abstract class ActorEntity extends Timestamp {
   @Column()
   @Field(() => Int, { description: 'Y координата позиции игрока' })
   y: number;
+
+  @Column({ default: 450 })
+  @Field(() => Int, { defaultValue: 450 })
+  walkSpeed: number;
 }

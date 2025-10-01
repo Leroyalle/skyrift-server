@@ -3,11 +3,11 @@ import {
   BatchUpdateAction,
   Target,
 } from 'src/game/types/batch-update/batch-update-action.type';
-import { ActiveAoEZone } from '../../types/active-aoe-zone.type';
+import { ActiveAoEZone } from './types/active-aoe-zone.type';
 import { SocketService } from 'src/game/services/socket/socket.service';
 import { PlayerStateService } from 'src/game/services/player-state/player-state.service';
 import { SpatialGridService } from 'src/game/services/spatial-grid/spatial-grid.service';
-import { RuntimeEntity } from 'src/game/types/entity/runtime-entity.type';
+import { TRuntimeEntity } from 'src/game/types/entity/runtime-entity.type';
 import { ActionType } from 'src/game/types/pending-actions.type';
 import { RedisKeys } from 'src/common/enums/redis-keys.enum';
 import { ServerToClientEvents } from 'src/common/enums/game-socket-events.enum';
@@ -21,7 +21,7 @@ export class AoeService {
   constructor(
     private readonly socketService: SocketService,
     private readonly playerStateService: PlayerStateService,
-    private readonly spatialGridService: SpatialGridService<RuntimeEntity>,
+    private readonly spatialGridService: SpatialGridService<TRuntimeEntity>,
   ) {}
 
   private readonly activeAoEZones: Map<string, ActiveAoEZone> = new Map();
@@ -126,7 +126,7 @@ export class AoeService {
       y: area.y,
       expiresAt: cSkill.skill.duration + now,
       effects: cSkill.skill.effects ?? [],
-      lastUsedAt: null,
+      lastUsedAt: 0,
     });
 
     console.log('[spawnAoeZone] locationId', caster.locationId);

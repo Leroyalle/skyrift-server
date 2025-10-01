@@ -1,8 +1,8 @@
-import { RuntimeEntity } from 'src/game/types/entity/runtime-entity.type';
+import { TRuntimeEntity } from 'src/game/types/entity/runtime-entity.type';
 import { isMob } from '../../guards/is-mob.lib';
 import { isPlayer } from '../../guards/is-player.lib';
 
-export function getAttackerRange(attacker: RuntimeEntity): number {
+export function getAttackerRange(attacker: TRuntimeEntity): number {
   if (isPlayer(attacker)) {
     return attacker.attackRange;
   }

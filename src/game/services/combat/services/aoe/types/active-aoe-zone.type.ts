@@ -1,6 +1,7 @@
 import { SkillEffectConfig } from 'src/character-class/skill/dto/skill-effect-config.input';
+import { IRuntimeExpirable } from 'src/game/types/runtime-expirable.type';
 
-export type ActiveAoEZone = {
+export interface ActiveAoEZone extends IRuntimeExpirable {
   id: string;
   skillId: string;
   casterId: string;
@@ -9,6 +10,4 @@ export type ActiveAoEZone = {
   y: number;
   radius: number;
   effects: SkillEffectConfig[];
-  expiresAt: number;
-  lastUsedAt: number | null;
-};
+}
