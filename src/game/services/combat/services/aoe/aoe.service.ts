@@ -126,7 +126,7 @@ export class AoeService {
       y: area.y,
       expiresAt: cSkill.skill.duration + now,
       effects: cSkill.skill.effects ?? [],
-      lastUsedAt: null,
+      lastUsedAt: 0,
     });
 
     console.log('[spawnAoeZone] locationId', caster.locationId);
