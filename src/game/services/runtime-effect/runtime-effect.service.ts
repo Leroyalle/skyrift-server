@@ -10,6 +10,10 @@ import { ActionType } from 'src/game/types/pending-actions.type';
 import { SocketService } from '../socket/socket.service';
 import { RedisKeysFactory } from 'src/common/infra/redis-keys-factory.infra';
 import { ServerToClientEvents } from 'src/common/enums/game-socket-events.enum';
+import { EntityRef } from 'src/game/types/entity/entity-ref.type';
+import { Effect } from 'src/effect/entities/effect.entity';
+import { buildRuntimeEffect } from './lib/build-runtime-effect.lib';
+import { generateEntityKey } from 'src/game/lib/entity/generate-entity-key.lib';
 
 @Injectable()
 export class RuntimeEffectService {
@@ -65,6 +69,16 @@ export class RuntimeEffectService {
         update,
       );
     }
+  }
+
+  public addEffect(entityRef: EntityRef, effect: Effect): void {
+    const runtimeEffect: IRuntimeEffect = buildRuntimeEffect(effect);
+    const entityKey = generateEntityKey(entityRef);
+    const effectsMap =
+      this.activeEffects.get(entityKey) ??
+      new Map<EffectType, IRuntimeEffect[]>();
+    const effectsArray = getOrCreateArray(effectsMap, effect.type);
+    effectsArray.push(runtimeEffect);
   }
 
   // FIXME: удалить в типе ентити эффекты
