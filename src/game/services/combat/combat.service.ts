@@ -31,7 +31,6 @@ import { RuntimeMobService } from '../runtime-mob/runtime-mob.service';
 import { TRuntimeEntity } from 'src/game/types/entity/runtime-entity.type';
 import { EntityRef } from 'src/game/types/entity/entity-ref.type';
 import { EffectService } from 'src/effect/effect.service';
-import { EffectType } from 'src/common/enums/skill/effect-type.enum';
 import { AoeService } from './services/aoe/aoe.service';
 import { RuntimeEntityService } from '../runtime-entity/runtime-entity.service';
 import { ActionQueueService } from './services/action-queue/action-queue.service';
@@ -692,26 +691,19 @@ export class CombatService {
       victimRef.id,
     );
 
-    if (!attacker || !victim || attacker.locationId !== victim.locationId)
+    if (!attacker) return;
+
+    if (!victim || attacker.locationId !== victim.locationId) {
+      attacker.currentTarget = null;
+      attacker.state = 'idle';
       return;
-
-    // TODO: calculate received damage with defense and other stats
-    // const autoAttackEffect = this.effectService.getEffectByType({
-    //   type: EffectType.Stun,
-    //   durationMs: 300,
-    // });
-
-    // if (!autoAttackEffect) return;
-
-    // this.runtimeEffectService.addEffect(victim, autoAttackEffect);
-    // this.applyEffect(victim, autoAttackEffect);
+    }
 
     const receivedDamage = attacker.basePhysicalDamage;
     console.log('receivedDamage', receivedDamage);
     const remainingHp = Math.max(victim.hp - receivedDamage, 0);
     const isAlive = remainingHp !== 0;
     this.applyMiniRoot(victim, 200, now);
-    // victim.lastMoveAt = now + 250;
     victim.hp = remainingHp;
     victim.isAlive = isAlive;
 
