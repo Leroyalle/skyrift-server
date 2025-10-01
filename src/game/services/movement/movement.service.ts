@@ -22,6 +22,8 @@ import { PositionDto } from 'src/common/dto/position.dto';
 import { isPlayer } from '../combat/lib/entity/guards/is-player.lib';
 import { isMob } from '../combat/lib/entity/guards/is-mob.lib';
 import { getPixelByTile } from 'src/game/lib/helpers/get-pixels-by-tile.lib';
+import { RuntimeEffectService } from '../runtime-effect/runtime-effect.service';
+import { EffectType } from 'src/common/enums/skill/effect-type.enum';
 
 @Injectable()
 export class MovementService {
@@ -33,6 +35,7 @@ export class MovementService {
     private readonly spatialGridService: SpatialGridService<TRuntimeEntity>,
     private readonly interactionService: InteractionService,
     private readonly runtimeMobService: RuntimeMobService,
+    private readonly runtimeEffectService: RuntimeEffectService,
   ) {}
 
   private readonly charactersMovementQueues = new Map<
@@ -113,6 +116,16 @@ export class MovementService {
       const pathStep = steps.shift();
 
       if (!pathStep) return;
+
+      const hasStun = this.runtimeEffectService.findByType(
+        {
+          type: character.type,
+          id: character.id,
+        },
+        EffectType.Stun,
+      );
+
+      if (hasStun && hasStun.length) return;
 
       const socketId = this.socketService.getSocketId(userId);
       if (!socketId) return;

@@ -81,7 +81,10 @@ export class RuntimeEffectService {
     effectsArray.push(runtimeEffect);
   }
 
-  public findByType(entityRef: EntityRef, type: EffectType) {
+  public findByType(
+    entityRef: EntityRef,
+    type: EffectType,
+  ): IRuntimeEffect[] | undefined {
     const map = this.findOrCreateMap(entityRef);
     return map.get(type);
   }
