@@ -12,6 +12,8 @@ import { getRandomValue } from 'src/common/lib/get-random-value.lib';
 import { CachedLocation } from 'src/location/types/cashed-location.type';
 import { RangeArea } from './types/range-area.type';
 import { isEntityCombatStatus } from 'src/game/lib/entity/is-entity-combat-status.lib';
+import { EntityRef } from 'src/game/types/entity/entity-ref.type';
+import { RuntimeEntityService } from '../runtime-entity/runtime-entity.service';
 
 @Injectable()
 export class RuntimeMobService implements OnModuleInit {
@@ -23,6 +25,7 @@ export class RuntimeMobService implements OnModuleInit {
     private readonly pathFindingService: PathFindingService,
     @Inject(forwardRef(() => MovementService))
     private readonly movementService: MovementService,
+    private readonly runtimeEntityService: RuntimeEntityService,
   ) {}
 
   private readonly mobsByLocation = new Map<string, Set<string>>();
@@ -56,6 +59,7 @@ export class RuntimeMobService implements OnModuleInit {
     const mobsEntries = Array.from(this.mobsById.values());
 
     for (const runtimeMob of mobsEntries) {
+      console.log('tick ai mob', runtimeMob.state);
       if (runtimeMob.respawnIn || runtimeMob.state === 'dead') continue;
 
       const now = Date.now();
@@ -125,6 +129,20 @@ export class RuntimeMobService implements OnModuleInit {
     }
   }
 
+  private checkVictimIsActual(
+    runtimeMob: IRuntimeMob,
+    victimRef: EntityRef,
+  ): boolean {
+    const victim = this.runtimeEntityService.getEntityByType(
+      victimRef.type,
+      victimRef.id,
+    );
+
+    if (!victim) return false;
+
+    return victim.locationId === runtimeMob.locationId;
+  }
+
   private async patrol(mob: IRuntimeMob): Promise<void> {
     if (mob.state !== 'idle') return;
 
@@ -191,11 +209,18 @@ export class RuntimeMobService implements OnModuleInit {
       findLocation.passableMap,
     );
 
-    if (!path) {
-      throw new Error('path not found');
+    if (!path || !runtimeMob.currentTarget) {
+      throw new Error('path or current target not found');
     }
+    const actualResult = this.checkVictimIsActual(
+      runtimeMob,
+      runtimeMob.currentTarget,
+    );
 
-    // TODO: если дистанция равна -1 по каким-то причинам (баг), тогда деспавним моба
+    if (!actualResult) {
+      this.returnMob(runtimeMob, path);
+      return true;
+    }
 
     return this.handleSwitchMobToReturnOrPursue(runtimeMob, path);
   }
@@ -205,16 +230,20 @@ export class RuntimeMobService implements OnModuleInit {
     path: PositionDto[],
   ): boolean {
     if (path.length > 5) {
-      this.combatService.processRequestAttackCancel({
-        type: mob.type,
-        id: mob.id,
-      });
-      mob.state = 'return';
-      this.movementService.setMovementQueue(mob, path);
+      this.returnMob(mob, path);
       return true;
     }
     mob.state = 'pursue';
     return false;
+  }
+
+  private returnMob(mob: IRuntimeMob, path: PositionDto[]): void {
+    this.combatService.processRequestAttackCancel({
+      type: mob.type,
+      id: mob.id,
+    });
+    mob.state = 'return';
+    this.movementService.setMovementQueue(mob, path);
   }
 
   public get mobsArray() {

@@ -1,14 +1,13 @@
 import {
   CharacterActionState,
-  CurrentTarget,
   IRuntimeCharacter,
 } from 'src/character/types/runtime-character';
-import { Effect } from 'src/effect/entities/effect.entity';
 import {
   MobActionState,
   IRuntimeMob,
 } from 'src/game/services/runtime-mob/types/runtime-mob.type';
 import { BaseEntityStates } from 'src/game/types/entity/base-entity-states.type';
+import { EntityRef } from 'src/game/types/entity/entity-ref.type';
 import { EntityType } from 'src/game/types/entity/entity-type.type';
 
 export interface RuntimeActorEntity<E>
@@ -22,7 +21,7 @@ export interface ActorRuntimeStats<E> {
   lastAttackAt: number;
   lastMoveAt: number;
   isAttacking: boolean;
-  currentTarget: CurrentTarget | null;
+  currentTarget: EntityRef | null;
   state: ActorState<E>;
 }
 

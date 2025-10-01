@@ -19,7 +19,7 @@ interface UniqueStats {
 
 export type CharacterActionState = BaseEntityStates | 'pursue';
 
-export type CurrentTarget = {
-  id: string;
-  type: EntityType;
-};
+// export type CurrentTarget = {
+//   id: string;
+//   type: EntityType;
+// };
