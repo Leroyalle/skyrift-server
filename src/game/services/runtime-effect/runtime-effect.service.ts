@@ -81,6 +81,21 @@ export class RuntimeEffectService {
     effectsArray.push(runtimeEffect);
   }
 
+  public findByType(entityRef: EntityRef, type: EffectType) {
+    const map = this.findOrCreateMap(entityRef);
+    return map.get(type);
+  }
+
+  private findOrCreateMap(
+    entityRef: EntityRef,
+  ): Map<EffectType, IRuntimeEffect[]> {
+    const entityKey = generateEntityKey(entityRef);
+    const effectsMap =
+      this.activeEffects.get(entityKey) ??
+      new Map<EffectType, IRuntimeEffect[]>();
+    return effectsMap;
+  }
+
   // FIXME: удалить в типе ентити эффекты
   // private removeEffect(entityRef: EntityRef) {}
 
