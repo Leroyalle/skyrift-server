@@ -69,8 +69,6 @@ export class CombatService {
 
       if (!location) continue;
 
-      console.log('attackerPos', attacker.x, attacker.y);
-
       const attackerTile = {
         x: Math.floor(attacker.x / location.tileWidth),
         y: Math.floor(attacker.y / location.tileHeight),
@@ -98,8 +96,6 @@ export class CombatService {
       }
 
       if (!targetTile) continue;
-
-      console.log('targetTile', targetTile);
 
       const steps = await this.pathFindingService.getPlayerPath(
         attacker.locationId,
@@ -174,13 +170,18 @@ export class CombatService {
       return;
     }
 
+    console.log('request attack move for player');
+
     const attacker = this.playerStateService.getCharacterState(
       client.userData.characterId,
     );
 
     if (!attacker) return;
 
-    const victim = this.playerStateService.getCharacterState(input.targetId);
+    const victim = this.runtimeEntityService.getEntityByType(
+      input.type,
+      input.targetId,
+    );
 
     if (!victim) return;
 
@@ -218,9 +219,9 @@ export class CombatService {
       ActionType.AutoAttack,
     );
 
-    if (hasAutoAttack) return;
-
     console.log('hasAutoAttack', hasAutoAttack);
+
+    if (hasAutoAttack) return;
 
     await this.schedulePathUpdate(
       attacker,
@@ -308,11 +309,6 @@ export class CombatService {
 
     if (!attacker) return;
 
-    // this.pendingActionsQueue.set(
-    //   generateEntityKey({ type: ref.type, id: ref.id }),
-    //   [],
-    // );
-
     this.actionQueueService.clearPendingActions(
       { type: ref.type, id: ref.id },
       [],
@@ -330,7 +326,10 @@ export class CombatService {
     currentTarget: { id: string; type: EntityType } | null;
   } | null {
     if (target.kind === 'target') {
-      const victim = this.playerStateService.getCharacterState(target.id);
+      const victim = this.runtimeEntityService.getEntityByType(
+        target.type,
+        target.id,
+      );
       if (!victim || !victim.isAlive) return null;
       return {
         tile: {
