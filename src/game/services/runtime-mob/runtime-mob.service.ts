@@ -139,6 +139,8 @@ export class RuntimeMobService implements OnModuleInit {
 
     if (!victim) return false;
 
+    if (!victim.isAlive) return false;
+
     return victim.locationId === runtimeMob.locationId;
   }
 
