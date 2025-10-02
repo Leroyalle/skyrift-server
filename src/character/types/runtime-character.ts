@@ -1,4 +1,3 @@
-import { EntityType } from 'src/game/types/entity/entity-type.type';
 import { BaseEntityStates } from 'src/game/types/entity/base-entity-states.type';
 import { Character } from '../entities/character.entity';
 import { RuntimeActorEntity } from 'src/common/types/actor-entity.type';
@@ -18,8 +17,3 @@ interface UniqueStats {
 }
 
 export type CharacterActionState = BaseEntityStates | 'pursue';
-
-// export type CurrentTarget = {
-//   id: string;
-//   type: EntityType;
-// };

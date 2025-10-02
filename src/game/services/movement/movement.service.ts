@@ -121,8 +121,6 @@ export class MovementService {
         EffectType.Stun,
       );
 
-      console.log('[MOVEMENT] tick / hasStun', hasStun);
-
       if (hasStun && hasStun.length) return;
 
       const pathStep = steps.shift();
