@@ -7,5 +7,4 @@ export class RequestSkillUseDto {
   skillId: string;
   area?: PositionDto;
   targetRef?: EntityRef;
-  // targetId?: string;
 }

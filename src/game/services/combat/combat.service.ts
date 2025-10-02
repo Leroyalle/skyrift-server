@@ -54,6 +54,7 @@ export class CombatService {
 
     for (const queue of this.actionQueueService.getIterablePendingActions()) {
       if (queue.length === 0) continue;
+      console.log('TICK ACTION', queue);
       const action = queue[0];
 
       const attacker = this.runtimeEntityService.getEntityByType(
@@ -313,7 +314,7 @@ export class CombatService {
       { type: ref.type, id: ref.id },
       [],
     );
-
+    attacker.state = 'idle';
     attacker.currentTarget = null;
     attacker.isAttacking = false;
   }

@@ -59,7 +59,6 @@ export class RuntimeMobService implements OnModuleInit {
     const mobsEntries = Array.from(this.mobsById.values());
 
     for (const runtimeMob of mobsEntries) {
-      console.log('tick ai mob', runtimeMob.state);
       if (runtimeMob.respawnIn || runtimeMob.state === 'dead') continue;
 
       const now = Date.now();
@@ -209,9 +208,15 @@ export class RuntimeMobService implements OnModuleInit {
       findLocation.passableMap,
     );
 
-    if (!path || !runtimeMob.currentTarget) {
+    if (!path) {
       throw new Error('path or current target not found');
     }
+
+    if (!runtimeMob.currentTarget) {
+      this.returnMob(runtimeMob, path);
+      return true;
+    }
+
     const actualResult = this.checkVictimIsActual(
       runtimeMob,
       runtimeMob.currentTarget,

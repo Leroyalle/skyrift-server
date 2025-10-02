@@ -33,22 +33,22 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Namespace;
 
-  afterInit(server: Namespace) {
+  public afterInit(server: Namespace) {
     this.server = server;
     this.socketService.setServer(server);
   }
 
-  handleConnection(client: Socket) {
+  public handleConnection(client: Socket) {
     console.log('Client connected:', client.id);
     return this.gameService.handleConnection(client);
   }
 
-  handleDisconnect(client: Socket) {
+  public handleDisconnect(client: Socket) {
     return this.gameService.handleDisconnect(client);
   }
 
   @SubscribeMessage(ClientToServerEvents.PlayerWalk)
-  playerWalk(
+  public playerWalk(
     @ConnectedSocket() client: Socket,
     @MessageBody() input: RequestMoveToDto,
   ) {
@@ -56,7 +56,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage(ClientToServerEvents.RequestAttackMove)
-  requestAttackMove(
+  public requestAttackMove(
     @ConnectedSocket() client: Socket,
     @MessageBody() input: RequestAttackMoveDto,
   ) {
@@ -64,7 +64,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage(ClientToServerEvents.RequestUseSkill)
-  requestUseSkill(
+  public requestUseSkill(
     @ConnectedSocket() client: Socket,
     @MessageBody() input: RequestSkillUseDto,
   ) {
@@ -72,33 +72,39 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage(ClientToServerEvents.PlayerAttackCancelled)
-  requestAttackCancalled(@ConnectedSocket() client: Socket) {
+  public requestAttackCancalled(@ConnectedSocket() client: Socket) {
     return this.gameService.requestAttackCancelled(client);
   }
 
   @SubscribeMessage(ClientToServerEvents.RequestInitialState)
-  async handleInitialData(client: Socket) {
+  public async handleInitialData(client: Socket) {
     console.log('Client initial:', client.id);
     return await this.gameService.getInitialData(client);
   }
 
   @SubscribeMessage(ClientToServerEvents.RequestUseTeleport)
-  async requestUseTeleport(client: Socket, input: RequestUseTeleportDto) {
+  public async requestUseTeleport(
+    client: Socket,
+    input: RequestUseTeleportDto,
+  ) {
     return await this.gameService.requestUseTeleport(client, input);
   }
 
   @SubscribeMessage(ClientToServerEvents.PlayerSendWorldMessage)
-  async playerSendWorldMessage(client: Socket, input: string) {
+  public async playerSendWorldMessage(client: Socket, input: string) {
     return await this.gameService.playerSendWorldMessage(client, input);
   }
 
   @SubscribeMessage(ClientToServerEvents.PlayerSendLocationMessage)
-  async playerSendLocationMessage(client: Socket, input: string) {
+  public async playerSendLocationMessage(client: Socket, input: string) {
     return await this.gameService.playerSendLocationMessage(client, input);
   }
 
   @SubscribeMessage(ClientToServerEvents.PlayerSendDirectMessage)
-  async playerSendDirectMessage(client: Socket, input: DirectMessageInput) {
+  public async playerSendDirectMessage(
+    client: Socket,
+    input: DirectMessageInput,
+  ) {
     return await this.gameService.playerSendDirectMessage(client, input);
   }
 }
