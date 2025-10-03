@@ -1,5 +1,6 @@
 import { MobSpawn } from 'src/mob/mob-spawn/entities/mob-spawn.entity';
 import { IRuntimeMob } from '../types/runtime-mob.type';
+import { AggroTable } from './aggro.lib';
 export function buildRuntimeMob(mobSpawn: MobSpawn): IRuntimeMob {
   if (!mobSpawn.mob) throw new Error('Mob is not loaded in spawn!');
   if (!mobSpawn.location) throw new Error('Location is not loaded in spawn!');
@@ -41,5 +42,6 @@ export function buildRuntimeMob(mobSpawn: MobSpawn): IRuntimeMob {
     attackSpeed: mobSpawn.mob.attackSpeed,
     attackRange: mobSpawn.mob.attackRange,
     areaRadius: mobSpawn.areaRadius,
+    aggro: new AggroTable(),
   };
 }
