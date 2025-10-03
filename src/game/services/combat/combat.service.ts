@@ -691,7 +691,10 @@ export class CombatService {
     victim.isAlive = isAlive;
 
     if (isMob(victim)) {
-      victim.aggro.updateThreatMap(attacker, receivedDamage);
+      victim.currentTarget = victim.aggro.updateThreatMap(
+        attacker,
+        receivedDamage,
+      );
       if (!victim.isAlive) {
         this.runtimeMobService.setRespawn(victim.id);
       }
