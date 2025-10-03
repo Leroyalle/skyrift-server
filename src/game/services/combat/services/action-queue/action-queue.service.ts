@@ -5,6 +5,7 @@ import { EntityRef } from 'src/game/types/entity/entity-ref.type';
 import { EntityKey } from 'src/game/types/entity/keys/entity-key.type';
 import { ActionType, PendingAction } from 'src/game/types/pending-actions.type';
 import { actionRules } from './constants/action-rules.constants';
+import { TargetAction } from '../../types/target-action.type';
 
 @Injectable()
 export class ActionQueueService {
@@ -47,20 +48,38 @@ export class ActionQueueService {
     return queue;
   }
 
-  public findActionType(entityRef: EntityRef, actionType: ActionType): boolean {
+  public findActionType(
+    entityRef: EntityRef,
+    actionType: ActionType,
+    victimRef?: TargetAction,
+  ): boolean {
     const entityKey = generateEntityKey(entityRef);
     const queue = this.getOrCreateActionQueue(entityKey);
-    return queue.some((q) => q.actionType === actionType);
+    return queue.some((q) => {
+      if (q.target.kind === 'target' && victimRef?.kind === 'target') {
+        return (
+          q.actionType === actionType &&
+          q.target.type === victimRef.type &&
+          q.target.id === victimRef.id
+        );
+      }
+      return q.actionType === actionType;
+    });
   }
 
   public pushPendingAction(
     entityRef: EntityRef,
     pendingAction: PendingAction,
     characterSkill?: CharacterSkill,
+    victimRef?: TargetAction,
   ): void {
     const key = generateEntityKey(entityRef);
     const queue = this.getOrCreateActionQueue(key);
-    const hasAutoAttack = this.findActionType(entityRef, ActionType.AutoAttack);
+    const hasAutoAttack = this.findActionType(
+      entityRef,
+      ActionType.AutoAttack,
+      victimRef,
+    );
 
     if (hasAutoAttack && !characterSkill) return;
 
