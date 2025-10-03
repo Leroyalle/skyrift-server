@@ -23,8 +23,8 @@ export class AggroTable {
 
   public updateCurrentTarget(switchThreshold: number = 100): EntityRef | null {
     let potentialTarget = this.currentTarget;
-    let bestThreat = this.currentTarget
-      ? (this.threatMap.get(generateEntityKey(this.currentTarget)) ?? 0)
+    let bestThreat = potentialTarget
+      ? (this.threatMap.get(generateEntityKey(potentialTarget)) ?? 0)
       : 0;
 
     for (const [entityKey, threat] of this.threatMap.entries()) {
