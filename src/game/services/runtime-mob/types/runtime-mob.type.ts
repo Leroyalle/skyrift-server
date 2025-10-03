@@ -3,6 +3,7 @@ import { RuntimeActorEntity } from 'src/common/types/actor-entity.type';
 import { TDirection } from 'src/game/types/entity/direction.type';
 import { Mob } from 'src/mob/entities/mob.entity';
 import { MobSpawn } from 'src/mob/mob-spawn/entities/mob-spawn.entity';
+import { AggroTable } from '../lib/aggro.lib';
 
 export interface IRuntimeMob
   extends MobSummary,
@@ -22,6 +23,7 @@ interface RuntimeMobStats {
   respawnIn: number | null;
   nextThinkAt: number;
   currentPath: PositionDto[] | null;
+  aggro: AggroTable;
 }
 
 interface UniqueStats {

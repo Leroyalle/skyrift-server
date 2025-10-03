@@ -32,6 +32,7 @@ import { EntityRef } from 'src/game/types/entity/entity-ref.type';
 import { AoeService } from './services/aoe/aoe.service';
 import { RuntimeEntityService } from '../runtime-entity/runtime-entity.service';
 import { ActionQueueService } from './services/action-queue/action-queue.service';
+import { isMob } from './lib/entity/guards/is-mob.lib';
 
 @Injectable()
 export class CombatService {
@@ -689,8 +690,11 @@ export class CombatService {
     victim.hp = remainingHp;
     victim.isAlive = isAlive;
 
-    if (!victim.isAlive && victim.type === 'mob') {
-      this.runtimeMobService.setRespawn(victim.id);
+    if (isMob(victim)) {
+      victim.aggro.updateThreatMap(attacker, receivedDamage);
+      if (!victim.isAlive) {
+        this.runtimeMobService.setRespawn(victim.id);
+      }
     }
 
     attacker.lastAttackAt = now;
@@ -712,6 +716,22 @@ export class CombatService {
       victimIsAlive: victim.isAlive,
     };
   }
+
+  // private applyDamage(
+  //   attacker: TRuntimeEntity,
+  //   victim: TRuntimeEntity,
+  //   now: number = Date.now(),
+  // ) {
+  //   const receivedDamage = attacker.basePhysicalDamage;
+  //   console.log('receivedDamage', receivedDamage);
+  //   const remainingHp = Math.max(victim.hp - receivedDamage, 0);
+  //   const isAlive = remainingHp !== 0;
+  //   this.applyMiniRoot(victim, 200, now);
+  //   victim.hp = remainingHp;
+  //   victim.isAlive = isAlive;
+
+  //   return { attacker, victim };
+  // }
 
   private applyMiniRoot(
     entity: TRuntimeEntity,
