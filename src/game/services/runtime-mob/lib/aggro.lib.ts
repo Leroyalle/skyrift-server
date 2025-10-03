@@ -7,10 +7,6 @@ export class AggroTable {
   private currentTarget: EntityRef | null = null;
   private threatMap = new Map<EntityKey, number>();
 
-  public get getCurrentTarget() {
-    return this.currentTarget;
-  }
-
   public updateThreatMap(
     entityRef: EntityRef,
     damage: number,
@@ -21,14 +17,14 @@ export class AggroTable {
     return this.updateCurrentTarget();
   }
 
-  public updateCurrentTarget(switchThreshold: number = 100): EntityRef | null {
+  private updateCurrentTarget(switchThreshold: number = 100): EntityRef | null {
     let potentialTarget = this.currentTarget;
     let bestThreat = potentialTarget
       ? (this.threatMap.get(generateEntityKey(potentialTarget)) ?? 0)
       : 0;
 
     for (const [entityKey, threat] of this.threatMap.entries()) {
-      if (!this.currentTarget) {
+      if (!this.currentTarget && threat > bestThreat) {
         bestThreat = threat;
         const entityRef = decodeEntityKey(entityKey);
         potentialTarget = entityRef;
@@ -45,13 +41,21 @@ export class AggroTable {
     return this.currentTarget;
   }
 
-  public removeEntity(entityRef: EntityRef) {
+  public removeEntity(entityRef: EntityRef): EntityRef | null {
+    const isTarget =
+      this.currentTarget &&
+      generateEntityKey(this.currentTarget) === generateEntityKey(entityRef);
+
+    if (isTarget) {
+      this.currentTarget = null;
+    }
     this.threatMap.delete(generateEntityKey(entityRef));
-    this.updateCurrentTarget();
+    return this.updateCurrentTarget();
   }
 
-  public clear() {
+  public clear(): EntityRef | null {
     this.threatMap.clear();
     this.currentTarget = null;
+    return this.currentTarget;
   }
 }
