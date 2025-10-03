@@ -21,16 +21,27 @@ export class AggroTable {
     return this.updateCurrentTarget();
   }
 
-  public updateCurrentTarget(): EntityRef | null {
-    let maxThreat: number = 0;
+  public updateCurrentTarget(switchThreshold: number = 100): EntityRef | null {
+    let potentialTarget = this.currentTarget;
+    let bestThreat = this.currentTarget
+      ? (this.threatMap.get(generateEntityKey(this.currentTarget)) ?? 0)
+      : 0;
+
     for (const threat of this.threatMap.entries()) {
-      if (threat[1] > maxThreat) {
-        maxThreat = threat[1];
+      if (!this.currentTarget) {
+        bestThreat = threat[1];
         const entityRef = decodeEntityKey(threat[0]);
-        this.currentTarget = entityRef;
+        potentialTarget = entityRef;
+        continue;
+      } else if (threat[1] > bestThreat + switchThreshold) {
+        bestThreat = threat[1];
+        const entityRef = decodeEntityKey(threat[0]);
+        potentialTarget = entityRef;
+        continue;
       }
     }
 
+    this.currentTarget = potentialTarget;
     return this.currentTarget;
   }
 
