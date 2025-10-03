@@ -225,6 +225,8 @@ export class CombatService {
 
     if (hasAutoAttack) return;
 
+    this.actionQueueService.clearPendingActions(attacker, []);
+
     await this.schedulePathUpdate(
       attacker,
       {
@@ -416,15 +418,6 @@ export class CombatService {
       state: 'wait-path',
     };
 
-    // const attackerKey = generateEntityKey<RuntimeEntity>(attacker);
-    // const queue = this.getOrCreateActionQueue(attackerKey);
-
-    // const hasAutoAttack = queue.some(
-    //   (q) => q.actionType === ActionType.AutoAttack,
-    // );
-
-    // if (hasAutoAttack && !skillId) return;
-
     const entityRef: EntityRef = {
       id: attacker.id,
       type: attacker.type,
@@ -433,7 +426,6 @@ export class CombatService {
       case SkillType.AoE: {
         this.resolvePendingActionState(attacker, pendingAction, range, steps);
         console.log('push aoe skill', pendingAction);
-        // pushTargetAction(entityRef, pendingAction, attackerSkill);
         this.actionQueueService.pushPendingAction(
           entityRef,
           pendingAction,
@@ -448,7 +440,6 @@ export class CombatService {
           pendingAction,
           attackerSkill,
         );
-        // pushTargetAction(entityRef, pendingAction, attackerSkill);
         break;
       }
     }
@@ -634,6 +625,8 @@ export class CombatService {
             area,
           );
           if (!applyAoeSkillResult) return;
+
+          this.actionQueueService.clearPendingActions(ctx.attacker, []);
 
           // TODO: update set cooldown for mob & player
 
@@ -841,14 +834,5 @@ export class CombatService {
         skillId: characterSkill.id,
       },
     };
-    // TODO: characterSkill.skill.effects?.forEach((effect) => {
-    //   if (effect.type === EffectType.DamageOverTime) {
-    //   }
-    // });
   }
-
-  // public clearPendingActions(entityRef: EntityRef): boolean {
-  //   const entityKey = generateEntityKey(entityRef);
-  //   return this.pendingActionsQueue.delete(entityKey);
-  // }
 }

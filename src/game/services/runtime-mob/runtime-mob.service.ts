@@ -97,6 +97,7 @@ export class RuntimeMobService implements OnModuleInit {
         mob.currentTarget = mob.aggro.getCurrentTarget;
         if (mob.currentTarget) {
           this.movementService.deleteMovementQueue(mob);
+          // this.combatService.processRequestAttackCancel(mob);
           await this.combatService.requestAttackMoveForMob(
             mob.id,
             mob.currentTarget.id,
@@ -116,9 +117,10 @@ export class RuntimeMobService implements OnModuleInit {
           mob.x,
           mob.y,
           mob.triggerRange,
+          'player',
         );
-        const target = entities.find((ent) => ent.type === 'player');
 
+        const target = entities?.[0];
         if (target) {
           this.movementService.deleteMovementQueue(mob);
           await this.combatService.requestAttackMoveForMob(mob.id, target.id);

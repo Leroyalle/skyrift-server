@@ -31,7 +31,7 @@ export class SpatialGridService<
     return `${locationId}_${cx}_${cy}`;
   }
 
-  add(entity: T) {
+  public add(entity: T) {
     const key = this.getCellKey(entity.locationId, entity.x, entity.y);
     if (!this.cells.has(key)) {
       this.cells.set(key, new Set());
@@ -39,12 +39,12 @@ export class SpatialGridService<
     this.cells.get(key)!.add(generateEntityKey(entity));
   }
 
-  remove(entity: T) {
+  public remove(entity: T) {
     const key = this.getCellKey(entity.locationId, entity.x, entity.y);
     this.cells.get(key)?.delete(generateEntityKey(entity));
   }
 
-  update(entity: T, oldLocationId: string, oldX: number, oldY: number) {
+  public update(entity: T, oldLocationId: string, oldX: number, oldY: number) {
     const oldKey = this.getCellKey(oldLocationId, oldX, oldY);
     const newKey = this.getCellKey(entity.locationId, entity.x, entity.y);
     if (oldKey !== newKey) {
@@ -53,11 +53,12 @@ export class SpatialGridService<
     }
   }
 
-  queryRadius(
+  public queryRadius(
     locationId: string,
     x: number,
     y: number,
     radius: number,
+    entityType: EntityType | null = null,
   ): QueryRadiusResult {
     const { x: centerX, y: centerY } = getTileByPosition(x, y, this.tileSize);
 
@@ -76,6 +77,7 @@ export class SpatialGridService<
         if (bucket) {
           bucket.forEach((stringValues) => {
             const decoded = decodeEntityKey(stringValues);
+            if (entityType && decoded.type !== entityType) return;
             entities.push(decoded);
           });
         }
