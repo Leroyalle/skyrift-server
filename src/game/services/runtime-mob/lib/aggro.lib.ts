@@ -7,17 +7,18 @@ export class AggroTable {
   private currentTarget: EntityRef | null = null;
   private threatMap = new Map<EntityKey, number>();
 
-  public updateThreatMap(
-    entityRef: EntityRef,
-    damage: number,
-  ): EntityRef | null {
+  public get getCurrentTarget() {
+    return this.currentTarget;
+  }
+
+  public updateThreatMap(entityRef: EntityRef, damage: number): void {
     const key = generateEntityKey(entityRef);
     const entityThreat = (this.threatMap.get(key) ?? 0) + damage;
     this.threatMap.set(key, entityThreat);
-    return this.updateCurrentTarget();
+    this.updateCurrentTarget();
   }
 
-  private updateCurrentTarget(switchThreshold: number = 100): EntityRef | null {
+  private updateCurrentTarget(switchThreshold: number = 10): EntityRef | null {
     let potentialTarget = this.currentTarget;
     let bestThreat = potentialTarget
       ? (this.threatMap.get(generateEntityKey(potentialTarget)) ?? 0)

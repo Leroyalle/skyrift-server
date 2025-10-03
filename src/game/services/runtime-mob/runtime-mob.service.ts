@@ -58,74 +58,88 @@ export class RuntimeMobService implements OnModuleInit {
   public async tickAiMobs() {
     const mobsEntries = Array.from(this.mobsById.values());
 
-    for (const runtimeMob of mobsEntries) {
-      if (runtimeMob.respawnIn || runtimeMob.state === 'dead') continue;
+    for (const mob of mobsEntries) {
+      if (mob.respawnIn || mob.state === 'dead') continue;
 
       const now = Date.now();
 
-      if (runtimeMob.nextThinkAt && runtimeMob.nextThinkAt > now) continue;
+      if (mob.nextThinkAt && mob.nextThinkAt > now) continue;
 
       const currentMobPath = this.movementService.getMovementQueue(
-        runtimeMob.type,
-        runtimeMob.id,
+        mob.type,
+        mob.id,
       );
 
-      const currentPos = getTileByPosition(runtimeMob.x, runtimeMob.y, 32);
-      const spawnPos = getTileByPosition(
-        runtimeMob.spawnX,
-        runtimeMob.spawnY,
-        32,
-      );
+      const currentPos = getTileByPosition(mob.x, mob.y, 32);
+      const spawnPos = getTileByPosition(mob.spawnX, mob.spawnY, 32);
 
       if (
         currentPos.x === spawnPos.x &&
         currentPos.y === spawnPos.y &&
-        runtimeMob.state === 'return'
+        mob.state === 'return'
       ) {
-        runtimeMob.state = 'idle';
+        mob.state = 'idle';
       }
 
       if (
         (!currentMobPath || currentMobPath.steps.length === 0) &&
-        !isEntityCombatStatus(runtimeMob.state)
+        !isEntityCombatStatus(mob.state)
       ) {
-        runtimeMob.state = 'idle';
+        mob.state = 'idle';
       }
 
-      if (runtimeMob.state === 'pursue' || runtimeMob.state === 'attack') {
-        const result = await this.hasExceededLeashDistance(runtimeMob);
+      if (mob.state === 'pursue' || mob.state === 'attack') {
+        const result = await this.hasExceededLeashDistance(mob);
         if (result) continue;
       }
 
-      if (
-        !runtimeMob.currentTarget &&
-        runtimeMob.state !== 'return' &&
-        runtimeMob.state !== 'pursue'
-      ) {
-        const { entities } = this.spatialGridService.queryRadius(
-          runtimeMob.locationId,
-          runtimeMob.x,
-          runtimeMob.y,
-          runtimeMob.triggerRange,
-        );
-        const target = entities.find((ent) => ent.type === 'player');
-
-        if (target) {
-          this.movementService.deleteMovementQueue(runtimeMob);
+      if (this.hasNewTarget(mob)) {
+        mob.currentTarget = mob.aggro.getCurrentTarget;
+        if (mob.currentTarget) {
+          this.movementService.deleteMovementQueue(mob);
           await this.combatService.requestAttackMoveForMob(
-            runtimeMob.id,
-            target.id,
+            mob.id,
+            mob.currentTarget.id,
           );
-          runtimeMob.state = 'pursue';
+          mob.state = 'pursue';
           continue;
         }
       }
 
-      await this.patrol(runtimeMob);
+      if (
+        !mob.currentTarget &&
+        mob.state !== 'return' &&
+        mob.state !== 'pursue'
+      ) {
+        const { entities } = this.spatialGridService.queryRadius(
+          mob.locationId,
+          mob.x,
+          mob.y,
+          mob.triggerRange,
+        );
+        const target = entities.find((ent) => ent.type === 'player');
+
+        if (target) {
+          this.movementService.deleteMovementQueue(mob);
+          await this.combatService.requestAttackMoveForMob(mob.id, target.id);
+          mob.state = 'pursue';
+          continue;
+        }
+      }
+
+      await this.patrol(mob);
 
       const randomDelay = getRandomValue(3000, 5000);
-      runtimeMob.nextThinkAt = now + randomDelay;
+      mob.nextThinkAt = now + randomDelay;
     }
+  }
+
+  private hasNewTarget(mob: IRuntimeMob): boolean {
+    const oldTarget = mob.currentTarget;
+    const newTarget = mob.aggro.getCurrentTarget;
+    return (
+      oldTarget?.id !== newTarget?.id && oldTarget?.type !== newTarget?.type
+    );
   }
 
   private checkVictimIsActual(
@@ -249,6 +263,7 @@ export class RuntimeMobService implements OnModuleInit {
       type: mob.type,
       id: mob.id,
     });
+    mob.currentTarget = mob.aggro.clear();
     mob.state = 'return';
     this.movementService.setMovementQueue(mob, path);
   }
