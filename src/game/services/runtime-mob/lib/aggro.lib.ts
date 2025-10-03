@@ -27,15 +27,15 @@ export class AggroTable {
       ? (this.threatMap.get(generateEntityKey(this.currentTarget)) ?? 0)
       : 0;
 
-    for (const threat of this.threatMap.entries()) {
+    for (const [entityKey, threat] of this.threatMap.entries()) {
       if (!this.currentTarget) {
-        bestThreat = threat[1];
-        const entityRef = decodeEntityKey(threat[0]);
+        bestThreat = threat;
+        const entityRef = decodeEntityKey(entityKey);
         potentialTarget = entityRef;
         continue;
-      } else if (threat[1] > bestThreat + switchThreshold) {
-        bestThreat = threat[1];
-        const entityRef = decodeEntityKey(threat[0]);
+      } else if (threat > bestThreat + switchThreshold) {
+        bestThreat = threat;
+        const entityRef = decodeEntityKey(entityKey);
         potentialTarget = entityRef;
         continue;
       }
