@@ -39,6 +39,7 @@ export class AggroTable {
     }
 
     this.currentTarget = potentialTarget;
+    console.log('CURRENT TARGET', this.currentTarget);
     return this.currentTarget;
   }
 

@@ -95,9 +95,10 @@ export class RuntimeMobService implements OnModuleInit {
 
       if (this.hasNewTarget(mob)) {
         mob.currentTarget = mob.aggro.getCurrentTarget;
+        console.log('mob has new target', mob.currentTarget);
         if (mob.currentTarget) {
+          console.log('mob has new target 2 before attack', mob.currentTarget);
           this.movementService.deleteMovementQueue(mob);
-          // this.combatService.processRequestAttackCancel(mob);
           await this.combatService.requestAttackMoveForMob(
             mob.id,
             mob.currentTarget.id,
@@ -140,7 +141,7 @@ export class RuntimeMobService implements OnModuleInit {
     const oldTarget = mob.currentTarget;
     const newTarget = mob.aggro.getCurrentTarget;
     return (
-      oldTarget?.id !== newTarget?.id && oldTarget?.type !== newTarget?.type
+      oldTarget?.id !== newTarget?.id || oldTarget?.type !== newTarget?.type
     );
   }
 

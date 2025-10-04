@@ -55,7 +55,6 @@ export class CombatService {
 
     for (const queue of this.actionQueueService.getIterablePendingActions()) {
       if (queue.length === 0) continue;
-      console.log('TICK ACTION', queue);
       const action = queue[0];
 
       const attacker = this.runtimeEntityService.getEntityByType(
@@ -107,9 +106,6 @@ export class CombatService {
       );
 
       if (!steps) {
-        // this.pendingActionsQueue.delete(
-        //   generateEntityKey({ type: attacker.type, id: attacker.id }),
-        // );
         this.actionQueueService.clearPendingActions({
           type: attacker.type,
           id: attacker.id,
@@ -219,6 +215,7 @@ export class CombatService {
     const hasAutoAttack = this.actionQueueService.findActionType(
       { id: attacker.id, type: attacker.type },
       ActionType.AutoAttack,
+      { id: victim.id, type: victim.type, kind: 'target' },
     );
 
     console.log('hasAutoAttack', hasAutoAttack);
@@ -439,6 +436,7 @@ export class CombatService {
           entityRef,
           pendingAction,
           attackerSkill,
+          target,
         );
         break;
       }
