@@ -11,7 +11,6 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { SkillEffectConfig } from '../dto/skill-effect-config.input';
 import { Effect } from 'src/effect/entities/effect.entity';
 
 @Entity()

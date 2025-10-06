@@ -168,8 +168,10 @@ export class MovementService {
       updates.push({
         id: characterId,
         locationId,
-        x: pixelPosition.x,
-        y: pixelPosition.y,
+        to: { x: pixelPosition.x, y: pixelPosition.y },
+        from: { x: prevPosition.x, y: prevPosition.y },
+        moveDuration: 450,
+        lastMoveAt: character.lastMoveAt,
         direction,
         type: 'player',
       });
@@ -239,8 +241,13 @@ export class MovementService {
       updates.push({
         locationId,
         direction,
-        x: movedMob.x,
-        y: movedMob.y,
+        to: {
+          x: movedMob.x,
+          y: movedMob.y,
+        },
+        from: { x: prevPosition.x, y: prevPosition.y },
+        lastMoveAt: movedMob.lastMoveAt,
+        moveDuration: moveSpeed,
         type: 'mob',
         id: runtimeMob.id,
       });

@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Socket } from 'socket.io';
 import { AuthService } from 'src/auth/auth.service';
 import { UserService } from 'src/user/user.service';
@@ -14,15 +14,12 @@ import { RequestSkillUseDto } from './dto/request-use-skill.dto';
 import { IRuntimeCharacter } from 'src/character/types/runtime-character';
 import { MovementService } from './services/movement/movement.service';
 import { CombatService } from './services/combat/combat.service';
-import { RegenerationService } from './services/regeneration/regeneration.service';
 import { SocketService } from './services/socket/socket.service';
 import { SpatialGridService } from './services/spatial-grid/spatial-grid.service';
 import { RequestUseTeleportDto } from './dto/request-use-teleport.dto';
 import { InteractionService } from './services/interaction/interaction.service';
 import { ChatService } from './services/chat/chat.service';
 import { DirectMessageInput } from './services/chat/dto/direct-message.input';
-import { RuntimeMobService } from './services/runtime-mob/runtime-mob.service';
-import { AoeService } from './services/combat/services/aoe/aoe.service';
 import { BaseLogger } from 'src/common/infra/logger.infra';
 import { GameInitialDataService } from './services/game-core/game-initial-data/game-initial-data.service';
 
@@ -44,68 +41,6 @@ export class GameService extends BaseLogger {
   ) {
     super();
   }
-
-  // private gameTickInterval: NodeJS.Timeout;
-  // private lastTickTimeMovement = 0;
-  // private lastTickTimeActions = 0;
-  // private lastTickTimeAoE = 0;
-  // private lastTickTimeRegeneration = 0;
-  // private lastTickTimeInteraction = 0;
-  // private lastTickTimeAiMobs = 0;
-
-  // private readonly intervalMovement = 150;
-  // private readonly intervalActions = 200;
-  // private readonly intervalAoE = 200;
-  // private readonly intervalRegeneration = 1000;
-  // private readonly intervalInteraction = 300;
-  // private readonly intervalAiMobs = 300;
-
-  // public onModuleInit() {
-  //   this.gameTickInterval = setInterval(() => {
-  //     try {
-  //       void this.tick();
-  //     } catch (error) {
-  //       this.log(`Error in game tick: ${error.message}`);
-  //     }
-  //   }, 150);
-  // }
-
-  // public onModuleDestroy() {
-  //   clearInterval(this.gameTickInterval);
-  // }
-
-  // private async tick() {
-  //   const now = Date.now();
-
-  //   if (now - this.lastTickTimeMovement >= this.intervalMovement) {
-  //     this.movementService.tickMovement();
-  //     this.lastTickTimeMovement = now;
-  //   }
-  //   if (now - this.lastTickTimeActions >= this.intervalActions) {
-  //     await this.combatService.tickActions();
-  //     this.lastTickTimeActions = now;
-  //   }
-
-  //   if (now - this.lastTickTimeAoE >= this.intervalAoE) {
-  //     this.aoeService.tickAoE();
-  //     this.lastTickTimeAoE = now;
-  //   }
-
-  //   if (now - this.lastTickTimeRegeneration >= this.intervalRegeneration) {
-  //     this.regenerationService.tickRegeneration();
-  //     this.lastTickTimeRegeneration = now;
-  //   }
-
-  //   if (now - this.lastTickTimeInteraction >= this.intervalInteraction) {
-  //     await this.interactionService.tickInteractions();
-  //     this.lastTickTimeInteraction = now;
-  //   }
-
-  //   if (now - this.lastTickTimeAiMobs >= this.intervalAiMobs) {
-  //     await this.runtimeMobService.tickAiMobs();
-  //     this.lastTickTimeAiMobs = now;
-  //   }
-  // }
 
   public async handleConnection(client: Socket) {
     try {
