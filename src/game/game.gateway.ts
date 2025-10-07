@@ -107,4 +107,9 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ) {
     return await this.gameService.playerSendDirectMessage(client, input);
   }
+
+  @SubscribeMessage(ClientToServerEvents.PingTime)
+  public sendPong(client: Socket, clientTime: number) {
+    return this.gameService.sendPong(client, clientTime);
+  }
 }
