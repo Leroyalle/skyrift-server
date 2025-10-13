@@ -102,8 +102,6 @@ export class MovementService {
     const charactersEntries = Array.from(
       this.charactersMovementQueues.entries(),
     );
-    // FIXME: add payer walk speed field to entity
-    // const PLAYER_SPEED = 450;
 
     charactersEntries.forEach(([characterId, { steps, userId }]) => {
       const character = this.playerStateService.getCharacterState(characterId);
@@ -170,7 +168,7 @@ export class MovementService {
         locationId,
         to: { x: pixelPosition.x, y: pixelPosition.y },
         from: { x: prevPosition.x, y: prevPosition.y },
-        moveDuration: 450,
+        moveDuration: character.walkSpeed,
         lastMoveAt: character.lastMoveAt,
         direction,
         type: 'player',

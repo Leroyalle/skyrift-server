@@ -271,8 +271,6 @@ export class GameService extends BaseLogger {
       return;
     }
 
-    console.log('Pong', clientTime);
-
     this.socketService.sendToUser(
       client.userData.userId,
       ServerToClientEvents.PongTime,

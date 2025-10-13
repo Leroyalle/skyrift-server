@@ -41,7 +41,7 @@ export class GameLoopService implements OnModuleInit, OnModuleDestroy {
   };
 
   public onModuleInit() {
-    this.gameTickInterval = setInterval(() => void this.tick(), 50);
+    this.gameTickInterval = setInterval(() => void this.tick(), 150);
   }
 
   public onModuleDestroy() {
