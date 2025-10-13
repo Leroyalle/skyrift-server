@@ -15,6 +15,8 @@ import { IRuntimeCharacter } from 'src/character/types/runtime-character';
 import { CharacterSkill } from 'src/character/character-skill/entities/character-skill.entity';
 import { PositionDto } from 'src/common/dto/position.dto';
 import { v4 as uuidv4 } from 'uuid';
+import { RuntimeEntityService } from 'src/game/services/runtime-entity/runtime-entity.service';
+import { RuntimeMobService } from 'src/game/services/runtime-mob/runtime-mob.service';
 
 @Injectable()
 export class AoeService {
@@ -22,6 +24,8 @@ export class AoeService {
     private readonly socketService: SocketService,
     private readonly playerStateService: PlayerStateService,
     private readonly spatialGridService: SpatialGridService<TRuntimeEntity>,
+    private readonly runtimeEntityService: RuntimeEntityService,
+    private readonly runtimeMobService: RuntimeMobService,
   ) {}
 
   private readonly activeAoEZones: Map<string, ActiveAoEZone> = new Map();
@@ -69,8 +73,9 @@ export class AoeService {
       }
 
       const targets: Target[] = [];
-      entities.forEach(({ id }) => {
-        const victim = this.playerStateService.getCharacterState(id);
+      entities.forEach(({ id, type }) => {
+        // const victim = this.playerStateService.getCharacterState(id);
+        const victim = this.runtimeEntityService.getEntityByType(type, id);
         if (!victim || !cSkill.skill.damagePerSecond || !victim.isAlive) return;
         if (attacker.id === victim.id) return;
         const receivedDamage = cSkill.skill.damagePerSecond;

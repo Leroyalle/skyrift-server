@@ -59,6 +59,7 @@ export class RuntimeMobService implements OnModuleInit {
     const mobsEntries = Array.from(this.mobsById.values());
 
     for (const mob of mobsEntries) {
+      console.log('[TICK_AI] mob state', mob.state);
       if (mob.respawnIn || mob.state === 'dead') continue;
 
       const now = Date.now();

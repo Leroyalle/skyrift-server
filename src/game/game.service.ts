@@ -22,6 +22,7 @@ import { ChatService } from './services/chat/chat.service';
 import { DirectMessageInput } from './services/chat/dto/direct-message.input';
 import { BaseLogger } from 'src/common/infra/logger.infra';
 import { GameInitialDataService } from './services/game-core/game-initial-data/game-initial-data.service';
+import { PongReturnData } from './types/pong-return-data.type';
 
 @Injectable()
 export class GameService extends BaseLogger {
@@ -258,5 +259,25 @@ export class GameService extends BaseLogger {
     input: DirectMessageInput,
   ) {
     return await this.chatService.sendDirectMessage(client, input);
+  }
+
+  public sendPong(
+    client: Socket,
+    clientTime: number,
+  ): PongReturnData | undefined {
+    if (!this.socketService.verifyUserDataInSocket(client)) {
+      this.socketService.notifyDisconnection(client);
+      this.socketService.onDisconnect(client);
+      return;
+    }
+
+    this.socketService.sendToUser(
+      client.userData.userId,
+      ServerToClientEvents.PongTime,
+      {
+        sendClientTime: clientTime,
+        serverTime: Date.now(),
+      },
+    );
   }
 }
