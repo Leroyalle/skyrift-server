@@ -6,6 +6,7 @@ export interface BatchUpdateMovement extends EntityRef {
   locationId: string;
   from: PositionDto;
   to: PositionDto;
+  isFinalStep: boolean;
   lastMoveAt: number;
   moveDuration: number;
   direction: TDirection;

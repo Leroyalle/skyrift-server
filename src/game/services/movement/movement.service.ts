@@ -168,6 +168,7 @@ export class MovementService {
         locationId,
         to: { x: pixelPosition.x, y: pixelPosition.y },
         from: { x: prevPosition.x, y: prevPosition.y },
+        isFinalStep: steps.length === 0,
         moveDuration: character.walkSpeed,
         lastMoveAt: character.lastMoveAt,
         direction,
@@ -237,17 +238,15 @@ export class MovementService {
       );
 
       updates.push({
+        id: runtimeMob.id,
         locationId,
         direction,
-        to: {
-          x: movedMob.x,
-          y: movedMob.y,
-        },
+        to: { x: movedMob.x, y: movedMob.y },
         from: { x: prevPosition.x, y: prevPosition.y },
+        isFinalStep: steps.length === 0,
         lastMoveAt: movedMob.lastMoveAt,
         moveDuration: moveSpeed,
         type: 'mob',
-        id: runtimeMob.id,
       });
     }
 
