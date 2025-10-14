@@ -570,47 +570,49 @@ export class CombatService {
 
         if (!targetTile) return;
 
-        const attackerDirection = getDirection(attackerTile, targetTile);
+        // const attackerDirection = getDirection(attackerTile, targetTile);
 
         const skillType = ctx.characterSkill.skill.type;
 
         if (skillType === SkillType.Target && action.target.kind === 'target') {
           if (!victim) return;
 
-          const attackerRef = {
-            id: ctx.attacker.id,
-            type: ctx.attacker.type,
-          };
+          this.startAttacking(ctx.attacker, victim, action);
 
-          const victimRef = {
-            id: victim.id,
-            type: victim.type,
-          };
+          // const attackerRef = {
+          //   id: ctx.attacker.id,
+          //   type: ctx.attacker.type,
+          // };
 
-          this.socketService.sendTo(
-            RedisKeys.Location + ctx.attacker.locationId,
-            ServerToClientEvents.EntityAttackStart,
-            {
-              attackerRef: {
-                ...attackerRef,
-                direction: attackerDirection,
-              },
-              victimRef,
-              actionType: ActionType.Skill,
-              skillId: action.skillId,
-            },
-          );
+          // const victimRef = {
+          //   id: victim.id,
+          //   type: victim.type,
+          // };
 
-          const applySkillResult = this.applySkill(
-            attackerRef,
-            victimRef,
-            action.skillId,
-            ctx.now,
-          );
+          // this.socketService.sendTo(
+          //   RedisKeys.Location + ctx.attacker.locationId,
+          //   ServerToClientEvents.EntityAttackStart,
+          //   {
+          //     attackerRef: {
+          //       ...attackerRef,
+          //       direction: attackerDirection,
+          //     },
+          //     victimRef,
+          //     actionType: ActionType.Skill,
+          //     skillId: action.skillId,
+          //   },
+          // );
 
-          if (!applySkillResult) return;
+          // const applySkillResult = this.applySkill(
+          //   attackerRef,
+          //   victimRef,
+          //   action.skillId,
+          //   ctx.now,
+          // );
 
-          ctx.batchLocation.push(applySkillResult.attackResult);
+          // if (!applySkillResult) return;
+
+          // ctx.batchLocation.push(applySkillResult.attackResult);
 
           // TODO: update set cooldown for mob & player
           if (isPlayer(ctx.attacker)) {
@@ -865,6 +867,26 @@ export class CombatService {
       id: victim.id,
       type: victim.type,
     };
+    const now = Date.now();
+
+    attacker.lastAttackAt = now;
+
+    // TODO: вынести в отдельную функцию
+    if (action.skillId && isPlayer(attacker)) {
+      const cSkill = attacker.characterSkills.find(
+        (skill) => skill.id === action.skillId,
+      );
+      if (cSkill) {
+        const cooldownEnd = now + cSkill.skill.cooldownMs;
+        cSkill.lastUsedAt = now;
+        cSkill.cooldownEnd = cooldownEnd;
+        // TODO: мб слать кулдаун вместе с аттак стартед
+        this.sendUserSkillCooldown(attacker.userId, {
+          skillId: action.skillId,
+          cooldownEnd,
+        });
+      }
+    }
 
     this.applyMiniRoot(attacker, 200);
 
@@ -877,7 +899,7 @@ export class CombatService {
           direction: attackerDirection,
         },
         victimRef,
-        actionType: ActionType.AutoAttack,
+        actionType: action.skillId ? ActionType.Skill : ActionType.AutoAttack,
         skillId: action.skillId,
       },
     );
@@ -890,23 +912,23 @@ export class CombatService {
     });
   }
 
-  private applyAction(
-    attacker: EntityRef & PositionDto,
-    victim: EntityRef & PositionDto,
-    now: number,
-    action: PendingAction,
-  ) {
-    if (
-      isArrowFlying({ x: victim.x, y: victim.y }, 20, {
-        startedAt: now,
-        startedTile: { x: attacker.x, y: attacker.y },
-      })
-    )
-      return;
-    const attackResult = this.autoAttack(
-      { id: attacker.id, type: attacker.type },
-      { id: victim.id, type: victim.type },
-      now,
-    );
-  }
+  // private applyAction(
+  //   attacker: EntityRef & PositionDto,
+  //   victim: EntityRef & PositionDto,
+  //   now: number,
+  //   action: PendingAction,
+  // ) {
+  //   if (
+  //     isArrowFlying({ x: victim.x, y: victim.y }, 20, {
+  //       startedAt: now,
+  //       startedTile: { x: attacker.x, y: attacker.y },
+  //     })
+  //   )
+  //     return;
+  //   const attackResult = this.autoAttack(
+  //     { id: attacker.id, type: attacker.type },
+  //     { id: victim.id, type: victim.type },
+  //     now,
+  //   );
+  // }
 }
