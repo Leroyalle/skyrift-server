@@ -480,7 +480,11 @@ export class CombatService {
           action.target.id,
         );
 
-        if (!victim) return;
+        if (!victim || ctx.attacker.locationId !== victim.locationId) {
+          ctx.attacker.currentTarget = null;
+          ctx.attacker.state = 'idle';
+          return;
+        }
 
         this.startAttacking(ctx.attacker, victim, action);
         break;
@@ -577,6 +581,12 @@ export class CombatService {
         if (skillType === SkillType.Target && action.target.kind === 'target') {
           if (!victim) return;
 
+          if (!victim || ctx.attacker.locationId !== victim.locationId) {
+            ctx.attacker.currentTarget = null;
+            ctx.attacker.state = 'idle';
+            return;
+          }
+
           this.startAttacking(ctx.attacker, victim, action);
 
           // const attackerRef = {
@@ -615,12 +625,12 @@ export class CombatService {
           // ctx.batchLocation.push(applySkillResult.attackResult);
 
           // TODO: update set cooldown for mob & player
-          if (isPlayer(ctx.attacker)) {
-            this.sendUserSkillCooldown(
-              ctx.attacker.userId,
-              applySkillResult.cooldown,
-            );
-          }
+          // if (isPlayer(ctx.attacker)) {
+          //   this.sendUserSkillCooldown(
+          //     ctx.attacker.userId,
+          //     applySkillResult.cooldown,
+          //   );
+          // }
         } else if (
           skillType === SkillType.AoE &&
           action.target.kind === 'aoe'
