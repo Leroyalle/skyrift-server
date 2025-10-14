@@ -415,7 +415,7 @@ export class CombatService {
       skillId,
       state: 'wait-path',
       startedAt: Date.now(),
-      startedTile: { x: attacker.x, y: attacker.y },
+      startedTile: attackerTile,
     };
 
     const entityRef: EntityRef = {
