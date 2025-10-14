@@ -481,43 +481,45 @@ export class CombatService {
         if (!victim) return;
 
         // обратно
-        const attackerDirection = getDirection(
-          {
-            x: ctx.attacker.x,
-            y: ctx.attacker.y,
-          },
-          {
-            x: victim.x,
-            y: victim.y,
-          },
-        );
+        // const attackerDirection = getDirection(
+        //   {
+        //     x: ctx.attacker.x,
+        //     y: ctx.attacker.y,
+        //   },
+        //   {
+        //     x: victim.x,
+        //     y: victim.y,
+        //   },
+        // );
 
-        const victimRef = {
-          id: action.target.id,
-          type: action.target.type,
-        };
+        // const victimRef = {
+        //   id: action.target.id,
+        //   type: action.target.type,
+        // };
 
-        this.applyMiniRoot(ctx.attacker, 200);
+        // this.applyMiniRoot(ctx.attacker, 200);
 
-        this.socketService.sendTo(
-          RedisKeys.Location + ctx.attacker.locationId,
-          ServerToClientEvents.EntityAttackStart,
-          {
-            attackerRef: {
-              ...action.attackerRef,
-              direction: attackerDirection,
-            },
-            victimRef,
-            actionType: ActionType.AutoAttack,
-            skillId: action.skillId,
-          },
-        );
+        // this.socketService.sendTo(
+        //   RedisKeys.Location + ctx.attacker.locationId,
+        //   ServerToClientEvents.EntityAttackStart,
+        //   {
+        //     attackerRef: {
+        //       ...action.attackerRef,
+        //       direction: attackerDirection,
+        //     },
+        //     victimRef,
+        //     actionType: ActionType.AutoAttack,
+        //     skillId: action.skillId,
+        //   },
+        // );
 
-        const attackResult = this.autoAttack(
-          action.attackerRef,
-          victimRef,
-          ctx.now,
-        );
+        this.startAttacking(ctx.attacker, victim, action);
+        this.applyAction(ctx.attacker, victim, ctx.now);
+        // const attackResult = this.autoAttack(
+        //   action.attackerRef,
+        //   victimRef,
+        //   ctx.now,
+        // );
 
         if (!attackResult) return;
 
@@ -889,6 +891,7 @@ export class CombatService {
     attacker: EntityRef & PositionDto,
     victim: EntityRef & PositionDto,
     now: number,
+    action: PendingAction,
   ) {
     if (
       isArrowFlying({ x: victim.x, y: victim.y }, 20, {
