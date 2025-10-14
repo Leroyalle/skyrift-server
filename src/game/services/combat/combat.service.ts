@@ -898,7 +898,7 @@ export class CombatService {
       }
     }
 
-    this.applyMiniRoot(attacker, 200);
+    this.applyMiniRoot(attacker);
 
     this.socketService.sendTo(
       RedisKeys.Location + attacker.locationId,

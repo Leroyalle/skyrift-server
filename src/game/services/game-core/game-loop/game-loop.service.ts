@@ -6,6 +6,7 @@ import { RegenerationService } from '../../regeneration/regeneration.service';
 import { InteractionService } from '../../interaction/interaction.service';
 import { RuntimeMobService } from '../../runtime-mob/runtime-mob.service';
 import { RuntimeEffectService } from '../../runtime-effect/runtime-effect.service';
+import { ProjectileService } from '../../combat/services/projectle/projectile.service';
 
 @Injectable()
 export class GameLoopService implements OnModuleInit, OnModuleDestroy {
@@ -17,6 +18,7 @@ export class GameLoopService implements OnModuleInit, OnModuleDestroy {
     private readonly interactionService: InteractionService,
     private readonly runtimeMobService: RuntimeMobService,
     private readonly runtimeEffectService: RuntimeEffectService,
+    private readonly projectileService: ProjectileService,
   ) {}
 
   private gameTickInterval: NodeJS.Timeout;
@@ -28,6 +30,7 @@ export class GameLoopService implements OnModuleInit, OnModuleDestroy {
     interaction: 0,
     aiMobs: 0,
     effects: 0,
+    projectiles: 0,
   };
 
   private readonly intervals = {
@@ -38,6 +41,7 @@ export class GameLoopService implements OnModuleInit, OnModuleDestroy {
     interaction: 300,
     aiMobs: 300,
     effects: 200,
+    projectiles: 100,
   };
 
   public onModuleInit() {
@@ -58,6 +62,10 @@ export class GameLoopService implements OnModuleInit, OnModuleDestroy {
     if (now - this.lastTickTimes.actions >= this.intervals.actions) {
       await this.combatService.tickActions();
       this.lastTickTimes.actions = now;
+    }
+    if (now - this.lastTickTimes.projectiles >= this.intervals.projectiles) {
+      this.projectileService.tickProjectiles();
+      this.lastTickTimes.projectiles = now;
     }
     if (now - this.lastTickTimes.aoe >= this.intervals.aoe) {
       this.aoeService.tickAoE();
