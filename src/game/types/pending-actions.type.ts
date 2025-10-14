@@ -9,6 +9,8 @@ export type PendingAction = {
   actionType: ActionType;
   state: State;
   skillId: string | null;
+  startedAt: number;
+  startedTile: PositionDto;
 };
 
 export enum ActionType {

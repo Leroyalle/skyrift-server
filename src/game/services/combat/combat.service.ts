@@ -398,6 +398,7 @@ export class CombatService {
 
     if (!steps) return;
 
+    // FIXME: ниже????????
     if (steps.length === 0) return;
 
     const range = attackerSkill
@@ -413,6 +414,8 @@ export class CombatService {
       target,
       skillId,
       state: 'wait-path',
+      startedAt: Date.now(),
+      startedTile: { x: attacker.x, y: attacker.y },
     };
 
     const entityRef: EntityRef = {
