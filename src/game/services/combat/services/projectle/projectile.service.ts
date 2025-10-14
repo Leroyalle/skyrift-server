@@ -126,6 +126,7 @@ export class ProjectileService {
       case SkillType.Target: {
         const receivedDamage = skill.skill.damage;
         const remainingHp = this.updateHp(victim, -receivedDamage);
+        if (isMob(victim)) victim.aggro.updateThreatMap(victim, receivedDamage);
         if (remainingHp <= 0) {
           this.actionQueueService.clearPendingActions(attackerRef, []);
         }
@@ -150,6 +151,7 @@ export class ProjectileService {
       default: {
         const receivedDamage = attacker.basePhysicalDamage;
         const remainingHp = this.updateHp(victim, -receivedDamage);
+        if (isMob(victim)) victim.aggro.updateThreatMap(victim, receivedDamage);
         if (remainingHp <= 0) {
           this.actionQueueService.clearPendingActions(attackerRef, []);
         }
