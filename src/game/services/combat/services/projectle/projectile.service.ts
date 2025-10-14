@@ -13,17 +13,25 @@ import { ActionType } from 'src/game/types/pending-actions.type';
 import { CharacterSkill } from 'src/character/character-skill/entities/character-skill.entity';
 import { isPlayer } from '../../lib/entity/guards/is-player.lib';
 import { SkillType } from 'src/common/enums/skill/skill-type.enum';
+import { BatchUpdateAction } from 'src/game/types/batch-update/batch-update-action.type';
+import { getOrCreateArray } from 'src/game/lib/helpers/get-or-create-array.lib';
+import { SocketService } from 'src/game/services/socket/socket.service';
+import { ActionQueueService } from '../action-queue/action-queue.service';
 
 @Injectable()
 export class ProjectileService {
   constructor(
     private readonly runtimeEntityService: RuntimeEntityService,
     private readonly runtimeMobService: RuntimeMobService,
+    private readonly socketService: SocketService,
+    private readonly actionQueueService: ActionQueueService,
   ) {}
 
   private readonly projectilesMap = new Map<EntityKey, IProjectile[]>();
 
   public tickProjectiles() {
+    const updatesByLocation = new Map<string, BatchUpdateAction[]>();
+
     for (const [attackerKey, projectiles] of this.projectilesMap.entries()) {
       projectiles.forEach((projectile) => {
         const attackerRef = decodeEntityKey(attackerKey);
@@ -37,7 +45,8 @@ export class ProjectileService {
           projectile.victimRef.id,
         );
 
-        if (!attacker || !victim) return;
+        if (!attacker || !victim || attacker.locationId !== victim.locationId)
+          return;
 
         const isAttackInProgress = isArrowFlying(
           { x: victim.x, y: victim.y },
@@ -49,6 +58,19 @@ export class ProjectileService {
         );
 
         if (isAttackInProgress) return;
+
+        const result = this.applyProjectileAction(attackerRef, projectile);
+
+        if (!result) return;
+
+        // let batchLocation = updatesByLocation.get(attacker.id);
+        // if (!batchLocation) {
+        //   batchLocation = [];
+        //   updatesByLocation.set(attacker.id, batchLocation);
+        // }
+
+        const batchLocation = getOrCreateArray(updatesByLocation, attacker.id);
+        batchLocation.push(result);
       });
     }
   }
@@ -72,7 +94,7 @@ export class ProjectileService {
   private applyProjectileAction(
     attackerRef: EntityRef,
     projectile: IProjectile,
-  ) {
+  ): BatchUpdateAction | undefined {
     const attacker = this.runtimeEntityService.getEntityByType(
       attackerRef.type,
       attackerRef.id,
@@ -103,18 +125,48 @@ export class ProjectileService {
     switch (skill?.skill.type) {
       case SkillType.Target: {
         const receivedDamage = skill.skill.damage;
-        this.updateHp(victim, -receivedDamage);
+        const remainingHp = this.updateHp(victim, -receivedDamage);
+        if (remainingHp <= 0) {
+          this.actionQueueService.clearPendingActions(attackerRef, []);
+        }
         this.applyMiniRoot(victim, 200, now);
-        break;
+        return {
+          type: ActionType.Skill,
+          skillId: skill.id,
+          targets: [
+            {
+              id: victim.id,
+              type: victim.type,
+              receivedDamage,
+              isAlive: remainingHp > 0,
+              hp: remainingHp,
+            },
+          ],
+        };
         // const remainingHp = Math.max(victim.hp - receivedDamage, 0);
         // victim.hp = remainingHp;
         // victim.isAlive = remainingHp > 0;
       }
       default: {
         const receivedDamage = attacker.basePhysicalDamage;
-        this.updateHp(victim, -receivedDamage);
+        const remainingHp = this.updateHp(victim, -receivedDamage);
+        if (remainingHp <= 0) {
+          this.actionQueueService.clearPendingActions(attackerRef, []);
+        }
         this.applyMiniRoot(victim, 200, now);
-        break;
+        return {
+          type: ActionType.AutoAttack,
+          skillId: null,
+          targets: [
+            {
+              id: victim.id,
+              type: victim.type,
+              receivedDamage,
+              isAlive: remainingHp > 0,
+              hp: remainingHp,
+            },
+          ],
+        };
       }
     }
 
@@ -153,9 +205,10 @@ export class ProjectileService {
     // };
   }
 
-  private updateHp(victim: TRuntimeEntity, delta: number) {
+  private updateHp(victim: TRuntimeEntity, delta: number): number {
     const remainingHp = Math.max(Math.min(victim.hp + delta, victim.maxHp), 0);
     victim.hp = remainingHp;
     victim.isAlive = remainingHp > 0;
+    return remainingHp;
   }
 }
