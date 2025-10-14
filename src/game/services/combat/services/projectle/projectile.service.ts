@@ -17,6 +17,8 @@ import { BatchUpdateAction } from 'src/game/types/batch-update/batch-update-acti
 import { getOrCreateArray } from 'src/game/lib/helpers/get-or-create-array.lib';
 import { SocketService } from 'src/game/services/socket/socket.service';
 import { ActionQueueService } from '../action-queue/action-queue.service';
+import { RedisKeys } from 'src/common/enums/redis-keys.enum';
+import { ServerToClientEvents } from 'src/common/enums/game-socket-events.enum';
 
 @Injectable()
 export class ProjectileService {
@@ -63,15 +65,17 @@ export class ProjectileService {
 
         if (!result) return;
 
-        // let batchLocation = updatesByLocation.get(attacker.id);
-        // if (!batchLocation) {
-        //   batchLocation = [];
-        //   updatesByLocation.set(attacker.id, batchLocation);
-        // }
-
         const batchLocation = getOrCreateArray(updatesByLocation, attacker.id);
         batchLocation.push(result);
       });
+    }
+
+    for (const [locationId, batch] of updatesByLocation) {
+      this.socketService.sendTo(
+        RedisKeys.Location + locationId,
+        ServerToClientEvents.PlayerStateUpdate,
+        batch,
+      );
     }
   }
 
@@ -144,9 +148,6 @@ export class ProjectileService {
             },
           ],
         };
-        // const remainingHp = Math.max(victim.hp - receivedDamage, 0);
-        // victim.hp = remainingHp;
-        // victim.isAlive = remainingHp > 0;
       }
       default: {
         const receivedDamage = attacker.basePhysicalDamage;
