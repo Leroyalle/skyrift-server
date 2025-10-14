@@ -838,6 +838,48 @@ export class CombatService {
     };
   }
 
+  private startAttacking(
+    attacker: TRuntimeEntity,
+    victim: TRuntimeEntity,
+    skillId: string | null,
+  ) {
+    const attackerDirection = getDirection(
+      {
+        x: attacker.x,
+        y: attacker.y,
+      },
+      {
+        x: victim.x,
+        y: victim.y,
+      },
+    );
+
+    const attackerRef = {
+      id: attacker.id,
+      type: attacker.type,
+    };
+    const victimRef = {
+      id: victim.id,
+      type: victim.type,
+    };
+
+    this.applyMiniRoot(attacker, 200);
+
+    this.socketService.sendTo(
+      RedisKeys.Location + attacker.locationId,
+      ServerToClientEvents.EntityAttackStart,
+      {
+        attackerRef: {
+          ...attackerRef,
+          direction: attackerDirection,
+        },
+        victimRef,
+        actionType: ActionType.AutoAttack,
+        skillId,
+      },
+    );
+  }
+
   private applyAction(
     attacker: EntityRef & PositionDto,
     victim: EntityRef & PositionDto,
