@@ -8,7 +8,6 @@ import { EntityRef } from 'src/game/types/entity/entity-ref.type';
 import { generateEntityKey } from 'src/game/lib/entity/generate-entity-key.lib';
 import { TRuntimeEntity } from 'src/game/types/entity/runtime-entity.type';
 import { isMob } from '../../lib/entity/guards/is-mob.lib';
-import { RuntimeMobService } from 'src/game/services/runtime-mob/runtime-mob.service';
 import { ActionType } from 'src/game/types/pending-actions.type';
 import { CharacterSkill } from 'src/character/character-skill/entities/character-skill.entity';
 import { isPlayer } from '../../lib/entity/guards/is-player.lib';
@@ -24,7 +23,6 @@ import { ServerToClientEvents } from 'src/common/enums/game-socket-events.enum';
 export class ProjectileService {
   constructor(
     private readonly runtimeEntityService: RuntimeEntityService,
-    private readonly runtimeMobService: RuntimeMobService,
     private readonly socketService: SocketService,
     private readonly actionQueueService: ActionQueueService,
   ) {}
@@ -172,40 +170,6 @@ export class ProjectileService {
         };
       }
     }
-
-    // const receivedDamage = attacker.basePhysicalDamage;
-    // console.log('receivedDamage', receivedDamage);
-    // const remainingHp = Math.max(victim.hp - receivedDamage, 0);
-    // const isAlive = remainingHp !== 0;
-    // this.applyMiniRoot(victim, 200, now);
-    // victim.hp = remainingHp;
-    // victim.isAlive = isAlive;
-
-    // if (isMob(victim)) {
-    //   victim.aggro.updateThreatMap(attacker, receivedDamage);
-    //   if (!victim.isAlive) {
-    //     this.runtimeMobService.setRespawn(victim.id);
-    //   }
-    // }
-
-    // attacker.lastAttackAt = now;
-
-    // const targets = [
-    //   {
-    //     id: victim.id,
-    //     type: victim.type,
-    //     hp: remainingHp,
-    //     isAlive,
-    //     receivedDamage,
-    //   },
-    // ];
-
-    // return {
-    //   targets,
-    //   type: ActionType.AutoAttack,
-    //   skillId: null,
-    //   victimIsAlive: victim.isAlive,
-    // };
   }
 
   private updateHp(victim: TRuntimeEntity, delta: number): number {

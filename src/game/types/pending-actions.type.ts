@@ -9,7 +9,7 @@ export type PendingAction = {
   actionType: ActionType;
   state: State;
   skillId: string | null;
-  attackInitiation: IAttackInitiation | null;
+  // attackInitiation: IAttackInitiation | null;
 };
 
 export interface IAttackInitiation {

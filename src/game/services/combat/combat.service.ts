@@ -34,6 +34,7 @@ import { RuntimeEntityService } from '../runtime-entity/runtime-entity.service';
 import { ActionQueueService } from './services/action-queue/action-queue.service';
 import { isMob } from './lib/entity/guards/is-mob.lib';
 import { isArrowFlying } from './lib/helpers/is-arrow-flying';
+import { ProjectileService } from './services/projectle/projectile.service';
 
 @Injectable()
 export class CombatService {
@@ -49,6 +50,7 @@ export class CombatService {
     private readonly aoeService: AoeService,
     private readonly runtimeEntityService: RuntimeEntityService,
     private readonly actionQueueService: ActionQueueService,
+    private readonly projectileService: ProjectileService,
   ) {}
 
   public async tickActions(): Promise<void> {
@@ -415,7 +417,7 @@ export class CombatService {
       target,
       skillId,
       state: 'wait-path',
-      attackInitiation: null,
+      // attackInitiation: null,
     };
 
     const entityRef: EntityRef = {
@@ -480,6 +482,8 @@ export class CombatService {
 
         if (!victim) return;
 
+        this.startAttacking(ctx.attacker, victim, action);
+        break;
         // обратно
         // const attackerDirection = getDirection(
         //   {
@@ -513,25 +517,22 @@ export class CombatService {
         //   },
         // );
 
-        this.startAttacking(ctx.attacker, victim, action);
-        this.applyAction(ctx.attacker, victim, ctx.now);
+        // this.applyAction(ctx.attacker, victim, ctx.now, action);
         // const attackResult = this.autoAttack(
         //   action.attackerRef,
         //   victimRef,
         //   ctx.now,
         // );
 
-        if (!attackResult) return;
+        // if (!attackResult) return;
 
-        const { victimIsAlive, ...croppedAttackResult } = attackResult;
+        // const { victimIsAlive, ...croppedAttackResult } = attackResult;
 
-        ctx.batchLocation.push(croppedAttackResult);
+        // ctx.batchLocation.push(croppedAttackResult);
 
-        if (!victimIsAlive) {
-          ctx.removeAction();
-        }
-
-        break;
+        // if (!victimIsAlive) {
+        //   ctx.removeAction();
+        // }
       }
 
       case ActionType.Skill: {
@@ -881,10 +882,12 @@ export class CombatService {
       },
     );
 
-    action.attackInitiation = {
+    this.projectileService.add(attackerRef, {
+      victimRef,
+      skillId: action.skillId,
       startedAt: Date.now(),
       startedTile: { x: attacker.x, y: attacker.y },
-    };
+    });
   }
 
   private applyAction(
