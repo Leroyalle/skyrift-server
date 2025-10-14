@@ -1,7 +1,7 @@
 import { PositionDto } from 'src/common/dto/position.dto';
 import { IAttackInitiation } from 'src/game/types/pending-actions.type';
 
-export function isArrowFlying(
+export function isAttackInProgress(
   victimTile: PositionDto,
   attackDuration: number,
   start: IAttackInitiation,

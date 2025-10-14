@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { IProjectile } from './types/projectile.type';
 import { EntityKey } from 'src/game/types/entity/keys/entity-key.type';
-import { isArrowFlying } from '../../lib/helpers/is-arrow-flying';
+import { isAttackInProgress } from '../../lib/helpers/is-attack-in-progress.lib';
 import { RuntimeEntityService } from 'src/game/services/runtime-entity/runtime-entity.service';
 import { decodeEntityKey } from 'src/game/lib/entity/decode-entity-key.lib';
 import { EntityRef } from 'src/game/types/entity/entity-ref.type';
@@ -48,7 +48,7 @@ export class ProjectileService {
         if (!attacker || !victim || attacker.locationId !== victim.locationId)
           return;
 
-        const isAttackInProgress = isArrowFlying(
+        const isProgress = isAttackInProgress(
           { x: victim.x, y: victim.y },
           20,
           {
@@ -57,7 +57,7 @@ export class ProjectileService {
           },
         );
 
-        if (isAttackInProgress) return;
+        if (isProgress) return;
 
         const result = this.applyProjectileAction(attackerRef, projectile);
 

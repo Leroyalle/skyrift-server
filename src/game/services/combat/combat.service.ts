@@ -6,7 +6,7 @@ import { BatchUpdateAction } from 'src/game/types/batch-update/batch-update-acti
 import { ActionType, PendingAction } from 'src/game/types/pending-actions.type';
 import { LocationService } from 'src/location/location.service';
 import { SocketService } from '../socket/socket.service';
-import { ActionContext } from 'src/game/lib/actions/resolve-action.lib';
+import { IActionContext } from 'src/game/types/action-context.type';
 import { getDirection } from 'src/game/lib/helpers/get-direction.lib';
 import { ServerToClientEvents } from 'src/common/enums/game-socket-events.enum';
 import { RedisKeys } from 'src/common/enums/redis-keys.enum';
@@ -33,7 +33,7 @@ import { AoeService } from './services/aoe/aoe.service';
 import { RuntimeEntityService } from '../runtime-entity/runtime-entity.service';
 import { ActionQueueService } from './services/action-queue/action-queue.service';
 import { isMob } from './lib/entity/guards/is-mob.lib';
-import { isArrowFlying } from './lib/helpers/is-arrow-flying';
+import { isAttackInProgress } from './lib/helpers/is-attack-in-progress.lib';
 import { ProjectileService } from './services/projectle/projectile.service';
 
 @Injectable()
@@ -139,7 +139,7 @@ export class CombatService {
 
       const now = Date.now();
 
-      const actionCtx: ActionContext = {
+      const actionCtx: IActionContext = {
         attacker,
         target: action.target,
         characterSkill: entitySkill,
@@ -467,7 +467,7 @@ export class CombatService {
     }
   }
 
-  private resolveAction(ctx: ActionContext, action: PendingAction): void {
+  private resolveAction(ctx: IActionContext, action: PendingAction): void {
     switch (action.actionType) {
       case ActionType.AutoAttack: {
         if (ctx.now - ctx.attacker.lastAttackAt < ctx.attacker.attackSpeed)
