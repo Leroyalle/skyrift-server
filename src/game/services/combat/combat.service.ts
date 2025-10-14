@@ -480,6 +480,7 @@ export class CombatService {
 
         if (!victim) return;
 
+        // обратно
         const attackerDirection = getDirection(
           {
             x: ctx.attacker.x,
@@ -835,5 +836,24 @@ export class CombatService {
         skillId: characterSkill.id,
       },
     };
+  }
+
+  private applyAction(
+    attacker: EntityRef & PositionDto,
+    victim: EntityRef & PositionDto,
+    now: number,
+  ) {
+    if (
+      isArrowFlying({ x: victim.x, y: victim.y }, 20, {
+        startedAt: now,
+        startedTile: { x: attacker.x, y: attacker.y },
+      })
+    )
+      return;
+    const attackResult = this.autoAttack(
+      { id: attacker.id, type: attacker.type },
+      { id: victim.id, type: victim.type },
+      now,
+    );
   }
 }
