@@ -6,7 +6,7 @@ import { BatchUpdateAction } from 'src/game/types/batch-update/batch-update-acti
 import { ActionType, PendingAction } from 'src/game/types/pending-actions.type';
 import { LocationService } from 'src/location/location.service';
 import { SocketService } from '../socket/socket.service';
-import { ActionContext } from 'src/game/lib/actions/resolve-action.lib';
+import { IActionContext } from 'src/game/types/action-context.type';
 import { getDirection } from 'src/game/lib/helpers/get-direction.lib';
 import { ServerToClientEvents } from 'src/common/enums/game-socket-events.enum';
 import { RedisKeys } from 'src/common/enums/redis-keys.enum';
@@ -33,6 +33,8 @@ import { AoeService } from './services/aoe/aoe.service';
 import { RuntimeEntityService } from '../runtime-entity/runtime-entity.service';
 import { ActionQueueService } from './services/action-queue/action-queue.service';
 import { isMob } from './lib/entity/guards/is-mob.lib';
+import { isAttackInProgress } from './lib/helpers/is-attack-in-progress.lib';
+import { ProjectileService } from './services/projectle/projectile.service';
 
 @Injectable()
 export class CombatService {
@@ -48,6 +50,7 @@ export class CombatService {
     private readonly aoeService: AoeService,
     private readonly runtimeEntityService: RuntimeEntityService,
     private readonly actionQueueService: ActionQueueService,
+    private readonly projectileService: ProjectileService,
   ) {}
 
   public async tickActions(): Promise<void> {
@@ -136,7 +139,7 @@ export class CombatService {
 
       const now = Date.now();
 
-      const actionCtx: ActionContext = {
+      const actionCtx: IActionContext = {
         attacker,
         target: action.target,
         characterSkill: entitySkill,
@@ -398,6 +401,7 @@ export class CombatService {
 
     if (!steps) return;
 
+    // FIXME: ниже????????
     if (steps.length === 0) return;
 
     const range = attackerSkill
@@ -413,6 +417,7 @@ export class CombatService {
       target,
       skillId,
       state: 'wait-path',
+      // attackInitiation: null,
     };
 
     const entityRef: EntityRef = {
@@ -462,7 +467,7 @@ export class CombatService {
     }
   }
 
-  private resolveAction(ctx: ActionContext, action: PendingAction): void {
+  private resolveAction(ctx: IActionContext, action: PendingAction): void {
     switch (action.actionType) {
       case ActionType.AutoAttack: {
         if (ctx.now - ctx.attacker.lastAttackAt < ctx.attacker.attackSpeed)
@@ -475,57 +480,63 @@ export class CombatService {
           action.target.id,
         );
 
-        if (!victim) return;
-
-        const attackerDirection = getDirection(
-          {
-            x: ctx.attacker.x,
-            y: ctx.attacker.y,
-          },
-          {
-            x: victim.x,
-            y: victim.y,
-          },
-        );
-
-        const victimRef = {
-          id: action.target.id,
-          type: action.target.type,
-        };
-
-        this.applyMiniRoot(ctx.attacker, 200);
-
-        this.socketService.sendTo(
-          RedisKeys.Location + ctx.attacker.locationId,
-          ServerToClientEvents.EntityAttackStart,
-          {
-            attackerRef: {
-              ...action.attackerRef,
-              direction: attackerDirection,
-            },
-            victimRef,
-            actionType: ActionType.AutoAttack,
-            skillId: action.skillId,
-          },
-        );
-
-        const attackResult = this.autoAttack(
-          action.attackerRef,
-          victimRef,
-          ctx.now,
-        );
-
-        if (!attackResult) return;
-
-        const { victimIsAlive, ...croppedAttackResult } = attackResult;
-
-        ctx.batchLocation.push(croppedAttackResult);
-
-        if (!victimIsAlive) {
-          ctx.removeAction();
+        if (!victim || ctx.attacker.locationId !== victim.locationId) {
+          ctx.attacker.currentTarget = null;
+          ctx.attacker.state = 'idle';
+          return;
         }
 
+        this.startAttacking(ctx.attacker, victim, action);
         break;
+        // обратно
+        // const attackerDirection = getDirection(
+        //   {
+        //     x: ctx.attacker.x,
+        //     y: ctx.attacker.y,
+        //   },
+        //   {
+        //     x: victim.x,
+        //     y: victim.y,
+        //   },
+        // );
+
+        // const victimRef = {
+        //   id: action.target.id,
+        //   type: action.target.type,
+        // };
+
+        // this.applyMiniRoot(ctx.attacker, 200);
+
+        // this.socketService.sendTo(
+        //   RedisKeys.Location + ctx.attacker.locationId,
+        //   ServerToClientEvents.EntityAttackStart,
+        //   {
+        //     attackerRef: {
+        //       ...action.attackerRef,
+        //       direction: attackerDirection,
+        //     },
+        //     victimRef,
+        //     actionType: ActionType.AutoAttack,
+        //     skillId: action.skillId,
+        //   },
+        // );
+
+        // this.applyAction(ctx.attacker, victim, ctx.now, action);
+        // const attackResult = this.autoAttack(
+        //   action.attackerRef,
+        //   victimRef,
+        //   ctx.now,
+        // );
+
+        // if (!attackResult) return;
+
+        // const { victimIsAlive, ...croppedAttackResult } = attackResult;
+
+        // ctx.batchLocation.push(croppedAttackResult);
+
+        // if (!victimIsAlive) {
+        //   ctx.removeAction();
+        // }
       }
 
       case ActionType.Skill: {
@@ -563,55 +574,63 @@ export class CombatService {
 
         if (!targetTile) return;
 
-        const attackerDirection = getDirection(attackerTile, targetTile);
+        // const attackerDirection = getDirection(attackerTile, targetTile);
 
         const skillType = ctx.characterSkill.skill.type;
 
         if (skillType === SkillType.Target && action.target.kind === 'target') {
           if (!victim) return;
 
-          const attackerRef = {
-            id: ctx.attacker.id,
-            type: ctx.attacker.type,
-          };
+          if (!victim || ctx.attacker.locationId !== victim.locationId) {
+            ctx.attacker.currentTarget = null;
+            ctx.attacker.state = 'idle';
+            return;
+          }
 
-          const victimRef = {
-            id: victim.id,
-            type: victim.type,
-          };
+          this.startAttacking(ctx.attacker, victim, action);
 
-          this.socketService.sendTo(
-            RedisKeys.Location + ctx.attacker.locationId,
-            ServerToClientEvents.EntityAttackStart,
-            {
-              attackerRef: {
-                ...attackerRef,
-                direction: attackerDirection,
-              },
-              victimRef,
-              actionType: ActionType.Skill,
-              skillId: action.skillId,
-            },
-          );
+          // const attackerRef = {
+          //   id: ctx.attacker.id,
+          //   type: ctx.attacker.type,
+          // };
 
-          const applySkillResult = this.applySkill(
-            attackerRef,
-            victimRef,
-            action.skillId,
-            ctx.now,
-          );
+          // const victimRef = {
+          //   id: victim.id,
+          //   type: victim.type,
+          // };
 
-          if (!applySkillResult) return;
+          // this.socketService.sendTo(
+          //   RedisKeys.Location + ctx.attacker.locationId,
+          //   ServerToClientEvents.EntityAttackStart,
+          //   {
+          //     attackerRef: {
+          //       ...attackerRef,
+          //       direction: attackerDirection,
+          //     },
+          //     victimRef,
+          //     actionType: ActionType.Skill,
+          //     skillId: action.skillId,
+          //   },
+          // );
 
-          ctx.batchLocation.push(applySkillResult.attackResult);
+          // const applySkillResult = this.applySkill(
+          //   attackerRef,
+          //   victimRef,
+          //   action.skillId,
+          //   ctx.now,
+          // );
+
+          // if (!applySkillResult) return;
+
+          // ctx.batchLocation.push(applySkillResult.attackResult);
 
           // TODO: update set cooldown for mob & player
-          if (isPlayer(ctx.attacker)) {
-            this.sendUserSkillCooldown(
-              ctx.attacker.userId,
-              applySkillResult.cooldown,
-            );
-          }
+          // if (isPlayer(ctx.attacker)) {
+          //   this.sendUserSkillCooldown(
+          //     ctx.attacker.userId,
+          //     applySkillResult.cooldown,
+          //   );
+          // }
         } else if (
           skillType === SkillType.AoE &&
           action.target.kind === 'aoe'
@@ -833,4 +852,93 @@ export class CombatService {
       },
     };
   }
+
+  private startAttacking(
+    attacker: TRuntimeEntity,
+    victim: TRuntimeEntity,
+    action: PendingAction,
+  ) {
+    const attackerDirection = getDirection(
+      {
+        x: attacker.x,
+        y: attacker.y,
+      },
+      {
+        x: victim.x,
+        y: victim.y,
+      },
+    );
+
+    const attackerRef = {
+      id: attacker.id,
+      type: attacker.type,
+    };
+    const victimRef = {
+      id: victim.id,
+      type: victim.type,
+    };
+    const now = Date.now();
+
+    attacker.lastAttackAt = now;
+
+    // TODO: вынести в отдельную функцию
+    if (action.skillId && isPlayer(attacker)) {
+      const cSkill = attacker.characterSkills.find(
+        (skill) => skill.id === action.skillId,
+      );
+      if (cSkill) {
+        const cooldownEnd = now + cSkill.skill.cooldownMs;
+        cSkill.lastUsedAt = now;
+        cSkill.cooldownEnd = cooldownEnd;
+        // TODO: мб слать кулдаун вместе с аттак стартед
+        this.sendUserSkillCooldown(attacker.userId, {
+          skillId: action.skillId,
+          cooldownEnd,
+        });
+      }
+    }
+
+    this.applyMiniRoot(attacker);
+
+    this.socketService.sendTo(
+      RedisKeys.Location + attacker.locationId,
+      ServerToClientEvents.EntityAttackStart,
+      {
+        attackerRef: {
+          ...attackerRef,
+          direction: attackerDirection,
+        },
+        victimRef,
+        actionType: action.skillId ? ActionType.Skill : ActionType.AutoAttack,
+        skillId: action.skillId,
+      },
+    );
+
+    this.projectileService.add(attackerRef, {
+      victimRef,
+      skillId: action.skillId,
+      startedAt: Date.now(),
+      startedTile: { x: attacker.x, y: attacker.y },
+    });
+  }
+
+  // private applyAction(
+  //   attacker: EntityRef & PositionDto,
+  //   victim: EntityRef & PositionDto,
+  //   now: number,
+  //   action: PendingAction,
+  // ) {
+  //   if (
+  //     isArrowFlying({ x: victim.x, y: victim.y }, 20, {
+  //       startedAt: now,
+  //       startedTile: { x: attacker.x, y: attacker.y },
+  //     })
+  //   )
+  //     return;
+  //   const attackResult = this.autoAttack(
+  //     { id: attacker.id, type: attacker.type },
+  //     { id: victim.id, type: victim.type },
+  //     now,
+  //   );
+  // }
 }

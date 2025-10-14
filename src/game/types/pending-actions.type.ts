@@ -9,7 +9,13 @@ export type PendingAction = {
   actionType: ActionType;
   state: State;
   skillId: string | null;
+  // attackInitiation: IAttackInitiation | null;
 };
+
+export interface IAttackInitiation {
+  startedAt: number;
+  startedTile: PositionDto;
+}
 
 export enum ActionType {
   AutoAttack = 'autoAttack',

@@ -3,7 +3,7 @@ import { CharacterSkill } from 'src/character/character-skill/entities/character
 import { TargetAction } from 'src/game/services/combat/types/target-action.type';
 import { TRuntimeEntity } from 'src/game/types/entity/runtime-entity.type';
 
-export type ActionContext = {
+export interface IActionContext {
   attacker: TRuntimeEntity;
   target: TargetAction;
   characterSkill?: CharacterSkill;
@@ -11,4 +11,4 @@ export type ActionContext = {
   now: number;
   tileSize: number;
   removeAction: () => void;
-};
+}
