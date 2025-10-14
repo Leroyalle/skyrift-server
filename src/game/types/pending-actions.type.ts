@@ -9,9 +9,10 @@ export type PendingAction = {
   actionType: ActionType;
   state: State;
   skillId: string | null;
-  startedAt: number;
-  startedTile: PositionDto;
+  attackInitiation: TAttackInitiation | null;
 };
+
+export type TAttackInitiation = { startedAt: number; startedTile: PositionDto };
 
 export enum ActionType {
   AutoAttack = 'autoAttack',

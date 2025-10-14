@@ -33,6 +33,7 @@ import { AoeService } from './services/aoe/aoe.service';
 import { RuntimeEntityService } from '../runtime-entity/runtime-entity.service';
 import { ActionQueueService } from './services/action-queue/action-queue.service';
 import { isMob } from './lib/entity/guards/is-mob.lib';
+import { isArrowFlying } from './lib/helpers/is-arrow-flying';
 
 @Injectable()
 export class CombatService {
@@ -414,8 +415,7 @@ export class CombatService {
       target,
       skillId,
       state: 'wait-path',
-      startedAt: Date.now(),
-      startedTile: attackerTile,
+      attackInitiation: null,
     };
 
     const entityRef: EntityRef = {

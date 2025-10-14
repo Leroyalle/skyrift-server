@@ -1,15 +1,13 @@
 import { PositionDto } from 'src/common/dto/position.dto';
+import { TAttackInitiation } from 'src/game/types/pending-actions.type';
 
 export function isArrowFlying(
-  victimPosition: PositionDto,
+  victimTile: PositionDto,
   attackDuration: number,
-  start: {
-    startedAt: number;
-    startedTile: PositionDto;
-  },
+  start: TAttackInitiation,
 ): boolean {
-  const dx = start.startedTile.x - victimPosition.x;
-  const dy = start.startedTile.y - victimPosition.y;
+  const dx = start.startedTile.x - victimTile.x;
+  const dy = start.startedTile.y - victimTile.y;
   const distance = Math.hypot(dx, dy);
   const time = distance * attackDuration;
   const gap = Date.now() - start.startedAt;
