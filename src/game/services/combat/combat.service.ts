@@ -841,7 +841,7 @@ export class CombatService {
   private startAttacking(
     attacker: TRuntimeEntity,
     victim: TRuntimeEntity,
-    skillId: string | null,
+    action: PendingAction,
   ) {
     const attackerDirection = getDirection(
       {
@@ -875,9 +875,14 @@ export class CombatService {
         },
         victimRef,
         actionType: ActionType.AutoAttack,
-        skillId,
+        skillId: action.skillId,
       },
     );
+
+    action.attackInitiation = {
+      startedAt: Date.now(),
+      startedTile: { x: attacker.x, y: attacker.y },
+    };
   }
 
   private applyAction(
