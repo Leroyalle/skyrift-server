@@ -63,6 +63,7 @@ export class ProjectileService {
         if (attackInProgress) return;
 
         const result = this.applyProjectileAction(attackerRef, projectile);
+        this.delete(attackerRef, projectile.startedAt);
 
         if (!result) return;
 
