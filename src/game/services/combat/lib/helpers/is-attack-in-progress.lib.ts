@@ -1,5 +1,5 @@
 import { PositionDto } from 'src/common/dto/position.dto';
-import { IAttackInitiation } from 'src/game/types/pending-actions.type';
+import { IAttackInitiation } from '../../services/projectle/types/projectile.type';
 
 export function isAttackInProgress(
   victimTile: PositionDto,

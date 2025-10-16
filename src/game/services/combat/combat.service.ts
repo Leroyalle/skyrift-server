@@ -898,6 +898,13 @@ export class CombatService {
 
     this.applyMiniRoot(attacker);
 
+    this.projectileService.add(attackerRef, {
+      victimRef,
+      skillId: action.skillId,
+      startedAt: Date.now(),
+      startedTile: { x: attacker.x, y: attacker.y },
+    });
+
     this.socketService.sendTo(
       RedisKeys.Location + attacker.locationId,
       ServerToClientEvents.EntityAttackStart,
@@ -911,13 +918,6 @@ export class CombatService {
         skillId: action.skillId,
       },
     );
-
-    this.projectileService.add(attackerRef, {
-      victimRef,
-      skillId: action.skillId,
-      startedAt: Date.now(),
-      startedTile: { x: attacker.x, y: attacker.y },
-    });
   }
 
   // private applyAction(
