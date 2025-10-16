@@ -27,7 +27,10 @@ export class ProjectileService {
     private readonly actionQueueService: ActionQueueService,
   ) {}
 
-  private readonly projectilesMap = new Map<EntityKey, IProjectile[]>();
+  private readonly projectilesMap = new Map<
+    EntityKey,
+    Map<number, IProjectile>
+  >();
 
   public tickProjectiles() {
     const updatesByLocation = new Map<string, BatchUpdateAction[]>();
@@ -48,7 +51,7 @@ export class ProjectileService {
         if (!attacker || !victim || attacker.locationId !== victim.locationId)
           return;
 
-        const isProgress = isAttackInProgress(
+        const attackInProgress = isAttackInProgress(
           { x: victim.x, y: victim.y },
           20,
           {
@@ -57,7 +60,7 @@ export class ProjectileService {
           },
         );
 
-        if (isProgress) return;
+        if (attackInProgress) return;
 
         const result = this.applyProjectileAction(attackerRef, projectile);
 
@@ -79,10 +82,14 @@ export class ProjectileService {
 
   public add(attackerRef: EntityRef, projectile: IProjectile) {
     const attackerKey = generateEntityKey(attackerRef);
-    this.projectilesMap.set(attackerKey, [
-      ...(this.projectilesMap.get(attackerKey) ?? []),
-      projectile,
-    ]);
+    const projectilesMap = this.projectilesMap.get(attackerKey);
+    projectilesMap?.set(projectile.startedAt, projectile);
+  }
+
+  private delete(attackerRef: EntityRef, startedAt: number) {
+    const attackerKey = generateEntityKey(attackerRef);
+    const projectilesMap = this.projectilesMap.get(attackerKey);
+    projectilesMap?.delete(startedAt);
   }
 
   private applyMiniRoot(

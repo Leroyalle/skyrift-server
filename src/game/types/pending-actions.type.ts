@@ -12,11 +12,6 @@ export type PendingAction = {
   // attackInitiation: IAttackInitiation | null;
 };
 
-export interface IAttackInitiation {
-  startedAt: number;
-  startedTile: PositionDto;
-}
-
 export enum ActionType {
   AutoAttack = 'autoAttack',
   Skill = 'skill',

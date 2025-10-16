@@ -543,9 +543,7 @@ export class CombatService {
         if (!action.skillId || !ctx.characterSkill) return;
         // FIXME: мб удалить для того чтобы скилл юзался сразу
         if (ctx.now - ctx.attacker.lastAttackAt < ctx.attacker.attackSpeed)
-          return;
-
-        if ((ctx.characterSkill.cooldownEnd ?? 0) > ctx.now) return;
+          if ((ctx.characterSkill.cooldownEnd ?? 0) > ctx.now) return;
 
         // FIXME: нужно передавать сразу тайлы либо локацию / тайлсайз
         const attackerTile = {
