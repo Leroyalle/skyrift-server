@@ -29,4 +29,8 @@ export class MovementQueueService {
   public remove(entityRef: EntityRef): boolean {
     return this.movementQueues.delete(generateEntityKey(entityRef));
   }
+
+  public get(entityRef: EntityRef): EntityMovementQueue | undefined {
+    return this.movementQueues.get(generateEntityKey(entityRef));
+  }
 }
