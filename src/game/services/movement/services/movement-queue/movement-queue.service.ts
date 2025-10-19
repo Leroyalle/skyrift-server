@@ -5,7 +5,7 @@ import { PositionDto } from 'src/common/dto/position.dto';
 import { generateEntityKey } from 'src/game/lib/entity/generate-entity-key.lib';
 import { EntityKey } from 'src/game/types/entity/keys/entity-key.type';
 import { PlayerStateService } from '../../../player-state/player-state.service';
-import { isCharacterMovementQueue } from './lib/guards/has-user-id.lib';
+import { isCharacterMovementQueue } from './lib/guards/is-character-movement-queue.lib';
 
 @Injectable()
 export class MovementQueueService {
@@ -13,7 +13,7 @@ export class MovementQueueService {
 
   private readonly movementQueues = new Map<EntityKey, EntityMovementQueue>();
 
-  public set(entityRef: EntityRef, steps: PositionDto[]) {
+  public set(entityRef: EntityRef, steps: PositionDto[]): void {
     const entityKey = generateEntityKey(entityRef);
     const queue: EntityMovementQueue = { steps };
     if (isCharacterMovementQueue(entityRef, queue)) {
@@ -23,6 +23,10 @@ export class MovementQueueService {
       if (!playerState) return;
       queue.userId = playerState.userId;
     }
-    return this.movementQueues.set(entityKey, queue);
+    this.movementQueues.set(entityKey, queue);
+  }
+
+  public remove(entityRef: EntityRef): boolean {
+    return this.movementQueues.delete(generateEntityKey(entityRef));
   }
 }
