@@ -33,4 +33,8 @@ export class MovementQueueService {
   public get(entityRef: EntityRef): EntityMovementQueue | undefined {
     return this.movementQueues.get(generateEntityKey(entityRef));
   }
+
+  public get getIterableMovementQueues() {
+    return Array.from(this.movementQueues.entries());
+  }
 }

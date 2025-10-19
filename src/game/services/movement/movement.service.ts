@@ -24,6 +24,7 @@ import { isMob } from '../combat/lib/entity/guards/is-mob.lib';
 import { getPixelByTile } from 'src/game/lib/helpers/get-pixels-by-tile.lib';
 import { RuntimeEffectService } from '../runtime-effect/runtime-effect.service';
 import { EffectType } from 'src/common/enums/skill/effect-type.enum';
+import { MovementQueueService } from './services/movement-queue/movement-queue.service';
 
 @Injectable()
 export class MovementService {
@@ -36,13 +37,14 @@ export class MovementService {
     private readonly interactionService: InteractionService,
     private readonly runtimeMobService: RuntimeMobService,
     private readonly runtimeEffectService: RuntimeEffectService,
+    private readonly movementQueueService: MovementQueueService,
   ) {}
 
-  private readonly charactersMovementQueues = new Map<
-    string,
-    CharacterMovementQueue
-  >();
-  private readonly mobsMovementQueues = new Map<string, MobMovementQueue>();
+  // private readonly charactersMovementQueues = new Map<
+  //   string,
+  //   CharacterMovementQueue
+  // >();
+  // private readonly mobsMovementQueues = new Map<string, MobMovementQueue>();
 
   public async requestMoveTo(client: Socket, input: RequestMoveToDto) {
     if (!this.socketService.verifyUserDataInSocket(client)) {
@@ -91,10 +93,11 @@ export class MovementService {
     if (!steps) return;
 
     this.interactionService.deletePendingInteraction(character.id);
-    this.charactersMovementQueues.set(characterId, {
-      steps,
-      userId: character.userId,
-    });
+    this.movementQueueService.set({ id: characterId, type: 'player' }, steps);
+    // this.charactersMovementQueues.set(characterId, {
+    //   steps,
+    //   userId: character.userId,
+    // });
   }
 
   public tickMovement() {
