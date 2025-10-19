@@ -25,6 +25,9 @@ import { getPixelByTile } from 'src/game/lib/helpers/get-pixels-by-tile.lib';
 import { RuntimeEffectService } from '../runtime-effect/runtime-effect.service';
 import { EffectType } from 'src/common/enums/skill/effect-type.enum';
 import { MovementQueueService } from './services/movement-queue/movement-queue.service';
+import { RuntimeEntityService } from '../runtime-entity/runtime-entity.service';
+import { decodeEntityKey } from 'src/game/lib/entity/decode-entity-key.lib';
+import { isCharacterMovementQueue } from './services/movement-queue/lib/guards/is-character-movement-queue.lib';
 
 @Injectable()
 export class MovementService {
@@ -38,6 +41,7 @@ export class MovementService {
     private readonly runtimeMobService: RuntimeMobService,
     private readonly runtimeEffectService: RuntimeEffectService,
     private readonly movementQueueService: MovementQueueService,
+    private readonly runtimeEntityService: RuntimeEntityService,
   ) {}
 
   // private readonly charactersMovementQueues = new Map<
@@ -100,167 +104,266 @@ export class MovementService {
     // });
   }
 
-  public tickMovement() {
+  public tick() {
     const updatesByLocation = new Map<string, BatchUpdateMovement[]>();
-    const charactersEntries = Array.from(
-      this.charactersMovementQueues.entries(),
-    );
 
-    charactersEntries.forEach(([characterId, { steps, userId }]) => {
-      const character = this.playerStateService.getCharacterState(characterId);
-      if (!character) return;
+    const entries = this.movementQueueService.getIterableMovementQueues;
+
+    entries.forEach(([entityKey, queue]) => {
+      const entityRef = decodeEntityKey(entityKey);
+      const entity = this.runtimeEntityService.getEntityByType(
+        entityRef.type,
+        entityRef.id,
+      );
+
+      if (!entity) return;
+
+      let speed: number | undefined;
+
+      if (isPlayer(entity)) {
+        speed = entity.walkSpeed;
+      } else if (isMob(entity)) {
+        speed = entity.isAttacking ? entity.chaseSpeed : entity.walkSpeed;
+      }
+
+      if (!speed) return;
 
       const now = Date.now();
 
-      if (now - character.lastMoveAt < character.walkSpeed) return;
+      if (now - entity.lastMoveAt < speed) return;
 
       const hasStun = this.runtimeEffectService.findByType(
         {
-          type: character.type,
-          id: character.id,
+          type: entity.type,
+          id: entity.id,
         },
         EffectType.Stun,
       );
 
       if (hasStun && hasStun.length) return;
 
-      const pathStep = steps.shift();
+      const pathStep = queue.steps.shift();
 
       if (!pathStep) return;
 
-      const socketId = this.socketService.getSocketId(userId);
-      if (!socketId) return;
-      const client = this.socketService.getSocket(socketId);
-
-      if (!client) return;
-
-      if (!this.socketService.verifyUserDataInSocket(client)) {
-        this.socketService.notifyDisconnection(client);
-        client.disconnect();
-        return;
-      }
-
-      const prevPosition = client.userData.position;
-      const locationId = character.locationId;
-
       const pixelPosition = getPixelByTile(pathStep);
-
-      client.userData = { ...client.userData, position: pixelPosition };
-      this.playerStateService.moveTo(character, pixelPosition, now);
-
-      if (prevPosition) {
-        this.spatialGridService.update(
-          character,
-          character.locationId,
-          prevPosition.x,
-          prevPosition.y,
-        );
-      } else {
-        this.spatialGridService.add(character);
+      if (isCharacterMovementQueue(entityRef, queue)) {
+        const socket = this.socketService.getSocketByUserId(queue.userId);
+        if (!socket) return;
+        if (!this.socketService.verifyUserDataInSocket(socket)) {
+          this.socketService.notifyDisconnection(socket);
+          socket.disconnect();
+          return;
+        }
+        socket.userData = { ...socket.userData, position: pixelPosition };
       }
 
-      const direction = getDirection(prevPosition, pixelPosition);
+      const prevPosition: PositionDto = { x: entity.x, y: entity.y };
 
-      const updates = this.getOrCreateBatchUpdate(
-        locationId,
-        updatesByLocation,
-      );
-
-      updates.push({
-        id: characterId,
-        locationId,
-        to: { x: pixelPosition.x, y: pixelPosition.y },
-        from: { x: prevPosition.x, y: prevPosition.y },
-        isFinalStep: steps.length === 0,
-        moveDuration: character.walkSpeed,
-        lastMoveAt: character.lastMoveAt,
-        direction,
-        type: 'player',
-      });
-
-      if (steps.length === 0) {
-        this.charactersMovementQueues.delete(characterId);
-      }
-    });
-
-    const mobsEntries = Array.from(this.mobsMovementQueues.entries());
-    for (const [id, { steps }] of mobsEntries) {
-      const runtimeMob = this.runtimeMobService.getById(id);
-
-      if (!runtimeMob) {
-        this.mobsMovementQueues.delete(id);
-        continue;
+      if (isPlayer(entity)) {
+        this.playerStateService.moveTo(entity, pixelPosition, now);
+      } else if (isMob(entity)) {
+        this.runtimeMobService.moveTo(entity, pixelPosition, now);
       }
 
-      if (runtimeMob.respawnIn || runtimeMob.state === 'attack') continue;
-
-      const now = Date.now();
-
-      const moveSpeed = runtimeMob.isAttacking
-        ? runtimeMob.chaseSpeed
-        : runtimeMob.walkSpeed;
-
-      if (now - runtimeMob.lastMoveAt < moveSpeed) {
-        continue;
-      }
-
-      const step = steps.shift();
-
-      if (!step) {
-        this.mobsMovementQueues.delete(id);
-        continue;
-      }
-
-      const locationId = runtimeMob.locationId;
-
-      const prevPosition = {
-        x: runtimeMob.x,
-        y: runtimeMob.y,
-      };
-
-      const pixelPosition = getPixelByTile(step);
-
-      const movedMob = this.runtimeMobService.moveTo(
-        runtimeMob,
-        pixelPosition,
-        now,
-      );
-
+      // if (prevPosition) {
       this.spatialGridService.update(
-        runtimeMob,
-        locationId,
+        entity,
+        entity.locationId,
         prevPosition.x,
         prevPosition.y,
       );
+      // } else {
+      // this.spatialGridService.add(entity);
+      // }
 
       const direction = getDirection(prevPosition, pixelPosition);
 
       const updates = this.getOrCreateBatchUpdate(
-        locationId,
+        entity.locationId,
         updatesByLocation,
       );
 
       updates.push({
-        id: runtimeMob.id,
-        locationId,
-        direction,
-        to: { x: movedMob.x, y: movedMob.y },
+        id: entity.id,
+        locationId: entity.locationId,
+        to: { x: pixelPosition.x, y: pixelPosition.y },
         from: { x: prevPosition.x, y: prevPosition.y },
-        isFinalStep: steps.length === 0,
-        lastMoveAt: movedMob.lastMoveAt,
-        moveDuration: moveSpeed,
-        type: 'mob',
+        isFinalStep: queue.steps.length === 0,
+        moveDuration: speed,
+        lastMoveAt: entity.lastMoveAt,
+        direction,
+        type: entity.type,
       });
-    }
 
-    for (const [locationId, updates] of updatesByLocation.entries()) {
-      this.socketService.sendTo(
-        RedisKeys.Location + locationId,
-        ServerToClientEvents.MovementBatch,
-        updates,
-      );
-    }
+      if (queue.steps.length === 0) {
+        this.movementQueueService.remove(entityRef);
+        // this.charactersMovementQueues.delete(characterId);
+      }
+    });
   }
+
+  // public tickMovement() {
+  //   const updatesByLocation = new Map<string, BatchUpdateMovement[]>();
+  //   const charactersEntries = Array.from(
+  //     this.charactersMovementQueues.entries(),
+  //   );
+
+  //   charactersEntries.forEach(([characterId, { steps, userId }]) => {
+  //     const character = this.playerStateService.getCharacterState(characterId);
+  //     if (!character) return;
+
+  //     const now = Date.now();
+
+  //     if (now - character.lastMoveAt < character.walkSpeed) return;
+
+  //     const hasStun = this.runtimeEffectService.findByType(
+  //       {
+  //         type: character.type,
+  //         id: character.id,
+  //       },
+  //       EffectType.Stun,
+  //     );
+
+  //     if (hasStun && hasStun.length) return;
+
+  //     const pathStep = steps.shift();
+
+  //     if (!pathStep) return;
+
+  //     const socketId = this.socketService.getSocketId(userId);
+  //     if (!socketId) return;
+  //     const client = this.socketService.getSocket(socketId);
+
+  //     if (!client) return;
+
+  //     if (!this.socketService.verifyUserDataInSocket(client)) {
+  //       this.socketService.notifyDisconnection(client);
+  //       client.disconnect();
+  //       return;
+  //     }
+
+  //     const prevPosition = client.userData.position;
+  //     const locationId = character.locationId;
+
+  //     const pixelPosition = getPixelByTile(pathStep);
+
+  //     client.userData = { ...client.userData, position: pixelPosition };
+  //     this.playerStateService.moveTo(character, pixelPosition, now);
+
+  //     if (prevPosition) {
+  //       this.spatialGridService.update(
+  //         character,
+  //         character.locationId,
+  //         prevPosition.x,
+  //         prevPosition.y,
+  //       );
+  //     } else {
+  //       this.spatialGridService.add(character);
+  //     }
+
+  //     const direction = getDirection(prevPosition, pixelPosition);
+
+  //     const updates = this.getOrCreateBatchUpdate(
+  //       locationId,
+  //       updatesByLocation,
+  //     );
+
+  //     updates.push({
+  //       id: characterId,
+  //       locationId,
+  //       to: { x: pixelPosition.x, y: pixelPosition.y },
+  //       from: { x: prevPosition.x, y: prevPosition.y },
+  //       isFinalStep: steps.length === 0,
+  //       moveDuration: character.walkSpeed,
+  //       lastMoveAt: character.lastMoveAt,
+  //       direction,
+  //       type: 'player',
+  //     });
+
+  //     if (steps.length === 0) {
+  //       this.charactersMovementQueues.delete(characterId);
+  //     }
+  //   });
+
+  //   const mobsEntries = Array.from(this.mobsMovementQueues.entries());
+  //   for (const [id, { steps }] of mobsEntries) {
+  //     const runtimeMob = this.runtimeMobService.getById(id);
+
+  //     if (!runtimeMob) {
+  //       this.mobsMovementQueues.delete(id);
+  //       continue;
+  //     }
+
+  //     if (runtimeMob.respawnIn || runtimeMob.state === 'attack') continue;
+
+  //     const now = Date.now();
+
+  //     const moveSpeed = runtimeMob.isAttacking
+  //       ? runtimeMob.chaseSpeed
+  //       : runtimeMob.walkSpeed;
+
+  //     if (now - runtimeMob.lastMoveAt < moveSpeed) {
+  //       continue;
+  //     }
+
+  //     const step = steps.shift();
+
+  //     if (!step) {
+  //       this.mobsMovementQueues.delete(id);
+  //       continue;
+  //     }
+
+  //     const locationId = runtimeMob.locationId;
+
+  //     const prevPosition = {
+  //       x: runtimeMob.x,
+  //       y: runtimeMob.y,
+  //     };
+
+  //     const pixelPosition = getPixelByTile(step);
+
+  //     const movedMob = this.runtimeMobService.moveTo(
+  //       runtimeMob,
+  //       pixelPosition,
+  //       now,
+  //     );
+
+  //     this.spatialGridService.update(
+  //       runtimeMob,
+  //       locationId,
+  //       prevPosition.x,
+  //       prevPosition.y,
+  //     );
+
+  //     const direction = getDirection(prevPosition, pixelPosition);
+
+  //     const updates = this.getOrCreateBatchUpdate(
+  //       locationId,
+  //       updatesByLocation,
+  //     );
+
+  //     updates.push({
+  //       id: runtimeMob.id,
+  //       locationId,
+  //       direction,
+  //       to: { x: movedMob.x, y: movedMob.y },
+  //       from: { x: prevPosition.x, y: prevPosition.y },
+  //       isFinalStep: steps.length === 0,
+  //       lastMoveAt: movedMob.lastMoveAt,
+  //       moveDuration: moveSpeed,
+  //       type: 'mob',
+  //     });
+  //   }
+
+  //   for (const [locationId, updates] of updatesByLocation.entries()) {
+  //     this.socketService.sendTo(
+  //       RedisKeys.Location + locationId,
+  //       ServerToClientEvents.MovementBatch,
+  //       updates,
+  //     );
+  //   }
+  // }
 
   private getOrCreateBatchUpdate(
     locationId: string,
