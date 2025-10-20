@@ -27,13 +27,17 @@ export class ProjectileService {
     private readonly actionQueueService: ActionQueueService,
   ) {}
 
-  private readonly projectilesMap = new Map<EntityKey, IProjectile[]>();
+  private readonly projectilesMap = new Map<
+    EntityKey,
+    Map<number, IProjectile>
+  >();
 
   public tickProjectiles() {
     const updatesByLocation = new Map<string, BatchUpdateAction[]>();
-
+    console.log('PRO', this.projectilesMap);
     for (const [attackerKey, projectiles] of this.projectilesMap.entries()) {
       projectiles.forEach((projectile) => {
+        console.log(projectile);
         const attackerRef = decodeEntityKey(attackerKey);
         const attacker = this.runtimeEntityService.getEntityByType(
           attackerRef.type,
@@ -48,7 +52,7 @@ export class ProjectileService {
         if (!attacker || !victim || attacker.locationId !== victim.locationId)
           return;
 
-        const isProgress = isAttackInProgress(
+        const attackInProgress = isAttackInProgress(
           { x: victim.x, y: victim.y },
           20,
           {
@@ -56,10 +60,12 @@ export class ProjectileService {
             startedTile: projectile.startedTile,
           },
         );
-
-        if (isProgress) return;
+        console.log('ATTACL IN PROGRESS', attackInProgress);
+        if (attackInProgress) return;
 
         const result = this.applyProjectileAction(attackerRef, projectile);
+        this.delete(attackerRef, projectile.startedAt);
+        console.log('RESULTT:', result);
 
         if (!result) return;
 
@@ -79,10 +85,18 @@ export class ProjectileService {
 
   public add(attackerRef: EntityRef, projectile: IProjectile) {
     const attackerKey = generateEntityKey(attackerRef);
-    this.projectilesMap.set(attackerKey, [
-      ...(this.projectilesMap.get(attackerKey) ?? []),
-      projectile,
-    ]);
+    let projectilesMap = this.projectilesMap.get(attackerKey);
+    if (!projectilesMap) {
+      projectilesMap = new Map<number, IProjectile>();
+      this.projectilesMap.set(attackerKey, projectilesMap);
+    }
+    projectilesMap.set(projectile.startedAt, projectile);
+  }
+
+  private delete(attackerRef: EntityRef, startedAt: number) {
+    const attackerKey = generateEntityKey(attackerRef);
+    const projectilesMap = this.projectilesMap.get(attackerKey);
+    projectilesMap?.delete(startedAt);
   }
 
   private applyMiniRoot(

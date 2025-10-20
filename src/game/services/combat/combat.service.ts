@@ -543,9 +543,7 @@ export class CombatService {
         if (!action.skillId || !ctx.characterSkill) return;
         // FIXME: мб удалить для того чтобы скилл юзался сразу
         if (ctx.now - ctx.attacker.lastAttackAt < ctx.attacker.attackSpeed)
-          return;
-
-        if ((ctx.characterSkill.cooldownEnd ?? 0) > ctx.now) return;
+          if ((ctx.characterSkill.cooldownEnd ?? 0) > ctx.now) return;
 
         // FIXME: нужно передавать сразу тайлы либо локацию / тайлсайз
         const attackerTile = {
@@ -900,6 +898,13 @@ export class CombatService {
 
     this.applyMiniRoot(attacker);
 
+    this.projectileService.add(attackerRef, {
+      victimRef,
+      skillId: action.skillId,
+      startedAt: Date.now(),
+      startedTile: { x: attacker.x, y: attacker.y },
+    });
+
     this.socketService.sendTo(
       RedisKeys.Location + attacker.locationId,
       ServerToClientEvents.EntityAttackStart,
@@ -913,13 +918,6 @@ export class CombatService {
         skillId: action.skillId,
       },
     );
-
-    this.projectileService.add(attackerRef, {
-      victimRef,
-      skillId: action.skillId,
-      startedAt: Date.now(),
-      startedTile: { x: attacker.x, y: attacker.y },
-    });
   }
 
   // private applyAction(

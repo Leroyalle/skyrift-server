@@ -59,7 +59,7 @@ export class RuntimeMobService implements OnModuleInit {
     const mobsEntries = Array.from(this.mobsById.values());
 
     for (const mob of mobsEntries) {
-      console.log('[TICK_AI] mob state', mob.state);
+      // console.log('[TICK_AI] mob state', mob.state);
       if (mob.respawnIn || mob.state === 'dead') continue;
 
       const now = Date.now();
@@ -165,7 +165,7 @@ export class RuntimeMobService implements OnModuleInit {
   private async patrol(mob: IRuntimeMob): Promise<void> {
     if (mob.state !== 'idle') return;
 
-    console.log('[TICK_AI_MOBS], start patrol');
+    // console.log('[TICK_AI_MOBS], start patrol');
 
     const findLocation = await this.locationService.loadLocation(
       mob.locationId,

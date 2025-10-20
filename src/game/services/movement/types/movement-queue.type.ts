@@ -7,3 +7,5 @@ export type MobMovementQueue = {
 export type CharacterMovementQueue = MobMovementQueue & {
   userId: string;
 };
+
+export type EntityMovementQueue = CharacterMovementQueue | MobMovementQueue;
