@@ -118,15 +118,11 @@ export class MovementService {
 
       if (!entity) return;
 
-      let speed: number | undefined;
+      let speed: number | undefined = entity.walkSpeed;
 
-      if (isPlayer(entity)) {
-        speed = entity.walkSpeed;
-      } else if (isMob(entity)) {
+      if (isMob(entity)) {
         speed = entity.isAttacking ? entity.chaseSpeed : entity.walkSpeed;
       }
-
-      if (!speed) return;
 
       const now = Date.now();
 
