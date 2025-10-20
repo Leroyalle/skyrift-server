@@ -18,7 +18,6 @@ import {
 import { Socket } from 'socket.io';
 import { RequestAttackMoveDto } from 'src/game/dto/request-attack-move.dto';
 import { RequestSkillUseDto } from 'src/game/dto/request-use-skill.dto';
-import { MovementService } from '../movement/movement.service';
 import { TargetAction } from './types/target-action.type';
 import { CachedLocation } from 'src/location/types/cashed-location.type';
 import { PathFindingService } from '../path-finding/path-finding.service';
@@ -36,6 +35,7 @@ import { isMob } from './lib/entity/guards/is-mob.lib';
 import { ProjectileService } from './services/projectile/projectile.service';
 import { MovementQueueService } from '../movement/services/movement-queue/movement-queue.service';
 import { getTileByPosition } from 'src/game/lib/helpers/get-tile-by-position.lib';
+import { getOrCreateArray } from 'src/game/lib/helpers/get-or-create-array.lib';
 
 @Injectable()
 export class CombatService {
@@ -44,8 +44,6 @@ export class CombatService {
     private readonly pathFindingService: PathFindingService,
     private readonly locationService: LocationService,
     private readonly socketService: SocketService,
-    @Inject(forwardRef(() => MovementService))
-    private readonly movementService: MovementService,
     @Inject(forwardRef(() => RuntimeMobService))
     private readonly runtimeMobService: RuntimeMobService,
     private readonly aoeService: AoeService,
@@ -62,6 +60,8 @@ export class CombatService {
       if (queue.length === 0) continue;
       const action = queue[0];
 
+      console.log('ACTION', action);
+
       const attacker = this.runtimeEntityService.getEntityByType(
         action.attackerRef.type,
         action.attackerRef.id,
@@ -75,10 +75,11 @@ export class CombatService {
 
       if (!location) continue;
 
-      const attackerTile = {
-        x: Math.floor(attacker.x / location.tileWidth),
-        y: Math.floor(attacker.y / location.tileHeight),
-      };
+      const attackerTile = getTileByPosition(
+        attacker.x,
+        attacker.y,
+        location.tileWidth,
+      );
 
       let targetTile: { x: number; y: number } | null = null;
 
@@ -90,15 +91,13 @@ export class CombatService {
 
         if (!victim) continue;
 
-        targetTile = {
-          x: Math.floor(victim.x / location.tileWidth),
-          y: Math.floor(victim.y / location.tileHeight),
-        };
+        targetTile = getTileByPosition(victim.x, victim.y, location.tileWidth);
       } else if (action.target.kind === 'aoe') {
-        targetTile = {
-          x: Math.floor(action.target.x / location.tileWidth),
-          y: Math.floor(action.target.y / location.tileHeight),
-        };
+        targetTile = getTileByPosition(
+          action.target.x,
+          action.target.y,
+          location.tileWidth,
+        );
       }
 
       if (!targetTile) continue;
@@ -126,29 +125,26 @@ export class CombatService {
 
       if (steps.length > range) {
         this.movementQueueService.set(attacker, steps);
-        // this.movementService.setMovementQueue(attacker, steps);
         attacker.state = 'pursue';
         continue;
       } else {
         this.movementQueueService.delete(attacker);
-        // this.movementService.deleteMovementQueue(attacker);
         attacker.state = 'attack';
       }
 
-      let batchLocation = updatesByLocation.get(location.id);
-      if (!batchLocation) {
-        batchLocation = [];
-        updatesByLocation.set(location.id, batchLocation);
-      }
-
-      const now = Date.now();
+      // let batchLocation = updatesByLocation.get(location.id);
+      // if (!batchLocation) {
+      //   batchLocation = [];
+      //   updatesByLocation.set(location.id, batchLocation);
+      // }
+      const batchLocation = getOrCreateArray(updatesByLocation, location.id);
 
       const actionCtx: IActionContext = {
         attacker,
         target: action.target,
         characterSkill: entitySkill,
         batchLocation,
-        now,
+        now: Date.now(),
         tileSize: location.tileWidth,
         removeAction: () => queue.shift(),
       };
@@ -461,7 +457,6 @@ export class CombatService {
     const inRange = steps.length <= range;
     if (!inRange) {
       this.movementQueueService.set(attacker, steps);
-      // this.movementService.setMovementQueue(attacker, steps);
       // setEntityState<RuntimeEntity>(attacker, 'pursue');
       attacker.state = 'pursue';
       pendingAction.state = 'move-to-target';
@@ -493,7 +488,6 @@ export class CombatService {
 
         this.startAttacking(ctx.attacker, victim, action);
         break;
-        // обратно
         // const attackerDirection = getDirection(
         //   {
         //     x: ctx.attacker.x,
@@ -546,28 +540,20 @@ export class CombatService {
 
       case ActionType.Skill: {
         if (!action.skillId || !ctx.characterSkill) return;
-        // FIXME: мб удалить для того чтобы скилл юзался сразу
         if (ctx.now - ctx.attacker.lastAttackAt < ctx.attacker.attackSpeed)
-          if ((ctx.characterSkill.cooldownEnd ?? 0) > ctx.now) return;
-
-        // FIXME: нужно передавать сразу тайлы либо локацию / тайлсайз
-        const attackerTile = {
-          x: Math.floor(ctx.attacker.x / ctx.tileSize),
-          y: Math.floor(ctx.attacker.y / ctx.tileSize),
-        };
+          return;
+        if ((ctx.characterSkill.cooldownEnd ?? 0) > ctx.now) return;
 
         let targetTile: { x: number; y: number } | null = null;
         let victim: TRuntimeEntity | undefined;
+
         if (action.target.kind === 'target') {
           victim = this.runtimeEntityService.getEntityByType(
             action.target.type,
             action.target.id,
           );
           if (!victim || !victim.isAlive) return;
-          targetTile = {
-            x: Math.floor(victim.x / ctx.tileSize),
-            y: Math.floor(victim.y / ctx.tileSize),
-          };
+          targetTile = getTileByPosition(victim.x, victim.y, ctx.tileSize);
         } else if (action.target.kind === 'aoe') {
           targetTile = {
             x: action.target.x,
@@ -576,8 +562,6 @@ export class CombatService {
         }
 
         if (!targetTile) return;
-
-        // const attackerDirection = getDirection(attackerTile, targetTile);
 
         const skillType = ctx.characterSkill.skill.type;
 
@@ -591,49 +575,6 @@ export class CombatService {
           }
 
           this.startAttacking(ctx.attacker, victim, action);
-
-          // const attackerRef = {
-          //   id: ctx.attacker.id,
-          //   type: ctx.attacker.type,
-          // };
-
-          // const victimRef = {
-          //   id: victim.id,
-          //   type: victim.type,
-          // };
-
-          // this.socketService.sendTo(
-          //   RedisKeys.Location + ctx.attacker.locationId,
-          //   ServerToClientEvents.EntityAttackStart,
-          //   {
-          //     attackerRef: {
-          //       ...attackerRef,
-          //       direction: attackerDirection,
-          //     },
-          //     victimRef,
-          //     actionType: ActionType.Skill,
-          //     skillId: action.skillId,
-          //   },
-          // );
-
-          // const applySkillResult = this.applySkill(
-          //   attackerRef,
-          //   victimRef,
-          //   action.skillId,
-          //   ctx.now,
-          // );
-
-          // if (!applySkillResult) return;
-
-          // ctx.batchLocation.push(applySkillResult.attackResult);
-
-          // TODO: update set cooldown for mob & player
-          // if (isPlayer(ctx.attacker)) {
-          //   this.sendUserSkillCooldown(
-          //     ctx.attacker.userId,
-          //     applySkillResult.cooldown,
-          //   );
-          // }
         } else if (
           skillType === SkillType.AoE &&
           action.target.kind === 'aoe'
@@ -901,7 +842,7 @@ export class CombatService {
       }
     }
 
-    this.applyMiniRoot(attacker);
+    // this.applyMiniRoot(attacker);
 
     this.projectileService.add(attackerRef, {
       victimRef,
