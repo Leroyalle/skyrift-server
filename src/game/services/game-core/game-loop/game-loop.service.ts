@@ -6,7 +6,7 @@ import { RegenerationService } from '../../regeneration/regeneration.service';
 import { InteractionService } from '../../interaction/interaction.service';
 import { RuntimeMobService } from '../../runtime-mob/runtime-mob.service';
 import { RuntimeEffectService } from '../../runtime-effect/runtime-effect.service';
-import { ProjectileService } from '../../combat/services/projectle/projectile.service';
+import { ProjectileService } from '../../combat/services/projectile/projectile.service';
 
 @Injectable()
 export class GameLoopService implements OnModuleInit, OnModuleDestroy {
@@ -56,7 +56,7 @@ export class GameLoopService implements OnModuleInit, OnModuleDestroy {
     const now = Date.now();
 
     if (now - this.lastTickTimes.movement >= this.intervals.movement) {
-      this.movementService.tickMovement();
+      this.movementService.tick();
       this.lastTickTimes.movement = now;
     }
     if (now - this.lastTickTimes.actions >= this.intervals.actions) {

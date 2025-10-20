@@ -26,7 +26,7 @@ export class MovementQueueService {
     this.movementQueues.set(entityKey, queue);
   }
 
-  public remove(entityRef: EntityRef): boolean {
+  public delete(entityRef: EntityRef): boolean {
     return this.movementQueues.delete(generateEntityKey(entityRef));
   }
 

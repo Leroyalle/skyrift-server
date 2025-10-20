@@ -14,6 +14,7 @@ import { RangeArea } from './types/range-area.type';
 import { isEntityCombatStatus } from 'src/game/lib/entity/is-entity-combat-status.lib';
 import { EntityRef } from 'src/game/types/entity/entity-ref.type';
 import { RuntimeEntityService } from '../runtime-entity/runtime-entity.service';
+import { MovementQueueService } from '../movement/services/movement-queue/movement-queue.service';
 
 @Injectable()
 export class RuntimeMobService implements OnModuleInit {
@@ -26,6 +27,7 @@ export class RuntimeMobService implements OnModuleInit {
     @Inject(forwardRef(() => MovementService))
     private readonly movementService: MovementService,
     private readonly runtimeEntityService: RuntimeEntityService,
+    private readonly movementQueueService: MovementQueueService,
   ) {}
 
   private readonly mobsByLocation = new Map<string, Set<string>>();
@@ -66,10 +68,12 @@ export class RuntimeMobService implements OnModuleInit {
 
       if (mob.nextThinkAt && mob.nextThinkAt > now) continue;
 
-      const currentMobPath = this.movementService.getMovementQueue(
-        mob.type,
-        mob.id,
-      );
+      const currentMobPath = this.movementQueueService.get(mob);
+
+      // const currentMobPath = this.movementService.getMovementQueue(
+      //   mob.type,
+      //   mob.id,
+      // );
 
       const currentPos = getTileByPosition(mob.x, mob.y, 32);
       const spawnPos = getTileByPosition(mob.spawnX, mob.spawnY, 32);
@@ -99,7 +103,8 @@ export class RuntimeMobService implements OnModuleInit {
         console.log('mob has new target', mob.currentTarget);
         if (mob.currentTarget) {
           console.log('mob has new target 2 before attack', mob.currentTarget);
-          this.movementService.deleteMovementQueue(mob);
+          this.movementQueueService.delete(mob);
+          // this.movementService.deleteMovementQueue(mob);
           await this.combatService.requestAttackMoveForMob(
             mob.id,
             mob.currentTarget.id,
@@ -124,7 +129,8 @@ export class RuntimeMobService implements OnModuleInit {
 
         const target = entities?.[0];
         if (target) {
-          this.movementService.deleteMovementQueue(mob);
+          this.movementQueueService.delete(mob);
+          // this.movementService.deleteMovementQueue(mob);
           await this.combatService.requestAttackMoveForMob(mob.id, target.id);
           mob.state = 'pursue';
           continue;
@@ -196,7 +202,8 @@ export class RuntimeMobService implements OnModuleInit {
 
     if (!path || path.length === 0) return;
 
-    this.movementService.setMovementQueue(mob, path);
+    this.movementQueueService.set(mob, path);
+    // this.movementService.setMovementQueue(mob, path);
     mob.state = 'move';
   }
 
@@ -269,7 +276,8 @@ export class RuntimeMobService implements OnModuleInit {
     });
     mob.currentTarget = mob.aggro.clear();
     mob.state = 'return';
-    this.movementService.setMovementQueue(mob, path);
+    this.movementQueueService.set(mob, path);
+    // this.movementService.setMovementQueue(mob, path);
   }
 
   public get mobsArray() {

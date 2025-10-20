@@ -18,6 +18,7 @@ import { SocketService } from 'src/game/services/socket/socket.service';
 import { ActionQueueService } from '../action-queue/action-queue.service';
 import { RedisKeys } from 'src/common/enums/redis-keys.enum';
 import { ServerToClientEvents } from 'src/common/enums/game-socket-events.enum';
+import { getTileByPosition } from 'src/game/lib/helpers/get-tile-by-position.lib';
 
 @Injectable()
 export class ProjectileService {
@@ -34,10 +35,10 @@ export class ProjectileService {
 
   public tickProjectiles() {
     const updatesByLocation = new Map<string, BatchUpdateAction[]>();
-    console.log('PRO', this.projectilesMap);
+    // console.log('PRO', this.projectilesMap);
     for (const [attackerKey, projectiles] of this.projectilesMap.entries()) {
       projectiles.forEach((projectile) => {
-        console.log(projectile);
+        // console.log(projectile);
         const attackerRef = decodeEntityKey(attackerKey);
         const attacker = this.runtimeEntityService.getEntityByType(
           attackerRef.type,
@@ -53,8 +54,8 @@ export class ProjectileService {
           return;
 
         const attackInProgress = isAttackInProgress(
-          { x: victim.x, y: victim.y },
-          20,
+          getTileByPosition(victim.x, victim.y),
+          100,
           {
             startedAt: projectile.startedAt,
             startedTile: projectile.startedTile,
@@ -69,12 +70,16 @@ export class ProjectileService {
 
         if (!result) return;
 
-        const batchLocation = getOrCreateArray(updatesByLocation, attacker.id);
+        const batchLocation = getOrCreateArray(
+          updatesByLocation,
+          attacker.locationId,
+        );
         batchLocation.push(result);
       });
     }
 
     for (const [locationId, batch] of updatesByLocation) {
+      console.log(batch[0].targets);
       this.socketService.sendTo(
         RedisKeys.Location + locationId,
         ServerToClientEvents.PlayerStateUpdate,

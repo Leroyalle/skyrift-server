@@ -33,8 +33,9 @@ import { AoeService } from './services/aoe/aoe.service';
 import { RuntimeEntityService } from '../runtime-entity/runtime-entity.service';
 import { ActionQueueService } from './services/action-queue/action-queue.service';
 import { isMob } from './lib/entity/guards/is-mob.lib';
-import { isAttackInProgress } from './lib/helpers/is-attack-in-progress.lib';
-import { ProjectileService } from './services/projectle/projectile.service';
+import { ProjectileService } from './services/projectile/projectile.service';
+import { MovementQueueService } from '../movement/services/movement-queue/movement-queue.service';
+import { getTileByPosition } from 'src/game/lib/helpers/get-tile-by-position.lib';
 
 @Injectable()
 export class CombatService {
@@ -51,6 +52,7 @@ export class CombatService {
     private readonly runtimeEntityService: RuntimeEntityService,
     private readonly actionQueueService: ActionQueueService,
     private readonly projectileService: ProjectileService,
+    private readonly movementQueueService: MovementQueueService,
   ) {}
 
   public async tickActions(): Promise<void> {
@@ -123,11 +125,13 @@ export class CombatService {
         : attacker.attackRange;
 
       if (steps.length > range) {
-        this.movementService.setMovementQueue(attacker, steps);
+        this.movementQueueService.set(attacker, steps);
+        // this.movementService.setMovementQueue(attacker, steps);
         attacker.state = 'pursue';
         continue;
       } else {
-        this.movementService.deleteMovementQueue(attacker);
+        this.movementQueueService.delete(attacker);
+        // this.movementService.deleteMovementQueue(attacker);
         attacker.state = 'attack';
       }
 
@@ -456,7 +460,8 @@ export class CombatService {
   ) {
     const inRange = steps.length <= range;
     if (!inRange) {
-      this.movementService.setMovementQueue(attacker, steps);
+      this.movementQueueService.set(attacker, steps);
+      // this.movementService.setMovementQueue(attacker, steps);
       // setEntityState<RuntimeEntity>(attacker, 'pursue');
       attacker.state = 'pursue';
       pendingAction.state = 'move-to-target';
@@ -902,7 +907,7 @@ export class CombatService {
       victimRef,
       skillId: action.skillId,
       startedAt: Date.now(),
-      startedTile: { x: attacker.x, y: attacker.y },
+      startedTile: getTileByPosition(attacker.x, attacker.y),
     });
 
     this.socketService.sendTo(
