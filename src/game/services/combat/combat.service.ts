@@ -540,30 +540,20 @@ export class CombatService {
 
       case ActionType.Skill: {
         if (!action.skillId || !ctx.characterSkill) return;
-        // FIXME: мб удалить для того чтобы скилл юзался сразу
         if (ctx.now - ctx.attacker.lastAttackAt < ctx.attacker.attackSpeed)
           return;
-
         if ((ctx.characterSkill.cooldownEnd ?? 0) > ctx.now) return;
-
-        // FIXME: нужно передавать сразу тайлы либо локацию / тайлсайз
-        const attackerTile = {
-          x: Math.floor(ctx.attacker.x / ctx.tileSize),
-          y: Math.floor(ctx.attacker.y / ctx.tileSize),
-        };
 
         let targetTile: { x: number; y: number } | null = null;
         let victim: TRuntimeEntity | undefined;
+
         if (action.target.kind === 'target') {
           victim = this.runtimeEntityService.getEntityByType(
             action.target.type,
             action.target.id,
           );
           if (!victim || !victim.isAlive) return;
-          targetTile = {
-            x: Math.floor(victim.x / ctx.tileSize),
-            y: Math.floor(victim.y / ctx.tileSize),
-          };
+          targetTile = getTileByPosition(victim.x, victim.y, ctx.tileSize);
         } else if (action.target.kind === 'aoe') {
           targetTile = {
             x: action.target.x,
@@ -572,8 +562,6 @@ export class CombatService {
         }
 
         if (!targetTile) return;
-
-        // const attackerDirection = getDirection(attackerTile, targetTile);
 
         const skillType = ctx.characterSkill.skill.type;
 
@@ -587,49 +575,6 @@ export class CombatService {
           }
 
           this.startAttacking(ctx.attacker, victim, action);
-
-          // const attackerRef = {
-          //   id: ctx.attacker.id,
-          //   type: ctx.attacker.type,
-          // };
-
-          // const victimRef = {
-          //   id: victim.id,
-          //   type: victim.type,
-          // };
-
-          // this.socketService.sendTo(
-          //   RedisKeys.Location + ctx.attacker.locationId,
-          //   ServerToClientEvents.EntityAttackStart,
-          //   {
-          //     attackerRef: {
-          //       ...attackerRef,
-          //       direction: attackerDirection,
-          //     },
-          //     victimRef,
-          //     actionType: ActionType.Skill,
-          //     skillId: action.skillId,
-          //   },
-          // );
-
-          // const applySkillResult = this.applySkill(
-          //   attackerRef,
-          //   victimRef,
-          //   action.skillId,
-          //   ctx.now,
-          // );
-
-          // if (!applySkillResult) return;
-
-          // ctx.batchLocation.push(applySkillResult.attackResult);
-
-          // TODO: update set cooldown for mob & player
-          // if (isPlayer(ctx.attacker)) {
-          //   this.sendUserSkillCooldown(
-          //     ctx.attacker.userId,
-          //     applySkillResult.cooldown,
-          //   );
-          // }
         } else if (
           skillType === SkillType.AoE &&
           action.target.kind === 'aoe'
@@ -897,7 +842,7 @@ export class CombatService {
       }
     }
 
-    this.applyMiniRoot(attacker);
+    // this.applyMiniRoot(attacker);
 
     this.projectileService.add(attackerRef, {
       victimRef,
