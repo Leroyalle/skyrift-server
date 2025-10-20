@@ -128,6 +128,8 @@ export class MovementService {
 
       if (now - entity.lastMoveAt < speed) return;
 
+      console.log('after speed check');
+
       const hasStun = this.runtimeEffectService.findByType(
         {
           type: entity.type,
@@ -141,6 +143,8 @@ export class MovementService {
       const pathStep = queue.steps.shift();
 
       if (!pathStep) return;
+
+      console.log('after path step');
 
       const pixelPosition = getPixelByTile(pathStep);
       if (isCharacterMovementQueue(entityRef, queue)) {
@@ -161,6 +165,8 @@ export class MovementService {
       } else if (isMob(entity)) {
         this.runtimeMobService.moveTo(entity, pixelPosition, now);
       }
+
+      console.log('after move');
 
       // if (prevPosition) {
       this.spatialGridService.update(
@@ -193,10 +199,18 @@ export class MovementService {
       });
 
       if (queue.steps.length === 0) {
-        this.movementQueueService.remove(entityRef);
+        this.movementQueueService.delete(entityRef);
         // this.charactersMovementQueues.delete(characterId);
       }
     });
+
+    for (const [locationId, updates] of updatesByLocation.entries()) {
+      this.socketService.sendTo(
+        RedisKeys.Location + locationId,
+        ServerToClientEvents.MovementBatch,
+        updates,
+      );
+    }
   }
 
   // public tickMovement() {
@@ -380,32 +394,32 @@ export class MovementService {
   //     return this.mobsMovementQueues.set(data.id, data.queue);
   //   }
   // }
-  public setMovementQueue(entity: TRuntimeEntity, steps: PositionDto[]) {
-    if (isPlayer(entity)) {
-      const queue = {
-        steps,
-        userId: entity.userId,
-      };
-      return this.charactersMovementQueues.set(entity.id, queue);
-    } else if (isMob(entity)) {
-      return this.mobsMovementQueues.set(entity.id, { steps });
-    }
-  }
+  // public setMovementQueue(entity: TRuntimeEntity, steps: PositionDto[]) {
+  //   if (isPlayer(entity)) {
+  //     const queue = {
+  //       steps,
+  //       userId: entity.userId,
+  //     };
+  //     return this.charactersMovementQueues.set(entity.id, queue);
+  //   } else if (isMob(entity)) {
+  //     return this.mobsMovementQueues.set(entity.id, { steps });
+  //   }
+  // }
 
-  public getMovementQueue(type: EntityType, id: string) {
-    if (type === 'player') {
-      return this.charactersMovementQueues.get(id);
-    } else if (type === 'mob') {
-      return this.mobsMovementQueues.get(id);
-    }
-  }
+  // public getMovementQueue(type: EntityType, id: string) {
+  //   if (type === 'player') {
+  //     return this.charactersMovementQueues.get(id);
+  //   } else if (type === 'mob') {
+  //     return this.mobsMovementQueues.get(id);
+  //   }
+  // }
 
-  public deleteMovementQueue(entity: TRuntimeEntity) {
-    if (isPlayer(entity)) {
-      return this.charactersMovementQueues.delete(entity.id);
-    }
-    if (isMob(entity)) {
-      return this.mobsMovementQueues.delete(entity.id);
-    }
-  }
+  // public deleteMovementQueue(entity: TRuntimeEntity) {
+  //   if (isPlayer(entity)) {
+  //     return this.charactersMovementQueues.delete(entity.id);
+  //   }
+  //   if (isMob(entity)) {
+  //     return this.mobsMovementQueues.delete(entity.id);
+  //   }
+  // }
 }

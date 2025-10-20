@@ -1,5 +1,5 @@
 import { PositionDto } from 'src/common/dto/position.dto';
-import { IAttackInitiation } from '../../services/projectle/types/projectile.type';
+import { IAttackInitiation } from '../../services/projectile/types/projectile.type';
 
 export function isAttackInProgress(
   victimTile: PositionDto,
@@ -11,5 +11,19 @@ export function isAttackInProgress(
   const distance = Math.hypot(dx, dy);
   const time = distance * attackDuration;
   const gap = Date.now() - start.startedAt;
+  console.log(
+    'gap',
+    gap,
+    'time',
+    time,
+    'distance',
+    distance,
+    'victimTile',
+    victimTile,
+    'startTile',
+    start.startedTile,
+    'start.startedAt',
+    start.startedAt,
+  );
   return gap < time;
 }

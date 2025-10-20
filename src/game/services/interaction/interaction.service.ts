@@ -23,6 +23,7 @@ import { Teleport } from 'src/location/types/teleport.type';
 import { PathFindingService } from '../path-finding/path-finding.service';
 import { getTileByPosition } from 'src/game/lib/helpers/get-tile-by-position.lib';
 import { GameInitialDataService } from '../game-core/game-initial-data/game-initial-data.service';
+import { MovementQueueService } from '../movement/services/movement-queue/movement-queue.service';
 
 @Injectable()
 export class InteractionService {
@@ -36,6 +37,7 @@ export class InteractionService {
     @Inject(forwardRef(() => MovementService))
     private readonly movementService: MovementService,
     private readonly gameInitialDataService: GameInitialDataService,
+    private readonly movementQueueService: MovementQueueService,
   ) {}
 
   private readonly pendingInteractions = new Map<string, PendingInteraction>();
@@ -79,7 +81,8 @@ export class InteractionService {
 
             if (isPlayerInTeleportArea(playerState, teleport)) {
               console.log('use teleport');
-              this.movementService.deleteMovementQueue(playerState);
+              this.movementQueueService.delete(playerState);
+              // this.movementService.deleteMovementQueue(playerState);
               this.pendingInteractions.delete(playerState.id);
               await this.useTeleport(playerState, teleport);
               console.log('teleport used, after use teleport');
@@ -182,10 +185,12 @@ export class InteractionService {
       currentLocation.tileWidth,
     );
 
-    const prevSteps = this.movementService.getMovementQueue(
-      playerState.type,
-      playerState.id,
-    );
+    const prevSteps = this.movementQueueService.get(playerState);
+
+    // const prevSteps = this.movementService.getMovementQueue(
+    //   playerState.type,
+    //   playerState.id,
+    // );
 
     if (prevSteps?.steps[-1] === targetTile) return;
 
@@ -198,7 +203,8 @@ export class InteractionService {
 
     if (!steps) return;
 
-    this.movementService.setMovementQueue(playerState, steps);
+    this.movementQueueService.set(playerState, steps);
+    // this.movementService.setMovementQueue(playerState, steps);
 
     return steps;
   }

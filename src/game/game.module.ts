@@ -25,7 +25,8 @@ import { ActionQueueService } from './services/combat/services/action-queue/acti
 import { GameLoopService } from './services/game-core/game-loop/game-loop.service';
 import { GameInitialDataService } from './services/game-core/game-initial-data/game-initial-data.service';
 import { RuntimeEffectService } from './services/runtime-effect/runtime-effect.service';
-import { ProjectileService } from './services/combat/services/projectle/projectile.service';
+import { ProjectileService } from './services/combat/services/projectile/projectile.service';
+import { MovementQueueService } from './services/movement/services/movement-queue/movement-queue.service';
 
 @Module({
   imports: [
@@ -58,6 +59,7 @@ import { ProjectileService } from './services/combat/services/projectle/projecti
     RuntimeEffectService,
     GameLoopService,
     ProjectileService,
+    MovementQueueService,
   ],
 })
 export class GameModule {}
