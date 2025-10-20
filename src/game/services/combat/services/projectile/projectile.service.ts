@@ -35,10 +35,8 @@ export class ProjectileService {
 
   public tickProjectiles() {
     const updatesByLocation = new Map<string, BatchUpdateAction[]>();
-    // console.log('PRO', this.projectilesMap);
     for (const [attackerKey, projectiles] of this.projectilesMap.entries()) {
       projectiles.forEach((projectile) => {
-        // console.log(projectile);
         const attackerRef = decodeEntityKey(attackerKey);
         const attacker = this.runtimeEntityService.getEntityByType(
           attackerRef.type,
@@ -61,12 +59,10 @@ export class ProjectileService {
             startedTile: projectile.startedTile,
           },
         );
-        console.log('ATTACL IN PROGRESS', attackInProgress);
         if (attackInProgress) return;
 
         const result = this.applyProjectileAction(attackerRef, projectile);
         this.delete(attackerRef, projectile.startedAt);
-        console.log('RESULTT:', result);
 
         if (!result) return;
 
@@ -79,7 +75,6 @@ export class ProjectileService {
     }
 
     for (const [locationId, batch] of updatesByLocation) {
-      console.log(batch[0].targets);
       this.socketService.sendTo(
         RedisKeys.Location + locationId,
         ServerToClientEvents.PlayerStateUpdate,
