@@ -35,5 +35,6 @@ export const buildRuntimeCharacter = (
     characterClass: character.characterClass,
     type: 'player',
     walkSpeed: character.walkSpeed,
+    bag: character.bag,
   };
 };

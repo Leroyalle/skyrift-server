@@ -89,7 +89,7 @@ export class MovementService {
     this.movementQueueService.set({ id: characterId, type: 'player' }, steps);
   }
 
-  public tick() {
+  public tickMovement() {
     const updatesByLocation = new Map<string, BatchUpdateMovement[]>();
 
     const entries = this.movementQueueService.getIterableMovementQueues;

@@ -3,9 +3,17 @@ import { CharacterClass } from 'src/character-class/entities/character-class.ent
 import { Item } from 'src/item/entities/item.entity';
 import { Location } from 'src/location/entities/location.entity';
 import { User } from 'src/user/entities/user.entity';
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+} from 'typeorm';
 import { CharacterSkill } from '../character-skill/entities/character-skill.entity';
 import { ActorEntity } from 'src/common/entities/actor-entity.entity';
+import { Bag } from '../bag/entities/bag.entity';
 
 @ObjectType()
 @Entity()
@@ -59,4 +67,8 @@ export class Character extends ActorEntity {
   @OneToMany(() => CharacterSkill, (characterSkill) => characterSkill.character)
   @Field(() => [CharacterSkill], { description: 'Навыки персонаж' })
   characterSkills: CharacterSkill[];
+
+  @OneToOne(() => Bag, (bag) => bag.character)
+  @Field(() => Bag)
+  bag: Bag;
 }

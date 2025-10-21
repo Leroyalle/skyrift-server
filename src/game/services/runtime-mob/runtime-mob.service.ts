@@ -6,7 +6,6 @@ import { getTileByPosition } from 'src/game/lib/helpers/get-tile-by-position.lib
 import { SpatialGridService } from '../spatial-grid/spatial-grid.service';
 import { CombatService } from '../combat/combat.service';
 import { PathFindingService } from '../path-finding/path-finding.service';
-import { MovementService } from '../movement/movement.service';
 import { buildRuntimeMob } from './lib/build-runtime-mob.lib';
 import { getRandomValue } from 'src/common/lib/get-random-value.lib';
 import { CachedLocation } from 'src/location/types/cashed-location.type';
@@ -15,6 +14,9 @@ import { isEntityCombatStatus } from 'src/game/lib/entity/is-entity-combat-statu
 import { EntityRef } from 'src/game/types/entity/entity-ref.type';
 import { RuntimeEntityService } from '../runtime-entity/runtime-entity.service';
 import { MovementQueueService } from '../movement/services/movement-queue/movement-queue.service';
+import { SocketService } from '../socket/socket.service';
+import { RedisKeys } from 'src/common/enums/redis-keys.enum';
+import { ServerToClientEvents } from 'src/common/enums/game-socket-events.enum';
 
 @Injectable()
 export class RuntimeMobService implements OnModuleInit {
@@ -24,10 +26,9 @@ export class RuntimeMobService implements OnModuleInit {
     @Inject(forwardRef(() => CombatService))
     private readonly combatService: CombatService,
     private readonly pathFindingService: PathFindingService,
-    @Inject(forwardRef(() => MovementService))
-    private readonly movementService: MovementService,
     private readonly runtimeEntityService: RuntimeEntityService,
     private readonly movementQueueService: MovementQueueService,
+    private readonly socketService: SocketService,
   ) {}
 
   private readonly mobsByLocation = new Map<string, Set<string>>();
@@ -61,19 +62,18 @@ export class RuntimeMobService implements OnModuleInit {
     const mobsEntries = Array.from(this.mobsById.values());
 
     for (const mob of mobsEntries) {
-      // console.log('[TICK_AI] mob state', mob.state);
-      if (mob.respawnIn || mob.state === 'dead') continue;
-
       const now = Date.now();
+      if (mob.respawnIn || mob.state === 'dead') {
+        if (mob.respawnIn && now >= mob.respawnIn) {
+          this.respawn(mob.id);
+        }
+
+        continue;
+      }
 
       if (mob.nextThinkAt && mob.nextThinkAt > now) continue;
 
       const currentMobPath = this.movementQueueService.get(mob);
-
-      // const currentMobPath = this.movementService.getMovementQueue(
-      //   mob.type,
-      //   mob.id,
-      // );
 
       const currentPos = getTileByPosition(mob.x, mob.y, 32);
       const spawnPos = getTileByPosition(mob.spawnX, mob.spawnY, 32);
@@ -104,7 +104,6 @@ export class RuntimeMobService implements OnModuleInit {
         if (mob.currentTarget) {
           console.log('mob has new target 2 before attack', mob.currentTarget);
           this.movementQueueService.delete(mob);
-          // this.movementService.deleteMovementQueue(mob);
           await this.combatService.requestAttackMoveForMob(
             mob.id,
             mob.currentTarget.id,
@@ -130,7 +129,6 @@ export class RuntimeMobService implements OnModuleInit {
         const target = entities?.[0];
         if (target) {
           this.movementQueueService.delete(mob);
-          // this.movementService.deleteMovementQueue(mob);
           await this.combatService.requestAttackMoveForMob(mob.id, target.id);
           mob.state = 'pursue';
           continue;
@@ -171,8 +169,6 @@ export class RuntimeMobService implements OnModuleInit {
   private async patrol(mob: IRuntimeMob): Promise<void> {
     if (mob.state !== 'idle') return;
 
-    // console.log('[TICK_AI_MOBS], start patrol');
-
     const findLocation = await this.locationService.loadLocation(
       mob.locationId,
     );
@@ -203,7 +199,6 @@ export class RuntimeMobService implements OnModuleInit {
     if (!path || path.length === 0) return;
 
     this.movementQueueService.set(mob, path);
-    // this.movementService.setMovementQueue(mob, path);
     mob.state = 'move';
   }
 
@@ -284,8 +279,8 @@ export class RuntimeMobService implements OnModuleInit {
     return Array.from(this.mobsById.values());
   }
 
-  public getById(spawnMobId: string) {
-    return this.mobsById.get(spawnMobId);
+  public getById(id: string) {
+    return this.mobsById.get(id);
   }
 
   private getRandomTileInRange(
@@ -326,10 +321,22 @@ export class RuntimeMobService implements OnModuleInit {
     return mobsSet;
   }
 
-  public resetRespawnTime(runtimeMobId: string) {
+  public resetRespawnTime(runtimeMobId: string): IRuntimeMob | undefined {
     const spawnMob = this.mobsById.get(runtimeMobId);
     if (!spawnMob) return;
     spawnMob.respawnIn = null;
+    return spawnMob;
+  }
+
+  public respawn(id: string) {
+    const mob = this.resetRespawnTime(id);
+    if (!mob) return;
+
+    this.socketService.sendTo(
+      RedisKeys.Location + mob.locationId,
+      ServerToClientEvents.RespawnMob,
+      { id },
+    );
   }
 
   public setRespawn(runtimeMobId: string) {

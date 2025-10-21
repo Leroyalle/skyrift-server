@@ -56,7 +56,7 @@ export class GameLoopService implements OnModuleInit, OnModuleDestroy {
     const now = Date.now();
 
     if (now - this.lastTickTimes.movement >= this.intervals.movement) {
-      this.movementService.tick();
+      this.movementService.tickMovement();
       this.lastTickTimes.movement = now;
     }
     if (now - this.lastTickTimes.actions >= this.intervals.actions) {

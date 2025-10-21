@@ -19,6 +19,7 @@ import { ActionQueueService } from '../action-queue/action-queue.service';
 import { RedisKeys } from 'src/common/enums/redis-keys.enum';
 import { ServerToClientEvents } from 'src/common/enums/game-socket-events.enum';
 import { getTileByPosition } from 'src/game/lib/helpers/get-tile-by-position.lib';
+import { RuntimeMobService } from 'src/game/services/runtime-mob/runtime-mob.service';
 
 @Injectable()
 export class ProjectileService {
@@ -26,6 +27,7 @@ export class ProjectileService {
     private readonly runtimeEntityService: RuntimeEntityService,
     private readonly socketService: SocketService,
     private readonly actionQueueService: ActionQueueService,
+    private readonly runtimeMobService: RuntimeMobService,
   ) {}
 
   private readonly projectilesMap = new Map<
@@ -142,9 +144,14 @@ export class ProjectileService {
       case SkillType.Target: {
         const receivedDamage = skill.skill.damage;
         const remainingHp = this.updateHp(victim, -receivedDamage);
-        if (isMob(victim)) victim.aggro.updateThreatMap(victim, receivedDamage);
+        if (isMob(victim)) {
+          victim.aggro.updateThreatMap(victim, receivedDamage);
+        }
         if (remainingHp <= 0) {
           this.actionQueueService.clearPendingActions(attackerRef, []);
+          if (isMob(victim)) {
+            this.runtimeMobService.setRespawn(victim.id);
+          }
         }
         this.applyMiniRoot(victim, 200, now);
         return {

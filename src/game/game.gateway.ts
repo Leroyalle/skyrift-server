@@ -16,6 +16,7 @@ import { RequestSkillUseDto } from './dto/request-use-skill.dto';
 import { SocketService } from './services/socket/socket.service';
 import { RequestUseTeleportDto } from './dto/request-use-teleport.dto';
 import { DirectMessageInput } from './services/chat/dto/direct-message.input';
+import { Item } from 'src/item/entities/item.entity';
 
 @WebSocketGateway({
   namespace: 'game',
@@ -111,5 +112,10 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage(ClientToServerEvents.PingTime)
   public sendPong(client: Socket, clientTime: number) {
     return this.gameService.sendPong(client, clientTime);
+  }
+
+  @SubscribeMessage(ClientToServerEvents.BagAdd)
+  public addToBag(client: Socket, input: Item) {
+    return this.gameService.handleAddToBag(client, input);
   }
 }
