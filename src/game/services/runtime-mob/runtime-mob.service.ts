@@ -62,9 +62,14 @@ export class RuntimeMobService implements OnModuleInit {
 
     for (const mob of mobsEntries) {
       // console.log('[TICK_AI] mob state', mob.state);
-      if (mob.respawnIn || mob.state === 'dead') continue;
-
       const now = Date.now();
+      if (mob.respawnIn || mob.state === 'dead') {
+        if (mob.respawnIn && now >= mob.respawnIn) {
+          this.resetRespawnTime(mob.id);
+        }
+
+        continue;
+      }
 
       if (mob.nextThinkAt && mob.nextThinkAt > now) continue;
 
@@ -284,8 +289,8 @@ export class RuntimeMobService implements OnModuleInit {
     return Array.from(this.mobsById.values());
   }
 
-  public getById(spawnMobId: string) {
-    return this.mobsById.get(spawnMobId);
+  public getById(id: string) {
+    return this.mobsById.get(id);
   }
 
   private getRandomTileInRange(
