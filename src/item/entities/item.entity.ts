@@ -1,4 +1,5 @@
 import { Field, ID, ObjectType } from '@nestjs/graphql';
+import { Bag } from 'src/character/bag/entities/bag.entity';
 import { Character } from 'src/character/entities/character.entity';
 import { ItemTypeEnum } from 'src/common/enums/item-type.enum';
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
@@ -37,4 +38,8 @@ export class Item {
   // @ManyToOne(() => Monster, (monster) => monster.droppedItems, { nullable: true })
   // @Field(() => Monster, { nullable: true })
   // droppedBy: Monster;
+
+  @ManyToOne(() => Bag, (bag) => bag.items)
+  @Field(() => Bag)
+  bag: Bag;
 }

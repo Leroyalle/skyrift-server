@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import {
   InteractionType,
   PendingInteraction,
@@ -12,7 +12,6 @@ import { verifyUserDataInSocket } from 'src/game/lib/verify-user-data-in-socket.
 import { isPlayerInTeleportArea } from 'src/game/lib/teleport/is-player-in-teleport-radius.lib';
 import { IRuntimeCharacter } from 'src/character/types/runtime-character';
 import { SpatialGridService } from '../spatial-grid/spatial-grid.service';
-import { MovementService } from '../movement/movement.service';
 import { RedisService } from 'src/redis/redis.service';
 import { RedisKeysFactory } from 'src/common/infra/redis-keys-factory.infra';
 import { RedisKeys } from 'src/common/enums/redis-keys.enum';
@@ -34,8 +33,6 @@ export class InteractionService {
     private readonly pathFindingService: PathFindingService,
     private readonly spatialGridService: SpatialGridService<IRuntimeCharacter>,
     private readonly redisService: RedisService,
-    @Inject(forwardRef(() => MovementService))
-    private readonly movementService: MovementService,
     private readonly gameInitialDataService: GameInitialDataService,
     private readonly movementQueueService: MovementQueueService,
   ) {}
