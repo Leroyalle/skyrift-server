@@ -21,6 +21,7 @@ export enum ServerToClientEvents {
   ChatLocation = 'chat:location',
   ChatDirect = 'chat:direct',
   PongTime = 'time:pong',
+  RespawnMob = 'mob:respawn',
 }
 
 export enum ClientToServerEvents {
