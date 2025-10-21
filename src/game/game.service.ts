@@ -298,5 +298,11 @@ export class GameService extends BaseLogger {
     if (!character) return;
 
     this.runtimeBagService.add(character.bag, input);
+
+    this.socketService.sendToUser(
+      client.userData.userId,
+      ServerToClientEvents.BagAdd,
+      input,
+    );
   }
 }

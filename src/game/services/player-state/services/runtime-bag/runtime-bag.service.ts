@@ -6,7 +6,7 @@ import { Bag } from 'src/character/bag/entities/bag.entity';
 export class RuntimeBagService {
   // constructor(private readonly playerStateService: PlayerStateService) {}
 
-  public add(bag: Bag, item: Item) {
+  public add(bag: Bag, item: Item): void {
     bag.items.push(item);
   }
 }
