@@ -27,6 +27,7 @@ import { GameInitialDataService } from './services/game-core/game-initial-data/g
 import { RuntimeEffectService } from './services/runtime-effect/runtime-effect.service';
 import { ProjectileService } from './services/combat/services/projectile/projectile.service';
 import { MovementQueueService } from './services/movement/services/movement-queue/movement-queue.service';
+import { BagModule } from 'src/character/bag/bag.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { MovementQueueService } from './services/movement/services/movement-queu
     MobModule,
     MobSpawnModule,
     EffectModule,
+    BagModule,
   ],
   providers: [
     GameGateway,

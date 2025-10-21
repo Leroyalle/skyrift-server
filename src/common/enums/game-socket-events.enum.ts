@@ -22,6 +22,7 @@ export enum ServerToClientEvents {
   ChatDirect = 'chat:direct',
   PongTime = 'time:pong',
   RespawnMob = 'mob:respawn',
+  BagAdd = 'bag:add',
 }
 
 export enum ClientToServerEvents {
@@ -35,4 +36,5 @@ export enum ClientToServerEvents {
   PlayerSendLocationMessage = 'player:chat:location:send',
   PlayerSendDirectMessage = 'player:chat:direct:send',
   PingTime = 'time:ping',
+  BagAdd = 'bag:add',
 }

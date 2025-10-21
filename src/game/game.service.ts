@@ -23,6 +23,8 @@ import { DirectMessageInput } from './services/chat/dto/direct-message.input';
 import { BaseLogger } from 'src/common/infra/logger.infra';
 import { GameInitialDataService } from './services/game-core/game-initial-data/game-initial-data.service';
 import { PongReturnData } from './types/pong-return-data.type';
+import { RuntimeBagService } from './services/player-state/services/runtime-bag/runtime-bag.service';
+import { Item } from 'src/item/entities/item.entity';
 
 @Injectable()
 export class GameService extends BaseLogger {
@@ -39,6 +41,7 @@ export class GameService extends BaseLogger {
     private readonly interactionService: InteractionService,
     private readonly chatService: ChatService,
     private readonly gameInitialDataService: GameInitialDataService,
+    private readonly runtimeBagService: RuntimeBagService,
   ) {
     super();
   }
@@ -279,5 +282,21 @@ export class GameService extends BaseLogger {
         serverTime: Date.now(),
       },
     );
+  }
+
+  public handleAddToBag(client: Socket, input: Item) {
+    if (!this.socketService.verifyUserDataInSocket(client)) {
+      this.socketService.notifyDisconnection(client);
+      this.socketService.onDisconnect(client);
+      return;
+    }
+
+    const character = this.playerStateService.getCharacterState(
+      client.userData.characterId,
+    );
+
+    if (!character) return;
+
+    this.runtimeBagService.add(character.bag, input);
   }
 }

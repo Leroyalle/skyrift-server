@@ -5,7 +5,6 @@ import { RedisKeysFactory } from 'src/common/infra/redis-keys-factory.infra';
 import { RedisService } from 'src/redis/redis.service';
 import { CachedLocation } from 'src/location/types/cashed-location.type';
 import { Teleport } from 'src/location/types/teleport.type';
-import { Socket } from 'socket.io';
 import { Character } from 'src/character/entities/character.entity';
 import { buildRuntimeCharacter } from './lib/build-runtime-character.lib';
 
@@ -96,117 +95,13 @@ export class PlayerStateService {
     return Array.from(this.playersStates.values());
   }
 
-  // public autoAttack(
-  //   attackerId: string,
-  //   victimId: string,
-  //   now: number,
-  // ): ApplyAutoAttackResult | undefined {
-  //   const attacker = this.playersStates.get(attackerId);
-  //   const victim = this.playersStates.get(victimId);
-
-  //   if (!attacker || !victim || attacker.locationId !== victim.locationId)
-  //     return;
-
-  //   // TODO: calculate received damage with defense and other stats
-  //   const receivedDamage = attacker.basePhysicalDamage;
-  //   console.log('receivedDamage', receivedDamage);
-  //   const remainingHp = Math.max(victim.hp - receivedDamage, 0);
-  //   const isAlive = remainingHp !== 0;
-
-  //   victim.hp = remainingHp;
-  //   victim.isAlive = isAlive;
-
-  //   attacker.lastAttackAt = now;
-
-  //   return {
-  //     targets: [
-  //       { characterId: victim.id, hp: remainingHp, isAlive, receivedDamage },
-  //     ],
-  //     type: ActionType.AutoAttack,
-  //     skillId: null,
-  //     victimIsAlive: victim.isAlive,
-  //   };
-  // }
-
-  // public applySkill(
-  //   attackerId: string,
-  //   victimId: string,
-  //   skillId: string,
-  //   now: number,
-  // ): ApplySkillResult | undefined {
-  //   const attacker = this.playersStates.get(attackerId);
-  //   const victim = this.playersStates.get(victimId);
-
-  //   if (!attacker || !victim || attacker.locationId !== victim.locationId)
-  //     return;
-
-  //   const characterSkill = attacker.characterSkills.find(
-  //     (skill) => skill.id === skillId,
-  //   );
-
-  //   if (!characterSkill) return;
-
-  //   // TODO: return message with time for cooldown
-  //   if ((characterSkill.cooldownEnd ?? 0) > now) return;
-
-  //   const receivedDamage = characterSkill.skill.damage;
-  //   const remainingHp = Math.max(victim.hp - receivedDamage, 0);
-  //   victim.hp = remainingHp;
-  //   victim.isAlive = remainingHp > 0;
-
-  //   characterSkill.lastUsedAt = now;
-  //   characterSkill.cooldownEnd = now + characterSkill.skill.cooldownMs;
-
-  //   attacker.lastAttackAt = now;
-
-  //   return {
-  //     attackResult: {
-  //       targets: [
-  //         {
-  //           characterId: victim.id,
-  //           hp: remainingHp,
-  //           isAlive: remainingHp > 0,
-  //           receivedDamage,
-  //         },
-  //       ],
-  //       type: ActionType.Skill,
-  //       skillId: characterSkill.id,
-  //     },
-  //     cooldown: {
-  //       cooldownEnd: characterSkill.cooldownEnd,
-  //       skillId: characterSkill.id,
-  //     },
-  //   };
-  // }
-
-  // FIXME: чек почему оборвалось
-  // applyAoESkill(attackerId: string, skillId: string, area: PositionDto) {
-  //   const attacker = this.getCharacterState(attackerId);
-  //   if (!attacker) return;
-
-  //   const characterSkill = attacker.characterSkills.find(
-  //     (skill) => skill.id === skillId,
-  //   );
-
-  //   if (!characterSkill) return;
-
-  //   if (characterSkill.skill.type !== SkillType.AoE) return;
-  // }
-
   public changeUserLocation(
     playerState: IRuntimeCharacter,
     targetLocation: CachedLocation,
     teleport: Teleport,
-    // client: Socket,
   ) {
     playerState.locationId = targetLocation.id;
     playerState.x = teleport.targetX;
     playerState.y = teleport.targetY;
-
-    // client.userData = {
-    //   ...client.userData,
-    //   position: { x: playerState.x, y: playerState.y },
-    //   locationId: playerState.locationId,
-    // };
   }
 }
