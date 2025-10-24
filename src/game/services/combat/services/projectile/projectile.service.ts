@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { IProjectile } from './types/projectile.type';
 import { EntityKey } from 'src/game/types/entity/keys/entity-key.type';
 import { isAttackInProgress } from '../../lib/helpers/is-attack-in-progress.lib';
@@ -27,6 +27,7 @@ export class ProjectileService {
     private readonly runtimeEntityService: RuntimeEntityService,
     private readonly socketService: SocketService,
     private readonly actionQueueService: ActionQueueService,
+    @Inject(forwardRef(() => RuntimeMobService))
     private readonly runtimeMobService: RuntimeMobService,
   ) {}
 
