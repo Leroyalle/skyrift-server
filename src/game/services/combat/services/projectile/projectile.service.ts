@@ -146,7 +146,7 @@ export class ProjectileService {
         const receivedDamage = skill.skill.damage;
         const remainingHp = this.updateHp(victim, -receivedDamage);
         if (isMob(victim)) {
-          victim.aggro.updateThreatMap(victim, receivedDamage);
+          victim.aggro.updateThreatMap(attacker, receivedDamage);
         }
         if (remainingHp <= 0) {
           this.actionQueueService.clearPendingActions(attackerRef, []);
