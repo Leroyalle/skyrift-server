@@ -16,6 +16,8 @@ import { CharacterSkill } from 'src/character/character-skill/entities/character
 import { PositionDto } from 'src/common/dto/position.dto';
 import { v4 as uuidv4 } from 'uuid';
 import { RuntimeEntityService } from 'src/game/services/runtime-entity/runtime-entity.service';
+import { getOrCreateArray } from 'src/game/lib/helpers/get-or-create-array.lib';
+import { isMob } from '../../lib/entity/guards/is-mob.lib';
 
 @Injectable()
 export class AoeService {
@@ -64,15 +66,18 @@ export class AoeService {
         zone.radius,
       );
 
-      let batchLocation = updatesByLocation.get(zone.locationId);
-      if (!batchLocation) {
-        batchLocation = [];
-        updatesByLocation.set(zone.locationId, batchLocation);
-      }
+      // let batchLocation = updatesByLocation.get(zone.locationId);
+      // if (!batchLocation) {
+      //   batchLocation = [];
+      //   updatesByLocation.set(zone.locationId, batchLocation);
+      // }
+      const batchLocation = getOrCreateArray(
+        updatesByLocation,
+        zone.locationId,
+      );
 
       const targets: Target[] = [];
       entities.forEach(({ id, type }) => {
-        // const victim = this.playerStateService.getCharacterState(id);
         const victim = this.runtimeEntityService.getEntityByType(type, id);
         if (!victim || !cSkill.skill.damagePerSecond || !victim.isAlive) return;
         if (attacker.id === victim.id) return;
@@ -80,6 +85,9 @@ export class AoeService {
         const remainingHp = Math.max(victim.hp - receivedDamage, 0);
         victim.hp = remainingHp;
         victim.isAlive = remainingHp > 0;
+        if (isMob(victim)) {
+          victim.aggro.updateThreatMap(attacker, receivedDamage);
+        }
         zone.lastUsedAt = now;
         targets.push({
           id: victim.id,

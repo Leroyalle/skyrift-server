@@ -39,7 +39,7 @@ export class GameLoopService implements OnModuleInit, OnModuleDestroy {
     aoe: 200,
     regeneration: 1000,
     interaction: 300,
-    aiMobs: 300,
+    aiMobs: 200,
     effects: 200,
     projectiles: 100,
   };
