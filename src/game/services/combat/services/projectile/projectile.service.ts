@@ -144,17 +144,7 @@ export class ProjectileService {
     switch (skill?.skill.type) {
       case SkillType.Target: {
         const receivedDamage = skill.skill.damage;
-        // const remainingHp = this.updateHp(victim, -receivedDamage);
-        // if (isMob(victim)) {
-        //   victim.aggro.updateThreatMap(attacker, receivedDamage);
-        // }
-        // if (remainingHp <= 0) {
-        //   this.actionQueueService.clearPendingActions(attackerRef, []);
-        //   if (isMob(victim)) {
-        //     this.runtimeMobService.setRespawn(victim.id);
-        //   }
-        // }
-        const { remainingHp } = this.actionHandler(
+        const { remainingHp } = this.applyProjectile(
           attacker,
           victim,
           -receivedDamage,
@@ -176,17 +166,7 @@ export class ProjectileService {
       }
       default: {
         const receivedDamage = attacker.basePhysicalDamage;
-        // const remainingHp = this.updateHp(victim, -receivedDamage);
-        // if (isMob(victim)) {
-        //   victim.aggro.updateThreatMap(attacker, receivedDamage);
-        // }
-        // if (remainingHp <= 0) {
-        //   this.actionQueueService.clearPendingActions(attackerRef, []);
-        //   if (isMob(victim)) {
-        //     this.runtimeMobService.setRespawn(victim.id);
-        //   }
-        // }
-        const { remainingHp } = this.actionHandler(
+        const { remainingHp } = this.applyProjectile(
           attacker,
           victim,
           -receivedDamage,
@@ -209,7 +189,7 @@ export class ProjectileService {
     }
   }
 
-  private actionHandler(
+  private applyProjectile(
     attacker: TRuntimeEntity,
     victim: TRuntimeEntity,
     hpValue: number,
@@ -224,7 +204,6 @@ export class ProjectileService {
         this.runtimeMobService.setRespawn(victim.id);
       }
     }
-
     return { remainingHp };
   }
 
