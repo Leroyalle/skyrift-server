@@ -28,6 +28,7 @@ import { RuntimeEffectService } from './services/runtime-effect/runtime-effect.s
 import { ProjectileService } from './services/combat/services/projectile/projectile.service';
 import { MovementQueueService } from './services/movement/services/movement-queue/movement-queue.service';
 import { BagModule } from 'src/character/bag/bag.module';
+import { RuntimeBagService } from './services/player-state/services/runtime-bag/runtime-bag.service';
 
 @Module({
   imports: [
@@ -62,6 +63,7 @@ import { BagModule } from 'src/character/bag/bag.module';
     GameLoopService,
     ProjectileService,
     MovementQueueService,
+    RuntimeBagService,
   ],
 })
 export class GameModule {}

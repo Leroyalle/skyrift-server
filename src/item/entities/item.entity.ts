@@ -42,4 +42,8 @@ export class Item {
   @ManyToOne(() => Bag, (bag) => bag.items)
   @Field(() => Bag)
   bag: Bag;
+
+  @Column()
+  @Field()
+  iconKey: string;
 }

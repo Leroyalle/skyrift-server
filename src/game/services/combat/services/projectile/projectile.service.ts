@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { IProjectile } from './types/projectile.type';
 import { EntityKey } from 'src/game/types/entity/keys/entity-key.type';
 import { isAttackInProgress } from '../../lib/helpers/is-attack-in-progress.lib';
@@ -27,6 +27,7 @@ export class ProjectileService {
     private readonly runtimeEntityService: RuntimeEntityService,
     private readonly socketService: SocketService,
     private readonly actionQueueService: ActionQueueService,
+    @Inject(forwardRef(() => RuntimeMobService))
     private readonly runtimeMobService: RuntimeMobService,
   ) {}
 
@@ -143,16 +144,21 @@ export class ProjectileService {
     switch (skill?.skill.type) {
       case SkillType.Target: {
         const receivedDamage = skill.skill.damage;
-        const remainingHp = this.updateHp(victim, -receivedDamage);
-        if (isMob(victim)) {
-          victim.aggro.updateThreatMap(victim, receivedDamage);
-        }
-        if (remainingHp <= 0) {
-          this.actionQueueService.clearPendingActions(attackerRef, []);
-          if (isMob(victim)) {
-            this.runtimeMobService.setRespawn(victim.id);
-          }
-        }
+        // const remainingHp = this.updateHp(victim, -receivedDamage);
+        // if (isMob(victim)) {
+        //   victim.aggro.updateThreatMap(attacker, receivedDamage);
+        // }
+        // if (remainingHp <= 0) {
+        //   this.actionQueueService.clearPendingActions(attackerRef, []);
+        //   if (isMob(victim)) {
+        //     this.runtimeMobService.setRespawn(victim.id);
+        //   }
+        // }
+        const { remainingHp } = this.actionHandler(
+          attacker,
+          victim,
+          -receivedDamage,
+        );
         this.applyMiniRoot(victim, 200, now);
         return {
           type: ActionType.Skill,
@@ -170,11 +176,21 @@ export class ProjectileService {
       }
       default: {
         const receivedDamage = attacker.basePhysicalDamage;
-        const remainingHp = this.updateHp(victim, -receivedDamage);
-        if (isMob(victim)) victim.aggro.updateThreatMap(victim, receivedDamage);
-        if (remainingHp <= 0) {
-          this.actionQueueService.clearPendingActions(attackerRef, []);
-        }
+        // const remainingHp = this.updateHp(victim, -receivedDamage);
+        // if (isMob(victim)) {
+        //   victim.aggro.updateThreatMap(attacker, receivedDamage);
+        // }
+        // if (remainingHp <= 0) {
+        //   this.actionQueueService.clearPendingActions(attackerRef, []);
+        //   if (isMob(victim)) {
+        //     this.runtimeMobService.setRespawn(victim.id);
+        //   }
+        // }
+        const { remainingHp } = this.actionHandler(
+          attacker,
+          victim,
+          -receivedDamage,
+        );
         this.applyMiniRoot(victim, 200, now);
         return {
           type: ActionType.AutoAttack,
@@ -191,6 +207,25 @@ export class ProjectileService {
         };
       }
     }
+  }
+
+  private actionHandler(
+    attacker: TRuntimeEntity,
+    victim: TRuntimeEntity,
+    hpValue: number,
+  ) {
+    const remainingHp = this.updateHp(victim, hpValue);
+    if (isMob(victim)) {
+      victim.aggro.updateThreatMap(attacker, Math.abs(hpValue));
+    }
+    if (remainingHp <= 0) {
+      this.actionQueueService.clearPendingActions(attacker, []);
+      if (isMob(victim)) {
+        this.runtimeMobService.setRespawn(victim.id);
+      }
+    }
+
+    return { remainingHp };
   }
 
   private updateHp(victim: TRuntimeEntity, delta: number): number {

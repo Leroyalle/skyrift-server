@@ -141,6 +141,12 @@ type CharacterClass {
   skills: [Skill!]!
 }
 
+type Bag {
+  id: ID!
+  items: [Item!]!
+  character: Character!
+}
+
 type Item {
   id: ID!
 
@@ -161,6 +167,8 @@ type Item {
 
   """Владелец предмета"""
   owner: Character!
+  bag: Bag!
+  iconKey: String!
 }
 
 """Типы предметов"""
@@ -393,6 +401,7 @@ type Character {
 
   """Навыки персонаж"""
   characterSkills: [CharacterSkill!]!
+  bag: Bag!
 }
 
 type User {
@@ -447,9 +456,10 @@ type Query {
   findUserCharacters: [Character!]!
   character(id: Int!): Character!
   characterSkill(id: Int!): CharacterSkill!
+  bag(id: Int!): Bag!
+  item(id: Int!): Item!
   characterClass(id: Int!): CharacterClass!
   skill(id: Int!): Skill!
-  item(id: Int!): Item!
   location: [Location!]!
   findLocationById(id: ID!): Location!
 }
@@ -469,15 +479,15 @@ type Mutation {
   createCharacterSkill(createCharacterSkillInput: CreateCharacterSkillInput!): CharacterSkill!
   updateCharacterSkill(updateCharacterSkillInput: UpdateCharacterSkillInput!): CharacterSkill!
   removeCharacterSkill(id: Int!): CharacterSkill!
+  createItem(createItemInput: CreateItemInput!): Item!
+  updateItem(updateItemInput: UpdateItemInput!): Item!
+  removeItem(id: Int!): Item!
   createCharacterClass(createCharacterClassInput: CreateCharacterClassInput!): CharacterClass!
   updateCharacterClass(updateCharacterClassInput: UpdateCharacterClassInput!): CharacterClass!
   removeCharacterClass(id: Int!): CharacterClass!
   createSkill(createSkillInput: CreateSkillInput!): Skill!
   updateSkill(updateSkillInput: UpdateSkillInput!): Skill!
   removeSkill(id: Int!): Skill!
-  createItem(createItemInput: CreateItemInput!): Item!
-  updateItem(updateItemInput: UpdateItemInput!): Item!
-  removeItem(id: Int!): Item!
 }
 
 input CreateUserInput {
@@ -544,6 +554,17 @@ input UpdateCharacterSkillInput {
   id: Int!
 }
 
+input CreateItemInput {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+input UpdateItemInput {
+  """Example field (placeholder)"""
+  exampleField: Int
+  id: Int!
+}
+
 input CreateCharacterClassInput {
   """Example field (placeholder)"""
   exampleField: Int!
@@ -561,17 +582,6 @@ input CreateSkillInput {
 }
 
 input UpdateSkillInput {
-  """Example field (placeholder)"""
-  exampleField: Int
-  id: Int!
-}
-
-input CreateItemInput {
-  """Example field (placeholder)"""
-  exampleField: Int!
-}
-
-input UpdateItemInput {
   """Example field (placeholder)"""
   exampleField: Int
   id: Int!
