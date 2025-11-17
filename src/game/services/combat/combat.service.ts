@@ -155,7 +155,7 @@ export class CombatService {
     for (const [locationId, update] of updatesByLocation.entries()) {
       this.socketService.sendTo(
         RedisKeys.Location + locationId,
-        ServerToClientEvents.PlayerStateUpdate,
+        ServerToClientEvents.EntityStateUpdate,
         update,
       );
     }

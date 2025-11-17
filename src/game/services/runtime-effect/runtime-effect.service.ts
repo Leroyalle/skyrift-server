@@ -72,7 +72,7 @@ export class RuntimeEffectService extends BaseLogger {
     for (const [locationId, update] of batchUpdateEffects.entries()) {
       this.socketService.sendTo(
         RedisKeysFactory.locationPrefix + locationId,
-        ServerToClientEvents.PlayerStateUpdate,
+        ServerToClientEvents.EntityStateUpdate,
         update,
       );
     }
