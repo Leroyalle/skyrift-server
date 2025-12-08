@@ -9,7 +9,7 @@ export enum ServerToClientEvents {
   PlayerSkillCooldownUpdate = 'player:skill-cooldown-update',
   PlayerJoined = 'player:joined',
   PlayerLeft = 'player:left',
-  PlayerUseTeleport = 'player:use-teleport',
+  // PlayerUseTeleport = 'player:use-teleport',
   GameInitialState = 'game:initial-state',
   MovementBatch = 'movement-batch',
   AoESpawn = 'aoe:spawn',
