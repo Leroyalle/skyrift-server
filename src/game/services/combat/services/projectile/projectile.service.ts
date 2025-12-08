@@ -80,7 +80,7 @@ export class ProjectileService {
     for (const [locationId, batch] of updatesByLocation) {
       this.socketService.sendTo(
         RedisKeys.Location + locationId,
-        ServerToClientEvents.PlayerStateUpdate,
+        ServerToClientEvents.EntityStateUpdate,
         batch,
       );
     }

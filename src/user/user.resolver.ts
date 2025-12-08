@@ -12,23 +12,23 @@ export class UserResolver {
   constructor(private readonly userService: UserService) {}
 
   @Mutation(() => User)
-  createUser(@Args('createUserInput') createUserInput: CreateUserInput) {
+  public createUser(@Args('createUserInput') createUserInput: CreateUserInput) {
     return this.userService.create(createUserInput);
   }
 
   @Query(() => [User], { name: 'findAllUsers' })
-  findAll() {
+  public findAll() {
     return this.userService.findAll();
   }
 
   @Query(() => User, { name: 'findOneUser' })
-  findOne(@Args('id', { type: () => ID }) id: string) {
+  public findOne(@Args('id', { type: () => ID }) id: string) {
     return this.userService.findOne(id);
   }
 
   @UseGuards(AccessTokenGuard)
   @Query(() => User, { name: 'getCurrentUser' })
-  getCurrentUser(@CurrentUser() user: PayloadUser) {
+  public getCurrentUser(@CurrentUser() user: PayloadUser) {
     return this.userService.findOne(user.sub);
   }
 }

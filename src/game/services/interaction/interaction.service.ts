@@ -289,7 +289,7 @@ export class InteractionService {
 
     this.socketService.sendToUser(
       playerState.userId,
-      ServerToClientEvents.PlayerUseTeleport,
+      ServerToClientEvents.PlayerChangeLocation,
       gameInitialData,
     );
 
