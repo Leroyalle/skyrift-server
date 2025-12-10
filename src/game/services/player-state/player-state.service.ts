@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CharacterService } from 'src/character/character.service';
 import { IRuntimeCharacter } from 'src/character/types/runtime-character';
 import { RedisKeysFactory } from 'src/common/infra/redis-keys-factory.infra';
-import { RedisService } from 'src/redis/redis.service';
+import { RedisService } from 'src/infrastructure/redis/redis.service';
 import { CachedLocation } from 'src/location/types/cashed-location.type';
 import { Teleport } from 'src/location/types/teleport.type';
 import { Character } from 'src/character/entities/character.entity';

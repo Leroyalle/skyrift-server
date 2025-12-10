@@ -1,6 +1,6 @@
 import { ObjectType, Field, ID } from '@nestjs/graphql';
 import { Character } from 'src/character/entities/character.entity';
-import { Item } from 'src/item/entities/item.entity';
+import { BaseItem } from 'src/item/entities/item.entity';
 import { Entity, OneToMany, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 @ObjectType()
@@ -10,9 +10,9 @@ export class Bag {
   @Field(() => ID)
   id: string;
 
-  @OneToMany(() => Item, (item) => item.bag)
-  @Field(() => [Item])
-  items: Item[];
+  @OneToMany(() => BaseItem, (item) => item.bag)
+  @Field(() => [BaseItem])
+  items: BaseItem[];
 
   @OneToOne(() => Character, (character) => character.bag)
   @Field(() => Character)

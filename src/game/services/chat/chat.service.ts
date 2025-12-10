@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { RedisKeysFactory } from 'src/common/infra/redis-keys-factory.infra';
-import { RedisService } from 'src/redis/redis.service';
+import { RedisService } from 'src/infrastructure/redis/redis.service';
 import { SocketService } from '../socket/socket.service';
 import { ServerToClientEvents } from 'src/common/enums/game-socket-events.enum';
 import { PlayerStateService } from '../player-state/player-state.service';

@@ -1,4 +1,4 @@
-import '../common/types/socket';
+import '../common/types/socket/socket';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from '../app.module';
 import { SeedService } from './seed.service';

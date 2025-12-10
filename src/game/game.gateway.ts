@@ -16,7 +16,14 @@ import { RequestSkillUseDto } from './dto/request-use-skill.dto';
 import { SocketService } from './services/socket/socket.service';
 import { RequestUseTeleportDto } from './dto/request-use-teleport.dto';
 import { DirectMessageInput } from './services/chat/dto/direct-message.input';
-import { Item } from 'src/item/entities/item.entity';
+import { TItem } from 'src/common/types/item.type';
+import { RuntimeEquipmentService } from './services/player-state/services/runtime-equipment/runtime-equipment.service';
+import { UseGuards } from '@nestjs/common';
+import { WsAuthGuard } from 'src/common/guards/ws-guard.guard';
+import { AuthSocket } from 'src/common/decorators/auth-socket.decorator';
+import { AuthenticatedSocket } from 'src/common/types/socket/auth-socket.type';
+import { RequestEquipDto } from './dto/equipment/request-equip.dto';
+import { RequestUnEquipDto } from './dto/equipment/request-un-equip.dto';
 
 @WebSocketGateway({
   namespace: 'game',
@@ -114,8 +121,26 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     return this.gameService.sendPong(client, clientTime);
   }
 
-  @SubscribeMessage(ClientToServerEvents.BagAdd)
-  public addToBag(client: Socket, input: Item) {
+  @SubscribeMessage(ClientToServerEvents.RequestBagAdd)
+  public addToBag(client: Socket, input: TItem) {
     return this.gameService.handleAddToBag(client, input);
+  }
+
+  @SubscribeMessage(ClientToServerEvents.RequestEquipItem)
+  @UseGuards(WsAuthGuard)
+  public requestEquipItem(
+    @AuthSocket() client: AuthenticatedSocket,
+    input: RequestEquipDto,
+  ) {
+    return this.gameService.handleEquip(client, input);
+  }
+
+  @SubscribeMessage(ClientToServerEvents.RequestUnEquipItem)
+  @UseGuards(WsAuthGuard)
+  public requestUnEquipItem(
+    @AuthSocket() client: AuthenticatedSocket,
+    input: RequestUnEquipDto,
+  ) {
+    return this.gameService.handleUnEquip(client, input);
   }
 }

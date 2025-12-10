@@ -4,7 +4,7 @@ import { AuthService } from 'src/auth/auth.service';
 import { UserService } from 'src/user/user.service';
 import { CharacterService } from 'src/character/character.service';
 import { ServerToClientEvents } from 'src/common/enums/game-socket-events.enum';
-import { RedisService } from 'src/redis/redis.service';
+import { RedisService } from 'src/infrastructure/redis/redis.service';
 import { RedisKeys } from 'src/common/enums/redis-keys.enum';
 import { RequestMoveToDto } from './dto/request-move-to.dto';
 import { PlayerStateService } from './services/player-state/player-state.service';
@@ -23,8 +23,12 @@ import { DirectMessageInput } from './services/chat/dto/direct-message.input';
 import { BaseLogger } from 'src/common/infra/logger.infra';
 import { GameInitialDataService } from './services/game-core/game-initial-data/game-initial-data.service';
 import { PongReturnData } from './types/pong-return-data.type';
-import { RuntimeBagService } from './services/player-state/services/runtime-bag/runtime-bag.service';
-import { Item } from 'src/item/entities/item.entity';
+import { InventoryService } from './services/player-state/services/inventory/inventory.service';
+import { TItem } from 'src/common/types/item.type';
+import { RequestEquipDto } from './dto/equipment/request-equip.dto';
+import { RuntimeEquipmentService } from './services/player-state/services/runtime-equipment/runtime-equipment.service';
+import { AuthenticatedSocket } from 'src/common/types/socket/auth-socket.type';
+import { RequestUnEquipDto } from './dto/equipment/request-un-equip.dto';
 
 @Injectable()
 export class GameService extends BaseLogger {
@@ -41,7 +45,8 @@ export class GameService extends BaseLogger {
     private readonly interactionService: InteractionService,
     private readonly chatService: ChatService,
     private readonly gameInitialDataService: GameInitialDataService,
-    private readonly runtimeBagService: RuntimeBagService,
+    private readonly inventoryService: InventoryService,
+    private readonly equipmentService: RuntimeEquipmentService,
   ) {
     super();
   }
@@ -284,7 +289,7 @@ export class GameService extends BaseLogger {
     );
   }
 
-  public handleAddToBag(client: Socket, input: Item) {
+  public handleAddToBag(client: Socket, input: TItem) {
     if (!this.socketService.verifyUserDataInSocket(client)) {
       this.socketService.notifyDisconnection(client);
       this.socketService.onDisconnect(client);
@@ -297,12 +302,69 @@ export class GameService extends BaseLogger {
 
     if (!character) return;
 
-    this.runtimeBagService.add(character.bag, input);
+    this.inventoryService.add(character.bag, input);
 
     this.socketService.sendToUser(
       client.userData.userId,
-      ServerToClientEvents.BagAdd,
+      ServerToClientEvents.BagItemAdded,
       input,
+    );
+  }
+
+  public handleEquip(client: AuthenticatedSocket, input: RequestEquipDto) {
+    const character = this.playerStateService.getCharacterState(
+      client.userData.characterId,
+    );
+    if (!character) return;
+
+    const result = this.equipmentService.equip(
+      character.id,
+      input.item,
+      input.slot,
+    );
+
+    if (!result.success) {
+      this.socketService.sendToUser(
+        character.userId,
+        ServerToClientEvents.GameNotification,
+        {
+          type: 'error',
+          message: result.error || 'Не удалось экипировать предмет',
+        },
+      );
+      return;
+    }
+    this.socketService.sendToUser(
+      RedisKeys.Location + character.locationId,
+      ServerToClientEvents.EquipmentEquipped,
+      { characterId: character.id, item: input.item, slot: input.slot },
+    );
+  }
+
+  public handleUnEquip(client: AuthenticatedSocket, input: RequestUnEquipDto) {
+    const character = this.playerStateService.getCharacterState(
+      client.userData.characterId,
+    );
+    if (!character) return;
+
+    const result = this.equipmentService.unEquip(character.id, input.slot);
+
+    if (!result.success) {
+      this.socketService.sendToUser(
+        character.userId,
+        ServerToClientEvents.GameNotification,
+        {
+          type: 'error',
+          message: result.error || 'Не удалось снять предмет',
+        },
+      );
+      return;
+    }
+
+    this.socketService.sendToUser(
+      RedisKeys.Location + character.locationId,
+      ServerToClientEvents.EquipmentUnequipped,
+      { characterId: character.id, slot: input.slot },
     );
   }
 }

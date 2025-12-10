@@ -1,49 +1,75 @@
-import { Field, ID, ObjectType } from '@nestjs/graphql';
+import { Field, ID, Int, ObjectType } from '@nestjs/graphql';
 import { Bag } from 'src/character/bag/entities/bag.entity';
 import { Character } from 'src/character/entities/character.entity';
+import { ArmorSlotEnum } from 'src/common/enums/equipment-slot.enum';
 import { ItemTypeEnum } from 'src/common/enums/item-type.enum';
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  ChildEntity,
+  Column,
+  Entity,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  TableInheritance,
+} from 'typeorm';
 
-@ObjectType()
 @Entity()
-export class Item {
-  @PrimaryGeneratedColumn()
+@TableInheritance({ column: { type: 'varchar', name: 'itemType' } })
+export abstract class BaseItem {
   @Field(() => ID)
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
+  @Field()
   @Column()
-  @Field({ description: 'Название предмета' })
   name: string;
 
-  @Column('text')
-  @Field({ description: 'Описание предмета' })
-  description: string;
-
+  @Field()
   @Column()
-  @Field(() => ItemTypeEnum, { description: 'Тип предмета' })
-  type: ItemTypeEnum;
+  iconKey: string;
 
-  @Column({ type: 'int', default: 0 })
-  @Field({ description: 'Сила предмета' })
-  power: number;
+  @ManyToOne(() => Bag, (bag) => bag.items, { nullable: true })
+  @Field(() => Bag, { nullable: true })
+  bag: Bag | null;
+
+  @ManyToOne(() => Character, (character) => character.items)
+  @Field(() => Character, { description: 'Владелец предмета' })
+  owner: Character;
+}
+
+@ObjectType()
+@ChildEntity(ItemTypeEnum.WEAPON)
+export class Weapon extends BaseItem {
+  @Column({ nullable: true })
+  @Field(() => Int)
+  physicalDamage: number;
+
+  @Column({ nullable: true })
+  @Field(() => Int)
+  magicDamage: number;
+
+  @Column({ type: 'int', default: 1 })
+  @Field({ description: 'Прочность предмета' })
+  durability: number;
+}
+
+@ChildEntity(ItemTypeEnum.ARMOR)
+export class Armor extends BaseItem {
+  @Column({ nullable: true })
+  @Field(() => Int)
+  defense: number;
 
   @Column({ type: 'int', default: 1 })
   @Field({ description: 'Прочность предмета' })
   durability: number;
 
-  @ManyToOne(() => Character, (character) => character.items)
-  @Field(() => Character, { description: 'Владелец предмета' })
-  owner: Character;
+  @Column({ nullable: true })
+  @Field(() => ArmorSlotEnum)
+  slot: ArmorSlotEnum;
+}
 
-  // @ManyToOne(() => Monster, (monster) => monster.droppedItems, { nullable: true })
-  // @Field(() => Monster, { nullable: true })
-  // droppedBy: Monster;
-
-  @ManyToOne(() => Bag, (bag) => bag.items)
-  @Field(() => Bag)
-  bag: Bag;
-
+@ChildEntity(ItemTypeEnum.RESOURCE)
+export class Resource extends BaseItem {
   @Column()
-  @Field()
-  iconKey: string;
+  @Field({ description: 'Описание предмета' })
+  description: string;
 }
