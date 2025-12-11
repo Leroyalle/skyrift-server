@@ -30,6 +30,7 @@ import { MovementQueueService } from './services/movement/services/movement-queu
 import { BagModule } from 'src/character/bag/bag.module';
 import { InventoryService } from './services/player-state/services/inventory/inventory.service';
 import { WsAuthGuard } from 'src/common/guards/ws-guard.guard';
+import { RuntimeEquipmentService } from './services/player-state/services/runtime-equipment/runtime-equipment.service';
 
 @Module({
   imports: [
@@ -66,6 +67,7 @@ import { WsAuthGuard } from 'src/common/guards/ws-guard.guard';
     ProjectileService,
     MovementQueueService,
     InventoryService,
+    RuntimeEquipmentService,
   ],
 })
 export class GameModule {}

@@ -90,21 +90,16 @@ export class ChatService {
       this.socketService.onDisconnect(client);
       return;
     }
-    console.log('Direct input', input);
     const sender = this.playerStateService.getCharacterState(
       client.userData.characterId,
     );
-    console.log('Sender', sender);
     const recipientId = await this.redisService.get<string>(
       RedisKeysFactory.playerNameToId(input.recipientName),
     );
 
-    console.log('RecipientId', recipientId);
     if (!recipientId) return;
 
     const recipient = this.playerStateService.getCharacterState(recipientId);
-
-    console.log('Recipient', recipient);
 
     if (!sender || !recipient) return;
 
@@ -138,7 +133,5 @@ export class ChatService {
       ServerToClientEvents.ChatDirect,
       directMessageData,
     );
-
-    console.log('after send');
   }
 }

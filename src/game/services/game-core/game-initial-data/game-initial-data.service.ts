@@ -22,6 +22,7 @@ export class GameInitialDataService {
     characterId: string,
     locationId: string,
   ): Promise<GameInitialData | undefined> {
+    console.log('INITIAL');
     const character = this.playerStateService.getCharacterState(characterId);
 
     if (!character) return;

@@ -2,6 +2,26 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+interface BaseItem {
+  id: ID!
+  name: String!
+  itemType: ItemTypeEnum!
+  iconKey: String!
+  bag: Bag
+
+  """Владелец предмета"""
+  owner: Character!
+}
+
+"""Типы предметов"""
+enum ItemTypeEnum {
+  WEAPON
+  ARMOR
+  POTION
+  RESOURCE
+  MISC
+}
+
 type Faction {
   """ID фракции"""
   id: ID!
@@ -143,41 +163,70 @@ type CharacterClass {
 
 type Bag {
   id: ID!
-  items: [Item!]!
+  items: [BaseItem!]!
   character: Character!
 }
 
-type Item {
+type Weapon implements BaseItem {
   id: ID!
-
-  """Название предмета"""
   name: String!
-
-  """Описание предмета"""
-  description: String!
-
-  """Тип предмета"""
-  type: ItemTypeEnum!
-
-  """Сила предмета"""
-  power: Float!
-
-  """Прочность предмета"""
-  durability: Float!
+  itemType: ItemTypeEnum!
+  iconKey: String!
+  bag: Bag
 
   """Владелец предмета"""
   owner: Character!
-  bag: Bag!
-  iconKey: String!
+  physicalDamage: Int!
+  magicDamage: Int!
+
+  """Прочность предмета"""
+  durability: Float!
+  slot: WeaponSlotEnum!
 }
 
-"""Типы предметов"""
-enum ItemTypeEnum {
-  WEAPON
-  ARMOR
-  POTION
-  RESOURCE
-  MISC
+"""Слоты оружия"""
+enum WeaponSlotEnum {
+  MAIN_HAND
+  OFF_HAND
+}
+
+type Armor implements BaseItem {
+  id: ID!
+  name: String!
+  itemType: ItemTypeEnum!
+  iconKey: String!
+  bag: Bag
+
+  """Владелец предмета"""
+  owner: Character!
+  defense: Int!
+
+  """Прочность предмета"""
+  durability: Float!
+  slot: ArmorSlotEnum!
+}
+
+"""Слоты брони"""
+enum ArmorSlotEnum {
+  HEAD
+  BODY
+  GLOVES
+  LEGS
+  CLOAK
+}
+
+type Resource implements BaseItem {
+  id: ID!
+  name: String!
+  itemType: ItemTypeEnum!
+  iconKey: String!
+  bag: Bag
+
+  """Владелец предмета"""
+  owner: Character!
+
+  """Описание предмета"""
+  description: String!
 }
 
 type Property {
@@ -328,6 +377,20 @@ type Location {
   mobSpawn: [MobSpawn!]!
 }
 
+type Equipment {
+  id: ID!
+  character: Character!
+  head: BaseItem!
+  body: BaseItem!
+  gloves: BaseItem!
+  legs: BaseItem!
+  mainHand: BaseItem!
+  offHand: BaseItem!
+  ring1: BaseItem!
+  ring2: BaseItem!
+  cloak: BaseItem!
+}
+
 type Character {
   id: ID!
 
@@ -391,7 +454,7 @@ type Character {
   characterClass: CharacterClass!
 
   """Инвентарь персонажа"""
-  items: [Item!]!
+  items: [BaseItem!]!
 
   """Локация персонажа"""
   location: Location
@@ -402,6 +465,7 @@ type Character {
   """Навыки персонаж"""
   characterSkills: [CharacterSkill!]!
   bag: Bag!
+  equipment: Equipment!
 }
 
 type User {
@@ -457,7 +521,7 @@ type Query {
   character(id: Int!): Character!
   characterSkill(id: Int!): CharacterSkill!
   bag(id: Int!): Bag!
-  item(id: Int!): Item!
+  allItems: [BaseItem!]!
   characterClass(id: Int!): CharacterClass!
   skill(id: Int!): Skill!
   location: [Location!]!
@@ -479,9 +543,6 @@ type Mutation {
   createCharacterSkill(createCharacterSkillInput: CreateCharacterSkillInput!): CharacterSkill!
   updateCharacterSkill(updateCharacterSkillInput: UpdateCharacterSkillInput!): CharacterSkill!
   removeCharacterSkill(id: Int!): CharacterSkill!
-  createItem(createItemInput: CreateItemInput!): Item!
-  updateItem(updateItemInput: UpdateItemInput!): Item!
-  removeItem(id: Int!): Item!
   createCharacterClass(createCharacterClassInput: CreateCharacterClassInput!): CharacterClass!
   updateCharacterClass(updateCharacterClassInput: UpdateCharacterClassInput!): CharacterClass!
   removeCharacterClass(id: Int!): CharacterClass!
@@ -549,17 +610,6 @@ input CreateCharacterSkillInput {
 }
 
 input UpdateCharacterSkillInput {
-  """Example field (placeholder)"""
-  exampleField: Int
-  id: Int!
-}
-
-input CreateItemInput {
-  """Example field (placeholder)"""
-  exampleField: Int!
-}
-
-input UpdateItemInput {
   """Example field (placeholder)"""
   exampleField: Int
   id: Int!

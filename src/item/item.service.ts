@@ -1,26 +1,18 @@
 import { Injectable } from '@nestjs/common';
 import { CreateItemInput } from './dto/create-item.input';
 import { UpdateItemInput } from './dto/update-item.input';
+import { InjectRepository } from '@nestjs/typeorm';
+import { BaseItem } from './entities/item.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class ItemService {
-  create(createItemInput: CreateItemInput) {
-    return 'This action adds a new item';
-  }
+  constructor(
+    @InjectRepository(BaseItem)
+    private readonly itemRepository: Repository<BaseItem>,
+  ) {}
 
-  findAll() {
-    return `This action returns all item`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} item`;
-  }
-
-  update(id: number, updateItemInput: UpdateItemInput) {
-    return `This action updates a #${id} item`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} item`;
+  public async findAll() {
+    return await this.itemRepository.find();
   }
 }

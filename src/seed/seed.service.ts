@@ -22,6 +22,7 @@ import { FactionEnum } from 'src/faction/types/faction.enum';
 import { Mob } from 'src/mob/entities/mob.entity';
 import { MobSpawn } from 'src/mob/mob-spawn/entities/mob-spawn.entity';
 import { Effect } from 'src/effect/entities/effect.entity';
+import { ItemTypeEnum } from 'src/common/enums/item-type.enum';
 
 @Injectable()
 export class SeedService {
@@ -261,6 +262,15 @@ export class SeedService {
       attackRange: 4,
       attackSpeed: 1000,
       isAlive: true,
+      bag: {
+        items: [
+          {
+            itemType: ItemTypeEnum.WEAPON,
+            name: 'Перчатка Таноса',
+            iconKey: '',
+          },
+        ],
+      },
     });
 
     await this.characterRepository.save({

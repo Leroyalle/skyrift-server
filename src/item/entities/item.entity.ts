@@ -1,7 +1,10 @@
-import { Field, ID, Int, ObjectType } from '@nestjs/graphql';
+import { Field, ID, Int, InterfaceType, ObjectType } from '@nestjs/graphql';
 import { Bag } from 'src/character/bag/entities/bag.entity';
 import { Character } from 'src/character/entities/character.entity';
-import { ArmorSlotEnum } from 'src/common/enums/equipment-slot.enum';
+import {
+  ArmorSlotEnum,
+  WeaponSlotEnum,
+} from 'src/common/enums/equipment-slot.enum';
 import { ItemTypeEnum } from 'src/common/enums/item-type.enum';
 import {
   ChildEntity,
@@ -12,6 +15,20 @@ import {
   TableInheritance,
 } from 'typeorm';
 
+@InterfaceType({
+  resolveType(item: any) {
+    switch (item.itemType) {
+      case ItemTypeEnum.WEAPON:
+        return Weapon;
+      case ItemTypeEnum.ARMOR:
+        return Armor;
+      case ItemTypeEnum.RESOURCE:
+        return Resource;
+      default:
+        return null;
+    }
+  },
+})
 @Entity()
 @TableInheritance({ column: { type: 'varchar', name: 'itemType' } })
 export abstract class BaseItem {
@@ -22,6 +39,10 @@ export abstract class BaseItem {
   @Field()
   @Column()
   name: string;
+
+  @Field(() => ItemTypeEnum)
+  @Column({ type: 'varchar' })
+  itemType: ItemTypeEnum;
 
   @Field()
   @Column()
@@ -36,7 +57,7 @@ export abstract class BaseItem {
   owner: Character;
 }
 
-@ObjectType()
+@ObjectType({ implements: BaseItem })
 @ChildEntity(ItemTypeEnum.WEAPON)
 export class Weapon extends BaseItem {
   @Column({ nullable: true })
@@ -50,8 +71,13 @@ export class Weapon extends BaseItem {
   @Column({ type: 'int', default: 1 })
   @Field({ description: 'Прочность предмета' })
   durability: number;
+
+  @Column({ nullable: true })
+  @Field(() => WeaponSlotEnum)
+  slot: WeaponSlotEnum;
 }
 
+@ObjectType({ implements: BaseItem })
 @ChildEntity(ItemTypeEnum.ARMOR)
 export class Armor extends BaseItem {
   @Column({ nullable: true })
@@ -67,6 +93,7 @@ export class Armor extends BaseItem {
   slot: ArmorSlotEnum;
 }
 
+@ObjectType({ implements: BaseItem })
 @ChildEntity(ItemTypeEnum.RESOURCE)
 export class Resource extends BaseItem {
   @Column()

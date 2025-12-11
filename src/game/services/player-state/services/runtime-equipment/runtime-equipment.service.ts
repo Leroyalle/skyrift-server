@@ -9,7 +9,7 @@ export class RuntimeEquipmentService {
   constructor(private readonly playerStateService: PlayerStateService) {}
 
   public checkCanEquip(item: TItem, slot: EquipmentSlotEnum): boolean {
-    if (!(item instanceof Weapon) || !(item instanceof Armor)) return false;
+    if (!(item instanceof Weapon) && !(item instanceof Armor)) return false;
 
     if (item.slot !== slot) return false;
 
@@ -47,12 +47,16 @@ export class RuntimeEquipmentService {
     slot: EquipmentSlotEnum,
   ): { success: boolean; error?: string } {
     const character = this.playerStateService.getCharacterState(characterId);
-    if (!character)
+
+    if (!character) {
       return {
         success: false,
         error: 'Персонаж не найден',
       };
+    }
+
     character.equipment[slot] = null;
+
     return {
       success: true,
     };
