@@ -55,10 +55,7 @@ export class CharacterService {
     });
   }
 
-  public async update(
-    characterId: string,
-    updateCharacterInput: UpdateCharacterInput,
-  ) {
+  public async update(characterId: string, updateCharacterInput: UpdateCharacterInput) {
     const character = await this.characterRepository.preload({
       ...updateCharacterInput,
       id: characterId,

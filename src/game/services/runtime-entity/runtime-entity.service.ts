@@ -12,10 +12,7 @@ export class RuntimeEntityService {
     private readonly runtimeMobService: RuntimeMobService,
   ) {}
 
-  public getEntityByType(
-    type: EntityType,
-    id: string,
-  ): TRuntimeEntity | undefined {
+  public getEntityByType(type: EntityType, id: string): TRuntimeEntity | undefined {
     if (type === 'player') {
       return this.playerStateService.getCharacterState(id);
     } else if (type === 'mob') {

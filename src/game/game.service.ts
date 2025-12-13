@@ -98,10 +98,7 @@ export class GameService extends BaseLogger {
         RedisKeys.ConnectedPlayers + findUser.id,
       )) as string;
 
-      await this.redisService.set(
-        RedisKeys.ConnectedPlayers + findUser.id,
-        client.id,
-      );
+      await this.redisService.set(RedisKeys.ConnectedPlayers + findUser.id, client.id);
 
       this.socketService.onConnection(client, findUser.id);
 
@@ -126,8 +123,7 @@ export class GameService extends BaseLogger {
         },
       );
 
-      const runtimeCharacter =
-        await this.playerStateService.join(findCharacter);
+      const runtimeCharacter = await this.playerStateService.join(findCharacter);
 
       this.spatialGridService.add(runtimeCharacter);
 
@@ -149,10 +145,7 @@ export class GameService extends BaseLogger {
         runtimeCharacter,
       );
 
-      console.log(
-        `Client ${client.id} joined location:`,
-        findCharacter.location.id,
-      );
+      console.log(`Client ${client.id} joined location:`, findCharacter.location.id);
       // FIXME: send initial data
     } catch (error) {
       console.log('Disconnect by catch in handleConnection', error);
@@ -200,9 +193,7 @@ export class GameService extends BaseLogger {
     }
 
     const { userId, characterId, locationId } = client['userData'];
-    const storedClientId = await this.redisService.get(
-      RedisKeys.ConnectedPlayers + userId,
-    );
+    const storedClientId = await this.redisService.get(RedisKeys.ConnectedPlayers + userId);
 
     if (storedClientId !== client.id) {
       this.socketService.notifyDisconnection(client);
@@ -211,30 +202,17 @@ export class GameService extends BaseLogger {
       return;
     }
 
-    const initialData = await this.gameInitialDataService.loadInitialData(
-      characterId,
-      locationId,
-    );
+    const initialData = await this.gameInitialDataService.loadInitialData(characterId, locationId);
 
     if (!initialData) {
       this.socketService.onDisconnect(client);
-      this.socketService.notifyDisconnection(
-        client,
-        'Initial data is not found',
-      );
+      this.socketService.notifyDisconnection(client, 'Initial data is not found');
       return;
     }
 
-    await this.socketService.joinToRoom(
-      userId,
-      RedisKeys.Location + initialData.location.id,
-    );
+    await this.socketService.joinToRoom(userId, RedisKeys.Location + initialData.location.id);
 
-    this.socketService.sendToUser(
-      userId,
-      ServerToClientEvents.GameInitialState,
-      initialData,
-    );
+    this.socketService.sendToUser(userId, ServerToClientEvents.GameInitialState, initialData);
   }
 
   public async requestMoveTo(client: Socket, input: RequestMoveToDto) {
@@ -253,10 +231,7 @@ export class GameService extends BaseLogger {
     this.combatService.requestAttackCancelForPlayer(client);
   }
 
-  public async requestUseTeleport(
-    client: Socket,
-    input: RequestUseTeleportDto,
-  ) {
+  public async requestUseTeleport(client: Socket, input: RequestUseTeleportDto) {
     await this.interactionService.requestUseTeleport(client, input);
   }
 
@@ -267,31 +242,21 @@ export class GameService extends BaseLogger {
   public async playerSendLocationMessage(client: Socket, input: string) {
     return await this.chatService.sendLocationMessage(client, input);
   }
-  public async playerSendDirectMessage(
-    client: Socket,
-    input: DirectMessageInput,
-  ) {
+  public async playerSendDirectMessage(client: Socket, input: DirectMessageInput) {
     return await this.chatService.sendDirectMessage(client, input);
   }
 
-  public sendPong(
-    client: Socket,
-    clientTime: number,
-  ): PongReturnData | undefined {
+  public sendPong(client: Socket, clientTime: number): PongReturnData | undefined {
     if (!this.socketService.verifyUserDataInSocket(client)) {
       this.socketService.notifyDisconnection(client);
       this.socketService.onDisconnect(client);
       return;
     }
 
-    this.socketService.sendToUser(
-      client.userData.userId,
-      ServerToClientEvents.PongTime,
-      {
-        sendClientTime: clientTime,
-        serverTime: Date.now(),
-      },
-    );
+    this.socketService.sendToUser(client.userData.userId, ServerToClientEvents.PongTime, {
+      sendClientTime: clientTime,
+      serverTime: Date.now(),
+    });
   }
 
   public handleAddToBag(client: Socket, input: TItem) {
@@ -301,42 +266,26 @@ export class GameService extends BaseLogger {
       return;
     }
 
-    const character = this.playerStateService.getCharacterState(
-      client.userData.characterId,
-    );
+    const character = this.playerStateService.getCharacterState(client.userData.characterId);
 
     if (!character) return;
 
     this.inventoryService.add(character.bag, input);
 
-    this.socketService.sendToUser(
-      client.userData.userId,
-      ServerToClientEvents.BagItemAdded,
-      input,
-    );
+    this.socketService.sendToUser(client.userData.userId, ServerToClientEvents.BagItemAdded, input);
   }
 
   public handleEquip(client: AuthenticatedSocket, input: RequestEquipDto) {
-    const character = this.playerStateService.getCharacterState(
-      client.userData.characterId,
-    );
+    const character = this.playerStateService.getCharacterState(client.userData.characterId);
     if (!character) return;
 
-    const result = this.equipmentService.equip(
-      character.id,
-      input.item,
-      input.slot,
-    );
+    const result = this.equipmentService.equip(character.id, input.item, input.slot);
 
     if (!result.success) {
-      this.socketService.sendToUser(
-        character.userId,
-        ServerToClientEvents.GameNotification,
-        {
-          type: 'error',
-          message: result.error || 'Не удалось экипировать предмет',
-        },
-      );
+      this.socketService.sendToUser(character.userId, ServerToClientEvents.GameNotification, {
+        type: 'error',
+        message: result.error || 'Не удалось экипировать предмет',
+      });
       return;
     }
     this.socketService.sendToUser(
@@ -347,22 +296,16 @@ export class GameService extends BaseLogger {
   }
 
   public handleUnEquip(client: AuthenticatedSocket, input: RequestUnEquipDto) {
-    const character = this.playerStateService.getCharacterState(
-      client.userData.characterId,
-    );
+    const character = this.playerStateService.getCharacterState(client.userData.characterId);
     if (!character) return;
 
     const result = this.equipmentService.unEquip(character.id, input.slot);
 
     if (!result.success) {
-      this.socketService.sendToUser(
-        character.userId,
-        ServerToClientEvents.GameNotification,
-        {
-          type: 'error',
-          message: result.error || 'Не удалось снять предмет',
-        },
-      );
+      this.socketService.sendToUser(character.userId, ServerToClientEvents.GameNotification, {
+        type: 'error',
+        message: result.error || 'Не удалось снять предмет',
+      });
       return;
     }
 

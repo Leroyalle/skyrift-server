@@ -43,11 +43,11 @@ export class Location {
   @Field(() => Int)
   tileHeight: number;
 
-  @OneToMany(() => Character, (character) => character.location)
+  @OneToMany(() => Character, character => character.location)
   @Field(() => [Character])
   characters: Character[];
 
-  @OneToMany(() => MobSpawn, (spawn) => spawn.location)
+  @OneToMany(() => MobSpawn, spawn => spawn.location)
   @Field(() => [MobSpawn])
   mobSpawn: MobSpawn[];
 }

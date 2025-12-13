@@ -1,8 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import {
-  InteractionType,
-  PendingInteraction,
-} from './types/pending-interactions.type';
+import { InteractionType, PendingInteraction } from './types/pending-interactions.type';
 import { PlayerStateService } from 'src/game/services/player-state/player-state.service';
 import { SocketService } from '../socket/socket.service';
 import { LocationService } from 'src/location/location.service';
@@ -23,6 +20,7 @@ import { PathFindingService } from '../path-finding/path-finding.service';
 import { getTileByPosition } from 'src/game/lib/helpers/get-tile-by-position.lib';
 import { GameInitialDataService } from '../game-core/game-initial-data/game-initial-data.service';
 import { MovementQueueService } from '../movement/services/movement-queue/movement-queue.service';
+import { ActionQueueService } from '../combat/services/action-queue/action-queue.service';
 
 @Injectable()
 export class InteractionService {
@@ -35,6 +33,7 @@ export class InteractionService {
     private readonly redisService: RedisService,
     private readonly gameInitialDataService: GameInitialDataService,
     private readonly movementQueueService: MovementQueueService,
+    private readonly actionQueueService: ActionQueueService,
   ) {}
 
   private readonly pendingInteractions = new Map<string, PendingInteraction>();
@@ -50,9 +49,7 @@ export class InteractionService {
   public async tickInteractions() {
     for (const interaction of this.pendingInteractions.values()) {
       console.log('[tickInteractions]', interaction);
-      const playerState = this.playerStateService.getCharacterState(
-        interaction.characterId,
-      );
+      const playerState = this.playerStateService.getCharacterState(interaction.characterId);
 
       if (!playerState) {
         this.deletePendingInteraction(interaction.characterId);
@@ -61,9 +58,7 @@ export class InteractionService {
 
       const intType = interaction.type;
 
-      const currentLocation = await this.locationService.loadLocation(
-        playerState.locationId,
-      );
+      const currentLocation = await this.locationService.loadLocation(playerState.locationId);
 
       if (!currentLocation) return;
 
@@ -79,9 +74,7 @@ export class InteractionService {
             if (isPlayerInTeleportArea(playerState, teleport)) {
               console.log('use teleport');
               this.movementQueueService.delete(playerState);
-              // TODO: НУЖНО ЧИЩАТЬ ВСЕ ШАГИ И АТАКИ ПРИ ПЕРЕ{ОДЕ ЧЕРЕЗ ЛОКАЦИИ
-
-              // this.movementService.deleteMovementQueue(playerState);
+              this.actionQueueService.clearPendingActions(playerState, []);
               this.pendingInteractions.delete(playerState.id);
               await this.useTeleport(playerState, teleport);
               console.log('teleport used, after use teleport');
@@ -95,7 +88,10 @@ export class InteractionService {
               console.log('start interaction movement');
               await this.startInteractionMovement(
                 playerState,
-                { x: interaction.area.x, y: interaction.area.y },
+                {
+                  x: interaction.area.x,
+                  y: interaction.area.y,
+                },
                 currentLocation,
               );
             }
@@ -109,10 +105,7 @@ export class InteractionService {
     }
   }
 
-  public async requestUseTeleport(
-    client: Socket,
-    input: RequestUseTeleportDto,
-  ) {
+  public async requestUseTeleport(client: Socket, input: RequestUseTeleportDto) {
     // FIXME: throw error and disconnect
     if (!verifyUserDataInSocket(client)) {
       this.socketService.notifyDisconnection(client);
@@ -121,15 +114,11 @@ export class InteractionService {
     }
 
     console.log('requestUseTeleport', input);
-    const playerState = this.playerStateService.getCharacterState(
-      client.userData.characterId,
-    );
+    const playerState = this.playerStateService.getCharacterState(client.userData.characterId);
 
     if (!playerState) return;
 
-    const currentLocation = await this.locationService.loadLocation(
-      playerState.locationId,
-    );
+    const currentLocation = await this.locationService.loadLocation(playerState.locationId);
 
     if (!currentLocation) return;
 
@@ -172,17 +161,9 @@ export class InteractionService {
     area: PositionDto,
     currentLocation: CachedLocation,
   ) {
-    const fromTile = getTileByPosition(
-      playerState.x,
-      playerState.y,
-      currentLocation.tileWidth,
-    );
+    const fromTile = getTileByPosition(playerState.x, playerState.y, currentLocation.tileWidth);
 
-    const targetTile = getTileByPosition(
-      area.x,
-      area.y,
-      currentLocation.tileWidth,
-    );
+    const targetTile = getTileByPosition(area.x, area.y, currentLocation.tileWidth);
 
     const prevSteps = this.movementQueueService.get(playerState);
 
@@ -208,13 +189,8 @@ export class InteractionService {
     return steps;
   }
 
-  private async useTeleport(
-    playerState: IRuntimeCharacter,
-    teleport: Teleport,
-  ) {
-    const targetLocation = await this.locationService.loadLocationByFilename(
-      teleport.targetMap,
-    );
+  private async useTeleport(playerState: IRuntimeCharacter, teleport: Teleport) {
+    const targetLocation = await this.locationService.loadLocationByFilename(teleport.targetMap);
 
     console.log('TargetLocation', targetLocation?.name);
 
@@ -254,17 +230,16 @@ export class InteractionService {
       y: playerState.y,
     };
 
-    this.playerStateService.changeUserLocation(
-      playerState,
-      targetLocation,
-      teleport,
-    );
+    this.playerStateService.changeUserLocation(playerState, targetLocation, teleport);
 
     this.socketService.setClientUserData(
       playerState.userId,
       playerState.id,
       playerState.locationId,
-      { x: playerState.x, y: playerState.y },
+      {
+        x: playerState.x,
+        y: playerState.y,
+      },
     );
 
     await this.redisService.sadd(
@@ -272,10 +247,7 @@ export class InteractionService {
       playerState.id,
     );
 
-    await this.socketService.joinToRoom(
-      playerState.userId,
-      RedisKeys.Location + targetLocation.id,
-    );
+    await this.socketService.joinToRoom(playerState.userId, RedisKeys.Location + targetLocation.id);
 
     this.spatialGridService.update(
       playerState,

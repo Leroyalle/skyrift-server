@@ -31,9 +31,6 @@ export class UserService {
   }
 
   public async update(updateUserInput: UpdateUserInput) {
-    return await this.userRepository.update(
-      updateUserInput.id,
-      updateUserInput,
-    );
+    return await this.userRepository.update(updateUserInput.id, updateUserInput);
   }
 }

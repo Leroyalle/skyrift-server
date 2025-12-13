@@ -8,9 +8,7 @@ type AttackStats = {
   attackSpeed: number;
 };
 
-export function getAttackStats(
-  attacker: TRuntimeEntity,
-): AttackStats | undefined {
+export function getAttackStats(attacker: TRuntimeEntity): AttackStats | undefined {
   if (isPlayer(attacker)) {
     return {
       lastAttackAt: attacker.lastAttackAt,

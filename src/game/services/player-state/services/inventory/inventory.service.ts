@@ -23,14 +23,14 @@ export class InventoryService {
   }
 
   public delete(bag: Bag, item: TItem): void {
-    bag.items = bag.items.filter((i) => i.id !== item.id);
+    bag.items = bag.items.filter(i => i.id !== item.id);
   }
 
   public use(characterId: string, itemId: string) {
     const character = this.playerStateService.getCharacterState(characterId);
     if (!character) return;
 
-    const item = character.bag.items.find((item) => item.id === itemId);
+    const item = character.bag.items.find(item => item.id === itemId);
 
     if (!item) {
       this.socketService.sendToUser(

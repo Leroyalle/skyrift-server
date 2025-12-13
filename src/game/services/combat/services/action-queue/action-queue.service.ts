@@ -11,8 +11,7 @@ import { TargetAction } from '../../types/target-action.type';
 export class ActionQueueService {
   constructor() {}
 
-  private readonly pendingActionsQueue: Map<EntityKey, PendingAction[]> =
-    new Map();
+  private readonly pendingActionsQueue: Map<EntityKey, PendingAction[]> = new Map();
 
   public setPendingAction(entityRef: EntityRef, pendingAction: PendingAction) {
     const entityKey = generateEntityKey(entityRef);
@@ -55,7 +54,7 @@ export class ActionQueueService {
   ): boolean {
     const entityKey = generateEntityKey(entityRef);
     const queue = this.getOrCreateActionQueue(entityKey);
-    return queue.some((q) => {
+    return queue.some(q => {
       if (q.target.kind === 'target' && victimRef?.kind === 'target') {
         return (
           q.actionType === actionType &&
@@ -75,11 +74,7 @@ export class ActionQueueService {
   ): void {
     const key = generateEntityKey(entityRef);
     const queue = this.getOrCreateActionQueue(key);
-    const hasAutoAttack = this.findActionType(
-      entityRef,
-      ActionType.AutoAttack,
-      victimRef,
-    );
+    const hasAutoAttack = this.findActionType(entityRef, ActionType.AutoAttack, victimRef);
 
     if (hasAutoAttack && !characterSkill) return;
 

@@ -30,10 +30,4 @@ interface UniqueStats {
   mobId: Mob['id'];
 }
 
-export type MobActionState =
-  | 'idle'
-  | 'move'
-  | 'pursue'
-  | 'attack'
-  | 'dead'
-  | 'return';
+export type MobActionState = 'idle' | 'move' | 'pursue' | 'attack' | 'dead' | 'return';

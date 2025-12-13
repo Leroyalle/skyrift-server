@@ -6,24 +6,21 @@ import { isValidTeleportProperties } from './is-valid-teleport-properties.lib';
 
 export const buildTeleportsMap = (map: TiledMap) => {
   const teleportsMap: Record<string, Teleport> = {};
-  map.layers.forEach((layer) => {
+  map.layers.forEach(layer => {
     if (!isObjectsLayer(layer) || layer.name !== 'Teleports') return;
-    layer.objects.forEach((o) => {
-      const teleportProps = o.properties?.reduce<TeleportProperties>(
-        (acc, property) => {
-          if (property.name === 'targetMap') {
-            acc[property.name] = property.value as string;
-          }
-          if (property.name === 'targetX') {
-            acc[property.name] = property.value as number;
-          }
-          if (property.name === 'targetY') {
-            acc[property.name] = property.value as number;
-          }
-          return acc;
-        },
-        {},
-      );
+    layer.objects.forEach(o => {
+      const teleportProps = o.properties?.reduce<TeleportProperties>((acc, property) => {
+        if (property.name === 'targetMap') {
+          acc[property.name] = property.value as string;
+        }
+        if (property.name === 'targetX') {
+          acc[property.name] = property.value as number;
+        }
+        if (property.name === 'targetY') {
+          acc[property.name] = property.value as number;
+        }
+        return acc;
+      }, {});
 
       if (!teleportProps) return;
 

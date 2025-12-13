@@ -8,10 +8,7 @@ type TCoord = { x: number; y: number };
 export class PathFindingService {
   private easyStarMap = new Map<string, EasyStar.js>();
 
-  private getOrCreateEasyStar(
-    locationId: string,
-    passableMap: number[][],
-  ): EasyStar.js {
+  private getOrCreateEasyStar(locationId: string, passableMap: number[][]): EasyStar.js {
     if (this.easyStarMap.has(locationId)) {
       return this.easyStarMap.get(locationId)!;
     }
@@ -38,8 +35,8 @@ export class PathFindingService {
   ): Promise<number> {
     const easyStar = this.getOrCreateEasyStar(locationId, passableMap);
 
-    return new Promise((resolve) => {
-      easyStar.findPath(from.x, from.y, to.x, to.y, (path) => {
+    return new Promise(resolve => {
+      easyStar.findPath(from.x, from.y, to.x, to.y, path => {
         if (!path) {
           resolve(-1);
         } else {
@@ -59,27 +56,21 @@ export class PathFindingService {
   ): Promise<{ x: number; y: number }[] | null> {
     const easyStar = this.getOrCreateEasyStar(locationId, map);
 
-    return new Promise((resolve) => {
-      easyStar.findPath(
-        tilesFrom.x,
-        tilesFrom.y,
-        tilesTo.x,
-        tilesTo.y,
-        (path) => {
-          if (!path) {
-            resolve(null);
-            return;
-          }
+    return new Promise(resolve => {
+      easyStar.findPath(tilesFrom.x, tilesFrom.y, tilesTo.x, tilesTo.y, path => {
+        if (!path) {
+          resolve(null);
+          return;
+        }
 
-          if (path.length <= 1) {
-            resolve([]);
-            return;
-          }
+        if (path.length <= 1) {
+          resolve([]);
+          return;
+        }
 
-          const steps = path.slice(1).map((p) => ({ x: p.x, y: p.y }));
-          resolve(steps);
-        },
-      );
+        const steps = path.slice(1).map(p => ({ x: p.x, y: p.y }));
+        resolve(steps);
+      });
       easyStar.calculate();
     });
   }

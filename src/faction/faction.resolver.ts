@@ -9,9 +9,7 @@ export class FactionResolver {
   constructor(private readonly factionService: FactionService) {}
 
   @Mutation(() => Faction)
-  createFaction(
-    @Args('createFactionInput') createFactionInput: CreateFactionInput,
-  ) {
+  createFaction(@Args('createFactionInput') createFactionInput: CreateFactionInput) {
     return this.factionService.create(createFactionInput);
   }
 
@@ -26,13 +24,8 @@ export class FactionResolver {
   }
 
   @Mutation(() => Faction)
-  updateFaction(
-    @Args('updateFactionInput') updateFactionInput: UpdateFactionInput,
-  ) {
-    return this.factionService.update(
-      updateFactionInput.id,
-      updateFactionInput,
-    );
+  updateFaction(@Args('updateFactionInput') updateFactionInput: UpdateFactionInput) {
+    return this.factionService.update(updateFactionInput.id, updateFactionInput);
   }
 
   @Mutation(() => Faction)

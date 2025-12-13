@@ -5,7 +5,7 @@ import Redis from 'ioredis';
 export class RedisService {
   constructor(@Inject('REDIS_CLIENT') private readonly client: Redis) {
     this.client.on('connect', () => console.log('Connected to Redis'));
-    this.client.on('error', (err) => console.error('Redis error:', err));
+    this.client.on('error', err => console.error('Redis error:', err));
   }
 
   public async get<T = any>(key: string): Promise<T | null> {
@@ -26,7 +26,7 @@ export class RedisService {
     console.log('[redis service mget]', data);
     if (data) {
       // TODO: add try/catch
-      return data.map((d) => (d ? (JSON.parse(d) as T) : null));
+      return data.map(d => (d ? (JSON.parse(d) as T) : null));
     }
     return data;
   }

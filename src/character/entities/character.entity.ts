@@ -3,14 +3,7 @@ import { CharacterClass } from 'src/character-class/entities/character-class.ent
 import { BaseItem } from 'src/item/entities/item.entity';
 import { Location } from 'src/location/entities/location.entity';
 import { User } from 'src/user/entities/user.entity';
-import {
-  Column,
-  Entity,
-  JoinColumn,
-  ManyToOne,
-  OneToMany,
-  OneToOne,
-} from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne } from 'typeorm';
 import { CharacterSkill } from '../character-skill/entities/character-skill.entity';
 import { ActorEntity } from 'src/common/entities/actor-entity.entity';
 import { Bag } from '../bag/entities/bag.entity';
@@ -41,18 +34,15 @@ export class Character extends ActorEntity {
   })
   isDeleted: boolean;
 
-  @ManyToOne(() => User, (user) => user.id)
+  @ManyToOne(() => User, user => user.id)
   @Field(() => User, { description: 'Аккаунт пользователя' })
   user: User;
 
-  @ManyToOne(
-    () => CharacterClass,
-    (characterClass) => characterClass.characters,
-  )
+  @ManyToOne(() => CharacterClass, characterClass => characterClass.characters)
   @Field(() => CharacterClass, { description: 'Класс персонажа' })
   characterClass: CharacterClass;
 
-  @ManyToOne(() => Location, (location) => location.characters)
+  @ManyToOne(() => Location, location => location.characters)
   @JoinColumn({ name: 'locationId' })
   @Field(() => Location, { description: 'Локация персонажа', nullable: true })
   location: Location;
@@ -61,16 +51,16 @@ export class Character extends ActorEntity {
   @Field({ description: 'Айди локации в которой находится игрок' })
   locationId: string;
 
-  @OneToMany(() => CharacterSkill, (characterSkill) => characterSkill.character)
+  @OneToMany(() => CharacterSkill, characterSkill => characterSkill.character)
   @Field(() => [CharacterSkill], { description: 'Навыки персонаж' })
   characterSkills: CharacterSkill[];
 
-  @OneToOne(() => Bag, (bag) => bag.character, { cascade: true })
+  @OneToOne(() => Bag, bag => bag.character, { cascade: true })
   @JoinColumn({ name: 'bag' })
   @Field(() => Bag)
   bag: Bag;
 
-  @OneToOne(() => Equipment, (equipment) => equipment.character)
+  @OneToOne(() => Equipment, equipment => equipment.character)
   @Field(() => Equipment)
   equipment: Equipment;
 }

@@ -25,10 +25,7 @@ export class PlayerStateService {
       character.id,
     );
 
-    await this.redisService.set(
-      RedisKeysFactory.playerNameToId(character.name),
-      character.id,
-    );
+    await this.redisService.set(RedisKeysFactory.playerNameToId(character.name), character.id);
 
     let runtimeCharacter = this.playersStates.get(character.id);
 
@@ -57,10 +54,7 @@ export class PlayerStateService {
   public async leave(userId: string, playerId: string, locationId: string) {
     this.playersStates.delete(playerId);
 
-    await this.redisService.srem(
-      RedisKeysFactory.locationPlayers(locationId),
-      playerId,
-    );
+    await this.redisService.srem(RedisKeysFactory.locationPlayers(locationId), playerId);
 
     await this.redisService.del(RedisKeysFactory.connectedPlayer(userId));
   }
@@ -78,10 +72,7 @@ export class PlayerStateService {
       ...croppedCharacter
     } = character;
 
-    await this.redisService.hset(
-      RedisKeysFactory.playerState(characterId),
-      character,
-    );
+    await this.redisService.hset(RedisKeysFactory.playerState(characterId), character);
 
     await this.characterService.update(character.id, croppedCharacter);
     return character;

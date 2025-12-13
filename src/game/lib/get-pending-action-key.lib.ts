@@ -5,10 +5,6 @@ export function getTargetActionKey(attackerId: string, type: ActionType) {
   return `target:${attackerId}_${type}`;
 }
 
-export function getAoEActionKey(
-  attackerId: string,
-  area: PositionDto,
-  type: ActionType,
-) {
+export function getAoEActionKey(attackerId: string, area: PositionDto, type: ActionType) {
   return `aoe:${attackerId}_${area.x}_${area.y}_${type}`;
 }

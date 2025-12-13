@@ -57,10 +57,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage(ClientToServerEvents.PlayerWalk)
-  public playerWalk(
-    @ConnectedSocket() client: Socket,
-    @MessageBody() input: RequestMoveToDto,
-  ) {
+  public playerWalk(@ConnectedSocket() client: Socket, @MessageBody() input: RequestMoveToDto) {
     return this.gameService.requestMoveTo(client, input);
   }
 
@@ -92,10 +89,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage(ClientToServerEvents.RequestUseTeleport)
-  public async requestUseTeleport(
-    client: Socket,
-    input: RequestUseTeleportDto,
-  ) {
+  public async requestUseTeleport(client: Socket, input: RequestUseTeleportDto) {
     return await this.gameService.requestUseTeleport(client, input);
   }
 
@@ -110,10 +104,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage(ClientToServerEvents.PlayerSendDirectMessage)
-  public async playerSendDirectMessage(
-    client: Socket,
-    input: DirectMessageInput,
-  ) {
+  public async playerSendDirectMessage(client: Socket, input: DirectMessageInput) {
     return await this.gameService.playerSendDirectMessage(client, input);
   }
 
@@ -129,29 +120,20 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage(ClientToServerEvents.RequestEquipItem)
   @UseGuards(WsAuthGuard)
-  public requestEquipItem(
-    @AuthSocket() client: AuthenticatedSocket,
-    input: RequestEquipDto,
-  ) {
+  public requestEquipItem(@AuthSocket() client: AuthenticatedSocket, input: RequestEquipDto) {
     console.log('EQUIP ITEM');
     return this.gameService.handleEquip(client, input);
   }
 
   @SubscribeMessage(ClientToServerEvents.RequestUnEquipItem)
   @UseGuards(WsAuthGuard)
-  public requestUnEquipItem(
-    @AuthSocket() client: AuthenticatedSocket,
-    input: RequestUnEquipDto,
-  ) {
+  public requestUnEquipItem(@AuthSocket() client: AuthenticatedSocket, input: RequestUnEquipDto) {
     return this.gameService.handleUnEquip(client, input);
   }
 
   @SubscribeMessage(ClientToServerEvents.RequestUseItem)
   @UseGuards(WsAuthGuard)
-  public requestUseItem(
-    @AuthSocket() client: AuthenticatedSocket,
-    input: RequestUseItemDto,
-  ) {
+  public requestUseItem(@AuthSocket() client: AuthenticatedSocket, input: RequestUseItemDto) {
     console.log('USE ITEM');
     return this.gameService.handleUseItem(client, input);
   }

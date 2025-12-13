@@ -1,9 +1,7 @@
 import { Character } from 'src/character/entities/character.entity';
 import { IRuntimeCharacter } from 'src/character/types/runtime-character';
 
-export const buildRuntimeCharacter = (
-  character: Character,
-): IRuntimeCharacter => {
+export const buildRuntimeCharacter = (character: Character): IRuntimeCharacter => {
   return {
     id: character.id,
     name: character.name,
