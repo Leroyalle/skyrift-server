@@ -16,10 +16,7 @@ export class EquipmentService {
     });
   }
 
-  public async updateEquipment(
-    characterId: string,
-    payload: Partial<Equipment>,
-  ) {
+  public async updateEquipment(characterId: string, payload: Partial<Equipment>) {
     let equipment = await this.findCharacterEquipment(characterId);
 
     if (!equipment) {

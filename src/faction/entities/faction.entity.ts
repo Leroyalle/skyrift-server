@@ -21,7 +21,7 @@ export class Faction {
   @Field(() => String, { description: 'Логотип фракции' })
   logo: string;
 
-  @OneToMany(() => CharacterClass, (characterClass) => characterClass.faction)
+  @OneToMany(() => CharacterClass, characterClass => characterClass.faction)
   @Field(() => [CharacterClass], { description: 'Классы фракции' })
   characterClasses: CharacterClass[];
 }

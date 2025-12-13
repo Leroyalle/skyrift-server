@@ -8,7 +8,12 @@ import { BagModule } from './bag/bag.module';
 import { EquipmentModule } from './equipment/equipment.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Character]), CharacterSkillModule, BagModule, EquipmentModule],
+  imports: [
+    TypeOrmModule.forFeature([Character]),
+    CharacterSkillModule,
+    BagModule,
+    EquipmentModule,
+  ],
   providers: [CharacterResolver, CharacterService],
   exports: [CharacterService],
 })

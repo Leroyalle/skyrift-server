@@ -56,9 +56,7 @@ export class MovementService {
 
     character.isAttacking = false;
 
-    const findLocation = await this.locationService.loadLocation(
-      character.locationId,
-    );
+    const findLocation = await this.locationService.loadLocation(character.locationId);
 
     if (!findLocation) return;
     const map = findLocation?.passableMap;
@@ -96,10 +94,7 @@ export class MovementService {
 
     entries.forEach(([entityKey, queue]) => {
       const entityRef = decodeEntityKey(entityKey);
-      const entity = this.runtimeEntityService.getEntityByType(
-        entityRef.type,
-        entityRef.id,
-      );
+      const entity = this.runtimeEntityService.getEntityByType(entityRef.type, entityRef.id);
 
       if (!entity) return;
 
@@ -148,22 +143,14 @@ export class MovementService {
       }
 
       // if (prevPosition) {
-      this.spatialGridService.update(
-        entity,
-        entity.locationId,
-        prevPosition.x,
-        prevPosition.y,
-      );
+      this.spatialGridService.update(entity, entity.locationId, prevPosition.x, prevPosition.y);
       // } else {
       // this.spatialGridService.add(entity);
       // }
 
       const direction = getDirection(prevPosition, pixelPosition);
 
-      const updates = this.getOrCreateBatchUpdate(
-        entity.locationId,
-        updatesByLocation,
-      );
+      const updates = this.getOrCreateBatchUpdate(entity.locationId, updatesByLocation);
 
       updates.push({
         id: entity.id,

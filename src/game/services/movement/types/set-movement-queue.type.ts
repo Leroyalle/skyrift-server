@@ -1,11 +1,6 @@
-import {
-  CharacterMovementQueue,
-  MobMovementQueue,
-} from './movement-queue.type';
+import { CharacterMovementQueue, MobMovementQueue } from './movement-queue.type';
 
-export type SetMovementQueueData =
-  | SetCharacterMovementQueue
-  | SetMobMovementQueue;
+export type SetMovementQueueData = SetCharacterMovementQueue | SetMobMovementQueue;
 
 type SetCharacterMovementQueue = {
   type: 'player';

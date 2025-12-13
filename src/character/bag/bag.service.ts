@@ -6,9 +6,7 @@ import { TItem } from 'src/common/types/item.type';
 
 @Injectable()
 export class BagService {
-  constructor(
-    @InjectRepository(Bag) private readonly bagRepository: Repository<Bag>,
-  ) {}
+  constructor(@InjectRepository(Bag) private readonly bagRepository: Repository<Bag>) {}
 
   public async addToDb(id: string, item: TItem) {
     const bag = await this.bagRepository.findOne({ where: { id } });

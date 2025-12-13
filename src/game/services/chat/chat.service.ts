@@ -26,9 +26,7 @@ export class ChatService {
       this.socketService.onDisconnect(client);
       return;
     }
-    const sender = this.playerStateService.getCharacterState(
-      client.userData.characterId,
-    );
+    const sender = this.playerStateService.getCharacterState(client.userData.characterId);
 
     if (!sender) return;
 
@@ -56,9 +54,7 @@ export class ChatService {
       this.socketService.onDisconnect(client);
       return;
     }
-    const sender = this.playerStateService.getCharacterState(
-      client.userData.characterId,
-    );
+    const sender = this.playerStateService.getCharacterState(client.userData.characterId);
 
     if (!sender) return;
 
@@ -90,9 +86,7 @@ export class ChatService {
       this.socketService.onDisconnect(client);
       return;
     }
-    const sender = this.playerStateService.getCharacterState(
-      client.userData.characterId,
-    );
+    const sender = this.playerStateService.getCharacterState(client.userData.characterId);
     const recipientId = await this.redisService.get<string>(
       RedisKeysFactory.playerNameToId(input.recipientName),
     );
@@ -114,10 +108,7 @@ export class ChatService {
       recipientName: input.recipientName,
     };
 
-    const redisKey = RedisKeysFactory.chatDirect(
-      sender.id,
-      input.recipientName,
-    );
+    const redisKey = RedisKeysFactory.chatDirect(sender.id, input.recipientName);
 
     await this.redisService.lpush(redisKey, directMessageData);
     await this.redisService.ltrim(redisKey, 0, 99);

@@ -8,12 +8,7 @@ import { UserModule } from 'src/user/user.module';
 
 @Module({
   imports: [JwtModule.register({}), UserModule],
-  providers: [
-    AuthResolver,
-    AuthService,
-    AccessTokenStrategy,
-    RefreshTokenStrategy,
-  ],
+  providers: [AuthResolver, AuthService, AccessTokenStrategy, RefreshTokenStrategy],
   exports: [AuthService],
 })
 export class AuthModule {}

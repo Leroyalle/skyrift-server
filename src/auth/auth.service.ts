@@ -24,9 +24,7 @@ export class AuthService {
     const findUser = await this.userService.findByEmail(registerInput.email);
 
     if (findUser) {
-      throw new BadRequestException(
-        'Пользователь с таким email уже зарегестрирован',
-      );
+      throw new BadRequestException('Пользователь с таким email уже зарегестрирован');
     }
 
     const hashedPassword = await this.hashData(registerInput.password);
@@ -49,10 +47,7 @@ export class AuthService {
       throw new NotFoundException('Пользователь не найден');
     }
 
-    const verifyPassword = await argon2.verify(
-      findUser.password,
-      loginInput.password,
-    );
+    const verifyPassword = await argon2.verify(findUser.password, loginInput.password);
 
     if (!verifyPassword) {
       throw new BadRequestException('Неверный логин или пароль');
@@ -98,9 +93,7 @@ export class AuthService {
           username,
         },
         {
-          secret: this.configService.get<string>(
-            'JWT_REFRESH_SECRET',
-          ) as string,
+          secret: this.configService.get<string>('JWT_REFRESH_SECRET') as string,
           expiresIn: '7d',
         },
       ),
@@ -122,10 +115,7 @@ export class AuthService {
 
     console.log('token before verify:', findUser.refreshToken);
     console.log('refreshToken:', refreshToken);
-    const verifyRefresh = await argon2.verify(
-      findUser.refreshToken,
-      refreshToken,
-    );
+    const verifyRefresh = await argon2.verify(findUser.refreshToken, refreshToken);
 
     if (!verifyRefresh) {
       console.log('Refresh token verification failed');

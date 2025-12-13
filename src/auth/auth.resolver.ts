@@ -56,10 +56,7 @@ export class AuthResolver {
     @Context() context: { res: Response },
   ) {
     console.log('REFRESH USR');
-    const tokens = await this.authService.refreshTokens(
-      user.sub,
-      user.refreshToken,
-    );
+    const tokens = await this.authService.refreshTokens(user.sub, user.refreshToken);
     context.res.cookie('refreshToken', tokens.refreshToken, {
       httpOnly: true,
       secure: true,

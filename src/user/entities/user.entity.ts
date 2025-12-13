@@ -1,12 +1,6 @@
 import { ObjectType, Field, ID } from '@nestjs/graphql';
 import { Character } from 'src/character/entities/character.entity';
-import {
-  Column,
-  Entity,
-  OneToMany,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn,
-} from 'typeorm';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 
 @ObjectType()
 @Entity()
@@ -27,7 +21,7 @@ export class User {
   @Field({ description: 'Password пользователя' })
   password: string;
 
-  @OneToMany(() => Character, (person) => person.id)
+  @OneToMany(() => Character, person => person.id)
   @Field(() => [Character], { description: 'Персонажи аккаунта' })
   persons: Character[];
 

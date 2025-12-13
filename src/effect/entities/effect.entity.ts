@@ -30,7 +30,7 @@ export class Effect {
   @Field(() => Int, { nullable: true })
   slowPercent?: number;
 
-  @ManyToOne(() => Skill, (skill) => skill.effects)
+  @ManyToOne(() => Skill, skill => skill.effects)
   @Field(() => Skill)
   skill: Skill;
 }

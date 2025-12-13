@@ -1,13 +1,7 @@
 import { ObjectType, Field, ID, Int } from '@nestjs/graphql';
 import { Character } from 'src/character/entities/character.entity';
 import { BaseItem } from 'src/item/entities/item.entity';
-import {
-  Column,
-  Entity,
-  OneToMany,
-  OneToOne,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { Column, Entity, OneToMany, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 @ObjectType()
 @Entity()
@@ -16,11 +10,11 @@ export class Bag {
   @Field(() => ID)
   id: string;
 
-  @OneToMany(() => BaseItem, (item) => item.bag, { cascade: true })
+  @OneToMany(() => BaseItem, item => item.bag, { cascade: true })
   @Field(() => [BaseItem])
   items: BaseItem[];
 
-  @OneToOne(() => Character, (character) => character.bag)
+  @OneToOne(() => Character, character => character.bag)
   @Field(() => Character)
   character: Character;
 

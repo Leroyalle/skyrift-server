@@ -1,6 +1,4 @@
-export function mergePassableMaps(
-  layers: { passableData: number[][] }[],
-): number[][] {
+export function mergePassableMaps(layers: { passableData: number[][] }[]): number[][] {
   console.log(layers);
   let maxHeight = 0;
   let maxWidth = 0;

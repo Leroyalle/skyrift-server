@@ -17,9 +17,7 @@ export class MovementQueueService {
     const entityKey = generateEntityKey(entityRef);
     const queue: EntityMovementQueue = { steps };
     if (isCharacterMovementQueue(entityRef, queue)) {
-      const playerState = this.playerStateService.getCharacterState(
-        entityRef.id,
-      );
+      const playerState = this.playerStateService.getCharacterState(entityRef.id);
       if (!playerState) return;
       queue.userId = playerState.userId;
     }

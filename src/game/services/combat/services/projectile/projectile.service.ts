@@ -31,15 +31,12 @@ export class ProjectileService {
     private readonly runtimeMobService: RuntimeMobService,
   ) {}
 
-  private readonly projectilesMap = new Map<
-    EntityKey,
-    Map<number, IProjectile>
-  >();
+  private readonly projectilesMap = new Map<EntityKey, Map<number, IProjectile>>();
 
   public tickProjectiles() {
     const updatesByLocation = new Map<string, BatchUpdateAction[]>();
     for (const [attackerKey, projectiles] of this.projectilesMap.entries()) {
-      projectiles.forEach((projectile) => {
+      projectiles.forEach(projectile => {
         const attackerRef = decodeEntityKey(attackerKey);
         const attacker = this.runtimeEntityService.getEntityByType(
           attackerRef.type,
@@ -51,17 +48,12 @@ export class ProjectileService {
           projectile.victimRef.id,
         );
 
-        if (!attacker || !victim || attacker.locationId !== victim.locationId)
-          return;
+        if (!attacker || !victim || attacker.locationId !== victim.locationId) return;
 
-        const attackInProgress = isAttackInProgress(
-          getTileByPosition(victim.x, victim.y),
-          100,
-          {
-            startedAt: projectile.startedAt,
-            startedTile: projectile.startedTile,
-          },
-        );
+        const attackInProgress = isAttackInProgress(getTileByPosition(victim.x, victim.y), 100, {
+          startedAt: projectile.startedAt,
+          startedTile: projectile.startedTile,
+        });
         if (attackInProgress) return;
 
         const result = this.applyProjectileAction(attackerRef, projectile);
@@ -69,10 +61,7 @@ export class ProjectileService {
 
         if (!result) return;
 
-        const batchLocation = getOrCreateArray(
-          updatesByLocation,
-          attacker.locationId,
-        );
+        const batchLocation = getOrCreateArray(updatesByLocation, attacker.locationId);
         batchLocation.push(result);
       });
     }
@@ -102,11 +91,7 @@ export class ProjectileService {
     projectilesMap?.delete(startedAt);
   }
 
-  private applyMiniRoot(
-    entity: TRuntimeEntity,
-    rootTime: number = 200,
-    now: number = Date.now(),
-  ) {
+  private applyMiniRoot(entity: TRuntimeEntity, rootTime: number = 200, now: number = Date.now()) {
     entity.lastMoveAt = now + rootTime;
   }
 
@@ -114,10 +99,7 @@ export class ProjectileService {
     attackerRef: EntityRef,
     projectile: IProjectile,
   ): BatchUpdateAction | undefined {
-    const attacker = this.runtimeEntityService.getEntityByType(
-      attackerRef.type,
-      attackerRef.id,
-    );
+    const attacker = this.runtimeEntityService.getEntityByType(attackerRef.type, attackerRef.id);
     const victim = this.runtimeEntityService.getEntityByType(
       projectile.victimRef.type,
       projectile.victimRef.id,
@@ -136,19 +118,13 @@ export class ProjectileService {
     let skill: CharacterSkill | undefined;
 
     if (isPlayer(attacker) && projectile.skillId) {
-      skill = attacker.characterSkills.find(
-        (skill) => skill.id === projectile.skillId,
-      );
+      skill = attacker.characterSkills.find(skill => skill.id === projectile.skillId);
     }
 
     switch (skill?.skill.type) {
       case SkillType.Target: {
         const receivedDamage = skill.skill.damage;
-        const { remainingHp } = this.applyProjectile(
-          attacker,
-          victim,
-          -receivedDamage,
-        );
+        const { remainingHp } = this.applyProjectile(attacker, victim, -receivedDamage);
         this.applyMiniRoot(victim, 200, now);
         return {
           type: ActionType.Skill,
@@ -166,11 +142,7 @@ export class ProjectileService {
       }
       default: {
         const receivedDamage = attacker.basePhysicalDamage;
-        const { remainingHp } = this.applyProjectile(
-          attacker,
-          victim,
-          -receivedDamage,
-        );
+        const { remainingHp } = this.applyProjectile(attacker, victim, -receivedDamage);
         this.applyMiniRoot(victim, 200, now);
         return {
           type: ActionType.AutoAttack,
@@ -189,11 +161,7 @@ export class ProjectileService {
     }
   }
 
-  private applyProjectile(
-    attacker: TRuntimeEntity,
-    victim: TRuntimeEntity,
-    hpValue: number,
-  ) {
+  private applyProjectile(attacker: TRuntimeEntity, victim: TRuntimeEntity, hpValue: number) {
     const remainingHp = this.updateHp(victim, hpValue);
     if (isMob(victim)) {
       victim.aggro.updateThreatMap(attacker, Math.abs(hpValue));

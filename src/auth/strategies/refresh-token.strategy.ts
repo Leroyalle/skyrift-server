@@ -5,10 +5,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtPayload } from 'src/common/types/jwt-payload.type';
 
 @Injectable()
-export class RefreshTokenStrategy extends PassportStrategy(
-  Strategy,
-  'jwt-refresh',
-) {
+export class RefreshTokenStrategy extends PassportStrategy(Strategy, 'jwt-refresh') {
   constructor() {
     super({
       jwtFromRequest: (req: Request) => {
@@ -23,10 +20,7 @@ export class RefreshTokenStrategy extends PassportStrategy(
     });
   }
 
-  validate(
-    req: Request,
-    payload: JwtPayload,
-  ): { refreshToken: string; [key: string]: unknown } {
+  validate(req: Request, payload: JwtPayload): { refreshToken: string; [key: string]: unknown } {
     const refreshToken = req.cookies?.refreshToken;
     if (!refreshToken) {
       throw new UnauthorizedException('Refresh token not found in cookies');

@@ -18,7 +18,7 @@ export class EffectService implements OnModuleInit {
 
   public async onModuleInit(): Promise<void> {
     const effects = await this.effectRepository.find();
-    effects.forEach((e) => {
+    effects.forEach(e => {
       this.effectsMapById.set(e.id, e);
       this.effectsMapByTypeDuration.set(generateEffectKey(e), e);
     });

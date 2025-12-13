@@ -1,7 +1,4 @@
-export function getDirection(
-  from: { x: number; y: number },
-  to: { x: number; y: number },
-) {
+export function getDirection(from: { x: number; y: number }, to: { x: number; y: number }) {
   const dx = to.x - from.x;
   const dy = to.y - from.y;
 
