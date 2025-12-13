@@ -23,6 +23,9 @@ import { Mob } from 'src/mob/entities/mob.entity';
 import { MobSpawn } from 'src/mob/mob-spawn/entities/mob-spawn.entity';
 import { Effect } from 'src/effect/entities/effect.entity';
 import { ItemTypeEnum } from 'src/common/enums/item-type.enum';
+import { WeaponSlotEnum } from 'src/common/enums/equipment-slot.enum';
+import { BaseItem, Weapon } from 'src/item/entities/item.entity';
+import { ItemService } from 'src/item/item.service';
 
 @Injectable()
 export class SeedService {
@@ -47,6 +50,7 @@ export class SeedService {
     private mobSpawnRepository: Repository<MobSpawn>,
     @InjectRepository(Effect)
     private effectRepository: Repository<Effect>,
+    private readonly itemService: ItemService,
   ) {}
 
   public async run() {
@@ -263,13 +267,7 @@ export class SeedService {
       attackSpeed: 1000,
       isAlive: true,
       bag: {
-        items: [
-          {
-            itemType: ItemTypeEnum.WEAPON,
-            name: 'Перчатка Таноса',
-            iconKey: '',
-          },
-        ],
+        items: [],
       },
     });
 
@@ -287,9 +285,24 @@ export class SeedService {
       attackRange: 4,
       attackSpeed: 1000,
       isAlive: true,
+      bag: {},
     });
 
     console.log('Characters saved');
+
+    const elvenBowItem = await this.itemService.saveWeapon({
+      magicDamage: 0,
+      physicalDamage: 50,
+      durability: 1,
+      slot: WeaponSlotEnum.MAIN_HAND,
+      name: 'Эльфийский лук',
+      iconKey: '',
+      bag: firstCharacter.bag,
+      owner: firstCharacter,
+    });
+
+    firstCharacter.bag.items.push(elvenBowItem);
+    await this.characterRepository.save(firstCharacter);
 
     const stanEffect = await this.effectRepository.save({
       durationMs: 300,

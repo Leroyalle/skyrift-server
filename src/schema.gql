@@ -165,6 +165,12 @@ type Bag {
   id: ID!
   items: [BaseItem!]!
   character: Character!
+
+  """Максимальный размер сумки"""
+  maxSlots: Int!
+
+  """Текущий размер сумки"""
+  currentSlots: Int!
 }
 
 type Weapon implements BaseItem {
@@ -521,7 +527,6 @@ type Query {
   character(id: Int!): Character!
   characterSkill(id: Int!): CharacterSkill!
   bag(id: Int!): Bag!
-  allItems: [BaseItem!]!
   characterClass(id: Int!): CharacterClass!
   skill(id: Int!): Skill!
   location: [Location!]!

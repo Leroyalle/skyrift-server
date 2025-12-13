@@ -29,6 +29,11 @@ import { RequestEquipDto } from './dto/equipment/request-equip.dto';
 import { RuntimeEquipmentService } from './services/player-state/services/runtime-equipment/runtime-equipment.service';
 import { AuthenticatedSocket } from 'src/common/types/socket/auth-socket.type';
 import { RequestUnEquipDto } from './dto/equipment/request-un-equip.dto';
+import { RequestUseItemDto } from './dto/item/request-use-item.dto';
+import { ItemTypeEnum } from 'src/common/enums/item-type.enum';
+import { isArmor } from 'src/item/guards/is-armor';
+import { isWeapon } from 'src/item/guards/is-weapon';
+import { WeaponSlotEnum } from 'src/common/enums/equipment-slot.enum';
 
 @Injectable()
 export class GameService extends BaseLogger {
@@ -366,5 +371,9 @@ export class GameService extends BaseLogger {
       ServerToClientEvents.EquipmentUnequipped,
       { characterId: character.id, slot: input.slot },
     );
+  }
+
+  public handleUseItem(client: AuthenticatedSocket, input: RequestUseItemDto) {
+    return this.inventoryService.use(client.userData.characterId, input.itemId);
   }
 }

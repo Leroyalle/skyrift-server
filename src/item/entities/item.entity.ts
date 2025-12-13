@@ -15,20 +15,7 @@ import {
   TableInheritance,
 } from 'typeorm';
 
-@InterfaceType({
-  resolveType(item: any) {
-    switch (item.itemType) {
-      case ItemTypeEnum.WEAPON:
-        return Weapon;
-      case ItemTypeEnum.ARMOR:
-        return Armor;
-      case ItemTypeEnum.RESOURCE:
-        return Resource;
-      default:
-        return null;
-    }
-  },
-})
+@InterfaceType()
 @Entity()
 @TableInheritance({ column: { type: 'varchar', name: 'itemType' } })
 export abstract class BaseItem {
@@ -52,9 +39,11 @@ export abstract class BaseItem {
   @Field(() => Bag, { nullable: true })
   bag: Bag | null;
 
-  @ManyToOne(() => Character, (character) => character.items)
+  @ManyToOne(() => Character, (character) => character.items, {
+    nullable: true,
+  })
   @Field(() => Character, { description: 'Владелец предмета' })
-  owner: Character;
+  owner: Character | null;
 }
 
 @ObjectType({ implements: BaseItem })

@@ -2,10 +2,10 @@ import { Module } from '@nestjs/common';
 import { ItemService } from './item.service';
 import { ItemResolver } from './item.resolver';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { BaseItem } from './entities/item.entity';
+import { Armor, BaseItem, Resource, Weapon } from './entities/item.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([BaseItem])],
+  imports: [TypeOrmModule.forFeature([BaseItem, Armor, Weapon, Resource])],
   providers: [ItemService, ItemResolver],
   exports: [ItemService],
 })

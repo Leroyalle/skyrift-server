@@ -24,6 +24,7 @@ import { AuthSocket } from 'src/common/decorators/auth-socket.decorator';
 import { AuthenticatedSocket } from 'src/common/types/socket/auth-socket.type';
 import { RequestEquipDto } from './dto/equipment/request-equip.dto';
 import { RequestUnEquipDto } from './dto/equipment/request-un-equip.dto';
+import { RequestUseItemDto } from './dto/item/request-use-item.dto';
 
 @WebSocketGateway({
   namespace: 'game',
@@ -132,6 +133,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @AuthSocket() client: AuthenticatedSocket,
     input: RequestEquipDto,
   ) {
+    console.log('EQUIP ITEM');
     return this.gameService.handleEquip(client, input);
   }
 
@@ -142,5 +144,15 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     input: RequestUnEquipDto,
   ) {
     return this.gameService.handleUnEquip(client, input);
+  }
+
+  @SubscribeMessage(ClientToServerEvents.RequestUseItem)
+  @UseGuards(WsAuthGuard)
+  public requestUseItem(
+    @AuthSocket() client: AuthenticatedSocket,
+    input: RequestUseItemDto,
+  ) {
+    console.log('USE ITEM');
+    return this.gameService.handleUseItem(client, input);
   }
 }
