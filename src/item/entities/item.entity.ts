@@ -1,6 +1,5 @@
 import { Field, ID, Int, InterfaceType, ObjectType } from '@nestjs/graphql';
 import { Bag } from 'src/character/bag/entities/bag.entity';
-import { Character } from 'src/character/entities/character.entity';
 import {
   ArmorSlotEnum,
   WeaponSlotEnum,
@@ -14,6 +13,17 @@ import {
   PrimaryGeneratedColumn,
   TableInheritance,
 } from 'typeorm';
+
+@ObjectType()
+class TextureConfig {
+  @Column()
+  @Field()
+  atlasKey: string;
+
+  @Column()
+  @Field()
+  frameName: string;
+}
 
 @InterfaceType()
 @Entity()
@@ -58,6 +68,10 @@ export class Weapon extends BaseItem {
   @Column({ nullable: true })
   @Field(() => WeaponSlotEnum)
   slot: WeaponSlotEnum;
+
+  @Column(() => TextureConfig, { prefix: false })
+  @Field(() => TextureConfig)
+  texture: TextureConfig;
 }
 
 @ObjectType({ implements: BaseItem })

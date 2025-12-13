@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../user/entities/user.entity';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Location } from 'src/location/entities/location.entity';
 import { Property, TiledMap } from 'src/common/types/tiled-map.type';
 import * as fs from 'fs';
@@ -26,6 +26,7 @@ import { ItemTypeEnum } from 'src/common/enums/item-type.enum';
 import { WeaponSlotEnum } from 'src/common/enums/equipment-slot.enum';
 import { BaseItem, Weapon } from 'src/item/entities/item.entity';
 import { ItemService } from 'src/item/item.service';
+import { Bag } from 'src/character/bag/entities/bag.entity';
 
 @Injectable()
 export class SeedService {
@@ -51,6 +52,11 @@ export class SeedService {
     @InjectRepository(Effect)
     private effectRepository: Repository<Effect>,
     private readonly itemService: ItemService,
+    // @InjectRepository(BaseItem)
+    // private baseItemRepository: Repository<BaseItem>,
+    // @InjectRepository(Bag)
+    // private bagRepository: Repository<Bag>,
+    private dataSource: DataSource,
   ) {}
 
   public async run() {
@@ -298,6 +304,7 @@ export class SeedService {
       name: 'Эльфийский лук',
       iconKey: '',
       bag: firstCharacter.bag,
+      texture: { atlasKey: 'items', frameName: 'elven-bow' },
     });
 
     firstCharacter.bag.items.push(elvenBowItem);
@@ -367,25 +374,25 @@ export class SeedService {
   }
 
   private async clearDatabase() {
-    await this.userRepository.query('TRUNCATE TABLE "user" CASCADE');
-    await this.locationRepository.query('TRUNCATE TABLE "location" CASCADE');
-    await this.factionRepository.query('TRUNCATE TABLE "faction" CASCADE');
-    await this.characterClassRepository.query(
-      'TRUNCATE TABLE "character_class" CASCADE',
+    const tables: string[] = [
+      'bag',
+      'base_item',
+      'effect',
+      'mob_spawn',
+      'mob',
+      'character_skill',
+      'skill',
+      'character',
+      'character_class',
+      'faction',
+      'location',
+      'user',
+    ];
+
+    await this.dataSource.query(
+      `TRUNCATE TABLE ${tables.map((t) => `"${t}"`).join(', ')} CASCADE`,
     );
-    await this.characterRepository.query('TRUNCATE TABLE "character" CASCADE');
-    await this.skillRepository.query('TRUNCATE TABLE "skill" CASCADE');
-    await this.characterSkillRepository.query(
-      'TRUNCATE TABLE "character_skill" CASCADE',
-    );
-    await this.characterSkillRepository.query('TRUNCATE TABLE "mob" CASCADE');
-    await this.characterSkillRepository.query(
-      'TRUNCATE TABLE "mob_spawn" CASCADE',
-    );
-    await this.characterSkillRepository.query(
-      'TRUNCATE TABLE "effect" CASCADE',
-    );
-    console.log('Listings cleared');
+    console.log('Database cleared');
   }
 
   private async readFiles() {

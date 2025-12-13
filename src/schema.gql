@@ -306,6 +306,11 @@ type Location {
   mobSpawn: [MobSpawn!]!
 }
 
+type TextureConfig {
+  atlasKey: String!
+  frameName: String!
+}
+
 type Weapon implements BaseItem {
   id: ID!
   name: String!
@@ -318,6 +323,7 @@ type Weapon implements BaseItem {
   """Прочность предмета"""
   durability: Float!
   slot: WeaponSlotEnum!
+  texture: TextureConfig!
 }
 
 """Слоты оружия"""
