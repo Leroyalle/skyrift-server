@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { RedisService } from 'src/redis/redis.service';
+import { RedisService } from 'src/infrastructure/redis/redis.service';
 import { LocationService } from 'src/location/location.service';
 import { RedisKeysFactory } from 'src/common/infra/redis-keys-factory.infra';
 import { IRuntimeCharacter } from 'src/character/types/runtime-character';

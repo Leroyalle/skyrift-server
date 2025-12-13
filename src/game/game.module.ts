@@ -5,7 +5,7 @@ import { AuthModule } from 'src/auth/auth.module';
 import { UserModule } from 'src/user/user.module';
 import { CharacterModule } from 'src/character/character.module';
 import { LocationModule } from 'src/location/location.module';
-import { RedisModule } from 'src/redis/redis.module';
+import { RedisModule } from 'src/infrastructure/redis/redis.module';
 import { PlayerStateService } from './services/player-state/player-state.service';
 import { CombatService } from './services/combat/combat.service';
 import { SpatialGridService } from './services/spatial-grid/spatial-grid.service';
@@ -28,7 +28,9 @@ import { RuntimeEffectService } from './services/runtime-effect/runtime-effect.s
 import { ProjectileService } from './services/combat/services/projectile/projectile.service';
 import { MovementQueueService } from './services/movement/services/movement-queue/movement-queue.service';
 import { BagModule } from 'src/character/bag/bag.module';
-import { RuntimeBagService } from './services/player-state/services/runtime-bag/runtime-bag.service';
+import { InventoryService } from './services/player-state/services/inventory/inventory.service';
+import { WsAuthGuard } from 'src/common/guards/ws-guard.guard';
+import { RuntimeEquipmentService } from './services/player-state/services/runtime-equipment/runtime-equipment.service';
 
 @Module({
   imports: [
@@ -43,6 +45,7 @@ import { RuntimeBagService } from './services/player-state/services/runtime-bag/
     BagModule,
   ],
   providers: [
+    WsAuthGuard,
     GameGateway,
     GameService,
     PlayerStateService,
@@ -63,7 +66,8 @@ import { RuntimeBagService } from './services/player-state/services/runtime-bag/
     GameLoopService,
     ProjectileService,
     MovementQueueService,
-    RuntimeBagService,
+    InventoryService,
+    RuntimeEquipmentService,
   ],
 })
 export class GameModule {}

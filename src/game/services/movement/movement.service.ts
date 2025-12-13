@@ -113,8 +113,6 @@ export class MovementService {
 
       if (now - entity.lastMoveAt < speed) return;
 
-      console.log('after speed check');
-
       const hasStun = this.runtimeEffectService.findByType(
         {
           type: entity.type,
@@ -128,8 +126,6 @@ export class MovementService {
       const pathStep = queue.steps.shift();
 
       if (!pathStep) return;
-
-      console.log('after path step');
 
       const pixelPosition = getPixelByTile(pathStep);
       if (isCharacterMovementQueue(entityRef, queue)) {
@@ -150,8 +146,6 @@ export class MovementService {
       } else if (isMob(entity)) {
         this.runtimeMobService.moveTo(entity, pixelPosition, now);
       }
-
-      console.log('after move');
 
       // if (prevPosition) {
       this.spatialGridService.update(

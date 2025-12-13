@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { Item } from 'src/item/entities/item.entity';
 import { Repository } from 'typeorm';
 import { Bag } from './entities/bag.entity';
 import { InjectRepository } from '@nestjs/typeorm';
+import { TItem } from 'src/common/types/item.type';
 
 @Injectable()
 export class BagService {
@@ -10,7 +10,7 @@ export class BagService {
     @InjectRepository(Bag) private readonly bagRepository: Repository<Bag>,
   ) {}
 
-  public async addToDb(id: string, item: Item) {
+  public async addToDb(id: string, item: TItem) {
     const bag = await this.bagRepository.findOne({ where: { id } });
     if (!bag) return;
     bag.items.push(item);

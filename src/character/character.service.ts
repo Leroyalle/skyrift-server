@@ -11,11 +11,11 @@ export class CharacterService {
     @InjectRepository(Character)
     private readonly characterRepository: Repository<Character>,
   ) {}
-  create(createCharacterInput: CreateCharacterInput) {
+  public create(createCharacterInput: CreateCharacterInput) {
     return 'This action adds a new character';
   }
 
-  findAll() {
+  public findAll() {
     return `This action returns all character`;
   }
 
@@ -48,11 +48,14 @@ export class CharacterService {
         characterSkills: {
           skill: true,
         },
+        bag: {
+          items: true,
+        },
       },
     });
   }
 
-  findOne(id: number) {
+  public findOne(id: number) {
     return `This action returns a #${id} character`;
   }
 
@@ -63,7 +66,7 @@ export class CharacterService {
     return await this.characterRepository.save(updateCharacterInput);
   }
 
-  remove(id: number) {
+  public remove(id: number) {
     return `This action removes a #${id} character`;
   }
 }

@@ -14,43 +14,20 @@ import { LocationModule } from './location/location.module';
 import { SeedModule } from './seed/seed.module';
 import { GameModule } from './game/game.module';
 import { CharacterModule } from './character/character.module';
-import { RedisModule } from './redis/redis.module';
+import { RedisModule } from './infrastructure/redis/redis.module';
 import { MobModule } from './mob/mob.module';
 import { EffectModule } from './effect/effect.module';
+import { DatabaseModule } from './infrastructure/database/database.module';
+import { GraphqlModule } from './infrastructure/graphql/graphql.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    GraphQLModule.forRoot<ApolloDriverConfig>({
-      driver: ApolloDriver,
-      autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
-      // sortSchema: true,
-      playground: IS_DEV,
-      context: ({ req, res }) => ({ req, res }),
-      // installSubscriptionHandlers: true,
-      buildSchemaOptions: {
-        dateScalarMode: 'timestamp',
-      },
-    }),
-    TypeOrmModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        type: 'postgres',
-        host: configService.get('DB_HOST') as string,
-        port: parseInt(configService.get('DB_PORT') as string, 10),
-        username: configService.get('DB_USERNAME') as string,
-        password: configService.get<string>('DB_PASSWORD') as string,
-        database: configService.get('DB_DATABASE') as string,
-        ssl: {
-          rejectUnauthorized: true,
-        },
-        entities: [__dirname + '/**/*.entity{.ts,.js}'],
-        synchronize: true,
-      }),
-    }),
+    GraphqlModule,
+    DatabaseModule,
+    RedisModule,
     UserModule,
     AuthModule,
     FactionModule,
@@ -60,7 +37,6 @@ import { EffectModule } from './effect/effect.module';
     LocationModule,
     SeedModule,
     GameModule,
-    RedisModule,
     MobModule,
     EffectModule,
   ],

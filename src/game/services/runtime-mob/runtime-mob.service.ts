@@ -62,7 +62,6 @@ export class RuntimeMobService implements OnModuleInit {
     const mobsEntries = Array.from(this.mobsById.values());
 
     for (const mob of mobsEntries) {
-      console.log('mobState', mob.state);
       const now = Date.now();
       if (mob.respawnIn || mob.state === 'dead') {
         if (mob.respawnIn && now >= mob.respawnIn) {
@@ -181,8 +180,6 @@ export class RuntimeMobService implements OnModuleInit {
       { x: mob.x, y: mob.y },
       findLocation,
     );
-
-    console.log({ x: mob.x, y: mob.y }, { x: nextTile.x, y: nextTile.y });
 
     const mobTilePosition = getTileByPosition(
       mob.x,

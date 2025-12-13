@@ -1,7 +1,13 @@
-import { ObjectType, Field, ID } from '@nestjs/graphql';
+import { ObjectType, Field, ID, Int } from '@nestjs/graphql';
 import { Character } from 'src/character/entities/character.entity';
-import { Item } from 'src/item/entities/item.entity';
-import { Entity, OneToMany, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { BaseItem } from 'src/item/entities/item.entity';
+import {
+  Column,
+  Entity,
+  OneToMany,
+  OneToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @ObjectType()
 @Entity()
@@ -10,11 +16,25 @@ export class Bag {
   @Field(() => ID)
   id: string;
 
-  @OneToMany(() => Item, (item) => item.bag)
-  @Field(() => [Item])
-  items: Item[];
+  @OneToMany(() => BaseItem, (item) => item.bag, { cascade: true })
+  @Field(() => [BaseItem])
+  items: BaseItem[];
 
   @OneToOne(() => Character, (character) => character.bag)
   @Field(() => Character)
   character: Character;
+
+  @Column({ default: 10 })
+  @Field(() => Int, {
+    description: 'Максимальный размер сумки',
+    defaultValue: 10,
+  })
+  maxSlots: number;
+
+  @Column({ default: 10 })
+  @Field(() => Int, {
+    description: 'Текущий размер сумки',
+    defaultValue: 10,
+  })
+  currentSlots: number;
 }
