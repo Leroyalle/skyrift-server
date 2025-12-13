@@ -79,6 +79,8 @@ export class InteractionService {
             if (isPlayerInTeleportArea(playerState, teleport)) {
               console.log('use teleport');
               this.movementQueueService.delete(playerState);
+              // TODO: НУЖНО ЧИЩАТЬ ВСЕ ШАГИ И АТАКИ ПРИ ПЕРЕ{ОДЕ ЧЕРЕЗ ЛОКАЦИИ
+
               // this.movementService.deleteMovementQueue(playerState);
               this.pendingInteractions.delete(playerState.id);
               await this.useTeleport(playerState, teleport);
