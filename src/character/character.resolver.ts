@@ -13,7 +13,7 @@ export class CharacterResolver {
   constructor(private readonly characterService: CharacterService) {}
 
   @Mutation(() => Character)
-  createCharacter(
+  public createCharacter(
     @Args('createCharacterInput') createCharacterInput: CreateCharacterInput,
   ) {
     return this.characterService.create(createCharacterInput);
@@ -21,17 +21,12 @@ export class CharacterResolver {
 
   @UseGuards(AccessTokenGuard)
   @Query(() => [Character], { name: 'findUserCharacters' })
-  findUserCharacters(@CurrentUser() user: PayloadUser) {
+  public findUserCharacters(@CurrentUser() user: PayloadUser) {
     return this.characterService.findUserCharacters(user.sub);
   }
 
-  @Query(() => Character, { name: 'character' })
-  findOne(@Args('id', { type: () => Int }) id: number) {
-    return this.characterService.findOne(id);
-  }
-
   @Mutation(() => Character)
-  updateCharacter(
+  public updateCharacter(
     @Args('updateCharacterInput') updateCharacterInput: UpdateCharacterInput,
   ) {
     return this.characterService.update(
@@ -41,7 +36,7 @@ export class CharacterResolver {
   }
 
   @Mutation(() => Character)
-  removeCharacter(@Args('id', { type: () => Int }) id: number) {
+  public removeCharacter(@Args('id', { type: () => Int }) id: number) {
     return this.characterService.remove(id);
   }
 }

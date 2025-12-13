@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateCharacterInput } from './dto/create-character.input';
 import { UpdateCharacterInput } from './dto/update-character.input';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -55,15 +55,18 @@ export class CharacterService {
     });
   }
 
-  public findOne(id: number) {
-    return `This action returns a #${id} character`;
-  }
-
   public async update(
     characterId: string,
     updateCharacterInput: UpdateCharacterInput,
   ) {
-    return await this.characterRepository.save(updateCharacterInput);
+    const character = await this.characterRepository.preload({
+      ...updateCharacterInput,
+      id: characterId,
+    });
+
+    if (!character) throw new NotFoundException('Персонаж не найден');
+
+    return await this.characterRepository.save(character);
   }
 
   public remove(id: number) {
