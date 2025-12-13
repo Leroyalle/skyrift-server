@@ -298,7 +298,6 @@ export class SeedService {
       name: 'Эльфийский лук',
       iconKey: '',
       bag: firstCharacter.bag,
-      owner: firstCharacter,
     });
 
     firstCharacter.bag.items.push(elvenBowItem);

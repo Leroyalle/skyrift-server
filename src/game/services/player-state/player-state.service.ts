@@ -66,9 +66,9 @@ export class PlayerStateService {
   }
 
   public async syncCharacterToDb(characterId: string) {
-    const playerState = this.playersStates.get(characterId);
+    const character = this.playersStates.get(characterId);
 
-    if (!playerState) return;
+    if (!character) return;
     const {
       lastMoveAt: _,
       lastAttackAt: __,
@@ -76,15 +76,15 @@ export class PlayerStateService {
       isAttacking: ____,
       userId: _____,
       ...croppedCharacter
-    } = playerState;
+    } = character;
 
     await this.redisService.hset(
       RedisKeysFactory.playerState(characterId),
-      playerState,
+      character,
     );
 
-    await this.characterService.update(playerState.id, croppedCharacter);
-    return playerState;
+    await this.characterService.update(character.id, croppedCharacter);
+    return character;
   }
 
   public getCharacterState(characterId: string) {

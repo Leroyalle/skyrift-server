@@ -38,12 +38,6 @@ export abstract class BaseItem {
   @ManyToOne(() => Bag, (bag) => bag.items, { nullable: true })
   @Field(() => Bag, { nullable: true })
   bag: Bag | null;
-
-  @ManyToOne(() => Character, (character) => character.items, {
-    nullable: true,
-  })
-  @Field(() => Character, { description: 'Владелец предмета' })
-  owner: Character | null;
 }
 
 @ObjectType({ implements: BaseItem })
