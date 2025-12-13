@@ -1,6 +1,6 @@
 import { ObjectType, Field, Int } from '@nestjs/graphql';
 import { CharacterClass } from 'src/character-class/entities/character-class.entity';
-import { Item } from 'src/item/entities/item.entity';
+import { BaseItem } from 'src/item/entities/item.entity';
 import { Location } from 'src/location/entities/location.entity';
 import { User } from 'src/user/entities/user.entity';
 import {
@@ -14,6 +14,7 @@ import {
 import { CharacterSkill } from '../character-skill/entities/character-skill.entity';
 import { ActorEntity } from 'src/common/entities/actor-entity.entity';
 import { Bag } from '../bag/entities/bag.entity';
+import { Equipment } from '../equipment/entities/equipment.entity';
 
 @ObjectType()
 @Entity()
@@ -51,9 +52,9 @@ export class Character extends ActorEntity {
   @Field(() => CharacterClass, { description: 'Класс персонажа' })
   characterClass: CharacterClass;
 
-  @OneToMany(() => Item, (item) => item.owner)
-  @Field(() => [Item], { description: 'Инвентарь персонажа' })
-  items: Item[];
+  @OneToMany(() => BaseItem, (item) => item.owner)
+  @Field(() => [BaseItem], { description: 'Инвентарь персонажа' })
+  items: BaseItem[];
 
   @ManyToOne(() => Location, (location) => location.characters)
   @JoinColumn({ name: 'locationId' })
@@ -68,7 +69,12 @@ export class Character extends ActorEntity {
   @Field(() => [CharacterSkill], { description: 'Навыки персонаж' })
   characterSkills: CharacterSkill[];
 
-  @OneToOne(() => Bag, (bag) => bag.character)
+  @OneToOne(() => Bag, (bag) => bag.character, { cascade: true })
+  @JoinColumn({ name: 'bag' })
   @Field(() => Bag)
   bag: Bag;
+
+  @OneToOne(() => Equipment, (equipment) => equipment.character)
+  @Field(() => Equipment)
+  equipment: Equipment;
 }

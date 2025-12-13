@@ -8,20 +8,20 @@ export class RedisService {
     this.client.on('error', (err) => console.error('Redis error:', err));
   }
 
-  async get<T = any>(key: string): Promise<T | null> {
+  public async get<T = any>(key: string): Promise<T | null> {
     const data = await this.client.get(key);
     return data ? (JSON.parse(data) as T) : null;
   }
 
-  async set(key: string, value: any): Promise<void> {
+  public async set(key: string, value: any): Promise<void> {
     await this.client.set(key, JSON.stringify(value));
   }
 
-  async del(key: string): Promise<void> {
+  public async del(key: string): Promise<void> {
     await this.client.del(key);
   }
 
-  async mget<T = any[]>(keys: string[]): Promise<(T | null)[]> {
+  public async mget<T = any[]>(keys: string[]): Promise<(T | null)[]> {
     const data = await this.client.mget(keys);
     console.log('[redis service mget]', data);
     if (data) {
@@ -31,39 +31,39 @@ export class RedisService {
     return data;
   }
 
-  async sadd(key: string, value: string): Promise<void> {
+  public async sadd(key: string, value: string): Promise<void> {
     await this.client.sadd(key, value);
   }
 
-  async hset(key: string, value: any): Promise<void> {
+  public async hset(key: string, value: any): Promise<void> {
     await this.client.hset(key, value);
   }
 
-  async smembers(key: string): Promise<string[]> {
+  public async smembers(key: string): Promise<string[]> {
     return await this.client.smembers(key);
   }
 
-  async srem(key: string, value: string): Promise<void> {
+  public async srem(key: string, value: string): Promise<void> {
     await this.client.srem(key, value);
   }
 
-  async hgetAll(key: string): Promise<Record<string, string> | null> {
+  public async hgetAll(key: string): Promise<Record<string, string> | null> {
     return await this.client.hgetall(key);
   }
 
-  pipeline() {
+  public pipeline() {
     return this.client.pipeline();
   }
 
-  async lpush(key: string, data: unknown) {
+  public async lpush(key: string, data: unknown) {
     return await this.client.lpush(key, JSON.stringify(data));
   }
 
-  async ltrim(key: string, start: number, end: number) {
+  public async ltrim(key: string, start: number, end: number) {
     return await this.client.ltrim(key, start, end);
   }
 
-  async lrange(key: string, start: number, end: number) {
+  public async lrange(key: string, start: number, end: number) {
     return await this.client.lrange(key, start, end);
   }
 }

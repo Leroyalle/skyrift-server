@@ -1,5 +1,4 @@
 export enum ServerToClientEvents {
-  // TODO: rename to 'connection'
   PlayerConnected = 'player:connected',
   PlayerDisconnected = 'player:disconnected',
   PlayerResourcesBatch = 'player:resources-batch',
@@ -9,7 +8,6 @@ export enum ServerToClientEvents {
   PlayerSkillCooldownUpdate = 'player:skill-cooldown-update',
   PlayerJoined = 'player:joined',
   PlayerLeft = 'player:left',
-  // PlayerUseTeleport = 'player:use-teleport',
   GameInitialState = 'game:initial-state',
   MovementBatch = 'movement-batch',
   AoESpawn = 'aoe:spawn',
@@ -19,7 +17,13 @@ export enum ServerToClientEvents {
   ChatDirect = 'chat:direct',
   PongTime = 'time:pong',
   RespawnMob = 'mob:respawn',
-  BagAdd = 'bag:add',
+  BagItemAdded = 'bag:item-added', // Изменено
+  BagItemRemoved = 'bag:item-removed', // Изменено
+  EquipmentEquipped = 'equipment:equipped', // Изменено
+  EquipmentUnequipped = 'equipment:unequipped', // Изменено
+
+  GameError = 'game:error',
+  GameNotification = 'game:notification',
 }
 
 export enum ClientToServerEvents {
@@ -33,5 +37,9 @@ export enum ClientToServerEvents {
   PlayerSendLocationMessage = 'player:chat:location:send',
   PlayerSendDirectMessage = 'player:chat:direct:send',
   PingTime = 'time:ping',
-  BagAdd = 'bag:add',
+  RequestBagAdd = 'bag:request-add', // Изменено
+  RequestBagRemove = 'bag:request-remove', // Изменено
+  RequestEquipItem = 'equipment:request-equip', // Изменено
+  RequestUnEquipItem = 'equipment:request-unEquip', // Изменено
+  RequestUseItem = 'bag:request-use-item',
 }
