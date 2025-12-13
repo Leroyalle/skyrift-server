@@ -52,10 +52,6 @@ export class Character extends ActorEntity {
   @Field(() => CharacterClass, { description: 'Класс персонажа' })
   characterClass: CharacterClass;
 
-  @OneToMany(() => BaseItem, (item) => item.owner)
-  @Field(() => [BaseItem], { description: 'Инвентарь персонажа' })
-  items: BaseItem[];
-
   @ManyToOne(() => Location, (location) => location.characters)
   @JoinColumn({ name: 'locationId' })
   @Field(() => Location, { description: 'Локация персонажа', nullable: true })
