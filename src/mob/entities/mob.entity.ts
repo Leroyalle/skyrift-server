@@ -22,7 +22,7 @@ export class Mob extends ActorEntity {
   @Field(() => Int)
   respawnTime: number;
 
-  @OneToMany(() => MobSpawn, (spawn) => spawn.mob, { cascade: true })
+  @OneToMany(() => MobSpawn, spawn => spawn.mob, { cascade: true })
   @Field(() => [MobSpawn])
   spawn: MobSpawn[];
 }

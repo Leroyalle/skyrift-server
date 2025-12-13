@@ -1,9 +1,6 @@
 import { Field, ID, Int, InterfaceType, ObjectType } from '@nestjs/graphql';
 import { Bag } from 'src/character/bag/entities/bag.entity';
-import {
-  ArmorSlotEnum,
-  WeaponSlotEnum,
-} from 'src/common/enums/equipment-slot.enum';
+import { ArmorSlotEnum, WeaponSlotEnum } from 'src/common/enums/equipment-slot.enum';
 import { ItemTypeEnum } from 'src/common/enums/item-type.enum';
 import {
   ChildEntity,
@@ -45,7 +42,7 @@ export abstract class BaseItem {
   @Column()
   iconKey: string;
 
-  @ManyToOne(() => Bag, (bag) => bag.items, { nullable: true })
+  @ManyToOne(() => Bag, bag => bag.items, { nullable: true })
   @Field(() => Bag, { nullable: true })
   bag: Bag | null;
 }

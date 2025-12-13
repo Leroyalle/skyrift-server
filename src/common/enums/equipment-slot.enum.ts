@@ -18,10 +18,7 @@ export enum AccessorySlotEnum {
   RING_2 = 'ring2',
 }
 
-export type EquipmentSlotEnum =
-  | ArmorSlotEnum
-  | WeaponSlotEnum
-  | AccessorySlotEnum;
+export type EquipmentSlotEnum = ArmorSlotEnum | WeaponSlotEnum | AccessorySlotEnum;
 
 registerEnumType(ArmorSlotEnum, {
   name: 'ArmorSlotEnum',

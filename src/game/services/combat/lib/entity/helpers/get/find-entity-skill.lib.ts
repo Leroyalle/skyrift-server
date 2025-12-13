@@ -7,9 +7,7 @@ export function findEntitySkill(
   skillId: string | null,
 ): CharacterSkill | undefined {
   if (isPlayer(entity)) {
-    const entitySkill = entity.characterSkills.find(
-      (skill) => skill.id === skillId,
-    );
+    const entitySkill = entity.characterSkills.find(skill => skill.id === skillId);
 
     return entitySkill;
   }

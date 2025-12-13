@@ -1,8 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import {
-  BatchUpdateAction,
-  Target,
-} from 'src/game/types/batch-update/batch-update-action.type';
+import { BatchUpdateAction, Target } from 'src/game/types/batch-update/batch-update-action.type';
 import { ActiveAoEZone } from './types/active-aoe-zone.type';
 import { SocketService } from 'src/game/services/socket/socket.service';
 import { PlayerStateService } from 'src/game/services/player-state/player-state.service';
@@ -50,9 +47,7 @@ export class AoeService {
         continue;
       }
 
-      const cSkill = attacker.characterSkills.find(
-        (cSkill) => cSkill.id === zone.skillId,
-      );
+      const cSkill = attacker.characterSkills.find(cSkill => cSkill.id === zone.skillId);
 
       if (!cSkill) {
         this.despawnAoEZone(zone);
@@ -71,10 +66,7 @@ export class AoeService {
       //   batchLocation = [];
       //   updatesByLocation.set(zone.locationId, batchLocation);
       // }
-      const batchLocation = getOrCreateArray(
-        updatesByLocation,
-        zone.locationId,
-      );
+      const batchLocation = getOrCreateArray(updatesByLocation, zone.locationId);
 
       const targets: Target[] = [];
       entities.forEach(({ id, type }) => {
@@ -168,8 +160,6 @@ export class AoeService {
   }
 
   public getActiveAoeZones(locationId: string) {
-    return Array.from(this.activeAoEZones.values()).filter(
-      (zone) => zone.locationId === locationId,
-    );
+    return Array.from(this.activeAoEZones.values()).filter(zone => zone.locationId === locationId);
   }
 }

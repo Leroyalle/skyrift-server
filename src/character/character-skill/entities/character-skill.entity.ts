@@ -1,13 +1,7 @@
 import { Field, Int, ObjectType } from '@nestjs/graphql';
 import { Skill } from 'src/character-class/skill/entities/skill.entity';
 import { Character } from 'src/character/entities/character.entity';
-import {
-  Column,
-  Entity,
-  JoinColumn,
-  ManyToOne,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
 @ObjectType()
@@ -20,7 +14,7 @@ export class CharacterSkill {
   @Field(() => Skill, { description: 'Навык' })
   skill: Skill;
 
-  @ManyToOne(() => Character, (character) => character.characterSkills, {
+  @ManyToOne(() => Character, character => character.characterSkills, {
     cascade: true,
   })
   @JoinColumn({ name: 'characterId' })

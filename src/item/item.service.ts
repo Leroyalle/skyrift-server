@@ -16,9 +16,7 @@ export class ItemService {
     private readonly resourceRepository: Repository<Resource>,
   ) {}
 
-  public async saveWeapon(
-    item: Omit<Weapon, 'id' | 'itemType'>,
-  ): Promise<Weapon> {
+  public async saveWeapon(item: Omit<Weapon, 'id' | 'itemType'>): Promise<Weapon> {
     return await this.weaponRepository.save(item);
   }
   public createWeapon(item: Omit<Weapon, 'id'>): Weapon {

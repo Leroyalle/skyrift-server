@@ -12,9 +12,7 @@ export const pushTargetAction = (
     queue.splice(-1, 0, pendingAction);
     return;
   }
-  const chainAuto = characterSkill
-    ? actionRules[characterSkill.skill.type].chainAutoAttack
-    : false;
+  const chainAuto = characterSkill ? actionRules[characterSkill.skill.type].chainAutoAttack : false;
 
   if (chainAuto) {
     queue.push(pendingAction, {

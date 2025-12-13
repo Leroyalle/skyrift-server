@@ -22,11 +22,11 @@ export class MobSpawn {
   @Field(() => Int)
   areaRadius: number;
 
-  @ManyToOne(() => Location, (location) => location.mobSpawn)
+  @ManyToOne(() => Location, location => location.mobSpawn)
   @Field(() => Location)
   location: Location;
 
-  @ManyToOne(() => Mob, (mob) => mob.spawn)
+  @ManyToOne(() => Mob, mob => mob.spawn)
   @Field(() => Mob)
   mob: Mob;
 }

@@ -33,11 +33,7 @@ export class SocketService {
   //   socket.disconnect(true);
   // }
 
-  public sendToUser(
-    userId: string,
-    event: ServerToClientEvents,
-    payload: unknown,
-  ) {
+  public sendToUser(userId: string, event: ServerToClientEvents, payload: unknown) {
     const socketId = this.userIdToSocketId.get(userId);
     if (!socketId || !this.server) return;
     this.server.to(socketId).emit(event, payload);
@@ -136,10 +132,7 @@ export class SocketService {
     return true;
   }
 
-  public notifyDisconnection(
-    client: Socket,
-    message: string = 'Соединение потеряно',
-  ) {
+  public notifyDisconnection(client: Socket, message: string = 'Соединение потеряно') {
     client.emit(ServerToClientEvents.PlayerDisconnected, { message });
   }
 }

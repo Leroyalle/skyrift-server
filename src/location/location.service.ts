@@ -29,9 +29,7 @@ export class LocationService {
     });
 
     const cachedLocations = await Promise.all(
-      findLocations.map(
-        async (location) => await this.setLocationToCache(location),
-      ),
+      findLocations.map(async location => await this.setLocationToCache(location)),
     );
 
     return cachedLocations;
@@ -43,10 +41,7 @@ export class LocationService {
     });
   }
 
-  private async setLocationToCache(
-    location: Location,
-    saveToRedis: boolean = true,
-  ) {
+  private async setLocationToCache(location: Location, saveToRedis: boolean = true) {
     const teleportsMap = buildTeleportsMap(location.tiledMap);
     const cachedLocation: CachedLocation = {
       ...location,
@@ -76,9 +71,7 @@ export class LocationService {
     return await this.loadLocation(locationByFilename.id);
   }
 
-  public async loadLocation(
-    locationId: string,
-  ): Promise<CachedLocation | undefined> {
+  public async loadLocation(locationId: string): Promise<CachedLocation | undefined> {
     const cachedLocation = this.locationCache.get(locationId);
 
     if (cachedLocation) return cachedLocation;
@@ -95,10 +88,7 @@ export class LocationService {
       // };
       // this.locationCache.set(locationId, locationInMemory);
       // this.filenameToLocationId.set(redisLocation.filename, locationId);
-      const cachedLocation = await this.setLocationToCache(
-        redisLocation,
-        false,
-      );
+      const cachedLocation = await this.setLocationToCache(redisLocation, false);
       return cachedLocation;
     }
 

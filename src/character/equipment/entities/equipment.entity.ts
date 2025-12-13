@@ -1,13 +1,7 @@
 import { Field, ID, ObjectType } from '@nestjs/graphql';
 import { Character } from 'src/character/entities/character.entity';
 import { BaseItem } from 'src/item/entities/item.entity';
-import {
-  Entity,
-  JoinColumn,
-  ManyToOne,
-  OneToOne,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 @ObjectType()
 @Entity('equipment')
@@ -17,7 +11,7 @@ export class Equipment {
   id: string;
 
   @Field(() => Character)
-  @OneToOne(() => Character, (character) => character.equipment)
+  @OneToOne(() => Character, character => character.equipment)
   @JoinColumn()
   character: Character;
 

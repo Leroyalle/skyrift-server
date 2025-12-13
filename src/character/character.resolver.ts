@@ -13,9 +13,7 @@ export class CharacterResolver {
   constructor(private readonly characterService: CharacterService) {}
 
   @Mutation(() => Character)
-  public createCharacter(
-    @Args('createCharacterInput') createCharacterInput: CreateCharacterInput,
-  ) {
+  public createCharacter(@Args('createCharacterInput') createCharacterInput: CreateCharacterInput) {
     return this.characterService.create(createCharacterInput);
   }
 
@@ -26,13 +24,8 @@ export class CharacterResolver {
   }
 
   @Mutation(() => Character)
-  public updateCharacter(
-    @Args('updateCharacterInput') updateCharacterInput: UpdateCharacterInput,
-  ) {
-    return this.characterService.update(
-      updateCharacterInput.id,
-      updateCharacterInput,
-    );
+  public updateCharacter(@Args('updateCharacterInput') updateCharacterInput: UpdateCharacterInput) {
+    return this.characterService.update(updateCharacterInput.id, updateCharacterInput);
   }
 
   @Mutation(() => Character)

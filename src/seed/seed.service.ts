@@ -159,16 +159,14 @@ export class SeedService {
     // Алый Ковен
     const bloodguardClass = await this.characterClassRepository.save({
       name: 'Кровавый Щит',
-      description:
-        'Использует магию крови для защиты себя и ослабления врагов.',
+      description: 'Использует магию крови для защиты себя и ослабления врагов.',
       faction: crimsonCovenFaction,
       logo: 'https://example.com/bloodguard_logo.png',
     });
 
     const reaperClass = await this.characterClassRepository.save({
       name: 'Рейвен',
-      description:
-        'Убийца с магией крови, наносит разрушительный урон в ближнем и дальнем бою.',
+      description: 'Убийца с магией крови, наносит разрушительный урон в ближнем и дальнем бою.',
       faction: crimsonCovenFaction,
       logo: 'https://example.com/reaper_logo.png',
     });
@@ -389,22 +387,18 @@ export class SeedService {
       'user',
     ];
 
-    await this.dataSource.query(
-      `TRUNCATE TABLE ${tables.map((t) => `"${t}"`).join(', ')} CASCADE`,
-    );
+    await this.dataSource.query(`TRUNCATE TABLE ${tables.map(t => `"${t}"`).join(', ')} CASCADE`);
     console.log('Database cleared');
   }
 
   private async readFiles() {
     const mapsDir = path.join(__dirname, '..', 'assets', 'maps');
-    const maps = fs.readdirSync(mapsDir).filter((f) => f.endsWith('.tmj'));
+    const maps = fs.readdirSync(mapsDir).filter(f => f.endsWith('.tmj'));
     const tilesetsDir = path.join(__dirname, '..', 'assets', 'tilesets');
-    const tilesets = fs
-      .readdirSync(tilesetsDir)
-      .filter((f) => f.endsWith('.xml'));
+    const tilesets = fs.readdirSync(tilesetsDir).filter(f => f.endsWith('.xml'));
 
     const tilesetEntries = await Promise.all(
-      tilesets.map(async (tileset) => {
+      tilesets.map(async tileset => {
         const tilesetPath = path.join(tilesetsDir, tileset);
         const result = await this.parseXmlTileset(tilesetPath);
         return {
@@ -413,11 +407,9 @@ export class SeedService {
       }),
     );
 
-    const mapEntries = maps.map((map) => {
+    const mapEntries = maps.map(map => {
       const filePath = path.join(mapsDir, map);
-      const parsedMap = JSON.parse(
-        fs.readFileSync(filePath, 'utf-8'),
-      ) as TiledMap;
+      const parsedMap = JSON.parse(fs.readFileSync(filePath, 'utf-8')) as TiledMap;
 
       return { parsedMap, filename: map.split('.')[0] };
     });
@@ -434,13 +426,10 @@ export class SeedService {
       const entries = result.tileset.tile.map((tile: any) => {
         const id = tile.$.id;
         const propsArray = tile.properties?.[0]?.property ?? [];
-        const props = propsArray.reduce(
-          (acc: Record<string, any>, prop: any) => {
-            acc[prop.$.name] = prop.$.value;
-            return acc;
-          },
-          {},
-        );
+        const props = propsArray.reduce((acc: Record<string, any>, prop: any) => {
+          acc[prop.$.name] = prop.$.value;
+          return acc;
+        }, {});
         return [id, props] as [string, Record<string, any>];
       });
 
@@ -483,25 +472,21 @@ export class SeedService {
   // }
 
   private findMapName(tiledMap: TiledMap) {
-    return String(
-      tiledMap.properties.find((property) => property.name === 'name')?.value,
-    );
+    return String(tiledMap.properties.find(property => property.name === 'name')?.value);
   }
 
   private optimizeTilesets(map: TiledMap) {
     const usesIds = new Set<number>();
     for (const layer of map.layers) {
       if (!isTileLayer(layer)) continue;
-      layer.data.forEach((gid) => {
+      layer.data.forEach(gid => {
         if (gid > 0) usesIds.add(gid);
       });
     }
 
-    map.tilesets.forEach((tileset) => {
+    map.tilesets.forEach(tileset => {
       const { firstgid } = tileset;
-      tileset.tiles = tileset.tiles?.filter((tile) =>
-        usesIds.has(firstgid + tile.id),
-      );
+      tileset.tiles = tileset.tiles?.filter(tile => usesIds.has(firstgid + tile.id));
     });
 
     return map;
@@ -509,10 +494,10 @@ export class SeedService {
 
   private createPassableMap(map: TiledMap) {
     const tilesMap = new Map<number, Property[]>();
-    map.tilesets.forEach((tileset) => {
+    map.tilesets.forEach(tileset => {
       const { firstgid } = tileset;
 
-      tileset.tiles?.forEach((tile) => {
+      tileset.tiles?.forEach(tile => {
         tilesMap.set(firstgid + tile.id, tile.properties ?? []);
       });
     });
@@ -532,9 +517,7 @@ export class SeedService {
 
           const props = tilesMap.get(tileId);
           if (!props) continue;
-          const passableProperty = props.find(
-            (prop) => prop.name === 'passable',
-          );
+          const passableProperty = props.find(prop => prop.name === 'passable');
           if (passableProperty && passableProperty.value === false) {
             passableMap[y][x] = 0;
           }
@@ -547,14 +530,14 @@ export class SeedService {
 
   private setNameToTeleportObjects = (map: TiledMap) => {
     const teleportsLayer = map.layers.find(
-      (layer) => layer.name === 'Teleports' && layer.type === 'objectgroup',
+      layer => layer.name === 'Teleports' && layer.type === 'objectgroup',
     );
 
     if (!teleportsLayer) return;
 
     if (!isObjectsLayer(teleportsLayer)) return;
 
-    teleportsLayer.objects.forEach((obj) => {
+    teleportsLayer.objects.forEach(obj => {
       const uuid = uuidv4() as string;
 
       obj.name = uuid;

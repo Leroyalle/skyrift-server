@@ -1,9 +1,7 @@
 import { IRuntimeCharacter } from 'src/character/types/runtime-character';
 
 // FIXME: check
-export function parseLiveCharacterState(
-  raw: Record<string, string>,
-): IRuntimeCharacter {
+export function parseLiveCharacterState(raw: Record<string, string>): IRuntimeCharacter {
   return {} as IRuntimeCharacter;
   // return {
   //   id: raw.id,

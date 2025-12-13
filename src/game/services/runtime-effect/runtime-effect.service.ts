@@ -25,8 +25,7 @@ export class RuntimeEffectService extends BaseLogger {
     super();
   }
 
-  private activeEffects: Map<EntityKey, Map<EffectType, IRuntimeEffect[]>> =
-    new Map();
+  private activeEffects: Map<EntityKey, Map<EffectType, IRuntimeEffect[]>> = new Map();
 
   public effectTick(): void {
     const batchUpdateEffects: Map<string, BatchUpdateAction[]> = new Map();
@@ -35,10 +34,7 @@ export class RuntimeEffectService extends BaseLogger {
       const now = Date.now();
 
       const entityRef = decodeEntityKey(entityKey);
-      const entity = this.runtimeEntityService.getEntityByType(
-        entityRef.type,
-        entityRef.id,
-      );
+      const entity = this.runtimeEntityService.getEntityByType(entityRef.type, entityRef.id);
       if (!entity) continue;
 
       const batchUpdate = getOrCreateArray<BatchUpdateAction>(
@@ -48,11 +44,8 @@ export class RuntimeEffectService extends BaseLogger {
 
       const actualEffectsMap: Map<EffectType, IRuntimeEffect[]> = new Map();
       for (const [type, effects] of effectsMap.entries()) {
-        const actualEffectsArray = getOrCreateArray<IRuntimeEffect>(
-          actualEffectsMap,
-          type,
-        );
-        effects.forEach((effect) => {
+        const actualEffectsArray = getOrCreateArray<IRuntimeEffect>(actualEffectsMap, type);
+        effects.forEach(effect => {
           // TODO: слать запррос что эффект снят
           if (effect.expiresAt > now) {
             this.log('before apply effect');
@@ -89,23 +82,16 @@ export class RuntimeEffectService extends BaseLogger {
     this.activeEffects.set(entityKey, effectsMap);
   }
 
-  public findByType(
-    entityRef: EntityRef,
-    type: EffectType,
-  ): IRuntimeEffect[] | undefined {
+  public findByType(entityRef: EntityRef, type: EffectType): IRuntimeEffect[] | undefined {
     const map = this.activeEffects.get(generateEntityKey(entityRef));
     if (!map) return;
     console.log('FINDBYMAP', Boolean(map));
     return map.get(type);
   }
 
-  private findOrCreateMap(
-    entityRef: EntityRef,
-  ): Map<EffectType, IRuntimeEffect[]> {
+  private findOrCreateMap(entityRef: EntityRef): Map<EffectType, IRuntimeEffect[]> {
     const entityKey = generateEntityKey(entityRef);
-    const effectsMap =
-      this.activeEffects.get(entityKey) ??
-      new Map<EffectType, IRuntimeEffect[]>();
+    const effectsMap = this.activeEffects.get(entityKey) ?? new Map<EffectType, IRuntimeEffect[]>();
     return effectsMap;
   }
 
@@ -122,10 +108,7 @@ export class RuntimeEffectService extends BaseLogger {
     this.log('applyEffect');
 
     const entityRef = decodeEntityKey(entityKey);
-    const entity = this.runtimeEntityService.getEntityByType(
-      entityRef.type,
-      entityRef.id,
-    );
+    const entity = this.runtimeEntityService.getEntityByType(entityRef.type, entityRef.id);
 
     if (!entity) return;
 

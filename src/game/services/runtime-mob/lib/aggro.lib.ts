@@ -46,8 +46,7 @@ export class AggroTable {
 
   public removeEntity(entityRef: EntityRef): EntityRef | null {
     const isTarget =
-      this.currentTarget &&
-      generateEntityKey(this.currentTarget) === generateEntityKey(entityRef);
+      this.currentTarget && generateEntityKey(this.currentTarget) === generateEntityKey(entityRef);
 
     if (isTarget) {
       this.currentTarget = null;

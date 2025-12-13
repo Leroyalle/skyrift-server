@@ -20,7 +20,7 @@ export class Skill {
   @Field({ description: 'ID навыка' })
   id: string;
 
-  @ManyToOne(() => CharacterClass, (characterClass) => characterClass.skills, {
+  @ManyToOne(() => CharacterClass, characterClass => characterClass.skills, {
     onDelete: 'CASCADE',
   })
   @Field(() => CharacterClass, {
@@ -77,7 +77,7 @@ export class Skill {
   })
   duration?: number;
 
-  @OneToMany(() => CharacterSkill, (characterSkill) => characterSkill.skill, {
+  @OneToMany(() => CharacterSkill, characterSkill => characterSkill.skill, {
     cascade: true,
   })
   @Field(() => [CharacterSkill])
@@ -91,7 +91,7 @@ export class Skill {
   @Field({ description: 'Ключ тайлсета' })
   tilesetKey: string;
 
-  @ManyToMany(() => Effect, (effect) => effect.skill)
+  @ManyToMany(() => Effect, effect => effect.skill)
   @JoinTable()
   @Field(() => [Effect])
   effects: Effect[];

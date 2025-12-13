@@ -75,7 +75,7 @@ export class SpatialGridService<
         const bucket = this.cells.get(key);
         affectedCells.push(decodeGridKey(key));
         if (bucket) {
-          bucket.forEach((stringValues) => {
+          bucket.forEach(stringValues => {
             const decoded = decodeEntityKey(stringValues);
             if (entityType && decoded.type !== entityType) return;
             entities.push(decoded);

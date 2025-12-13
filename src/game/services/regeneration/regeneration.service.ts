@@ -22,7 +22,7 @@ export class RegenerationService {
 
     const characters = this.playerStateService.getCharactersArray();
 
-    characters.forEach((char) => {
+    characters.forEach(char => {
       if (now - char.lastHpRegenerationTime < 5000) return;
 
       if (char.hp >= char.maxHp || !char.isAlive) return;
@@ -38,10 +38,7 @@ export class RegenerationService {
       //   updatesByLocation.set(char.locationId, locationBatch);
       // }
 
-      const locationBatch = getOrCreateArray(
-        updatesByLocation,
-        char.locationId,
-      );
+      const locationBatch = getOrCreateArray(updatesByLocation, char.locationId);
 
       locationBatch.push({
         id: char.id,
@@ -53,7 +50,7 @@ export class RegenerationService {
 
     const mobs = this.runtimeMobService.mobsArray;
 
-    mobs.forEach((mob) => {
+    mobs.forEach(mob => {
       if (now - mob.lastHpRegenerationTime < 5000) return;
 
       let hpDelta = 100;

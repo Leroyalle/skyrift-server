@@ -34,15 +34,16 @@ export class GameInitialDataService {
       RedisKeysFactory.locationPlayers(locationId),
     );
 
-    const otherPlayers: IRuntimeCharacter[] = otherPlayersIds.reduce<
-      IRuntimeCharacter[]
-    >((acc, id) => {
-      const character = this.playerStateService.getCharacterState(id);
-      if (character && character.id !== characterId) {
-        acc.push(character);
-      }
-      return acc;
-    }, []);
+    const otherPlayers: IRuntimeCharacter[] = otherPlayersIds.reduce<IRuntimeCharacter[]>(
+      (acc, id) => {
+        const character = this.playerStateService.getCharacterState(id);
+        if (character && character.id !== characterId) {
+          acc.push(character);
+        }
+        return acc;
+      },
+      [],
+    );
 
     const aoeZones = this.aoeService.getActiveAoeZones(character.locationId);
 

@@ -38,7 +38,7 @@ export class RuntimeMobService implements OnModuleInit {
     const locations = await this.locationService.findAndCacheAll();
     for (const location of locations) {
       const mobsSet = this.getOrCreateActiveMobsLocationMap(location.id);
-      location.mobSpawn.forEach((mobSpawn) => {
+      location.mobSpawn.forEach(mobSpawn => {
         const runtimeMob = buildRuntimeMob(mobSpawn);
         mobsSet.add(runtimeMob.id);
         this.mobsById.set(runtimeMob.id, runtimeMob);
@@ -78,11 +78,7 @@ export class RuntimeMobService implements OnModuleInit {
       const currentPos = getTileByPosition(mob.x, mob.y, 32);
       const spawnPos = getTileByPosition(mob.spawnX, mob.spawnY, 32);
 
-      if (
-        currentPos.x === spawnPos.x &&
-        currentPos.y === spawnPos.y &&
-        mob.state === 'return'
-      ) {
+      if (currentPos.x === spawnPos.x && currentPos.y === spawnPos.y && mob.state === 'return') {
         mob.state = 'idle';
       }
 
@@ -104,20 +100,13 @@ export class RuntimeMobService implements OnModuleInit {
         if (mob.currentTarget) {
           console.log('mob has new target 2 before attack', mob.currentTarget);
           this.movementQueueService.delete(mob);
-          await this.combatService.requestAttackMoveForMob(
-            mob.id,
-            mob.currentTarget.id,
-          );
+          await this.combatService.requestAttackMoveForMob(mob.id, mob.currentTarget.id);
           mob.state = 'pursue';
           continue;
         }
       }
 
-      if (
-        !mob.currentTarget &&
-        mob.state !== 'return' &&
-        mob.state !== 'pursue'
-      ) {
+      if (!mob.currentTarget && mob.state !== 'return' && mob.state !== 'pursue') {
         const { entities } = this.spatialGridService.queryRadius(
           mob.locationId,
           mob.x,
@@ -145,19 +134,11 @@ export class RuntimeMobService implements OnModuleInit {
   private hasNewTarget(mob: IRuntimeMob): boolean {
     const oldTarget = mob.currentTarget;
     const newTarget = mob.aggro.getCurrentTarget;
-    return (
-      oldTarget?.id !== newTarget?.id || oldTarget?.type !== newTarget?.type
-    );
+    return oldTarget?.id !== newTarget?.id || oldTarget?.type !== newTarget?.type;
   }
 
-  private checkVictimIsActual(
-    runtimeMob: IRuntimeMob,
-    victimRef: EntityRef,
-  ): boolean {
-    const victim = this.runtimeEntityService.getEntityByType(
-      victimRef.type,
-      victimRef.id,
-    );
+  private checkVictimIsActual(runtimeMob: IRuntimeMob, victimRef: EntityRef): boolean {
+    const victim = this.runtimeEntityService.getEntityByType(victimRef.type, victimRef.id);
 
     if (!victim) return false;
 
@@ -169,9 +150,7 @@ export class RuntimeMobService implements OnModuleInit {
   private async patrol(mob: IRuntimeMob): Promise<void> {
     if (mob.state !== 'idle') return;
 
-    const findLocation = await this.locationService.loadLocation(
-      mob.locationId,
-    );
+    const findLocation = await this.locationService.loadLocation(mob.locationId);
 
     if (!findLocation) return;
 
@@ -181,11 +160,7 @@ export class RuntimeMobService implements OnModuleInit {
       findLocation,
     );
 
-    const mobTilePosition = getTileByPosition(
-      mob.x,
-      mob.y,
-      findLocation.tileWidth,
-    );
+    const mobTilePosition = getTileByPosition(mob.x, mob.y, findLocation.tileWidth);
 
     const path = await this.pathFindingService.getPlayerPath(
       mob.locationId,
@@ -200,20 +175,12 @@ export class RuntimeMobService implements OnModuleInit {
     mob.state = 'move';
   }
 
-  private async hasExceededLeashDistance(
-    runtimeMob: IRuntimeMob,
-  ): Promise<boolean> {
-    const findLocation = await this.locationService.loadLocation(
-      runtimeMob.locationId,
-    );
+  private async hasExceededLeashDistance(runtimeMob: IRuntimeMob): Promise<boolean> {
+    const findLocation = await this.locationService.loadLocation(runtimeMob.locationId);
 
     if (!findLocation) throw new Error('Location is not found');
 
-    const currentPosition = getTileByPosition(
-      runtimeMob.x,
-      runtimeMob.y,
-      findLocation.tileWidth,
-    );
+    const currentPosition = getTileByPosition(runtimeMob.x, runtimeMob.y, findLocation.tileWidth);
 
     const spawnPosition = getTileByPosition(
       runtimeMob.spawnX,
@@ -237,10 +204,7 @@ export class RuntimeMobService implements OnModuleInit {
       return true;
     }
 
-    const actualResult = this.checkVictimIsActual(
-      runtimeMob,
-      runtimeMob.currentTarget,
-    );
+    const actualResult = this.checkVictimIsActual(runtimeMob, runtimeMob.currentTarget);
 
     if (!actualResult) {
       this.returnMob(runtimeMob, path);
@@ -250,10 +214,7 @@ export class RuntimeMobService implements OnModuleInit {
     return this.handleSwitchMobToReturnOrPursue(runtimeMob, path);
   }
 
-  private handleSwitchMobToReturnOrPursue(
-    mob: IRuntimeMob,
-    path: PositionDto[],
-  ): boolean {
+  private handleSwitchMobToReturnOrPursue(mob: IRuntimeMob, path: PositionDto[]): boolean {
     if (path.length > 5) {
       this.returnMob(mob, path);
       return true;
@@ -300,9 +261,7 @@ export class RuntimeMobService implements OnModuleInit {
     );
 
     const uniqueTiles = affectedCells.filter(
-      (tile) =>
-        (tile.x !== tileX || tile.y !== tileY) &&
-        location.passableMap[tile.y][tile.x] === 1,
+      tile => (tile.x !== tileX || tile.y !== tileY) && location.passableMap[tile.y][tile.x] === 1,
     );
 
     const tileIndex = getRandomValue(0, uniqueTiles.length - 1);
@@ -344,11 +303,7 @@ export class RuntimeMobService implements OnModuleInit {
     spawnMob.respawnIn = now + spawnMob.respawnTime;
   }
 
-  public moveTo(
-    runtimeMob: IRuntimeMob,
-    to: PositionDto,
-    now: number,
-  ): IRuntimeMob {
+  public moveTo(runtimeMob: IRuntimeMob, to: PositionDto, now: number): IRuntimeMob {
     runtimeMob.x = to.x;
     runtimeMob.y = to.y;
     runtimeMob.lastMoveAt = now;
