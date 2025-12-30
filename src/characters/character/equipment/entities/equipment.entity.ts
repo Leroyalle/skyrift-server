@@ -1,5 +1,5 @@
 import { Field, ID, ObjectType } from '@nestjs/graphql';
-import { Character } from 'src/character/entities/character.entity';
+import { Character } from 'src/characters/character/entities/character.entity';
 import { BaseItem } from 'src/item/entities/item.entity';
 import { Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 

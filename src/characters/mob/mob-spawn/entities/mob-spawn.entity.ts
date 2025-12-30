@@ -1,6 +1,6 @@
 import { Field, ID, Int, ObjectType } from '@nestjs/graphql';
 import { Location } from 'src/location/entities/location.entity';
-import { Mob } from 'src/mob/entities/mob.entity';
+import { Mob } from 'src/characters/mob/entities/mob.entity';
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()

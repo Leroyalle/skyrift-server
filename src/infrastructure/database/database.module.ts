@@ -14,9 +14,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
         username: configService.get('DB_USERNAME') as string,
         password: configService.get<string>('DB_PASSWORD') as string,
         database: configService.get('DB_DATABASE') as string,
-        ssl: {
-          rejectUnauthorized: true,
-        },
+        // ssl: {
+        //   rejectUnauthorized: true,
+        // },
         entities: [__dirname + '/../../**/*.entity.{ts,js}'],
         synchronize: true,
       }),

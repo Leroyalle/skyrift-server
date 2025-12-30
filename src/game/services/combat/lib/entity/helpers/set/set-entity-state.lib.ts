@@ -1,4 +1,7 @@
-import { CharacterActionState, IRuntimeCharacter } from 'src/character/types/runtime-character';
+import {
+  CharacterActionState,
+  IRuntimeCharacter,
+} from 'src/characters/character/types/runtime-character';
 import { MobActionState, IRuntimeMob } from 'src/game/services/runtime-mob/types/runtime-mob.type';
 import { TRuntimeEntity } from 'src/game/types/entity/runtime-entity.type';
 import { isMob } from '../../guards/is-mob.lib';

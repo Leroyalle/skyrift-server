@@ -9,9 +9,9 @@ import * as path from 'path';
 import * as xml2js from 'xml2js';
 import { Faction } from 'src/faction/entities/faction.entity';
 import { CharacterClass } from 'src/character-class/entities/character-class.entity';
-import { Character } from 'src/character/entities/character.entity';
+import { Character } from 'src/characters/character/entities/character.entity';
 import * as argon2 from 'argon2';
-import { CharacterSkill } from 'src/character/character-skill/entities/character-skill.entity';
+import { CharacterSkill } from 'src/characters/character/character-skill/entities/character-skill.entity';
 import { Skill } from 'src/character-class/skill/entities/skill.entity';
 import { SkillType } from 'src/common/enums/skill/skill-type.enum';
 import { EffectType } from 'src/common/enums/skill/effect-type.enum';
@@ -19,14 +19,14 @@ import { isTileLayer } from './guards/is-tile-layer';
 import { v4 as uuidv4 } from 'uuid';
 import { isObjectsLayer } from './guards/is-objects-layer';
 import { FactionEnum } from 'src/faction/types/faction.enum';
-import { Mob } from 'src/mob/entities/mob.entity';
-import { MobSpawn } from 'src/mob/mob-spawn/entities/mob-spawn.entity';
+import { Mob } from 'src/characters/mob/entities/mob.entity';
+import { MobSpawn } from 'src/characters/mob/mob-spawn/entities/mob-spawn.entity';
 import { Effect } from 'src/effect/entities/effect.entity';
 import { ItemTypeEnum } from 'src/common/enums/item-type.enum';
 import { WeaponSlotEnum } from 'src/common/enums/equipment-slot.enum';
 import { BaseItem, Weapon } from 'src/item/entities/item.entity';
 import { ItemService } from 'src/item/item.service';
-import { Bag } from 'src/character/bag/entities/bag.entity';
+import { Bag } from 'src/characters/character/bag/entities/bag.entity';
 
 @Injectable()
 export class SeedService {

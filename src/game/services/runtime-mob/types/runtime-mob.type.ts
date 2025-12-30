@@ -1,8 +1,8 @@
 import { PositionDto } from 'src/common/dto/position.dto';
 import { RuntimeActorEntity } from 'src/common/types/actor-entity.type';
 import { TDirection } from 'src/game/types/entity/direction.type';
-import { Mob } from 'src/mob/entities/mob.entity';
-import { MobSpawn } from 'src/mob/mob-spawn/entities/mob-spawn.entity';
+import { Mob } from 'src/characters/mob/entities/mob.entity';
+import { MobSpawn } from 'src/characters/mob/mob-spawn/entities/mob-spawn.entity';
 import { AggroTable } from '../lib/aggro.lib';
 
 export interface IRuntimeMob

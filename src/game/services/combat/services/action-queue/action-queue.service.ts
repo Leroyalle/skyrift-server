@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { CharacterSkill } from 'src/character/character-skill/entities/character-skill.entity';
+import { CharacterSkill } from 'src/characters/character/character-skill/entities/character-skill.entity';
 import { generateEntityKey } from 'src/game/lib/entity/generate-entity-key.lib';
 import { EntityRef } from 'src/game/types/entity/entity-ref.type';
 import { EntityKey } from 'src/game/types/entity/keys/entity-key.type';

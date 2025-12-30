@@ -64,7 +64,7 @@ export class AuthService {
     return await this.userService.update({ id: userId, refreshToken: null });
   }
 
-  async updateRefreshToken(userId: string, refreshToken: string) {
+  public async updateRefreshToken(userId: string, refreshToken: string) {
     return await this.userService.update({
       id: userId,
       refreshToken: await argon2.hash(refreshToken),

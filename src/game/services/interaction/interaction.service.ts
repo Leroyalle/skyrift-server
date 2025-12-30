@@ -7,7 +7,7 @@ import { Socket } from 'socket.io';
 import { RequestUseTeleportDto } from 'src/game/dto/request-use-teleport.dto';
 import { verifyUserDataInSocket } from 'src/game/lib/verify-user-data-in-socket.lib';
 import { isPlayerInTeleportArea } from 'src/game/lib/teleport/is-player-in-teleport-radius.lib';
-import { IRuntimeCharacter } from 'src/character/types/runtime-character';
+import { IRuntimeCharacter } from 'src/characters/character/types/runtime-character';
 import { SpatialGridService } from '../spatial-grid/spatial-grid.service';
 import { RedisService } from 'src/infrastructure/redis/redis.service';
 import { RedisKeysFactory } from 'src/common/infra/redis-keys-factory.infra';

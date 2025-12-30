@@ -1,6 +1,6 @@
 import { ObjectType, Field, Int } from '@nestjs/graphql';
 import { CharacterClass } from 'src/character-class/entities/character-class.entity';
-import { CharacterSkill } from 'src/character/character-skill/entities/character-skill.entity';
+import { CharacterSkill } from 'src/characters/character/character-skill/entities/character-skill.entity';
 import { SkillType } from 'src/common/enums/skill/skill-type.enum';
 import {
   Column,

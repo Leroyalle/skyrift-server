@@ -9,7 +9,7 @@ import { generateEntityKey } from 'src/game/lib/entity/generate-entity-key.lib';
 import { TRuntimeEntity } from 'src/game/types/entity/runtime-entity.type';
 import { isMob } from '../../lib/entity/guards/is-mob.lib';
 import { ActionType } from 'src/game/types/pending-actions.type';
-import { CharacterSkill } from 'src/character/character-skill/entities/character-skill.entity';
+import { CharacterSkill } from 'src/characters/character/character-skill/entities/character-skill.entity';
 import { isPlayer } from '../../lib/entity/guards/is-player.lib';
 import { SkillType } from 'src/common/enums/skill/skill-type.enum';
 import { BatchUpdateAction } from 'src/game/types/batch-update/batch-update-action.type';

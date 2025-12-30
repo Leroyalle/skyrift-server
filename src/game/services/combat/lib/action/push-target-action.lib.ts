@@ -1,6 +1,6 @@
 import { ActionType, PendingAction } from 'src/game/types/pending-actions.type';
 import { actionRules } from '../../services/action-queue/constants/action-rules.constants';
-import { CharacterSkill } from 'src/character/character-skill/entities/character-skill.entity';
+import { CharacterSkill } from 'src/characters/character/character-skill/entities/character-skill.entity';
 
 export const pushTargetAction = (
   queue: PendingAction[],

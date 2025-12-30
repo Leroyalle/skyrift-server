@@ -5,11 +5,11 @@ import { User } from 'src/user/entities/user.entity';
 import { Location } from 'src/location/entities/location.entity';
 import { Faction } from 'src/faction/entities/faction.entity';
 import { CharacterClass } from 'src/character-class/entities/character-class.entity';
-import { Character } from 'src/character/entities/character.entity';
+import { Character } from 'src/characters/character/entities/character.entity';
 import { Skill } from 'src/character-class/skill/entities/skill.entity';
-import { CharacterSkill } from 'src/character/character-skill/entities/character-skill.entity';
-import { Mob } from 'src/mob/entities/mob.entity';
-import { MobSpawn } from 'src/mob/mob-spawn/entities/mob-spawn.entity';
+import { CharacterSkill } from 'src/characters/character/character-skill/entities/character-skill.entity';
+import { Mob } from 'src/characters/mob/entities/mob.entity';
+import { MobSpawn } from 'src/characters/mob/mob-spawn/entities/mob-spawn.entity';
 import { Effect } from 'src/effect/entities/effect.entity';
 import { ItemModule } from 'src/item/item.module';
 

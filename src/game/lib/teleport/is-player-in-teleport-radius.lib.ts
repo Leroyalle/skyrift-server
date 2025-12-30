@@ -1,4 +1,4 @@
-import { IRuntimeCharacter } from 'src/character/types/runtime-character';
+import { IRuntimeCharacter } from 'src/characters/character/types/runtime-character';
 import { Teleport } from 'src/location/types/teleport.type';
 
 export const isPlayerInTeleportArea = (playerState: IRuntimeCharacter, teleport: Teleport) => {
