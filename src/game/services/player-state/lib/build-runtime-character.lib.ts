@@ -35,5 +35,6 @@ export const buildRuntimeCharacter = (character: Character): IRuntimeCharacter =
     walkSpeed: character.walkSpeed,
     bag: character.bag,
     equipment: character.equipment,
+    quests: [],
   };
 };

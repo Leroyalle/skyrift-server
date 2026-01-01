@@ -1,10 +1,14 @@
 import { Character } from 'src/characters/character/entities/character.entity';
 import { Timestamp } from 'src/common/entities/timestamp.entity';
-import { Column, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Quest } from './quest.entity';
+import { Field, ID, ObjectType } from '@nestjs/graphql';
 
+@ObjectType()
+@Entity('player_quests')
 export class PlayerQuest extends Timestamp {
   @PrimaryGeneratedColumn('uuid')
+  @Field(() => ID)
   id: string;
 
   @ManyToOne(() => Character, character => character.quests, { onDelete: 'CASCADE' })

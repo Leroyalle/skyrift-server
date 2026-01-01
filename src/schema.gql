@@ -391,6 +391,76 @@ type Equipment {
   cloak: BaseItem!
 }
 
+type NpcSpawn {
+  id: ID!
+  spawnX: Int!
+  spawnY: Int!
+  areaRadius: Int!
+  location: Location!
+  entity: [Npc!]!
+}
+
+type Npc {
+  id: ID!
+
+  """Имя"""
+  name: String!
+
+  """Уровень"""
+  level: Int!
+
+  """Максимальное здоровье"""
+  maxHp: Int!
+
+  """Текущее здоровье"""
+  hp: Int!
+
+  """Физический урон"""
+  basePhysicalDamage: Int!
+
+  """Магический урон"""
+  baseMagicDamage: Int!
+
+  """Физическая защита (снижает физ. урон)"""
+  physicalDefense: Int!
+
+  """Магическая защита (снижает маг. урон)"""
+  magicDefense: Int!
+
+  """Множитель крит. урона"""
+  critMultiplier: Float!
+
+  """Скорость атаки (уд/сек)"""
+  attackSpeed: Float!
+
+  """Дистанция атаки (в тайлах)"""
+  attackRange: Int!
+  isAlive: Boolean!
+
+  """X координата позиции игрока"""
+  x: Int!
+
+  """Y координата позиции игрока"""
+  y: Int!
+  walkSpeed: Int!
+  spawn: NpcSpawn!
+  givenQuests: [Quest!]!
+}
+
+type Quest {
+  id: ID!
+  name: String!
+  description: String!
+  expReward: Int!
+  goldReward: Int!
+  playerQuests: PlayerQuest!
+  giverNpc: Npc!
+}
+
+type PlayerQuest {
+  id: ID!
+}
+
 type Character {
   id: ID!
 
@@ -463,6 +533,7 @@ type Character {
   characterSkills: [CharacterSkill!]!
   bag: Bag!
   equipment: Equipment!
+  quests: [PlayerQuest!]!
 }
 
 type User {

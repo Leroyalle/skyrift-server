@@ -27,6 +27,11 @@ import { WeaponSlotEnum } from 'src/common/enums/equipment-slot.enum';
 import { BaseItem, Weapon } from 'src/item/entities/item.entity';
 import { ItemService } from 'src/item/item.service';
 import { Bag } from 'src/characters/character/bag/entities/bag.entity';
+import { QuestService } from 'src/quest/quest.service';
+import { NpcService } from 'src/characters/npc/npc.service';
+import { MobService } from 'src/characters/mob/mob.service';
+import { SpawnService } from 'src/world/spawn/spawn.service';
+import { setupNpc } from './lib/setup-npc.lib';
 
 @Injectable()
 export class SeedService {
@@ -56,7 +61,11 @@ export class SeedService {
     // private baseItemRepository: Repository<BaseItem>,
     // @InjectRepository(Bag)
     // private bagRepository: Repository<Bag>,
-    private dataSource: DataSource,
+    private readonly dataSource: DataSource,
+    private readonly questService: QuestService,
+    private readonly npcService: NpcService,
+    private readonly mobService: MobService,
+    private readonly spawnService: SpawnService,
   ) {}
 
   public async run() {
@@ -112,7 +121,6 @@ export class SeedService {
       logo: 'https://example.com/archer_logo.png',
     });
 
-    // Доминион Рассвета
     const paladinClass = await this.characterClassRepository.save({
       name: 'Паладин',
       description: 'Тяжёлая броня и щит, держит фронт и защищает союзников.',
@@ -134,7 +142,6 @@ export class SeedService {
       logo: 'https://example.com/magistr_logo.png',
     });
 
-    // Серебролистые
     const wardClass = await this.characterClassRepository.save({
       name: 'Хранитель',
       description: 'Защитник леса, крепкая броня и природная магия.',
@@ -156,7 +163,6 @@ export class SeedService {
       logo: 'https://example.com/druid_logo.png',
     });
 
-    // Алый Ковен
     const bloodguardClass = await this.characterClassRepository.save({
       name: 'Кровавый Щит',
       description: 'Использует магию крови для защиты себя и ослабления врагов.',
@@ -178,7 +184,6 @@ export class SeedService {
       logo: 'https://example.com/hemomancer_logo.png',
     });
 
-    // Пламенорождённые
     const fireguardClass = await this.characterClassRepository.save({
       name: 'Пиростраж',
       description: 'Держит фронт и сжигает врагов вокруг.',
@@ -365,6 +370,35 @@ export class SeedService {
     await this.characterSkillRepository.save({
       character: firstCharacter,
       skill: fireHailSkill,
+    });
+
+    const magisterNpc = await this.npcService.create({
+      ...setupNpc({ name: 'Магистр СГ', x: 2000, y: 1000, givenQuests: [] }),
+    });
+
+    const firstQuest = await this.questService.createQuest({
+      name: 'Ель - хвойная',
+      description: 'Отпили и притащи огромную ветвь ели в кабинет магистра',
+      expReward: 100,
+      goldReward: 200,
+      itemRewards: [
+        {
+          quantity: 1,
+          templateId: elvenBowItem.id,
+        },
+      ],
+      prerequisites: [],
+      steps: [],
+      playerQuests: [],
+      giverNpc: magisterNpc,
+    });
+
+    await this.questService.createPlayerQuest({
+      completedAt: null,
+      player: firstCharacter,
+      quest: firstQuest,
+      stepIndex: 0,
+      progress: null,
     });
 
     console.log('Listings seeded');

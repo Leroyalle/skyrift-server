@@ -24,4 +24,12 @@ export class QuestService {
   public async markAsCompleted(id: string) {
     return await this.playerQuestRepository.update(id, { completedAt: new Date() });
   }
+
+  public async createQuest(quest: Omit<Quest, 'id'>) {
+    return await this.questRepository.save(quest);
+  }
+
+  public async createPlayerQuest(playerQuest: Omit<PlayerQuest, 'id' | 'createdAt' | 'updatedAt'>) {
+    return await this.playerQuestRepository.save(playerQuest);
+  }
 }

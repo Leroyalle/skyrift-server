@@ -1,11 +1,15 @@
-import { Field, Int } from '@nestjs/graphql';
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Field, ID, Int, ObjectType } from '@nestjs/graphql';
+import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { PlayerQuest } from './player-quest.entity';
 import { QuestStep } from '../types/quest-step.type';
+import { QuestPrerequisite } from '../types/prerequisites.type';
+import { Npc } from 'src/characters/npc/entities/npc.entity';
 
+@ObjectType()
 @Entity('quests')
 export class Quest {
   @PrimaryGeneratedColumn('uuid')
+  @Field(() => ID)
   id: string;
 
   @Column()
@@ -33,7 +37,14 @@ export class Quest {
   @Column({ type: 'jsonb' })
   steps: QuestStep[];
 
-  @Column()
+  @OneToMany(() => PlayerQuest, playerQuest => playerQuest.quest)
   @Field(() => PlayerQuest)
   playerQuests: PlayerQuest[];
+
+  @Column({ type: 'jsonb', nullable: true })
+  prerequisites: QuestPrerequisite[];
+
+  @ManyToOne(() => Npc, npc => npc.givenQuests)
+  @Field(() => Npc)
+  giverNpc: Npc;
 }

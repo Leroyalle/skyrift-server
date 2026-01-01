@@ -7,5 +7,6 @@ import { NpcSpawn } from './entities/npc-spawn.entity';
 @Module({
   imports: [TypeOrmModule.forFeature([MobSpawn, NpcSpawn])],
   providers: [SpawnService],
+  exports: [SpawnService],
 })
 export class SpawnModule {}

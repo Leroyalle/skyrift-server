@@ -12,6 +12,10 @@ import { Mob } from 'src/characters/mob/entities/mob.entity';
 import { MobSpawn } from 'src/world/spawn/entities/mob-spawn.entity';
 import { Effect } from 'src/effect/entities/effect.entity';
 import { ItemModule } from 'src/item/item.module';
+import { QuestModule } from 'src/quest/quest.module';
+import { NpcModule } from 'src/characters/npc/npc.module';
+import { MobModule } from 'src/characters/mob/mob.module';
+import { SpawnModule } from 'src/world/spawn/spawn.module';
 
 @Module({
   imports: [
@@ -28,6 +32,10 @@ import { ItemModule } from 'src/item/item.module';
       Effect,
     ]),
     ItemModule,
+    QuestModule,
+    NpcModule,
+    MobModule,
+    SpawnModule,
   ],
   providers: [SeedService],
 })
