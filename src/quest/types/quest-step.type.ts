@@ -6,17 +6,23 @@ interface BaseQuestStep {
 }
 
 export interface KillStep extends BaseQuestStep {
-  type: 'kill';
+  type: StepType.Kill;
   target: 'mob' | 'npc';
   mobTemplateId: string;
   count: number;
 }
 export interface CollectStep extends BaseQuestStep {
-  type: 'collect';
+  type: StepType.Collect;
   itemTemplateId: string;
   count: number;
 }
 export interface TalkStep extends BaseQuestStep {
-  type: 'talk';
+  type: StepType.Talk;
   npcId: string;
+}
+
+export enum StepType {
+  Kill = 'kill',
+  Collect = 'collect',
+  Talk = 'talk',
 }

@@ -32,6 +32,7 @@ import { NpcService } from 'src/characters/npc/npc.service';
 import { MobService } from 'src/characters/mob/mob.service';
 import { SpawnService } from 'src/world/spawn/spawn.service';
 import { setupNpc } from './lib/setup-npc.lib';
+import { StepType } from 'src/quest/types/quest-step.type';
 
 @Injectable()
 export class SeedService {
@@ -227,7 +228,7 @@ export class SeedService {
       }),
     );
 
-    const demonMob = this.mobRepository.create({
+    const orcMob = this.mobRepository.create({
       name: 'Суленыч',
       magicDefense: 1,
       physicalDefense: 1,
@@ -255,7 +256,7 @@ export class SeedService {
       }),
     });
 
-    await this.mobRepository.save(demonMob);
+    await this.mobRepository.save(orcMob);
 
     const firstCharacter = await this.characterRepository.save({
       name: 'Leroyalle',
@@ -388,7 +389,22 @@ export class SeedService {
         },
       ],
       prerequisites: [],
-      steps: [],
+      steps: [
+        {
+          id: 'first',
+          description: 'Убейте 5 орков',
+          type: StepType.Kill,
+          count: 5,
+          mobTemplateId: orcMob.id,
+          target: 'mob',
+        },
+        {
+          id: 'final',
+          description: 'Поговорите с магистром',
+          type: StepType.Talk,
+          npcId: magisterNpc.id,
+        },
+      ],
       playerQuests: [],
       giverNpc: magisterNpc,
     });
