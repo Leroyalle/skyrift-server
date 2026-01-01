@@ -7,7 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 export class MobService {
   constructor(@InjectRepository(Mob) private readonly mobRepository: Repository<Mob>) {}
 
-  async create(createMobInput: Omit<Mob, 'id'>) {
+  public async create(createMobInput: Omit<Mob, 'id'>) {
     return await this.mobRepository.save(createMobInput);
   }
 }

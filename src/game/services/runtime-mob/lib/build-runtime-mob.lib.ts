@@ -1,28 +1,28 @@
-import { MobSpawn } from 'src/characters/mob/mob-spawn/entities/mob-spawn.entity';
+import { MobSpawn } from 'src/world/spawn/entities/mob-spawn.entity';
 import { IRuntimeMob } from '../types/runtime-mob.type';
 import { AggroTable } from './aggro.lib';
-export function buildRuntimeMob(mobSpawn: MobSpawn): IRuntimeMob {
-  if (!mobSpawn.mob) throw new Error('Mob is not loaded in spawn!');
+export function buildRuntimeMob(mobSpawn: MobSpawn): IRuntimeMob[] {
+  if (!mobSpawn.entity) throw new Error('Mob is not loaded in spawn!');
   if (!mobSpawn.location) throw new Error('Location is not loaded in spawn!');
-  return {
+  return mobSpawn.entity.map(mob => ({
     id: mobSpawn.id,
-    mobId: mobSpawn.mob.id,
-    name: mobSpawn.mob.name,
+    mobId: mob.id,
+    name: mob.name,
     x: mobSpawn.spawnX,
     y: mobSpawn.spawnY,
     spawnX: mobSpawn.spawnX,
     spawnY: mobSpawn.spawnY,
-    walkSpeed: mobSpawn.mob.walkSpeed,
-    triggerRange: mobSpawn.mob.triggerRange,
-    respawnTime: mobSpawn.mob.respawnTime,
+    walkSpeed: mob.walkSpeed,
+    triggerRange: mob.triggerRange,
+    respawnTime: mob.respawnTime,
     type: 'mob',
     state: 'idle',
     respawnIn: null,
-    physicalDefense: mobSpawn.mob.physicalDefense,
-    magicDefense: mobSpawn.mob.magicDefense,
-    maxHp: mobSpawn.mob.maxHp,
+    physicalDefense: mob.physicalDefense,
+    magicDefense: mob.magicDefense,
+    maxHp: mob.maxHp,
     locationId: mobSpawn.location.id,
-    level: mobSpawn.mob.level,
+    level: mob.level,
     lastMoveAt: 0,
     lastHpRegenerationTime: 0,
     lastAttackAt: 0,
@@ -31,17 +31,17 @@ export function buildRuntimeMob(mobSpawn: MobSpawn): IRuntimeMob {
     isInSpawnArea: true,
     isAttacking: false,
     isAlive: true,
-    hp: mobSpawn.mob.hp,
-    expReward: mobSpawn.mob.expReward,
+    hp: mob.hp,
+    expReward: mob.expReward,
     currentTarget: null,
     currentPath: null,
-    critMultiplier: mobSpawn.mob.critMultiplier,
-    chaseSpeed: mobSpawn.mob.chaseSpeed,
-    basePhysicalDamage: mobSpawn.mob.basePhysicalDamage,
-    baseMagicDamage: mobSpawn.mob.baseMagicDamage,
-    attackSpeed: mobSpawn.mob.attackSpeed,
-    attackRange: mobSpawn.mob.attackRange,
+    critMultiplier: mob.critMultiplier,
+    chaseSpeed: mob.chaseSpeed,
+    basePhysicalDamage: mob.basePhysicalDamage,
+    baseMagicDamage: mob.baseMagicDamage,
+    attackSpeed: mob.attackSpeed,
+    attackRange: mob.attackRange,
     areaRadius: mobSpawn.areaRadius,
     aggro: new AggroTable(),
-  };
+  }));
 }

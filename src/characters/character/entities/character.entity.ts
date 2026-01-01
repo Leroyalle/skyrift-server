@@ -1,7 +1,7 @@
 import { ObjectType, Field, Int } from '@nestjs/graphql';
 import { CharacterClass } from 'src/character-class/entities/character-class.entity';
 import { BaseItem } from 'src/item/entities/item.entity';
-import { Location } from 'src/location/entities/location.entity';
+import { Location } from 'src/world/location/entities/location.entity';
 import { User } from 'src/user/entities/user.entity';
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne } from 'typeorm';
 import { CharacterSkill } from '../character-skill/entities/character-skill.entity';

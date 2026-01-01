@@ -1,5 +1,5 @@
 import { forwardRef, Inject, Injectable, OnModuleInit } from '@nestjs/common';
-import { LocationService } from 'src/location/location.service';
+import { LocationService } from 'src/world/location/location.service';
 import { IRuntimeMob } from './types/runtime-mob.type';
 import { PositionDto } from 'src/common/dto/position.dto';
 import { getTileByPosition } from 'src/game/lib/helpers/get-tile-by-position.lib';
@@ -8,7 +8,7 @@ import { CombatService } from '../combat/combat.service';
 import { PathFindingService } from '../path-finding/path-finding.service';
 import { buildRuntimeMob } from './lib/build-runtime-mob.lib';
 import { getRandomValue } from 'src/common/lib/get-random-value.lib';
-import { CachedLocation } from 'src/location/types/cashed-location.type';
+import { CachedLocation } from 'src/world/location/types/cashed-location.type';
 import { RangeArea } from './types/range-area.type';
 import { isEntityCombatStatus } from 'src/game/lib/entity/is-entity-combat-status.lib';
 import { EntityRef } from 'src/game/types/entity/entity-ref.type';
@@ -39,10 +39,12 @@ export class RuntimeMobService implements OnModuleInit {
     for (const location of locations) {
       const mobsSet = this.getOrCreateActiveMobsLocationMap(location.id);
       location.mobSpawn.forEach(mobSpawn => {
-        const runtimeMob = buildRuntimeMob(mobSpawn);
-        mobsSet.add(runtimeMob.id);
-        this.mobsById.set(runtimeMob.id, runtimeMob);
-        this.spatialGridService.add(runtimeMob);
+        const runtimeMobs = buildRuntimeMob(mobSpawn);
+        runtimeMobs.forEach(runtimeMob => {
+          mobsSet.add(runtimeMob.id);
+          this.mobsById.set(runtimeMob.id, runtimeMob);
+          this.spatialGridService.add(runtimeMob);
+        });
       });
     }
   }

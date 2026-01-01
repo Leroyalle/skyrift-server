@@ -1,16 +1,11 @@
 import { Module } from '@nestjs/common';
-import { GraphQLModule } from '@nestjs/graphql';
-import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
-import { join } from 'path';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
-import { IS_DEV } from './common/lib/is-dev';
 import { FactionModule } from './faction/faction.module';
 import { CharacterClassModule } from './character-class/character-class.module';
 import { ItemModule } from './item/item.module';
-import { LocationModule } from './location/location.module';
+import { LocationModule } from './world/location/location.module';
 import { SeedModule } from './seed/seed.module';
 import { GameModule } from './game/game.module';
 import { CharacterModule } from './characters/character/character.module';
@@ -19,6 +14,8 @@ import { MobModule } from './characters/mob/mob.module';
 import { EffectModule } from './effect/effect.module';
 import { DatabaseModule } from './infrastructure/database/database.module';
 import { GraphqlModule } from './infrastructure/graphql/graphql.module';
+import { NpcModule } from './characters/npc/npc.module';
+import { WorldModule } from './world/world.module';
 
 @Module({
   imports: [
@@ -28,6 +25,7 @@ import { GraphqlModule } from './infrastructure/graphql/graphql.module';
     GraphqlModule,
     DatabaseModule,
     RedisModule,
+    WorldModule,
     UserModule,
     AuthModule,
     FactionModule,
@@ -39,6 +37,8 @@ import { GraphqlModule } from './infrastructure/graphql/graphql.module';
     GameModule,
     MobModule,
     EffectModule,
+    NpcModule,
+    WorldModule,
   ],
 })
 export class AppModule {}

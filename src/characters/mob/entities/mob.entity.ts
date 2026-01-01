@@ -1,6 +1,6 @@
-import { ObjectType, Field, Int, ID } from '@nestjs/graphql';
-import { Column, Entity, OneToMany } from 'typeorm';
-import { MobSpawn } from '../mob-spawn/entities/mob-spawn.entity';
+import { ObjectType, Field, Int } from '@nestjs/graphql';
+import { Column, Entity, ManyToOne } from 'typeorm';
+import { MobSpawn } from '../../../world/spawn/entities/mob-spawn.entity';
 import { ActorEntity } from 'src/common/entities/actor-entity.entity';
 
 @Entity()
@@ -22,7 +22,7 @@ export class Mob extends ActorEntity {
   @Field(() => Int)
   respawnTime: number;
 
-  @OneToMany(() => MobSpawn, spawn => spawn.mob, { cascade: true })
-  @Field(() => [MobSpawn])
-  spawn: MobSpawn[];
+  @ManyToOne(() => MobSpawn, spawn => spawn.entity, { cascade: true })
+  @Field(() => MobSpawn)
+  spawn: MobSpawn;
 }

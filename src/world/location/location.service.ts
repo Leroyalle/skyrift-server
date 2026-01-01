@@ -3,7 +3,7 @@ import { Repository } from 'typeorm';
 import { Location } from './entities/location.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { RedisService } from 'src/infrastructure/redis/redis.service';
-import { CachedLocation } from 'src/location/types/cashed-location.type';
+import { CachedLocation } from 'src/world/location/types/cashed-location.type';
 import { RedisKeys } from 'src/common/enums/redis-keys.enum';
 import { buildTeleportsMap } from './lib/build-teleports-map.lib';
 
@@ -22,7 +22,7 @@ export class LocationService {
     const findLocations = await this.locationRepository.find({
       relations: {
         mobSpawn: {
-          mob: true,
+          entity: true,
           location: true,
         },
       },

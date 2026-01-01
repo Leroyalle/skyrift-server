@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../user/entities/user.entity';
 import { DataSource, Repository } from 'typeorm';
-import { Location } from 'src/location/entities/location.entity';
+import { Location } from 'src/world/location/entities/location.entity';
 import { Property, TiledMap } from 'src/common/types/tiled-map.type';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -20,7 +20,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { isObjectsLayer } from './guards/is-objects-layer';
 import { FactionEnum } from 'src/faction/types/faction.enum';
 import { Mob } from 'src/characters/mob/entities/mob.entity';
-import { MobSpawn } from 'src/characters/mob/mob-spawn/entities/mob-spawn.entity';
+import { MobSpawn } from 'src/world/spawn/entities/mob-spawn.entity';
 import { Effect } from 'src/effect/entities/effect.entity';
 import { ItemTypeEnum } from 'src/common/enums/item-type.enum';
 import { WeaponSlotEnum } from 'src/common/enums/equipment-slot.enum';
@@ -241,14 +241,13 @@ export class SeedService {
       critMultiplier: 1,
       baseMagicDamage: 30,
       basePhysicalDamage: 41,
-      spawn: [
-        this.mobSpawnRepository.create({
-          spawnX: 1900,
-          spawnY: 1000,
-          areaRadius: 3,
-          location: savedLocations[0],
-        }),
-      ],
+      spawn: this.mobSpawnRepository.create({
+        spawnX: 1900,
+        spawnY: 1000,
+        areaRadius: 3,
+        location: savedLocations[0],
+        entity: [],
+      }),
     });
 
     await this.mobRepository.save(demonMob);

@@ -3,8 +3,8 @@ import { CharacterService } from 'src/characters/character/character.service';
 import { IRuntimeCharacter } from 'src/characters/character/types/runtime-character';
 import { RedisKeysFactory } from 'src/common/infra/redis-keys-factory.infra';
 import { RedisService } from 'src/infrastructure/redis/redis.service';
-import { CachedLocation } from 'src/location/types/cashed-location.type';
-import { Teleport } from 'src/location/types/teleport.type';
+import { CachedLocation } from 'src/world/location/types/cashed-location.type';
+import { Teleport } from 'src/world/location/types/teleport.type';
 import { Character } from 'src/characters/character/entities/character.entity';
 import { buildRuntimeCharacter } from './lib/build-runtime-character.lib';
 

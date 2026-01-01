@@ -4,7 +4,7 @@ import { GameGateway } from './game.gateway';
 import { AuthModule } from 'src/auth/auth.module';
 import { UserModule } from 'src/user/user.module';
 import { CharacterModule } from 'src/characters/character/character.module';
-import { LocationModule } from 'src/location/location.module';
+import { LocationModule } from 'src/world/location/location.module';
 import { RedisModule } from 'src/infrastructure/redis/redis.module';
 import { PlayerStateService } from './services/player-state/player-state.service';
 import { CombatService } from './services/combat/combat.service';
@@ -17,7 +17,6 @@ import { PathFindingService } from './services/path-finding/path-finding.service
 import { ChatService } from './services/chat/chat.service';
 import { RuntimeMobService } from './services/runtime-mob/runtime-mob.service';
 import { MobModule } from 'src/characters/mob/mob.module';
-import { MobSpawnModule } from 'src/characters/mob/mob-spawn/mob-spawn.module';
 import { EffectModule } from 'src/effect/effect.module';
 import { AoeService } from './services/combat/services/aoe/aoe.service';
 import { RuntimeEntityService } from './services/runtime-entity/runtime-entity.service';
@@ -40,7 +39,6 @@ import { RuntimeEquipmentService } from './services/player-state/services/runtim
     LocationModule,
     RedisModule,
     MobModule,
-    MobSpawnModule,
     EffectModule,
     BagModule,
   ],
