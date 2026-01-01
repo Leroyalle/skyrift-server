@@ -1,5 +1,3 @@
-import { Mob } from 'src/characters/mob/entities/mob.entity';
-import { Npc } from 'src/characters/npc/entities/npc.entity';
 import { NpcSpawn } from '../entities/npc-spawn.entity';
 import { MobSpawn } from '../entities/mob-spawn.entity';
 

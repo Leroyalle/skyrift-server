@@ -1,0 +1,24 @@
+import { Character } from 'src/characters/character/entities/character.entity';
+import { Timestamp } from 'src/common/entities/timestamp.entity';
+import { Column, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Quest } from './quest.entity';
+
+export class PlayerQuest extends Timestamp {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @ManyToOne(() => Character, character => character.quests, { onDelete: 'CASCADE' })
+  player: Character;
+
+  @ManyToOne(() => Quest, quest => quest.playerQuests, { onDelete: 'CASCADE' })
+  quest: Quest;
+
+  @Column({ type: 'int', default: 0 })
+  stepIndex: number;
+
+  @Column({ type: 'jsonb', nullable: true })
+  progress: Record<string, any> | null;
+
+  @Column({ type: 'timestamp', nullable: true })
+  completedAt: Date | null;
+}

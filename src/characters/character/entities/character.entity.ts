@@ -8,6 +8,7 @@ import { CharacterSkill } from '../character-skill/entities/character-skill.enti
 import { ActorEntity } from 'src/common/entities/actor-entity.entity';
 import { Bag } from '../bag/entities/bag.entity';
 import { Equipment } from '../equipment/entities/equipment.entity';
+import { PlayerQuest } from 'src/quest/entities/player-quest.entity';
 
 @ObjectType()
 @Entity()
@@ -63,4 +64,8 @@ export class Character extends ActorEntity {
   @OneToOne(() => Equipment, equipment => equipment.character)
   @Field(() => Equipment)
   equipment: Equipment;
+
+  @OneToMany(() => PlayerQuest, playerQuest => playerQuest.player)
+  @Field(() => [PlayerQuest])
+  quests: PlayerQuest[];
 }

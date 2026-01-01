@@ -16,6 +16,7 @@ import { DatabaseModule } from './infrastructure/database/database.module';
 import { GraphqlModule } from './infrastructure/graphql/graphql.module';
 import { NpcModule } from './characters/npc/npc.module';
 import { WorldModule } from './world/world.module';
+import { QuestModule } from './quest/quest.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { WorldModule } from './world/world.module';
     EffectModule,
     NpcModule,
     WorldModule,
+    QuestModule,
   ],
 })
 export class AppModule {}
