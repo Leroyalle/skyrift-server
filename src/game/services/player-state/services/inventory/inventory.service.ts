@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Bag } from 'src/character/bag/entities/bag.entity';
+import { Bag } from 'src/characters/character/bag/entities/bag.entity';
 import { TItem } from 'src/common/types/item.type';
 import { PlayerStateService } from '../../player-state.service';
 import { SocketService } from 'src/game/services/socket/socket.service';

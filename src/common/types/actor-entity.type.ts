@@ -1,4 +1,7 @@
-import { CharacterActionState, IRuntimeCharacter } from 'src/character/types/runtime-character';
+import {
+  CharacterActionState,
+  IRuntimeCharacter,
+} from 'src/characters/character/types/runtime-character';
 import { MobActionState, IRuntimeMob } from 'src/game/services/runtime-mob/types/runtime-mob.type';
 import { BaseEntityStates } from 'src/game/types/entity/base-entity-states.type';
 import { EntityRef } from 'src/game/types/entity/entity-ref.type';

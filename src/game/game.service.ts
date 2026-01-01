@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Socket } from 'socket.io';
 import { AuthService } from 'src/auth/auth.service';
 import { UserService } from 'src/user/user.service';
-import { CharacterService } from 'src/character/character.service';
+import { CharacterService } from 'src/characters/character/character.service';
 import { ServerToClientEvents } from 'src/common/enums/game-socket-events.enum';
 import { RedisService } from 'src/infrastructure/redis/redis.service';
 import { RedisKeys } from 'src/common/enums/redis-keys.enum';
@@ -11,7 +11,7 @@ import { PlayerStateService } from './services/player-state/player-state.service
 import { RequestAttackMoveDto } from './dto/request-attack-move.dto';
 import { JwtPayload } from 'src/common/types/jwt-payload.type';
 import { RequestSkillUseDto } from './dto/request-use-skill.dto';
-import { IRuntimeCharacter } from 'src/character/types/runtime-character';
+import { IRuntimeCharacter } from 'src/characters/character/types/runtime-character';
 import { MovementService } from './services/movement/movement.service';
 import { CombatService } from './services/combat/combat.service';
 import { SocketService } from './services/socket/socket.service';

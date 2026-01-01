@@ -3,8 +3,8 @@ import { GameService } from './game.service';
 import { GameGateway } from './game.gateway';
 import { AuthModule } from 'src/auth/auth.module';
 import { UserModule } from 'src/user/user.module';
-import { CharacterModule } from 'src/character/character.module';
-import { LocationModule } from 'src/location/location.module';
+import { CharacterModule } from 'src/characters/character/character.module';
+import { LocationModule } from 'src/world/location/location.module';
 import { RedisModule } from 'src/infrastructure/redis/redis.module';
 import { PlayerStateService } from './services/player-state/player-state.service';
 import { CombatService } from './services/combat/combat.service';
@@ -16,8 +16,7 @@ import { InteractionService } from './services/interaction/interaction.service';
 import { PathFindingService } from './services/path-finding/path-finding.service';
 import { ChatService } from './services/chat/chat.service';
 import { RuntimeMobService } from './services/runtime-mob/runtime-mob.service';
-import { MobModule } from 'src/mob/mob.module';
-import { MobSpawnModule } from 'src/mob/mob-spawn/mob-spawn.module';
+import { MobModule } from 'src/characters/mob/mob.module';
 import { EffectModule } from 'src/effect/effect.module';
 import { AoeService } from './services/combat/services/aoe/aoe.service';
 import { RuntimeEntityService } from './services/runtime-entity/runtime-entity.service';
@@ -27,7 +26,7 @@ import { GameInitialDataService } from './services/game-core/game-initial-data/g
 import { RuntimeEffectService } from './services/runtime-effect/runtime-effect.service';
 import { ProjectileService } from './services/combat/services/projectile/projectile.service';
 import { MovementQueueService } from './services/movement/services/movement-queue/movement-queue.service';
-import { BagModule } from 'src/character/bag/bag.module';
+import { BagModule } from 'src/characters/character/bag/bag.module';
 import { InventoryService } from './services/player-state/services/inventory/inventory.service';
 import { WsAuthGuard } from 'src/common/guards/ws-guard.guard';
 import { RuntimeEquipmentService } from './services/player-state/services/runtime-equipment/runtime-equipment.service';
@@ -40,7 +39,6 @@ import { RuntimeEquipmentService } from './services/player-state/services/runtim
     LocationModule,
     RedisModule,
     MobModule,
-    MobSpawnModule,
     EffectModule,
     BagModule,
   ],
