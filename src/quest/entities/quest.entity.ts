@@ -1,6 +1,7 @@
 import { Field, Int } from '@nestjs/graphql';
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 import { PlayerQuest } from './player-quest.entity';
+import { QuestStep } from '../types/quest-step.type';
 
 @Entity('quests')
 export class Quest {
@@ -20,10 +21,19 @@ export class Quest {
   expReward: number;
 
   @Column()
-  @Field(() => PlayerQuest)
-  playerQuests: PlayerQuest[];
+  @Field(() => Int)
+  goldReward: number;
+
+  @Column({ type: 'jsonb', nullable: true })
+  itemRewards: {
+    templateId: string;
+    quantity: number;
+  }[];
+
+  @Column({ type: 'jsonb' })
+  steps: QuestStep[];
 
   @Column()
-  @Field(() => Int)
-  stepsCount: number;
+  @Field(() => PlayerQuest)
+  playerQuests: PlayerQuest[];
 }
