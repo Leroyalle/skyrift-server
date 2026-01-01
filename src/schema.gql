@@ -280,7 +280,7 @@ type Mob {
   chaseSpeed: Int!
   expReward: Int!
   respawnTime: Int!
-  spawn: [MobSpawn!]!
+  spawn: MobSpawn!
 }
 
 type MobSpawn {
@@ -289,7 +289,7 @@ type MobSpawn {
   spawnY: Int!
   areaRadius: Int!
   location: Location!
-  mob: Mob!
+  entity: [Mob!]!
 }
 
 type Location {
@@ -510,6 +510,8 @@ type Logout {
 }
 
 type Query {
+  location: [Location!]!
+  findLocationById(id: ID!): Location!
   findAllUsers: [User!]!
   findOneUser(id: ID!): User!
   getCurrentUser: User!
@@ -519,8 +521,6 @@ type Query {
   bag(id: Int!): Bag!
   characterClass(id: Int!): CharacterClass!
   skill(id: Int!): Skill!
-  location: [Location!]!
-  findLocationById(id: ID!): Location!
 }
 
 type Mutation {

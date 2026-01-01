@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PlayerStateService } from 'src/game/services/player-state/player-state.service';
-import { LocationService } from 'src/location/location.service';
+import { LocationService } from 'src/world/location/location.service';
 import { SocketService } from '../socket/socket.service';
 import { RequestMoveToDto } from 'src/game/dto/request-move-to.dto';
 import { Socket } from 'socket.io';
