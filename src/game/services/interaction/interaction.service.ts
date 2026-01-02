@@ -21,11 +21,13 @@ import { getTileByPosition } from 'src/game/lib/helpers/get-tile-by-position.lib
 import { GameInitialDataService } from '../game-core/game-initial-data/game-initial-data.service';
 import { MovementQueueService } from '../movement/services/movement-queue/movement-queue.service';
 import { ActionQueueService } from '../combat/services/action-queue/action-queue.service';
+import { RuntimeEntityService } from '../runtime-entity/runtime-entity.service';
+import { isPlayer } from '../combat/lib/entity/guards/is-player.lib';
 
 @Injectable()
 export class InteractionService {
   constructor(
-    private readonly playerStateService: PlayerStateService,
+    private readonly runtimeEntityService: RuntimeEntityService,
     private readonly socketService: SocketService,
     private readonly locationService: LocationService,
     private readonly pathFindingService: PathFindingService,
@@ -34,6 +36,7 @@ export class InteractionService {
     private readonly gameInitialDataService: GameInitialDataService,
     private readonly movementQueueService: MovementQueueService,
     private readonly actionQueueService: ActionQueueService,
+    private readonly playerStateService: PlayerStateService,
   ) {}
 
   private readonly pendingInteractions = new Map<string, PendingInteraction>();
@@ -49,9 +52,12 @@ export class InteractionService {
   public async tickInteractions() {
     for (const interaction of this.pendingInteractions.values()) {
       console.log('[tickInteractions]', interaction);
-      const playerState = this.playerStateService.getCharacterState(interaction.characterId);
+      const playerState = this.runtimeEntityService.getEntityByType(
+        'player',
+        interaction.characterId,
+      );
 
-      if (!playerState) {
+      if (!playerState || !isPlayer(playerState)) {
         this.deletePendingInteraction(interaction.characterId);
         continue;
       }
@@ -60,49 +66,96 @@ export class InteractionService {
 
       const currentLocation = await this.locationService.loadLocation(playerState.locationId);
 
-      if (!currentLocation) return;
+      if (!currentLocation) continue;
 
       switch (intType) {
-        case InteractionType.Teleport:
-          {
-            if (!interaction.area || !interaction.targetId) return;
+        case InteractionType.Teleport: {
+          const result = await this.resolveTeleport(playerState, interaction, currentLocation);
+          if (!result) {
+            this.deletePendingInteraction(playerState.id);
 
-            const teleport = currentLocation.teleportsMap[interaction.targetId];
-
-            if (!teleport) continue;
-
-            if (isPlayerInTeleportArea(playerState, teleport)) {
-              console.log('use teleport');
-              this.movementQueueService.delete(playerState);
-              this.actionQueueService.clearPendingActions(playerState, []);
-              this.pendingInteractions.delete(playerState.id);
-              await this.useTeleport(playerState, teleport);
-              console.log('teleport used, after use teleport');
-              console.log(
-                'teleport used, after delete pending interaction',
-                this.pendingInteractions.size,
-              );
-
-              continue;
-            } else {
-              console.log('start interaction movement');
-              await this.startInteractionMovement(
-                playerState,
-                {
-                  x: interaction.area.x,
-                  y: interaction.area.y,
-                },
-                currentLocation,
-              );
-            }
+            continue;
           }
-
           break;
+        }
+
+        case InteractionType.Talk: {
+          const result = await this.resolveTalk(interaction, playerState, currentLocation);
+          if (!result) {
+            this.deletePendingInteraction(playerState.id);
+            continue;
+          }
+          break;
+        }
 
         default:
           break;
       }
     }
+  }
+
+  private async resolveTalk(
+    interaction: PendingInteraction,
+    playerState: IRuntimeCharacter,
+    location: CachedLocation,
+  ): Promise<boolean> {
+    if (!interaction.targetId) return false;
+    const npc = this.runtimeEntityService.getEntityByType('npc', interaction.targetId);
+
+    if (!npc) {
+      this.deletePendingInteraction(playerState.id);
+      return false;
+    }
+
+    const steps = await this.pathFindingService.getPlayerPath(
+      playerState.locationId,
+      {
+        ...getTileByPosition(playerState.x, playerState.y),
+      },
+      { ...getTileByPosition(npc.x, npc.y) },
+      location.passableMap,
+    );
+
+    if (!steps) return false;
+
+    if (steps.length > 1) {
+      this.movementQueueService.set(playerState, steps);
+      return true;
+    }
+
+    return true;
+  }
+
+  private async resolveTeleport(
+    playerState: IRuntimeCharacter,
+    interaction: PendingInteraction,
+    currentLocation: CachedLocation,
+  ): Promise<boolean> {
+    if (!interaction.area || !interaction.targetId) return false;
+
+    const teleport = currentLocation.teleportsMap[interaction.targetId];
+
+    if (!teleport) return false;
+
+    if (isPlayerInTeleportArea(playerState, teleport)) {
+      console.log('use teleport');
+      this.movementQueueService.delete(playerState);
+      this.actionQueueService.clearPendingActions(playerState, []);
+      this.pendingInteractions.delete(playerState.id);
+      await this.useTeleport(playerState, teleport);
+    } else {
+      console.log('start interaction movement');
+      await this.startInteractionMovement(
+        playerState,
+        {
+          x: interaction.area.x,
+          y: interaction.area.y,
+        },
+        currentLocation,
+      );
+    }
+
+    return true;
   }
 
   public async requestUseTeleport(client: Socket, input: RequestUseTeleportDto) {
@@ -114,9 +167,12 @@ export class InteractionService {
     }
 
     console.log('requestUseTeleport', input);
-    const playerState = this.playerStateService.getCharacterState(client.userData.characterId);
+    const playerState = this.runtimeEntityService.getEntityByType(
+      'player',
+      client.userData.characterId,
+    );
 
-    if (!playerState) return;
+    if (!playerState || !isPlayer(playerState)) return;
 
     const currentLocation = await this.locationService.loadLocation(playerState.locationId);
 
@@ -158,21 +214,16 @@ export class InteractionService {
 
   private async startInteractionMovement(
     playerState: IRuntimeCharacter,
-    area: PositionDto,
+    pixelTarget: PositionDto,
     currentLocation: CachedLocation,
   ) {
     const fromTile = getTileByPosition(playerState.x, playerState.y, currentLocation.tileWidth);
 
-    const targetTile = getTileByPosition(area.x, area.y, currentLocation.tileWidth);
+    const targetTile = getTileByPosition(pixelTarget.x, pixelTarget.y, currentLocation.tileWidth);
 
-    const prevSteps = this.movementQueueService.get(playerState);
-
-    // const prevSteps = this.movementService.getMovementQueue(
-    //   playerState.type,
-    //   playerState.id,
-    // );
-
-    if (prevSteps?.steps[-1] === targetTile) return;
+    // TODO: проверить
+    // const prevSteps = this.movementQueueService.get(playerState);
+    // if (prevSteps?.steps[-1] === targetTile) return;
 
     const steps = await this.pathFindingService.getPlayerPath(
       playerState.locationId,
@@ -184,7 +235,6 @@ export class InteractionService {
     if (!steps) return;
 
     this.movementQueueService.set(playerState, steps);
-    // this.movementService.setMovementQueue(playerState, steps);
 
     return steps;
   }

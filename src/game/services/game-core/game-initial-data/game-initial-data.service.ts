@@ -5,8 +5,8 @@ import { RedisKeysFactory } from 'src/common/infra/redis-keys-factory.infra';
 import { IRuntimeCharacter } from 'src/characters/character/types/runtime-character';
 import { GameInitialData } from 'src/game/types/game-initial-data.type';
 import { PlayerStateService } from '../../characters/player-state/player-state.service';
-import { RuntimeMobService } from '../../runtime-mob/runtime-mob.service';
 import { AoeService } from '../../combat/services/aoe/aoe.service';
+import { RuntimeMobService } from '../../characters/runtime-mob/runtime-mob.service';
 
 @Injectable()
 export class GameInitialDataService {

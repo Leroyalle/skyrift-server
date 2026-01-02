@@ -4,7 +4,7 @@ import { RuntimeActorEntity } from 'src/common/types/actor-entity.type';
 
 export interface IRuntimeCharacter
   extends CharacterSummary,
-    RuntimeActorEntity<IRuntimeCharacter>,
+    RuntimeActorEntity<'player'>,
     UniqueStats {}
 
 export type CharacterSummary = Omit<

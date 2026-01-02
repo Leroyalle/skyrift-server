@@ -13,7 +13,7 @@ import { CharacterSkill } from 'src/characters/character/character-skill/entitie
 import { PositionDto } from 'src/common/dto/position.dto';
 import { v4 as uuidv4 } from 'uuid';
 import { RuntimeEntityService } from 'src/game/services/runtime-entity/runtime-entity.service';
-import { getOrCreateArray } from 'src/game/lib/helpers/get-or-create-array.lib';
+import { getOrCreate } from 'src/game/lib/helpers/get-or-create-array.lib';
 import { isMob } from '../../lib/entity/guards/is-mob.lib';
 
 @Injectable()
@@ -66,7 +66,7 @@ export class AoeService {
       //   batchLocation = [];
       //   updatesByLocation.set(zone.locationId, batchLocation);
       // }
-      const batchLocation = getOrCreateArray(updatesByLocation, zone.locationId);
+      const batchLocation = getOrCreate(updatesByLocation, zone.locationId, () => []);
 
       const targets: Target[] = [];
       entities.forEach(({ id, type }) => {

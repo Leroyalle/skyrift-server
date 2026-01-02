@@ -4,7 +4,7 @@ import { EntityKey } from 'src/game/types/entity/keys/entity-key.type';
 import { RuntimeEntityService } from '../runtime-entity/runtime-entity.service';
 import { decodeEntityKey } from 'src/game/lib/entity/decode-entity-key.lib';
 import { EffectType } from 'src/common/enums/skill/effect-type.enum';
-import { getOrCreateArray } from 'src/game/lib/helpers/get-or-create-array.lib';
+import { getOrCreate } from 'src/game/lib/helpers/get-or-create-array.lib';
 import { BatchUpdateAction } from 'src/game/types/batch-update/batch-update-action.type';
 import { ActionType } from 'src/game/types/pending-actions.type';
 import { SocketService } from '../socket/socket.service';
@@ -37,14 +37,11 @@ export class RuntimeEffectService extends BaseLogger {
       const entity = this.runtimeEntityService.getEntityByType(entityRef.type, entityRef.id);
       if (!entity) continue;
 
-      const batchUpdate = getOrCreateArray<BatchUpdateAction>(
-        batchUpdateEffects,
-        entity.locationId,
-      );
+      const batchUpdate = getOrCreate(batchUpdateEffects, entity.locationId, () => []);
 
       const actualEffectsMap: Map<EffectType, IRuntimeEffect[]> = new Map();
       for (const [type, effects] of effectsMap.entries()) {
-        const actualEffectsArray = getOrCreateArray<IRuntimeEffect>(actualEffectsMap, type);
+        const actualEffectsArray = getOrCreate(actualEffectsMap, type, () => []);
         effects.forEach(effect => {
           // TODO: слать запррос что эффект снят
           if (effect.expiresAt > now) {
@@ -75,7 +72,7 @@ export class RuntimeEffectService extends BaseLogger {
     this.log('addEffect');
     const runtimeEffect: IRuntimeEffect = buildRuntimeEffect(effect);
     const effectsMap = this.findOrCreateMap(entityRef);
-    const effectsArray = getOrCreateArray(effectsMap, effect.type);
+    const effectsArray = getOrCreate(effectsMap, effect.type, () => []);
     effectsArray.push(runtimeEffect);
     const entityKey = generateEntityKey(entityRef);
 

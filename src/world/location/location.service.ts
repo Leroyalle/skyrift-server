@@ -33,10 +33,14 @@ export class LocationService {
     });
 
     const cachedLocations = await Promise.all(
-      findLocations.map(async location => await this.setLocationToCache(location)),
+      findLocations.map(location => this.setLocationToCache(location)),
     );
 
     return cachedLocations;
+  }
+
+  public getAllCachedLocations() {
+    return Array.from(this.locationCache.values());
   }
 
   public async findOne(id: string) {

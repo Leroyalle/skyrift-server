@@ -13,13 +13,13 @@ import { CharacterSkill } from 'src/characters/character/character-skill/entitie
 import { isPlayer } from '../../lib/entity/guards/is-player.lib';
 import { SkillType } from 'src/common/enums/skill/skill-type.enum';
 import { BatchUpdateAction } from 'src/game/types/batch-update/batch-update-action.type';
-import { getOrCreateArray } from 'src/game/lib/helpers/get-or-create-array.lib';
+import { getOrCreate } from 'src/game/lib/helpers/get-or-create-array.lib';
 import { SocketService } from 'src/game/services/socket/socket.service';
 import { ActionQueueService } from '../action-queue/action-queue.service';
 import { RedisKeys } from 'src/common/enums/redis-keys.enum';
 import { ServerToClientEvents } from 'src/common/enums/game-socket-events.enum';
 import { getTileByPosition } from 'src/game/lib/helpers/get-tile-by-position.lib';
-import { RuntimeMobService } from 'src/game/services/runtime-mob/runtime-mob.service';
+import { RuntimeMobService } from 'src/game/services/characters/runtime-mob/runtime-mob.service';
 
 @Injectable()
 export class ProjectileService {
@@ -61,7 +61,7 @@ export class ProjectileService {
 
         if (!result) return;
 
-        const batchLocation = getOrCreateArray(updatesByLocation, attacker.locationId);
+        const batchLocation = getOrCreate(updatesByLocation, attacker.locationId, () => []);
         batchLocation.push(result);
       });
     }

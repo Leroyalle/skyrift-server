@@ -4,15 +4,16 @@ import { TDirection } from 'src/game/types/entity/direction.type';
 import { Mob } from 'src/characters/mob/entities/mob.entity';
 import { MobSpawn } from 'src/world/spawn/entities/mob-spawn.entity';
 import { AggroTable } from '../lib/aggro.lib';
+import { EntityType } from 'src/game/types/entity/entity-type.type';
 
 export interface IRuntimeMob
   extends MobSummary,
     MobSpawnSummary,
-    RuntimeActorEntity<IRuntimeMob>,
+    RuntimeActorEntity<'mob'>,
     RuntimeMobStats,
-    UniqueStats {}
+    UniqueStats<'mob'> {}
 
-type MobSpawnSummary = Omit<MobSpawn, 'location' | 'mob' | 'entity'>;
+type MobSpawnSummary = Omit<MobSpawn, 'location' | 'entity'>;
 type MobSummary = Omit<Mob, 'spawn' | 'updatedAt' | 'createdAt'>;
 
 interface RuntimeMobStats {
@@ -26,8 +27,9 @@ interface RuntimeMobStats {
   aggro: AggroTable;
 }
 
-interface UniqueStats {
-  mobId: Mob['id'];
+interface UniqueStats<T extends EntityType> {
+  spawnId: MobSpawn['id'];
+  type: T;
 }
 
 export type MobActionState = 'idle' | 'move' | 'pursue' | 'attack' | 'dead' | 'return';

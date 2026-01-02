@@ -3,7 +3,7 @@ import { LocationService } from 'src/world/location/location.service';
 import { IRuntimeMob } from './types/runtime-mob.type';
 import { PositionDto } from 'src/common/dto/position.dto';
 import { getTileByPosition } from 'src/game/lib/helpers/get-tile-by-position.lib';
-import { buildRuntimeMob } from './lib/build-runtime-mob.lib';
+import { buildRuntimeMobs } from './lib/build-runtime-mobs.lib';
 import { getRandomValue } from 'src/common/lib/get-random-value.lib';
 import { CachedLocation } from 'src/world/location/types/cashed-location.type';
 import { RangeArea } from './types/range-area.type';
@@ -17,6 +17,7 @@ import { PathFindingService } from '../../path-finding/path-finding.service';
 import { RuntimeEntityService } from '../../runtime-entity/runtime-entity.service';
 import { MovementQueueService } from '../../movement/services/movement-queue/movement-queue.service';
 import { SocketService } from '../../socket/socket.service';
+import { getOrCreate } from 'src/game/lib/helpers/get-or-create-array.lib';
 
 @Injectable()
 export class RuntimeMobService implements OnModuleInit {
@@ -37,9 +38,9 @@ export class RuntimeMobService implements OnModuleInit {
   public async onModuleInit() {
     const locations = await this.locationService.findAndCacheAll();
     for (const location of locations) {
-      const mobsSet = this.getOrCreateActiveMobsLocationMap(location.id);
+      const mobsSet = getOrCreate(this.mobsByLocation, location.id, () => new Set());
       location.mobSpawn.forEach(mobSpawn => {
-        const runtimeMobs = buildRuntimeMob(mobSpawn);
+        const runtimeMobs = buildRuntimeMobs(mobSpawn);
         runtimeMobs.forEach(runtimeMob => {
           mobsSet.add(runtimeMob.id);
           this.mobsById.set(runtimeMob.id, runtimeMob);
@@ -269,15 +270,6 @@ export class RuntimeMobService implements OnModuleInit {
     const tileIndex = getRandomValue(0, uniqueTiles.length - 1);
 
     return uniqueTiles[tileIndex];
-  }
-
-  private getOrCreateActiveMobsLocationMap(locationId: string): Set<string> {
-    let mobsSet = this.mobsByLocation.get(locationId);
-    if (!mobsSet) {
-      mobsSet = new Set();
-      this.mobsByLocation.set(locationId, mobsSet);
-    }
-    return mobsSet;
   }
 
   public resetRespawnTime(runtimeMobId: string): IRuntimeMob | undefined {

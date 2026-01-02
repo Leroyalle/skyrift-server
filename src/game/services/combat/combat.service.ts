@@ -22,7 +22,6 @@ import { isEnemyFaction } from './lib/entity/guards/is-enemy-faction.lib';
 import { EntityType } from 'src/game/types/entity/entity-type.type';
 import { isPlayer } from './lib/entity/guards/is-player.lib';
 import { findEntitySkill } from './lib/entity/helpers/get/find-entity-skill.lib';
-import { RuntimeMobService } from '../runtime-mob/runtime-mob.service';
 import { TRuntimeEntity } from 'src/game/types/entity/runtime-entity.type';
 import { EntityRef } from 'src/game/types/entity/entity-ref.type';
 import { AoeService } from './services/aoe/aoe.service';
@@ -32,7 +31,8 @@ import { isMob } from './lib/entity/guards/is-mob.lib';
 import { ProjectileService } from './services/projectile/projectile.service';
 import { MovementQueueService } from '../movement/services/movement-queue/movement-queue.service';
 import { getTileByPosition } from 'src/game/lib/helpers/get-tile-by-position.lib';
-import { getOrCreateArray } from 'src/game/lib/helpers/get-or-create-array.lib';
+import { getOrCreate } from 'src/game/lib/helpers/get-or-create-array.lib';
+import { RuntimeMobService } from '../characters/runtime-mob/runtime-mob.service';
 
 @Injectable()
 export class CombatService {
@@ -122,7 +122,7 @@ export class CombatService {
       //   batchLocation = [];
       //   updatesByLocation.set(location.id, batchLocation);
       // }
-      const batchLocation = getOrCreateArray(updatesByLocation, location.id);
+      const batchLocation = getOrCreate(updatesByLocation, location.id, () => []);
 
       const actionCtx: IActionContext = {
         attacker,

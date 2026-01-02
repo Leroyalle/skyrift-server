@@ -4,8 +4,8 @@ import { BatchUpdateRegeneration } from 'src/game/types/batch-update/batch-updat
 import { SocketService } from '../socket/socket.service';
 import { RedisKeys } from 'src/common/enums/redis-keys.enum';
 import { ServerToClientEvents } from 'src/common/enums/game-socket-events.enum';
-import { RuntimeMobService } from '../runtime-mob/runtime-mob.service';
-import { getOrCreateArray } from 'src/game/lib/helpers/get-or-create-array.lib';
+import { getOrCreate } from 'src/game/lib/helpers/get-or-create-array.lib';
+import { RuntimeMobService } from '../characters/runtime-mob/runtime-mob.service';
 
 @Injectable()
 export class RegenerationService {
@@ -38,7 +38,7 @@ export class RegenerationService {
       //   updatesByLocation.set(char.locationId, locationBatch);
       // }
 
-      const locationBatch = getOrCreateArray(updatesByLocation, char.locationId);
+      const locationBatch = getOrCreate(updatesByLocation, char.locationId, () => []);
 
       locationBatch.push({
         id: char.id,
@@ -62,7 +62,7 @@ export class RegenerationService {
       mob.hp = Math.min(mob.hp + hpDelta, mob.maxHp);
       mob.lastHpRegenerationTime = now;
 
-      const locationBatch = getOrCreateArray(updatesByLocation, mob.locationId);
+      const locationBatch = getOrCreate(updatesByLocation, mob.locationId, () => []);
 
       locationBatch.push({
         id: mob.id,
