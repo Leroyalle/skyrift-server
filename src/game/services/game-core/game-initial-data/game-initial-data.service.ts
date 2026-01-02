@@ -4,7 +4,7 @@ import { LocationService } from 'src/world/location/location.service';
 import { RedisKeysFactory } from 'src/common/infra/redis-keys-factory.infra';
 import { IRuntimeCharacter } from 'src/characters/character/types/runtime-character';
 import { GameInitialData } from 'src/game/types/game-initial-data.type';
-import { PlayerStateService } from '../../player-state/player-state.service';
+import { PlayerStateService } from '../../characters/player-state/player-state.service';
 import { RuntimeMobService } from '../../runtime-mob/runtime-mob.service';
 import { AoeService } from '../../combat/services/aoe/aoe.service';
 

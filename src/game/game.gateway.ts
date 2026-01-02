@@ -17,7 +17,7 @@ import { SocketService } from './services/socket/socket.service';
 import { RequestUseTeleportDto } from './dto/request-use-teleport.dto';
 import { DirectMessageInput } from './services/chat/dto/direct-message.input';
 import { TItem } from 'src/common/types/item.type';
-import { RuntimeEquipmentService } from './services/player-state/services/runtime-equipment/runtime-equipment.service';
+import { RuntimeEquipmentService } from './services/characters/player-state/services/runtime-equipment/runtime-equipment.service';
 import { UseGuards } from '@nestjs/common';
 import { WsAuthGuard } from 'src/common/guards/ws-guard.guard';
 import { AuthSocket } from 'src/common/decorators/auth-socket.decorator';

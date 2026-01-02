@@ -3,6 +3,7 @@ import { Character } from 'src/characters/character/entities/character.entity';
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { TiledMap } from 'src/common/types/tiled-map.type';
 import { MobSpawn } from 'src/world/spawn/entities/mob-spawn.entity';
+import { NpcSpawn } from 'src/world/spawn/entities/npc-spawn.entity';
 
 @Entity()
 @ObjectType()
@@ -50,4 +51,8 @@ export class Location {
   @OneToMany(() => MobSpawn, spawn => spawn.location)
   @Field(() => [MobSpawn])
   mobSpawn: MobSpawn[];
+
+  @OneToMany(() => NpcSpawn, spawn => spawn.location)
+  @Field(() => [NpcSpawn])
+  npcSpawn: NpcSpawn[];
 }

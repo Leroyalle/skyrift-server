@@ -3,20 +3,20 @@ import { LocationService } from 'src/world/location/location.service';
 import { IRuntimeMob } from './types/runtime-mob.type';
 import { PositionDto } from 'src/common/dto/position.dto';
 import { getTileByPosition } from 'src/game/lib/helpers/get-tile-by-position.lib';
-import { SpatialGridService } from '../spatial-grid/spatial-grid.service';
-import { CombatService } from '../combat/combat.service';
-import { PathFindingService } from '../path-finding/path-finding.service';
 import { buildRuntimeMob } from './lib/build-runtime-mob.lib';
 import { getRandomValue } from 'src/common/lib/get-random-value.lib';
 import { CachedLocation } from 'src/world/location/types/cashed-location.type';
 import { RangeArea } from './types/range-area.type';
 import { isEntityCombatStatus } from 'src/game/lib/entity/is-entity-combat-status.lib';
 import { EntityRef } from 'src/game/types/entity/entity-ref.type';
-import { RuntimeEntityService } from '../runtime-entity/runtime-entity.service';
-import { MovementQueueService } from '../movement/services/movement-queue/movement-queue.service';
-import { SocketService } from '../socket/socket.service';
 import { RedisKeys } from 'src/common/enums/redis-keys.enum';
 import { ServerToClientEvents } from 'src/common/enums/game-socket-events.enum';
+import { SpatialGridService } from '../../spatial-grid/spatial-grid.service';
+import { CombatService } from '../../combat/combat.service';
+import { PathFindingService } from '../../path-finding/path-finding.service';
+import { RuntimeEntityService } from '../../runtime-entity/runtime-entity.service';
+import { MovementQueueService } from '../../movement/services/movement-queue/movement-queue.service';
+import { SocketService } from '../../socket/socket.service';
 
 @Injectable()
 export class RuntimeMobService implements OnModuleInit {

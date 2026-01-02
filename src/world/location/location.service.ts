@@ -25,6 +25,10 @@ export class LocationService {
           entity: true,
           location: true,
         },
+        npcSpawn: {
+          entity: true,
+          location: true,
+        },
       },
     });
 

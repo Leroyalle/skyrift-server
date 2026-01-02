@@ -6,7 +6,7 @@ import { UserModule } from 'src/user/user.module';
 import { CharacterModule } from 'src/characters/character/character.module';
 import { LocationModule } from 'src/world/location/location.module';
 import { RedisModule } from 'src/infrastructure/redis/redis.module';
-import { PlayerStateService } from './services/player-state/player-state.service';
+import { PlayerStateService } from './services/characters/player-state/player-state.service';
 import { CombatService } from './services/combat/combat.service';
 import { SpatialGridService } from './services/spatial-grid/spatial-grid.service';
 import { SocketService } from './services/socket/socket.service';
@@ -27,9 +27,9 @@ import { RuntimeEffectService } from './services/runtime-effect/runtime-effect.s
 import { ProjectileService } from './services/combat/services/projectile/projectile.service';
 import { MovementQueueService } from './services/movement/services/movement-queue/movement-queue.service';
 import { BagModule } from 'src/characters/character/bag/bag.module';
-import { InventoryService } from './services/player-state/services/inventory/inventory.service';
+import { InventoryService } from './services/characters/player-state/services/inventory/inventory.service';
 import { WsAuthGuard } from 'src/common/guards/ws-guard.guard';
-import { RuntimeEquipmentService } from './services/player-state/services/runtime-equipment/runtime-equipment.service';
+import { RuntimeEquipmentService } from './services/characters/player-state/services/runtime-equipment/runtime-equipment.service';
 
 @Module({
   imports: [

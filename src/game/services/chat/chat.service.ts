@@ -3,7 +3,7 @@ import { RedisKeysFactory } from 'src/common/infra/redis-keys-factory.infra';
 import { RedisService } from 'src/infrastructure/redis/redis.service';
 import { SocketService } from '../socket/socket.service';
 import { ServerToClientEvents } from 'src/common/enums/game-socket-events.enum';
-import { PlayerStateService } from '../player-state/player-state.service';
+import { PlayerStateService } from '../characters/player-state/player-state.service';
 import { Socket } from 'socket.io';
 import { RedisKeys } from 'src/common/enums/redis-keys.enum';
 import { DirectMessageInput } from './dto/direct-message.input';

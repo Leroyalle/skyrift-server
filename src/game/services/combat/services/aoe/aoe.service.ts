@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { BatchUpdateAction, Target } from 'src/game/types/batch-update/batch-update-action.type';
 import { ActiveAoEZone } from './types/active-aoe-zone.type';
 import { SocketService } from 'src/game/services/socket/socket.service';
-import { PlayerStateService } from 'src/game/services/player-state/player-state.service';
+import { PlayerStateService } from 'src/game/services/characters/player-state/player-state.service';
 import { SpatialGridService } from 'src/game/services/spatial-grid/spatial-grid.service';
 import { TRuntimeEntity } from 'src/game/types/entity/runtime-entity.type';
 import { ActionType } from 'src/game/types/pending-actions.type';

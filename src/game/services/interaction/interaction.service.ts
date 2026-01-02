@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InteractionType, PendingInteraction } from './types/pending-interactions.type';
-import { PlayerStateService } from 'src/game/services/player-state/player-state.service';
+import { PlayerStateService } from 'src/game/services/characters/player-state/player-state.service';
 import { SocketService } from '../socket/socket.service';
 import { LocationService } from 'src/world/location/location.service';
 import { Socket } from 'socket.io';

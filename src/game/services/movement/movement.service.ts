@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { PlayerStateService } from 'src/game/services/player-state/player-state.service';
+import { PlayerStateService } from 'src/game/services/characters/player-state/player-state.service';
 import { LocationService } from 'src/world/location/location.service';
 import { SocketService } from '../socket/socket.service';
 import { RequestMoveToDto } from 'src/game/dto/request-move-to.dto';
@@ -11,7 +11,6 @@ import { RedisKeys } from 'src/common/enums/redis-keys.enum';
 import { ServerToClientEvents } from 'src/common/enums/game-socket-events.enum';
 import { PathFindingService } from '../path-finding/path-finding.service';
 import { InteractionService } from '../interaction/interaction.service';
-import { RuntimeMobService } from '../runtime-mob/runtime-mob.service';
 import { TRuntimeEntity } from 'src/game/types/entity/runtime-entity.type';
 import { PositionDto } from 'src/common/dto/position.dto';
 import { isPlayer } from '../combat/lib/entity/guards/is-player.lib';
@@ -23,6 +22,7 @@ import { MovementQueueService } from './services/movement-queue/movement-queue.s
 import { RuntimeEntityService } from '../runtime-entity/runtime-entity.service';
 import { decodeEntityKey } from 'src/game/lib/entity/decode-entity-key.lib';
 import { isCharacterMovementQueue } from './services/movement-queue/lib/guards/is-character-movement-queue.lib';
+import { RuntimeMobService } from '../characters/runtime-mob/runtime-mob.service';
 
 @Injectable()
 export class MovementService {

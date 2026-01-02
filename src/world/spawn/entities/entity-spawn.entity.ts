@@ -24,9 +24,7 @@ export abstract class EntitySpawn {
   @Field(() => Int)
   areaRadius: number;
 
-  @ManyToOne(() => Location, location => location.mobSpawn)
-  @Field(() => Location)
-  location: Location;
+  abstract location: Location;
 
   abstract entity: (Mob | Npc)[];
 }

@@ -1,8 +1,8 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
-import { PlayerStateService } from '../player-state/player-state.service';
-import { RuntimeMobService } from '../runtime-mob/runtime-mob.service';
+import { PlayerStateService } from '../characters/player-state/player-state.service';
 import { TRuntimeEntity } from 'src/game/types/entity/runtime-entity.type';
 import { EntityType } from 'src/game/types/entity/entity-type.type';
+import { RuntimeMobService } from '../characters/runtime-mob/runtime-mob.service';
 
 @Injectable()
 export class RuntimeEntityService {

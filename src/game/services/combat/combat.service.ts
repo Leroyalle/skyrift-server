@@ -1,5 +1,5 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
-import { PlayerStateService } from '../player-state/player-state.service';
+import { PlayerStateService } from '../characters/player-state/player-state.service';
 import { SkillType } from 'src/common/enums/skill/skill-type.enum';
 import { PositionDto } from 'src/common/dto/position.dto';
 import { BatchUpdateAction } from 'src/game/types/batch-update/batch-update-action.type';
