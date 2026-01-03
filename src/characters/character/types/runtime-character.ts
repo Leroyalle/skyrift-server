@@ -1,7 +1,7 @@
 import { BaseEntityStates } from 'src/game/types/entity/base-entity-states.type';
 import { Character } from '../entities/character.entity';
 import { RuntimeActorEntity } from 'src/common/types/actor-entity.type';
-import { PlayerQuest } from 'src/quest/entities/player-quest.entity';
+import { IRuntimeQuest } from 'src/game/services/interaction/services/runtime-quest/types/runtime-quest.type';
 
 export interface IRuntimeCharacter
   extends CharacterSummary,
@@ -20,7 +20,7 @@ interface UniqueStats {
 
 interface QuestState {
   completedQuestIds: Set<string>;
-  activeQuests: PlayerQuest[];
+  activeQuests: IRuntimeQuest[];
 }
 
 export type CharacterActionState = BaseEntityStates | 'pursue';

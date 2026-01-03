@@ -23,7 +23,13 @@ import { MovementQueueService } from '../movement/services/movement-queue/moveme
 import { ActionQueueService } from '../combat/services/action-queue/action-queue.service';
 import { RuntimeEntityService } from '../runtime-entity/runtime-entity.service';
 import { isPlayer } from '../combat/lib/entity/guards/is-player.lib';
-import { QuestService } from 'src/quest/quest.service';
+import { RuntimeQuestService } from './services/runtime-quest/runtime-quest.service';
+import { isNpc } from '../combat/lib/entity/guards/is-npc';
+import { RequestTalkToNpcDto } from 'src/game/dto/request-talk-to-npc.dto';
+import { IRuntimeNpc } from '../characters/runtime-npc/types/runtime-npc.type';
+import { AuthenticatedSocket } from 'src/common/types/socket/auth-socket.type';
+import { IRuntimeQuest } from './services/runtime-quest/types/runtime-quest.type';
+import { RequestQuestAcceptDto } from 'src/game/dto/request-quest-accept.dto';
 
 @Injectable()
 export class InteractionService {
@@ -38,7 +44,7 @@ export class InteractionService {
     private readonly movementQueueService: MovementQueueService,
     private readonly actionQueueService: ActionQueueService,
     private readonly playerStateService: PlayerStateService,
-    private readonly questService: QuestService,
+    private readonly runtimeQuestService: RuntimeQuestService,
   ) {}
 
   private readonly pendingInteractions = new Map<string, PendingInteraction>();
@@ -104,26 +110,20 @@ export class InteractionService {
     if (!interaction.targetId) return false;
     const npc = this.runtimeEntityService.getEntityByType('npc', interaction.targetId);
 
-    if (!npc) {
+    if (!npc || !isNpc(npc)) {
       this.deletePendingInteraction(playerState.id);
       return false;
     }
 
-    const steps = await this.pathFindingService.getPlayerPath(
-      playerState.locationId,
-      {
-        ...getTileByPosition(playerState.x, playerState.y),
-      },
-      { ...getTileByPosition(npc.x, npc.y) },
-      location.passableMap,
-    );
+    const result = await this.checkDistanceAndSetMovement(playerState, npc, location);
 
-    if (!steps) return false;
+    if (!result) return false;
 
-    if (steps.length > 1) {
-      this.movementQueueService.set(playerState, steps);
-      return true;
-    }
+    const quests = this.runtimeQuestService.getAvailableQuests(playerState, npc.givenQuests);
+
+    this.socketService.sendToUser(playerState.userId, ServerToClientEvents.QuestList, {
+      quests: quests,
+    });
 
     return true;
   }
@@ -158,6 +158,88 @@ export class InteractionService {
     }
 
     return true;
+  }
+
+  private async checkDistanceAndSetMovement(
+    playerState: IRuntimeCharacter,
+    npc: IRuntimeNpc,
+    location: CachedLocation,
+  ): Promise<boolean> {
+    const steps = await this.pathFindingService.getPlayerPath(
+      playerState.locationId,
+      {
+        ...getTileByPosition(playerState.x, playerState.y),
+      },
+      { ...getTileByPosition(npc.x, npc.y) },
+      location.passableMap,
+    );
+
+    if (!steps) return false;
+
+    if (steps.length > 1) {
+      this.movementQueueService.set(playerState, steps);
+      return false;
+    }
+
+    return true;
+  }
+
+  public async requestTalkToNpc(client: AuthenticatedSocket, input: RequestTalkToNpcDto) {
+    const character = this.runtimeEntityService.getEntityByType(
+      'player',
+      client.userData.characterId,
+    );
+
+    if (!character || !isPlayer(character)) return;
+
+    const npc = this.runtimeEntityService.getEntityByType('npc', input.npcId);
+
+    if (!npc || !isNpc(npc)) return;
+
+    const currentLocation = await this.locationService.loadLocation(npc.locationId);
+
+    if (!currentLocation) return;
+
+    const result = await this.checkDistanceAndSetMovement(character, npc, currentLocation);
+
+    if (!result) return;
+
+    this.setPendingInteraction({
+      characterId: character.id,
+      type: InteractionType.Talk,
+      targetId: npc.id,
+    });
+  }
+
+  public requestQuestAccept(client: AuthenticatedSocket, input: RequestQuestAcceptDto) {
+    const character = this.runtimeEntityService.getEntityByType(
+      'player',
+      client.userData.characterId,
+    );
+
+    if (!character || !isPlayer(character)) return;
+
+    const npc = this.runtimeEntityService.getEntityByType('npc', input.npcId);
+
+    if (!npc || !isNpc(npc)) return;
+
+    const quest = npc.givenQuests.find(q => q.id === input.questId);
+
+    if (!quest) return;
+
+    const playerQuest: IRuntimeQuest = {
+      player: character,
+      completedAt: null,
+      progress: null,
+      quest,
+      stepIndex: 0,
+    };
+
+    this.runtimeQuestService.acceptQuest(character, playerQuest);
+
+    this.socketService.sendToUser(character.userId, ServerToClientEvents.QuestStarted, {
+      quest: playerQuest,
+    });
   }
 
   public async requestUseTeleport(client: Socket, input: RequestUseTeleportDto) {

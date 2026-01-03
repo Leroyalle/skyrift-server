@@ -24,6 +24,10 @@ export enum ServerToClientEvents {
 
   GameError = 'game:error',
   GameNotification = 'game:notification',
+
+  QuestList = 'quest:list',
+  QuestStarted = 'quest:started',
+  QuestCompleted = 'quest:completed',
 }
 
 export enum ClientToServerEvents {
@@ -42,4 +46,9 @@ export enum ClientToServerEvents {
   RequestEquipItem = 'equipment:request-equip', // Изменено
   RequestUnEquipItem = 'equipment:request-unEquip', // Изменено
   RequestUseItem = 'bag:request-use-item',
+
+  RequestAcceptQuest = 'quest:request-accept',
+  RequestTurnInQuest = 'quest:request-turn-in',
+  RequestAbandonQuest = 'quest:request-abandon',
+  RequestTalkToNpc = 'quest:request-talk-to-npc',
 }
