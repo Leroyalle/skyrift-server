@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UseGuards } from '@nestjs/common';
 import { Socket } from 'socket.io';
 import { AuthService } from 'src/auth/auth.service';
 import { UserService } from 'src/user/user.service';
@@ -30,10 +30,10 @@ import { RuntimeEquipmentService } from './services/characters/player-state/serv
 import { AuthenticatedSocket } from 'src/common/types/socket/auth-socket.type';
 import { RequestUnEquipDto } from './dto/equipment/request-un-equip.dto';
 import { RequestUseItemDto } from './dto/item/request-use-item.dto';
-import { ItemTypeEnum } from 'src/common/enums/item-type.enum';
-import { isArmor } from 'src/item/guards/is-armor';
-import { isWeapon } from 'src/item/guards/is-weapon';
-import { WeaponSlotEnum } from 'src/common/enums/equipment-slot.enum';
+import { WsAuthGuard } from 'src/common/guards/ws-guard.guard';
+import { RequestTalkToNpcDto } from './dto/request-talk-to-npc.dto';
+import { ConnectedSocket, MessageBody } from '@nestjs/websockets';
+import { RequestQuestAcceptDto } from './dto/request-quest-accept.dto';
 
 @Injectable()
 export class GameService extends BaseLogger {
@@ -318,5 +318,21 @@ export class GameService extends BaseLogger {
 
   public handleUseItem(client: AuthenticatedSocket, input: RequestUseItemDto) {
     return this.inventoryService.use(client.userData.characterId, input.itemId);
+  }
+
+  @UseGuards(WsAuthGuard)
+  public async requestTalkToNpc(
+    @ConnectedSocket() socket: AuthenticatedSocket,
+    @MessageBody() input: RequestTalkToNpcDto,
+  ) {
+    return await this.interactionService.requestTalkToNpc(socket, input);
+  }
+
+  @UseGuards(WsAuthGuard)
+  public requestQuestAccept(
+    @ConnectedSocket() socket: AuthenticatedSocket,
+    @MessageBody() input: RequestQuestAcceptDto,
+  ) {
+    return this.interactionService.requestQuestAccept(socket, input);
   }
 }

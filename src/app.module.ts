@@ -5,7 +5,6 @@ import { AuthModule } from './auth/auth.module';
 import { FactionModule } from './faction/faction.module';
 import { CharacterClassModule } from './character-class/character-class.module';
 import { ItemModule } from './item/item.module';
-import { LocationModule } from './world/location/location.module';
 import { SeedModule } from './seed/seed.module';
 import { GameModule } from './game/game.module';
 import { CharacterModule } from './characters/character/character.module';
@@ -33,7 +32,6 @@ import { QuestModule } from './quest/quest.module';
     CharacterModule,
     CharacterClassModule,
     ItemModule,
-    LocationModule,
     SeedModule,
     GameModule,
     MobModule,

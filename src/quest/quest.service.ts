@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Quest } from './entities/quest.entity';
 import { Repository } from 'typeorm';
 import { PlayerQuest } from './entities/player-quest.entity';
-import { IRuntimeCharacter } from 'src/characters/character/types/runtime-character';
 
 @Injectable()
 export class QuestService {
