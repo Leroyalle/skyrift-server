@@ -228,7 +228,6 @@ export class InteractionService {
     if (!quest) return;
 
     const playerQuest: IRuntimeQuest = {
-      player: character,
       completedAt: null,
       progress: null,
       quest,
