@@ -9,7 +9,6 @@ import { RuntimeNpcService } from '../characters/runtime-npc/runtime-npc.service
 export class RuntimeEntityService {
   constructor(
     private readonly playerStateService: PlayerStateService,
-    @Inject(forwardRef(() => RuntimeMobService))
     private readonly runtimeMobService: RuntimeMobService,
     private readonly runtimeNpcService: RuntimeNpcService,
   ) {}

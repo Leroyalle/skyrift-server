@@ -1,5 +1,4 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
-import { PlayerStateService } from '../characters/player-state/player-state.service';
 import { SkillType } from 'src/common/enums/skill/skill-type.enum';
 import { PositionDto } from 'src/common/dto/position.dto';
 import { BatchUpdateAction } from 'src/game/types/batch-update/batch-update-action.type';
@@ -37,13 +36,14 @@ import { RuntimeMobService } from '../characters/runtime-mob/runtime-mob.service
 @Injectable()
 export class CombatService {
   constructor(
-    private readonly playerStateService: PlayerStateService,
     private readonly pathFindingService: PathFindingService,
     private readonly locationService: LocationService,
     private readonly socketService: SocketService,
     @Inject(forwardRef(() => RuntimeMobService))
     private readonly runtimeMobService: RuntimeMobService,
+    @Inject(forwardRef(() => AoeService))
     private readonly aoeService: AoeService,
+    @Inject(forwardRef(() => RuntimeEntityService))
     private readonly runtimeEntityService: RuntimeEntityService,
     private readonly actionQueueService: ActionQueueService,
     private readonly projectileService: ProjectileService,
@@ -155,7 +155,10 @@ export class CombatService {
 
     console.log('request attack move for player');
 
-    const attacker = this.playerStateService.getCharacterState(client.userData.characterId);
+    const attacker = this.runtimeEntityService.getEntityByType(
+      'player',
+      client.userData.characterId,
+    );
 
     if (!attacker) return;
 
@@ -171,7 +174,7 @@ export class CombatService {
 
     if (!attacker) return;
 
-    const victim = this.playerStateService.getCharacterState(characterId);
+    const victim = this.runtimeEntityService.getEntityByType('player', characterId);
 
     if (!victim) return;
 
@@ -216,9 +219,12 @@ export class CombatService {
       return;
     }
 
-    const attacker = this.playerStateService.getCharacterState(client.userData.characterId);
+    const attacker = this.runtimeEntityService.getEntityByType(
+      'player',
+      client.userData.characterId,
+    );
 
-    if (!attacker) return;
+    if (!attacker || !isPlayer(attacker)) return;
 
     const characterSkill = attacker.characterSkills.find(skill => skill.id === input.skillId);
 
@@ -620,10 +626,11 @@ export class CombatService {
     now: number,
   ): ApplySkillResult | undefined {
     // TODO: update for mob skills
-    const attacker = this.playerStateService.getCharacterState(attackerRef.id);
+    const attacker = this.runtimeEntityService.getEntityByType('player', attackerRef.id);
     const victim = this.runtimeEntityService.getEntityByType(victimRef.type, victimRef.id);
 
-    if (!attacker || !victim || attacker.locationId !== victim.locationId) return;
+    if (!attacker || !isPlayer(attacker) || !victim || attacker.locationId !== victim.locationId)
+      return;
 
     const characterSkill = attacker.characterSkills.find(skill => skill.id === skillId);
 
@@ -675,8 +682,9 @@ export class CombatService {
     skillId: string,
     area: PositionDto,
   ): { cooldown: CooldownResult } | undefined {
-    const attacker = this.playerStateService.getCharacterState(attackerId);
-    if (!attacker) return;
+    const attacker = this.runtimeEntityService.getEntityByType('player', attackerId);
+
+    if (!attacker || !isPlayer(attacker)) return;
 
     const characterSkill = attacker.characterSkills.find(skill => skill.id === skillId);
 

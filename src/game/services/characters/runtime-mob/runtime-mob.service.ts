@@ -24,9 +24,9 @@ export class RuntimeMobService implements OnModuleInit {
   constructor(
     private readonly spatialGridService: SpatialGridService<IRuntimeMob>,
     private readonly locationService: LocationService,
-    @Inject(forwardRef(() => CombatService))
     private readonly combatService: CombatService,
     private readonly pathFindingService: PathFindingService,
+    @Inject(forwardRef(() => RuntimeEntityService))
     private readonly runtimeEntityService: RuntimeEntityService,
     private readonly movementQueueService: MovementQueueService,
     private readonly socketService: SocketService,

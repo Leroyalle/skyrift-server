@@ -1,4 +1,4 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { LocationService } from 'src/world/location/location.service';
 import { IRuntimeNpc } from './types/runtime-npc.type';
 import { buildRuntimeNpc } from './lib/build-runtime-npc.lib';
@@ -8,7 +8,9 @@ import { SpatialGridService } from '../../spatial-grid/spatial-grid.service';
 @Injectable()
 export class RuntimeNpcService implements OnModuleInit {
   constructor(
+    @Inject(forwardRef(() => LocationService))
     private readonly locationService: LocationService,
+    @Inject(forwardRef(() => SpatialGridService))
     private readonly spatialGridService: SpatialGridService<IRuntimeNpc>,
   ) {}
 

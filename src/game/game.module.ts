@@ -30,6 +30,8 @@ import { InventoryService } from './services/characters/player-state/services/in
 import { WsAuthGuard } from 'src/common/guards/ws-guard.guard';
 import { RuntimeEquipmentService } from './services/characters/player-state/services/runtime-equipment/runtime-equipment.service';
 import { RuntimeMobService } from './services/characters/runtime-mob/runtime-mob.service';
+import { RuntimeQuestService } from './services/interaction/services/runtime-quest/runtime-quest.service';
+import { RuntimeNpcService } from './services/characters/runtime-npc/runtime-npc.service';
 
 @Module({
   imports: [
@@ -66,6 +68,8 @@ import { RuntimeMobService } from './services/characters/runtime-mob/runtime-mob
     MovementQueueService,
     InventoryService,
     RuntimeEquipmentService,
+    RuntimeQuestService,
+    RuntimeNpcService,
   ],
 })
 export class GameModule {}

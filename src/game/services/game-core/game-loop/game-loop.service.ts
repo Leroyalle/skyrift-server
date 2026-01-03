@@ -4,9 +4,9 @@ import { CombatService } from '../../combat/combat.service';
 import { AoeService } from '../../combat/services/aoe/aoe.service';
 import { RegenerationService } from '../../regeneration/regeneration.service';
 import { InteractionService } from '../../interaction/interaction.service';
-import { RuntimeMobService } from '../../runtime-mob/runtime-mob.service';
 import { RuntimeEffectService } from '../../runtime-effect/runtime-effect.service';
 import { ProjectileService } from '../../combat/services/projectile/projectile.service';
+import { RuntimeMobService } from '../../characters/runtime-mob/runtime-mob.service';
 
 @Injectable()
 export class GameLoopService implements OnModuleInit, OnModuleDestroy {

@@ -24,6 +24,7 @@ import { RuntimeMobService } from 'src/game/services/characters/runtime-mob/runt
 @Injectable()
 export class ProjectileService {
   constructor(
+    @Inject(forwardRef(() => RuntimeEntityService))
     private readonly runtimeEntityService: RuntimeEntityService,
     private readonly socketService: SocketService,
     private readonly actionQueueService: ActionQueueService,

@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { BatchUpdateAction, Target } from 'src/game/types/batch-update/batch-update-action.type';
 import { ActiveAoEZone } from './types/active-aoe-zone.type';
 import { SocketService } from 'src/game/services/socket/socket.service';
-import { PlayerStateService } from 'src/game/services/characters/player-state/player-state.service';
 import { SpatialGridService } from 'src/game/services/spatial-grid/spatial-grid.service';
 import { TRuntimeEntity } from 'src/game/types/entity/runtime-entity.type';
 import { ActionType } from 'src/game/types/pending-actions.type';
@@ -15,12 +14,12 @@ import { v4 as uuidv4 } from 'uuid';
 import { RuntimeEntityService } from 'src/game/services/runtime-entity/runtime-entity.service';
 import { getOrCreate } from 'src/game/lib/helpers/get-or-create-array.lib';
 import { isMob } from '../../lib/entity/guards/is-mob.lib';
+import { isPlayer } from '../../lib/entity/guards/is-player.lib';
 
 @Injectable()
 export class AoeService {
   constructor(
     private readonly socketService: SocketService,
-    private readonly playerStateService: PlayerStateService,
     private readonly spatialGridService: SpatialGridService<TRuntimeEntity>,
     private readonly runtimeEntityService: RuntimeEntityService,
   ) {}
@@ -41,8 +40,8 @@ export class AoeService {
       if (zone.lastUsedAt && now - zone.lastUsedAt <= 1000) continue;
 
       // FIXME: update for all entities
-      const attacker = this.playerStateService.getCharacterState(zone.casterId);
-      if (!attacker) {
+      const attacker = this.runtimeEntityService.getEntityByType('player', zone.casterId);
+      if (!attacker || !isPlayer(attacker)) {
         this.despawnAoEZone(zone);
         continue;
       }
