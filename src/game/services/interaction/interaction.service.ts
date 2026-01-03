@@ -23,6 +23,7 @@ import { MovementQueueService } from '../movement/services/movement-queue/moveme
 import { ActionQueueService } from '../combat/services/action-queue/action-queue.service';
 import { RuntimeEntityService } from '../runtime-entity/runtime-entity.service';
 import { isPlayer } from '../combat/lib/entity/guards/is-player.lib';
+import { QuestService } from 'src/quest/quest.service';
 
 @Injectable()
 export class InteractionService {
@@ -37,6 +38,7 @@ export class InteractionService {
     private readonly movementQueueService: MovementQueueService,
     private readonly actionQueueService: ActionQueueService,
     private readonly playerStateService: PlayerStateService,
+    private readonly questService: QuestService,
   ) {}
 
   private readonly pendingInteractions = new Map<string, PendingInteraction>();

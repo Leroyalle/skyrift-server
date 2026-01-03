@@ -15,7 +15,6 @@ import { RegenerationService } from './services/regeneration/regeneration.servic
 import { InteractionService } from './services/interaction/interaction.service';
 import { PathFindingService } from './services/path-finding/path-finding.service';
 import { ChatService } from './services/chat/chat.service';
-import { RuntimeMobService } from './services/runtime-mob/runtime-mob.service';
 import { MobModule } from 'src/characters/mob/mob.module';
 import { EffectModule } from 'src/effect/effect.module';
 import { AoeService } from './services/combat/services/aoe/aoe.service';
@@ -30,6 +29,7 @@ import { BagModule } from 'src/characters/character/bag/bag.module';
 import { InventoryService } from './services/characters/player-state/services/inventory/inventory.service';
 import { WsAuthGuard } from 'src/common/guards/ws-guard.guard';
 import { RuntimeEquipmentService } from './services/characters/player-state/services/runtime-equipment/runtime-equipment.service';
+import { RuntimeMobService } from './services/characters/runtime-mob/runtime-mob.service';
 
 @Module({
   imports: [

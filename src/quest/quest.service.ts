@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Quest } from './entities/quest.entity';
 import { Repository } from 'typeorm';
 import { PlayerQuest } from './entities/player-quest.entity';
+import { IRuntimeCharacter } from 'src/characters/character/types/runtime-character';
 
 @Injectable()
 export class QuestService {
@@ -31,5 +32,19 @@ export class QuestService {
 
   public async createPlayerQuest(playerQuest: Omit<PlayerQuest, 'id' | 'createdAt' | 'updatedAt'>) {
     return await this.playerQuestRepository.save(playerQuest);
+  }
+
+  public getAvailableQuests(playerState: IRuntimeCharacter, quests: Quest[]) {
+    const availbleQuests = quests.filter(quest => {
+      quest.prerequisites.every(prerequisite => {
+        if (prerequisite.type === 'level') {
+          return playerState.level >= prerequisite.minLevel;
+        } else if (prerequisite.type === 'quest_completed') {
+          return playerState.completedQuestIds.has(quest.id);
+        }
+      });
+    });
+
+    return availbleQuests;
   }
 }
