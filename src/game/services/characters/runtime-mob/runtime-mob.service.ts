@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { LocationService } from 'src/world/location/location.service';
 import { IRuntimeMob } from './types/runtime-mob.type';
 import { PositionDto } from 'src/common/dto/position.dto';
@@ -14,7 +14,6 @@ import { ServerToClientEvents } from 'src/common/enums/game-socket-events.enum';
 import { SpatialGridService } from '../../spatial-grid/spatial-grid.service';
 import { CombatService } from '../../combat/combat.service';
 import { PathFindingService } from '../../path-finding/path-finding.service';
-import { RuntimeEntityService } from '../../runtime-entity/runtime-entity.service';
 import { MovementQueueService } from '../../movement/services/movement-queue/movement-queue.service';
 import { SocketService } from '../../socket/socket.service';
 import { getOrCreate } from 'src/game/lib/helpers/get-or-create-array.lib';
@@ -27,8 +26,6 @@ export class RuntimeMobService implements OnModuleInit {
     private readonly locationService: LocationService,
     private readonly combatService: CombatService,
     private readonly pathFindingService: PathFindingService,
-    // @Inject(forwardRef(() => RuntimeEntityService))
-    // private readonly runtimeEntityService: RuntimeEntityService,
     private readonly registryService: EntityRegistryService,
     private readonly movementQueueService: MovementQueueService,
     private readonly socketService: SocketService,

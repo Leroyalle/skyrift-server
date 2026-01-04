@@ -51,6 +51,8 @@ export class CharacterService {
         bag: {
           items: true,
         },
+        equipment: true,
+        quests: true,
       },
     });
   }
