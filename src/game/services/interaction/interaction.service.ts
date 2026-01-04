@@ -21,7 +21,6 @@ import { getTileByPosition } from 'src/game/lib/helpers/get-tile-by-position.lib
 import { GameInitialDataService } from '../game-core/game-initial-data/game-initial-data.service';
 import { MovementQueueService } from '../movement/services/movement-queue/movement-queue.service';
 import { ActionQueueService } from '../combat/services/action-queue/action-queue.service';
-// import { RuntimeEntityService } from '../runtime-entity/runtime-entity.service';
 import { isPlayer } from '../combat/lib/entity/guards/is-player.lib';
 import { RuntimeQuestService } from './services/runtime-quest/runtime-quest.service';
 import { isNpc } from '../combat/lib/entity/guards/is-npc';
@@ -35,7 +34,6 @@ import { EntityRegistryService } from '../entity-registry/entity-registry.servic
 @Injectable()
 export class InteractionService {
   constructor(
-    // private readonly runtimeEntityService: RuntimeEntityService,
     private readonly registryService: EntityRegistryService,
     private readonly socketService: SocketService,
     private readonly locationService: LocationService,

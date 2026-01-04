@@ -24,8 +24,6 @@ import { EntityRegistryService } from 'src/game/services/entity-registry/entity-
 @Injectable()
 export class ProjectileService {
   constructor(
-    // @Inject(forwardRef(() => RuntimeEntityService))
-    // private readonly runtimeEntityService: RuntimeEntityService,
     private readonly registryService: EntityRegistryService,
     private readonly socketService: SocketService,
     private readonly actionQueueService: ActionQueueService,

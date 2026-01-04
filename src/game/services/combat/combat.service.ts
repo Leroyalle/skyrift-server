@@ -43,8 +43,6 @@ export class CombatService {
     private readonly runtimeMobService: RuntimeMobService,
     @Inject(forwardRef(() => AoeService))
     private readonly aoeService: AoeService,
-    // @Inject(forwardRef(() => RuntimeEntityService))
-    // private readonly runtimeEntityService: RuntimeEntityService,
     private readonly registryService: EntityRegistryService,
     private readonly actionQueueService: ActionQueueService,
     private readonly projectileService: ProjectileService,

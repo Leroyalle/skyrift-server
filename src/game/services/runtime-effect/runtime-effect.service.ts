@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { IRuntimeEffect } from './types/runtime-effect.type';
 import { EntityKey } from 'src/game/types/entity/keys/entity-key.type';
-// import { RuntimeEntityService } from '../runtime-entity/runtime-entity.service';
 import { decodeEntityKey } from 'src/game/lib/entity/decode-entity-key.lib';
 import { EffectType } from 'src/common/enums/skill/effect-type.enum';
 import { getOrCreate } from 'src/game/lib/helpers/get-or-create-array.lib';
@@ -20,7 +19,6 @@ import { EntityRegistryService } from '../entity-registry/entity-registry.servic
 @Injectable()
 export class RuntimeEffectService extends BaseLogger {
   constructor(
-    // private readonly runtimeEntityService: RuntimeEntityService,
     private readonly registryService: EntityRegistryService,
     private readonly socketService: SocketService,
   ) {

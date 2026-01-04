@@ -21,7 +21,6 @@ export class AoeService {
   constructor(
     private readonly socketService: SocketService,
     private readonly spatialGridService: SpatialGridService<TRuntimeEntity>,
-    // private readonly runtimeEntityService: RuntimeEntityService,
     private readonly registryService: EntityRegistryService,
   ) {}
 

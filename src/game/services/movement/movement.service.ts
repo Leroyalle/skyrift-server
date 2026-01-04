@@ -19,7 +19,6 @@ import { getPixelByTile } from 'src/game/lib/helpers/get-pixels-by-tile.lib';
 import { RuntimeEffectService } from '../runtime-effect/runtime-effect.service';
 import { EffectType } from 'src/common/enums/skill/effect-type.enum';
 import { MovementQueueService } from './services/movement-queue/movement-queue.service';
-// import { RuntimeEntityService } from '../runtime-entity/runtime-entity.service';
 import { decodeEntityKey } from 'src/game/lib/entity/decode-entity-key.lib';
 import { isCharacterMovementQueue } from './services/movement-queue/lib/guards/is-character-movement-queue.lib';
 import { RuntimeMobService } from '../characters/runtime-mob/runtime-mob.service';
@@ -38,7 +37,6 @@ export class MovementService {
     private readonly runtimeEffectService: RuntimeEffectService,
     private readonly movementQueueService: MovementQueueService,
     private readonly registryService: EntityRegistryService,
-    // private readonly runtimeEntityService: RuntimeEntityService,
   ) {}
 
   public async requestMoveTo(client: Socket, input: RequestMoveToDto) {

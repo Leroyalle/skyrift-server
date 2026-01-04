@@ -18,7 +18,6 @@ import { ChatService } from './services/chat/chat.service';
 import { MobModule } from 'src/characters/mob/mob.module';
 import { EffectModule } from 'src/effect/effect.module';
 import { AoeService } from './services/combat/services/aoe/aoe.service';
-import { RuntimeEntityService } from './services/runtime-entity/runtime-entity.service';
 import { ActionQueueService } from './services/combat/services/action-queue/action-queue.service';
 import { GameLoopService } from './services/game-core/game-loop/game-loop.service';
 import { GameInitialDataService } from './services/game-core/game-initial-data/game-initial-data.service';
@@ -61,7 +60,6 @@ import { WorldBootstrapService } from './services/game-core/world-bootstrap/worl
     ChatService,
     RuntimeMobService,
     AoeService,
-    // RuntimeEntityService,
     ActionQueueService,
     GameInitialDataService,
     RuntimeEffectService,
