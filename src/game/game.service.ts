@@ -320,19 +320,11 @@ export class GameService extends BaseLogger {
     return this.inventoryService.use(client.userData.characterId, input.itemId);
   }
 
-  @UseGuards(WsAuthGuard)
-  public async requestTalkToNpc(
-    @ConnectedSocket() socket: AuthenticatedSocket,
-    @MessageBody() input: RequestTalkToNpcDto,
-  ) {
+  public async requestTalkToNpc(socket: AuthenticatedSocket, input: RequestTalkToNpcDto) {
     return await this.interactionService.requestTalkToNpc(socket, input);
   }
 
-  @UseGuards(WsAuthGuard)
-  public requestQuestAccept(
-    @ConnectedSocket() socket: AuthenticatedSocket,
-    @MessageBody() input: RequestQuestAcceptDto,
-  ) {
+  public requestQuestAccept(socket: AuthenticatedSocket, input: RequestQuestAcceptDto) {
     return this.interactionService.requestQuestAccept(socket, input);
   }
 }

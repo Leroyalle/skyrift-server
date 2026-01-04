@@ -17,7 +17,6 @@ import { SocketService } from './services/socket/socket.service';
 import { RequestUseTeleportDto } from './dto/request-use-teleport.dto';
 import { DirectMessageInput } from './services/chat/dto/direct-message.input';
 import { TItem } from 'src/common/types/item.type';
-import { RuntimeEquipmentService } from './services/characters/player-state/services/runtime-equipment/runtime-equipment.service';
 import { UseGuards } from '@nestjs/common';
 import { WsAuthGuard } from 'src/common/guards/ws-guard.guard';
 import { AuthSocket } from 'src/common/decorators/auth-socket.decorator';
@@ -25,6 +24,8 @@ import { AuthenticatedSocket } from 'src/common/types/socket/auth-socket.type';
 import { RequestEquipDto } from './dto/equipment/request-equip.dto';
 import { RequestUnEquipDto } from './dto/equipment/request-un-equip.dto';
 import { RequestUseItemDto } from './dto/item/request-use-item.dto';
+import { RequestQuestAcceptDto } from './dto/request-quest-accept.dto';
+import { RequestTalkToNpcDto } from './dto/request-talk-to-npc.dto';
 
 @WebSocketGateway({
   namespace: 'game',
@@ -136,5 +137,23 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   public requestUseItem(@AuthSocket() client: AuthenticatedSocket, input: RequestUseItemDto) {
     console.log('USE ITEM');
     return this.gameService.handleUseItem(client, input);
+  }
+
+  @SubscribeMessage(ClientToServerEvents.RequestTalkToNpc)
+  @UseGuards(WsAuthGuard)
+  public async requestTalkToNpc(
+    @ConnectedSocket() socket: AuthenticatedSocket,
+    @MessageBody() input: RequestTalkToNpcDto,
+  ) {
+    return await this.gameService.requestTalkToNpc(socket, input);
+  }
+
+  @SubscribeMessage(ClientToServerEvents.RequestAcceptQuest)
+  @UseGuards(WsAuthGuard)
+  public requestQuestAccept(
+    @ConnectedSocket() socket: AuthenticatedSocket,
+    @MessageBody() input: RequestQuestAcceptDto,
+  ) {
+    return this.gameService.requestQuestAccept(socket, input);
   }
 }
