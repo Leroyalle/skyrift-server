@@ -19,10 +19,11 @@ import { getPixelByTile } from 'src/game/lib/helpers/get-pixels-by-tile.lib';
 import { RuntimeEffectService } from '../runtime-effect/runtime-effect.service';
 import { EffectType } from 'src/common/enums/skill/effect-type.enum';
 import { MovementQueueService } from './services/movement-queue/movement-queue.service';
-import { RuntimeEntityService } from '../runtime-entity/runtime-entity.service';
+// import { RuntimeEntityService } from '../runtime-entity/runtime-entity.service';
 import { decodeEntityKey } from 'src/game/lib/entity/decode-entity-key.lib';
 import { isCharacterMovementQueue } from './services/movement-queue/lib/guards/is-character-movement-queue.lib';
 import { RuntimeMobService } from '../characters/runtime-mob/runtime-mob.service';
+import { EntityRegistryService } from '../entity-registry/entity-registry.service';
 
 @Injectable()
 export class MovementService {
@@ -36,7 +37,8 @@ export class MovementService {
     private readonly runtimeMobService: RuntimeMobService,
     private readonly runtimeEffectService: RuntimeEffectService,
     private readonly movementQueueService: MovementQueueService,
-    private readonly runtimeEntityService: RuntimeEntityService,
+    private readonly registryService: EntityRegistryService,
+    // private readonly runtimeEntityService: RuntimeEntityService,
   ) {}
 
   public async requestMoveTo(client: Socket, input: RequestMoveToDto) {
@@ -94,7 +96,7 @@ export class MovementService {
 
     entries.forEach(([entityKey, queue]) => {
       const entityRef = decodeEntityKey(entityKey);
-      const entity = this.runtimeEntityService.getEntityByType(entityRef.type, entityRef.id);
+      const entity = this.registryService.getByRef(entityRef);
 
       if (!entity) return;
 

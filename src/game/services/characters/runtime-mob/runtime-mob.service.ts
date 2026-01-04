@@ -18,6 +18,7 @@ import { RuntimeEntityService } from '../../runtime-entity/runtime-entity.servic
 import { MovementQueueService } from '../../movement/services/movement-queue/movement-queue.service';
 import { SocketService } from '../../socket/socket.service';
 import { getOrCreate } from 'src/game/lib/helpers/get-or-create-array.lib';
+import { EntityRegistryService } from '../../entity-registry/entity-registry.service';
 
 @Injectable()
 export class RuntimeMobService implements OnModuleInit {
@@ -26,8 +27,9 @@ export class RuntimeMobService implements OnModuleInit {
     private readonly locationService: LocationService,
     private readonly combatService: CombatService,
     private readonly pathFindingService: PathFindingService,
-    @Inject(forwardRef(() => RuntimeEntityService))
-    private readonly runtimeEntityService: RuntimeEntityService,
+    // @Inject(forwardRef(() => RuntimeEntityService))
+    // private readonly runtimeEntityService: RuntimeEntityService,
+    private readonly registryService: EntityRegistryService,
     private readonly movementQueueService: MovementQueueService,
     private readonly socketService: SocketService,
   ) {}
@@ -141,7 +143,7 @@ export class RuntimeMobService implements OnModuleInit {
   }
 
   private checkVictimIsActual(runtimeMob: IRuntimeMob, victimRef: EntityRef): boolean {
-    const victim = this.runtimeEntityService.getEntityByType(victimRef.type, victimRef.id);
+    const victim = this.registryService.getByRef(victimRef);
 
     if (!victim) return false;
 

@@ -11,17 +11,18 @@ import { IRuntimeCharacter } from 'src/characters/character/types/runtime-charac
 import { CharacterSkill } from 'src/characters/character/character-skill/entities/character-skill.entity';
 import { PositionDto } from 'src/common/dto/position.dto';
 import { v4 as uuidv4 } from 'uuid';
-import { RuntimeEntityService } from 'src/game/services/runtime-entity/runtime-entity.service';
 import { getOrCreate } from 'src/game/lib/helpers/get-or-create-array.lib';
 import { isMob } from '../../lib/entity/guards/is-mob.lib';
 import { isPlayer } from '../../lib/entity/guards/is-player.lib';
+import { EntityRegistryService } from 'src/game/services/entity-registry/entity-registry.service';
 
 @Injectable()
 export class AoeService {
   constructor(
     private readonly socketService: SocketService,
     private readonly spatialGridService: SpatialGridService<TRuntimeEntity>,
-    private readonly runtimeEntityService: RuntimeEntityService,
+    // private readonly runtimeEntityService: RuntimeEntityService,
+    private readonly registryService: EntityRegistryService,
   ) {}
 
   private readonly activeAoEZones: Map<string, ActiveAoEZone> = new Map();
@@ -40,7 +41,7 @@ export class AoeService {
       if (zone.lastUsedAt && now - zone.lastUsedAt <= 1000) continue;
 
       // FIXME: update for all entities
-      const attacker = this.runtimeEntityService.getEntityByType('player', zone.casterId);
+      const attacker = this.registryService.getByRef({ type: 'player', id: zone.casterId });
       if (!attacker || !isPlayer(attacker)) {
         this.despawnAoEZone(zone);
         continue;
@@ -68,8 +69,8 @@ export class AoeService {
       const batchLocation = getOrCreate(updatesByLocation, zone.locationId, () => []);
 
       const targets: Target[] = [];
-      entities.forEach(({ id, type }) => {
-        const victim = this.runtimeEntityService.getEntityByType(type, id);
+      entities.forEach(ref => {
+        const victim = this.registryService.getByRef(ref);
         if (!victim || !cSkill.skill.damagePerSecond || !victim.isAlive) return;
         if (attacker.id === victim.id) return;
         const receivedDamage = cSkill.skill.damagePerSecond;

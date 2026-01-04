@@ -2,7 +2,6 @@ import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { IProjectile } from './types/projectile.type';
 import { EntityKey } from 'src/game/types/entity/keys/entity-key.type';
 import { isAttackInProgress } from '../../lib/helpers/is-attack-in-progress.lib';
-import { RuntimeEntityService } from 'src/game/services/runtime-entity/runtime-entity.service';
 import { decodeEntityKey } from 'src/game/lib/entity/decode-entity-key.lib';
 import { EntityRef } from 'src/game/types/entity/entity-ref.type';
 import { generateEntityKey } from 'src/game/lib/entity/generate-entity-key.lib';
@@ -20,12 +19,14 @@ import { RedisKeys } from 'src/common/enums/redis-keys.enum';
 import { ServerToClientEvents } from 'src/common/enums/game-socket-events.enum';
 import { getTileByPosition } from 'src/game/lib/helpers/get-tile-by-position.lib';
 import { RuntimeMobService } from 'src/game/services/characters/runtime-mob/runtime-mob.service';
+import { EntityRegistryService } from 'src/game/services/entity-registry/entity-registry.service';
 
 @Injectable()
 export class ProjectileService {
   constructor(
-    @Inject(forwardRef(() => RuntimeEntityService))
-    private readonly runtimeEntityService: RuntimeEntityService,
+    // @Inject(forwardRef(() => RuntimeEntityService))
+    // private readonly runtimeEntityService: RuntimeEntityService,
+    private readonly registryService: EntityRegistryService,
     private readonly socketService: SocketService,
     private readonly actionQueueService: ActionQueueService,
     @Inject(forwardRef(() => RuntimeMobService))
@@ -39,15 +40,9 @@ export class ProjectileService {
     for (const [attackerKey, projectiles] of this.projectilesMap.entries()) {
       projectiles.forEach(projectile => {
         const attackerRef = decodeEntityKey(attackerKey);
-        const attacker = this.runtimeEntityService.getEntityByType(
-          attackerRef.type,
-          attackerRef.id,
-        );
+        const attacker = this.registryService.getByRef(attackerRef);
 
-        const victim = this.runtimeEntityService.getEntityByType(
-          projectile.victimRef.type,
-          projectile.victimRef.id,
-        );
+        const victim = this.registryService.getByRef(projectile.victimRef);
 
         if (!attacker || !victim || attacker.locationId !== victim.locationId) return;
 
@@ -100,11 +95,8 @@ export class ProjectileService {
     attackerRef: EntityRef,
     projectile: IProjectile,
   ): BatchUpdateAction | undefined {
-    const attacker = this.runtimeEntityService.getEntityByType(attackerRef.type, attackerRef.id);
-    const victim = this.runtimeEntityService.getEntityByType(
-      projectile.victimRef.type,
-      projectile.victimRef.id,
-    );
+    const attacker = this.registryService.getByRef(attackerRef);
+    const victim = this.registryService.getByRef(projectile.victimRef);
 
     if (!attacker) return;
 

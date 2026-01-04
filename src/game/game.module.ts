@@ -32,7 +32,8 @@ import { RuntimeEquipmentService } from './services/characters/player-state/serv
 import { RuntimeMobService } from './services/characters/runtime-mob/runtime-mob.service';
 import { RuntimeQuestService } from './services/interaction/services/runtime-quest/runtime-quest.service';
 import { RuntimeNpcService } from './services/characters/runtime-npc/runtime-npc.service';
-import { EntityRegistryService } from './services/entity/entity-registry.service';
+import { EntityRegistryService } from './services/entity-registry/entity-registry.service';
+import { WorldBootstrapService } from './services/game-core/world-bootstrap/world-bootstrap.service';
 
 @Module({
   imports: [
@@ -60,7 +61,7 @@ import { EntityRegistryService } from './services/entity/entity-registry.service
     ChatService,
     RuntimeMobService,
     AoeService,
-    RuntimeEntityService,
+    // RuntimeEntityService,
     ActionQueueService,
     GameInitialDataService,
     RuntimeEffectService,
@@ -72,6 +73,7 @@ import { EntityRegistryService } from './services/entity/entity-registry.service
     RuntimeQuestService,
     RuntimeNpcService,
     EntityRegistryService,
+    WorldBootstrapService,
   ],
 })
 export class GameModule {}

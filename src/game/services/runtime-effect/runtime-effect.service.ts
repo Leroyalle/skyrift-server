@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { IRuntimeEffect } from './types/runtime-effect.type';
 import { EntityKey } from 'src/game/types/entity/keys/entity-key.type';
-import { RuntimeEntityService } from '../runtime-entity/runtime-entity.service';
+// import { RuntimeEntityService } from '../runtime-entity/runtime-entity.service';
 import { decodeEntityKey } from 'src/game/lib/entity/decode-entity-key.lib';
 import { EffectType } from 'src/common/enums/skill/effect-type.enum';
 import { getOrCreate } from 'src/game/lib/helpers/get-or-create-array.lib';
@@ -15,11 +15,13 @@ import { Effect } from 'src/effect/entities/effect.entity';
 import { buildRuntimeEffect } from './lib/build-runtime-effect.lib';
 import { generateEntityKey } from 'src/game/lib/entity/generate-entity-key.lib';
 import { BaseLogger } from 'src/common/infra/logger.infra';
+import { EntityRegistryService } from '../entity-registry/entity-registry.service';
 
 @Injectable()
 export class RuntimeEffectService extends BaseLogger {
   constructor(
-    private readonly runtimeEntityService: RuntimeEntityService,
+    // private readonly runtimeEntityService: RuntimeEntityService,
+    private readonly registryService: EntityRegistryService,
     private readonly socketService: SocketService,
   ) {
     super();
@@ -34,7 +36,7 @@ export class RuntimeEffectService extends BaseLogger {
       const now = Date.now();
 
       const entityRef = decodeEntityKey(entityKey);
-      const entity = this.runtimeEntityService.getEntityByType(entityRef.type, entityRef.id);
+      const entity = this.registryService.getByRef(entityRef);
       if (!entity) continue;
 
       const batchUpdate = getOrCreate(batchUpdateEffects, entity.locationId, () => []);
@@ -105,7 +107,7 @@ export class RuntimeEffectService extends BaseLogger {
     this.log('applyEffect');
 
     const entityRef = decodeEntityKey(entityKey);
-    const entity = this.runtimeEntityService.getEntityByType(entityRef.type, entityRef.id);
+    const entity = this.registryService.getByRef(entityRef);
 
     if (!entity) return;
 

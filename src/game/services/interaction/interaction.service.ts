@@ -21,7 +21,7 @@ import { getTileByPosition } from 'src/game/lib/helpers/get-tile-by-position.lib
 import { GameInitialDataService } from '../game-core/game-initial-data/game-initial-data.service';
 import { MovementQueueService } from '../movement/services/movement-queue/movement-queue.service';
 import { ActionQueueService } from '../combat/services/action-queue/action-queue.service';
-import { RuntimeEntityService } from '../runtime-entity/runtime-entity.service';
+// import { RuntimeEntityService } from '../runtime-entity/runtime-entity.service';
 import { isPlayer } from '../combat/lib/entity/guards/is-player.lib';
 import { RuntimeQuestService } from './services/runtime-quest/runtime-quest.service';
 import { isNpc } from '../combat/lib/entity/guards/is-npc';
@@ -30,11 +30,13 @@ import { IRuntimeNpc } from '../characters/runtime-npc/types/runtime-npc.type';
 import { AuthenticatedSocket } from 'src/common/types/socket/auth-socket.type';
 import { IRuntimeQuest } from './services/runtime-quest/types/runtime-quest.type';
 import { RequestQuestAcceptDto } from 'src/game/dto/request-quest-accept.dto';
+import { EntityRegistryService } from '../entity-registry/entity-registry.service';
 
 @Injectable()
 export class InteractionService {
   constructor(
-    private readonly runtimeEntityService: RuntimeEntityService,
+    // private readonly runtimeEntityService: RuntimeEntityService,
+    private readonly registryService: EntityRegistryService,
     private readonly socketService: SocketService,
     private readonly locationService: LocationService,
     private readonly pathFindingService: PathFindingService,
@@ -60,10 +62,10 @@ export class InteractionService {
   public async tickInteractions() {
     for (const interaction of this.pendingInteractions.values()) {
       console.log('[tickInteractions]', interaction);
-      const playerState = this.runtimeEntityService.getEntityByType(
-        'player',
-        interaction.characterId,
-      );
+      const playerState = this.registryService.getByRef({
+        type: 'player',
+        id: interaction.characterId,
+      });
 
       if (!playerState || !isPlayer(playerState)) {
         this.deletePendingInteraction(interaction.characterId);
@@ -108,7 +110,7 @@ export class InteractionService {
     location: CachedLocation,
   ): Promise<boolean> {
     if (!interaction.targetId) return false;
-    const npc = this.runtimeEntityService.getEntityByType('npc', interaction.targetId);
+    const npc = this.registryService.getByRef({ type: 'npc', id: interaction.targetId });
 
     if (!npc || !isNpc(npc)) {
       this.deletePendingInteraction(playerState.id);
@@ -185,14 +187,14 @@ export class InteractionService {
   }
 
   public async requestTalkToNpc(client: AuthenticatedSocket, input: RequestTalkToNpcDto) {
-    const character = this.runtimeEntityService.getEntityByType(
-      'player',
-      client.userData.characterId,
-    );
+    const character = this.registryService.getByRef({
+      type: 'player',
+      id: client.userData.characterId,
+    });
 
     if (!character || !isPlayer(character)) return;
 
-    const npc = this.runtimeEntityService.getEntityByType('npc', input.npcId);
+    const npc = this.registryService.getByRef({ type: 'npc', id: input.npcId });
 
     if (!npc || !isNpc(npc)) return;
 
@@ -212,14 +214,14 @@ export class InteractionService {
   }
 
   public requestQuestAccept(client: AuthenticatedSocket, input: RequestQuestAcceptDto) {
-    const character = this.runtimeEntityService.getEntityByType(
-      'player',
-      client.userData.characterId,
-    );
+    const character = this.registryService.getByRef({
+      type: 'player',
+      id: client.userData.characterId,
+    });
 
     if (!character || !isPlayer(character)) return;
 
-    const npc = this.runtimeEntityService.getEntityByType('npc', input.npcId);
+    const npc = this.registryService.getByRef({ type: 'npc', id: input.npcId });
 
     if (!npc || !isNpc(npc)) return;
 
@@ -250,10 +252,10 @@ export class InteractionService {
     }
 
     console.log('requestUseTeleport', input);
-    const playerState = this.runtimeEntityService.getEntityByType(
-      'player',
-      client.userData.characterId,
-    );
+    const playerState = this.registryService.getByRef({
+      type: 'player',
+      id: client.userData.characterId,
+    });
 
     if (!playerState || !isPlayer(playerState)) return;
 

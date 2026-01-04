@@ -1,16 +1,17 @@
 import { Injectable } from '@nestjs/common';
-import { PlayerStateService } from 'src/game/services/characters/player-state/player-state.service';
 import { BatchUpdateRegeneration } from 'src/game/types/batch-update/batch-update-regeneration.type';
 import { SocketService } from '../socket/socket.service';
 import { RedisKeys } from 'src/common/enums/redis-keys.enum';
 import { ServerToClientEvents } from 'src/common/enums/game-socket-events.enum';
 import { getOrCreate } from 'src/game/lib/helpers/get-or-create-array.lib';
 import { RuntimeMobService } from '../characters/runtime-mob/runtime-mob.service';
+import { EntityRegistryService } from '../entity-registry/entity-registry.service';
 
 @Injectable()
 export class RegenerationService {
   constructor(
-    private readonly playerStateService: PlayerStateService,
+    private readonly registryService: EntityRegistryService,
+
     private readonly socketService: SocketService,
     private readonly runtimeMobService: RuntimeMobService,
   ) {}
@@ -20,7 +21,7 @@ export class RegenerationService {
 
     const now = Date.now();
 
-    const characters = this.playerStateService.getCharactersArray();
+    const characters = this.registryService.charactersArray;
 
     characters.forEach(char => {
       if (now - char.lastHpRegenerationTime < 5000) return;
