@@ -26,6 +26,14 @@ export class EntityRegistryService {
     return Array.from(this.characters.values());
   }
 
+  get mobsArray() {
+    return Array.from(this.mobs.values());
+  }
+
+  get npcsArray() {
+    return Array.from(this.npcs.values());
+  }
+
   public add(entity: TRuntimeEntity) {
     if (isPlayer(entity)) {
       this.characters.set(entity.id, entity);
@@ -67,6 +75,12 @@ export class EntityRegistryService {
     }
   }
 
+  public getEntitiesByLocation(type: 'mob', locationId: string): IRuntimeMob[];
+  public getEntitiesByLocation(type: 'npc', locationId: string): IRuntimeNpc[];
+  public getEntitiesByLocation(
+    type: 'mob' | 'npc',
+    locationId: string,
+  ): IRuntimeMob[] | IRuntimeNpc[];
   public getEntitiesByLocation(
     type: 'mob' | 'npc',
     locationId: string,

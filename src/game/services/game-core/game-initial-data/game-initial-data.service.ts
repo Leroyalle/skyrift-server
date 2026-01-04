@@ -6,14 +6,14 @@ import { IRuntimeCharacter } from 'src/characters/character/types/runtime-charac
 import { GameInitialData } from 'src/game/types/game-initial-data.type';
 import { PlayerStateService } from '../../characters/player-state/player-state.service';
 import { AoeService } from '../../combat/services/aoe/aoe.service';
-import { RuntimeMobService } from '../../characters/runtime-mob/runtime-mob.service';
+import { EntityRegistryService } from '../../entity-registry/entity-registry.service';
 
 @Injectable()
 export class GameInitialDataService {
   constructor(
     private readonly redisService: RedisService,
     private readonly playerStateService: PlayerStateService,
-    private readonly runtimeMobService: RuntimeMobService,
+    private readonly registryService: EntityRegistryService,
     private readonly locationService: LocationService,
     private readonly aoeService: AoeService,
   ) {}
@@ -47,7 +47,7 @@ export class GameInitialDataService {
 
     const aoeZones = this.aoeService.getActiveAoeZones(character.locationId);
 
-    const mobs = this.runtimeMobService.getMobsByLocation(character.locationId);
+    const mobs = this.registryService.getEntitiesByLocation('mob', character.locationId);
 
     return {
       character,

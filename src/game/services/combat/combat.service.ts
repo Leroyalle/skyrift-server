@@ -158,7 +158,7 @@ export class CombatService {
   }
 
   public async requestAttackMoveForMob(runtimeMobId: string, characterId: string) {
-    const attacker = this.runtimeMobService.getById(runtimeMobId);
+    const attacker = this.registryService.getByRef({ type: 'mob', id: runtimeMobId });
 
     if (!attacker) return;
 

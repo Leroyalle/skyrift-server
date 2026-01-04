@@ -1,9 +1,8 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { LocationService } from 'src/world/location/location.service';
 import { IRuntimeMob } from './types/runtime-mob.type';
 import { PositionDto } from 'src/common/dto/position.dto';
 import { getTileByPosition } from 'src/game/lib/helpers/get-tile-by-position.lib';
-import { buildRuntimeMobs } from './lib/build-runtime-mobs.lib';
 import { getRandomValue } from 'src/common/lib/get-random-value.lib';
 import { CachedLocation } from 'src/world/location/types/cashed-location.type';
 import { RangeArea } from './types/range-area.type';
@@ -16,52 +15,40 @@ import { CombatService } from '../../combat/combat.service';
 import { PathFindingService } from '../../path-finding/path-finding.service';
 import { MovementQueueService } from '../../movement/services/movement-queue/movement-queue.service';
 import { SocketService } from '../../socket/socket.service';
-import { getOrCreate } from 'src/game/lib/helpers/get-or-create-array.lib';
 import { EntityRegistryService } from '../../entity-registry/entity-registry.service';
 
 @Injectable()
-export class RuntimeMobService implements OnModuleInit {
+export class RuntimeMobService {
   constructor(
     private readonly spatialGridService: SpatialGridService<IRuntimeMob>,
     private readonly locationService: LocationService,
     private readonly combatService: CombatService,
     private readonly pathFindingService: PathFindingService,
-    private readonly registryService: EntityRegistryService,
     private readonly movementQueueService: MovementQueueService,
     private readonly socketService: SocketService,
+    private readonly registryService: EntityRegistryService,
   ) {}
 
-  private readonly mobsByLocation = new Map<string, Set<string>>();
-  private readonly mobsById = new Map<string, IRuntimeMob>();
+  // private readonly mobsByLocation = new Map<string, Set<string>>();
+  // private readonly mobsById = new Map<string, IRuntimeMob>();
 
-  public async onModuleInit() {
-    const locations = await this.locationService.findAndCacheAll();
-    for (const location of locations) {
-      const mobsSet = getOrCreate(this.mobsByLocation, location.id, () => new Set());
-      location.mobSpawn.forEach(mobSpawn => {
-        const runtimeMobs = buildRuntimeMobs(mobSpawn);
-        runtimeMobs.forEach(runtimeMob => {
-          mobsSet.add(runtimeMob.id);
-          this.mobsById.set(runtimeMob.id, runtimeMob);
-          this.spatialGridService.add(runtimeMob);
-        });
-      });
-    }
-  }
-
-  public getMobsByLocation(locationId: string): IRuntimeMob[] {
-    const mobsIds = this.mobsByLocation.get(locationId) ?? [];
-    const mobs: IRuntimeMob[] = [];
-    for (const mId of mobsIds.values()) {
-      const mob = this.getById(mId);
-      if (!mob) continue;
-      mobs.push(mob);
-    }
-    return mobs;
-  }
+  // public async onModuleInit() {
+  //   const locations = await this.locationService.findAndCacheAll();
+  //   for (const location of locations) {
+  //     const mobsSet = getOrCreate(this.mobsByLocation, location.id, () => new Set());
+  //     location.mobSpawn.forEach(mobSpawn => {
+  //       const runtimeMobs = buildRuntimeMobs(mobSpawn);
+  //       runtimeMobs.forEach(runtimeMob => {
+  //         mobsSet.add(runtimeMob.id);
+  //         this.mobsById.set(runtimeMob.id, runtimeMob);
+  //         this.spatialGridService.add(runtimeMob);
+  //       });
+  //     });
+  //   }
+  // }
 
   public async tickAiMobs() {
-    const mobsEntries = Array.from(this.mobsById.values());
+    const mobsEntries = this.registryService.mobsArray;
 
     for (const mob of mobsEntries) {
       const now = Date.now();
@@ -236,14 +223,6 @@ export class RuntimeMobService implements OnModuleInit {
     // this.movementService.setMovementQueue(mob, path);
   }
 
-  public get mobsArray() {
-    return Array.from(this.mobsById.values());
-  }
-
-  public getById(id: string) {
-    return this.mobsById.get(id);
-  }
-
   private getRandomTileInRange(
     rangeArea: RangeArea,
     currentTile: PositionDto,
@@ -272,7 +251,7 @@ export class RuntimeMobService implements OnModuleInit {
   }
 
   public resetRespawnTime(runtimeMobId: string): IRuntimeMob | undefined {
-    const spawnMob = this.mobsById.get(runtimeMobId);
+    const spawnMob = this.registryService.getByRef({ type: 'mob', id: runtimeMobId });
     if (!spawnMob) return;
     spawnMob.respawnIn = null;
     return spawnMob;
@@ -290,7 +269,8 @@ export class RuntimeMobService implements OnModuleInit {
   }
 
   public setRespawn(runtimeMobId: string) {
-    const spawnMob = this.mobsById.get(runtimeMobId);
+    const spawnMob = this.registryService.getByRef({ type: 'mob', id: runtimeMobId });
+
     if (!spawnMob) return;
     const now = Date.now();
     spawnMob.respawnIn = now + spawnMob.respawnTime;

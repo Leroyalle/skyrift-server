@@ -4,7 +4,6 @@ import { SocketService } from '../socket/socket.service';
 import { RedisKeys } from 'src/common/enums/redis-keys.enum';
 import { ServerToClientEvents } from 'src/common/enums/game-socket-events.enum';
 import { getOrCreate } from 'src/game/lib/helpers/get-or-create-array.lib';
-import { RuntimeMobService } from '../characters/runtime-mob/runtime-mob.service';
 import { EntityRegistryService } from '../entity-registry/entity-registry.service';
 
 @Injectable()
@@ -13,7 +12,6 @@ export class RegenerationService {
     private readonly registryService: EntityRegistryService,
 
     private readonly socketService: SocketService,
-    private readonly runtimeMobService: RuntimeMobService,
   ) {}
   // TODO: add for mobs
   public tickRegeneration() {
@@ -32,13 +30,6 @@ export class RegenerationService {
       char.hp = Math.min(char.hp + hpDelta, char.maxHp);
       char.lastHpRegenerationTime = now;
 
-      // let locationBatch = updatesByLocation.get(char.locationId);
-
-      // if (!locationBatch) {
-      //   locationBatch = [];
-      //   updatesByLocation.set(char.locationId, locationBatch);
-      // }
-
       const locationBatch = getOrCreate(updatesByLocation, char.locationId, () => []);
 
       locationBatch.push({
@@ -49,7 +40,7 @@ export class RegenerationService {
       });
     });
 
-    const mobs = this.runtimeMobService.mobsArray;
+    const mobs = this.registryService.mobsArray;
 
     mobs.forEach(mob => {
       if (now - mob.lastHpRegenerationTime < 5000) return;

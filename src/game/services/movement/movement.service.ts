@@ -3,7 +3,6 @@ import { PlayerStateService } from 'src/game/services/characters/player-state/pl
 import { LocationService } from 'src/world/location/location.service';
 import { SocketService } from '../socket/socket.service';
 import { RequestMoveToDto } from 'src/game/dto/request-move-to.dto';
-import { Socket } from 'socket.io';
 import { BatchUpdateMovement } from 'src/game/types/batch-update/batch-update-movement.type';
 import { SpatialGridService } from '../spatial-grid/spatial-grid.service';
 import { getDirection } from 'src/game/lib/helpers/get-direction.lib';
