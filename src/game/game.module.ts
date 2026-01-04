@@ -32,6 +32,7 @@ import { RuntimeEquipmentService } from './services/characters/player-state/serv
 import { RuntimeMobService } from './services/characters/runtime-mob/runtime-mob.service';
 import { RuntimeQuestService } from './services/interaction/services/runtime-quest/runtime-quest.service';
 import { RuntimeNpcService } from './services/characters/runtime-npc/runtime-npc.service';
+import { EntityRegistryService } from './services/entity/entity-registry.service';
 
 @Module({
   imports: [
@@ -70,6 +71,7 @@ import { RuntimeNpcService } from './services/characters/runtime-npc/runtime-npc
     RuntimeEquipmentService,
     RuntimeQuestService,
     RuntimeNpcService,
+    EntityRegistryService,
   ],
 })
 export class GameModule {}
