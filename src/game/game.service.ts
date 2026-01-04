@@ -1,4 +1,4 @@
-import { Injectable, UseGuards } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Socket } from 'socket.io';
 import { AuthService } from 'src/auth/auth.service';
 import { UserService } from 'src/user/user.service';
@@ -30,9 +30,7 @@ import { RuntimeEquipmentService } from './services/characters/player-state/serv
 import { AuthenticatedSocket } from 'src/common/types/socket/auth-socket.type';
 import { RequestUnEquipDto } from './dto/equipment/request-un-equip.dto';
 import { RequestUseItemDto } from './dto/item/request-use-item.dto';
-import { WsAuthGuard } from 'src/common/guards/ws-guard.guard';
 import { RequestTalkToNpcDto } from './dto/request-talk-to-npc.dto';
-import { ConnectedSocket, MessageBody } from '@nestjs/websockets';
 import { RequestQuestAcceptDto } from './dto/request-quest-accept.dto';
 
 @Injectable()
@@ -215,7 +213,7 @@ export class GameService extends BaseLogger {
     this.socketService.sendToUser(userId, ServerToClientEvents.GameInitialState, initialData);
   }
 
-  public async requestMoveTo(client: Socket, input: RequestMoveToDto) {
+  public async requestMoveTo(client: AuthenticatedSocket, input: RequestMoveToDto) {
     await this.movementService.requestMoveTo(client, input);
   }
 

@@ -26,6 +26,7 @@ import { RequestUnEquipDto } from './dto/equipment/request-un-equip.dto';
 import { RequestUseItemDto } from './dto/item/request-use-item.dto';
 import { RequestQuestAcceptDto } from './dto/request-quest-accept.dto';
 import { RequestTalkToNpcDto } from './dto/request-talk-to-npc.dto';
+import { GameConnectionService } from './services/game-core/game-connection/game-connection.service';
 
 @WebSocketGateway({
   namespace: 'game',
@@ -38,6 +39,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(
     private readonly gameService: GameService,
     private readonly socketService: SocketService,
+    private readonly gameConnectionService: GameConnectionService,
   ) {}
 
   @WebSocketServer()
@@ -50,15 +52,19 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   public handleConnection(client: Socket) {
     console.log('Client connected:', client.id);
-    return this.gameService.handleConnection(client);
+    return this.gameConnectionService.handleConnection(client);
   }
 
   public handleDisconnect(client: Socket) {
-    return this.gameService.handleDisconnect(client);
+    return this.gameConnectionService.handleDisconnect(client);
   }
 
   @SubscribeMessage(ClientToServerEvents.PlayerWalk)
-  public playerWalk(@ConnectedSocket() client: Socket, @MessageBody() input: RequestMoveToDto) {
+  @UseGuards(WsAuthGuard)
+  public playerWalk(
+    @AuthSocket() client: AuthenticatedSocket,
+    @MessageBody() input: RequestMoveToDto,
+  ) {
     return this.gameService.requestMoveTo(client, input);
   }
 
@@ -84,7 +90,8 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage(ClientToServerEvents.RequestInitialState)
-  public async handleInitialData(client: Socket) {
+  @UseGuards(WsAuthGuard)
+  public async handleInitialData(@AuthSocket() client: AuthenticatedSocket) {
     console.log('Client initial:', client.id);
     return await this.gameService.getInitialData(client);
   }
@@ -142,7 +149,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage(ClientToServerEvents.RequestTalkToNpc)
   @UseGuards(WsAuthGuard)
   public async requestTalkToNpc(
-    @ConnectedSocket() socket: AuthenticatedSocket,
+    @AuthSocket() socket: AuthenticatedSocket,
     @MessageBody() input: RequestTalkToNpcDto,
   ) {
     return await this.gameService.requestTalkToNpc(socket, input);
@@ -151,7 +158,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage(ClientToServerEvents.RequestAcceptQuest)
   @UseGuards(WsAuthGuard)
   public requestQuestAccept(
-    @ConnectedSocket() socket: AuthenticatedSocket,
+    @AuthSocket() socket: AuthenticatedSocket,
     @MessageBody() input: RequestQuestAcceptDto,
   ) {
     return this.gameService.requestQuestAccept(socket, input);

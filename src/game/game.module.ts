@@ -33,6 +33,7 @@ import { RuntimeQuestService } from './services/interaction/services/runtime-que
 import { RuntimeNpcService } from './services/characters/runtime-npc/runtime-npc.service';
 import { EntityRegistryService } from './services/entity-registry/entity-registry.service';
 import { WorldBootstrapService } from './services/game-core/world-bootstrap/world-bootstrap.service';
+import { GameConnectionService } from './services/game-core/game-connection/game-connection.service';
 
 @Module({
   imports: [
@@ -72,6 +73,7 @@ import { WorldBootstrapService } from './services/game-core/world-bootstrap/worl
     RuntimeNpcService,
     EntityRegistryService,
     WorldBootstrapService,
+    GameConnectionService,
   ],
 })
 export class GameModule {}

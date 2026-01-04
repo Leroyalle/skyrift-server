@@ -23,6 +23,7 @@ import { decodeEntityKey } from 'src/game/lib/entity/decode-entity-key.lib';
 import { isCharacterMovementQueue } from './services/movement-queue/lib/guards/is-character-movement-queue.lib';
 import { RuntimeMobService } from '../characters/runtime-mob/runtime-mob.service';
 import { EntityRegistryService } from '../entity-registry/entity-registry.service';
+import { AuthenticatedSocket } from 'src/common/types/socket/auth-socket.type';
 
 @Injectable()
 export class MovementService {
@@ -39,13 +40,7 @@ export class MovementService {
     private readonly registryService: EntityRegistryService,
   ) {}
 
-  public async requestMoveTo(client: Socket, input: RequestMoveToDto) {
-    if (!this.socketService.verifyUserDataInSocket(client)) {
-      this.socketService.onDisconnect(client);
-      this.socketService.notifyDisconnection(client);
-      return;
-    }
-
+  public async requestMoveTo(client: AuthenticatedSocket, input: RequestMoveToDto) {
     console.log('requestMoveTo', input);
 
     const { characterId } = client.userData;
