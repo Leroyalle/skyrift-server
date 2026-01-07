@@ -1,10 +1,12 @@
-import { Injectable } from '@nestjs/common';
-import { Repository } from 'typeorm';
-import { Location } from './entities/location.entity';
-import { InjectRepository } from '@nestjs/typeorm';
+import { RedisKeys } from 'src/common/enums/redis-keys.enum';
 import { RedisService } from 'src/infrastructure/redis/redis.service';
 import { CachedLocation } from 'src/world/location/types/cashed-location.type';
-import { RedisKeys } from 'src/common/enums/redis-keys.enum';
+import { Repository } from 'typeorm';
+
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+
+import { Location } from './entities/location.entity';
 import { buildTeleportsMap } from './lib/build-teleports-map.lib';
 
 @Injectable()
@@ -25,14 +27,22 @@ export class LocationService {
           entity: true,
           location: true,
         },
+        npcSpawn: {
+          entity: true,
+          location: true,
+        },
       },
     });
 
     const cachedLocations = await Promise.all(
-      findLocations.map(async location => await this.setLocationToCache(location)),
+      findLocations.map(location => this.setLocationToCache(location)),
     );
 
     return cachedLocations;
+  }
+
+  public getAllCachedLocations() {
+    return Array.from(this.locationCache.values());
   }
 
   public async findOne(id: string) {

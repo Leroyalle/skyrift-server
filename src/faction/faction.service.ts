@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+
 import { CreateFactionInput } from './dto/create-faction.input';
 import { UpdateFactionInput } from './dto/update-faction.input';
 

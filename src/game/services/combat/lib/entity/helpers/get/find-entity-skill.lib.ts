@@ -1,5 +1,6 @@
 import { CharacterSkill } from 'src/characters/character/character-skill/entities/character-skill.entity';
 import { TRuntimeEntity } from 'src/game/types/entity/runtime-entity.type';
+
 import { isPlayer } from '../../guards/is-player.lib';
 
 export function findEntitySkill(

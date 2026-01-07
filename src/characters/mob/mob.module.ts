@@ -1,8 +1,9 @@
 import { Module } from '@nestjs/common';
-import { MobService } from './mob.service';
-import { MobResolver } from './mob.resolver';
 import { TypeOrmModule } from '@nestjs/typeorm';
+
 import { Mob } from './entities/mob.entity';
+import { MobResolver } from './mob.resolver';
+import { MobService } from './mob.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Mob])],

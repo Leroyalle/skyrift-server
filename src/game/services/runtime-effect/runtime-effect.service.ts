@@ -1,25 +1,28 @@
-import { Injectable } from '@nestjs/common';
-import { IRuntimeEffect } from './types/runtime-effect.type';
-import { EntityKey } from 'src/game/types/entity/keys/entity-key.type';
-import { RuntimeEntityService } from '../runtime-entity/runtime-entity.service';
-import { decodeEntityKey } from 'src/game/lib/entity/decode-entity-key.lib';
-import { EffectType } from 'src/common/enums/skill/effect-type.enum';
-import { getOrCreateArray } from 'src/game/lib/helpers/get-or-create-array.lib';
-import { BatchUpdateAction } from 'src/game/types/batch-update/batch-update-action.type';
-import { ActionType } from 'src/game/types/pending-actions.type';
-import { SocketService } from '../socket/socket.service';
-import { RedisKeysFactory } from 'src/common/infra/redis-keys-factory.infra';
 import { ServerToClientEvents } from 'src/common/enums/game-socket-events.enum';
-import { EntityRef } from 'src/game/types/entity/entity-ref.type';
-import { Effect } from 'src/effect/entities/effect.entity';
-import { buildRuntimeEffect } from './lib/build-runtime-effect.lib';
-import { generateEntityKey } from 'src/game/lib/entity/generate-entity-key.lib';
+import { EffectType } from 'src/common/enums/skill/effect-type.enum';
 import { BaseLogger } from 'src/common/infra/logger.infra';
+import { RedisKeysFactory } from 'src/common/infra/redis-keys-factory.infra';
+import { Effect } from 'src/effect/entities/effect.entity';
+import { decodeEntityKey } from 'src/game/lib/entity/decode-entity-key.lib';
+import { generateEntityKey } from 'src/game/lib/entity/generate-entity-key.lib';
+import { getOrCreate } from 'src/game/lib/helpers/get-or-create-array.lib';
+import { BatchUpdateAction } from 'src/game/types/batch-update/batch-update-action.type';
+import { EntityRef } from 'src/game/types/entity/entity-ref.type';
+import { EntityKey } from 'src/game/types/entity/keys/entity-key.type';
+import { ActionType } from 'src/game/types/pending-actions.type';
+
+import { Injectable } from '@nestjs/common';
+
+import { EntityRegistryService } from '../entity-registry/entity-registry.service';
+import { SocketService } from '../socket/socket.service';
+
+import { buildRuntimeEffect } from './lib/build-runtime-effect.lib';
+import { IRuntimeEffect } from './types/runtime-effect.type';
 
 @Injectable()
 export class RuntimeEffectService extends BaseLogger {
   constructor(
-    private readonly runtimeEntityService: RuntimeEntityService,
+    private readonly registryService: EntityRegistryService,
     private readonly socketService: SocketService,
   ) {
     super();
@@ -34,17 +37,14 @@ export class RuntimeEffectService extends BaseLogger {
       const now = Date.now();
 
       const entityRef = decodeEntityKey(entityKey);
-      const entity = this.runtimeEntityService.getEntityByType(entityRef.type, entityRef.id);
+      const entity = this.registryService.getByRef(entityRef);
       if (!entity) continue;
 
-      const batchUpdate = getOrCreateArray<BatchUpdateAction>(
-        batchUpdateEffects,
-        entity.locationId,
-      );
+      const batchUpdate = getOrCreate(batchUpdateEffects, entity.locationId, () => []);
 
       const actualEffectsMap: Map<EffectType, IRuntimeEffect[]> = new Map();
       for (const [type, effects] of effectsMap.entries()) {
-        const actualEffectsArray = getOrCreateArray<IRuntimeEffect>(actualEffectsMap, type);
+        const actualEffectsArray = getOrCreate(actualEffectsMap, type, () => []);
         effects.forEach(effect => {
           // TODO: слать запррос что эффект снят
           if (effect.expiresAt > now) {
@@ -75,7 +75,7 @@ export class RuntimeEffectService extends BaseLogger {
     this.log('addEffect');
     const runtimeEffect: IRuntimeEffect = buildRuntimeEffect(effect);
     const effectsMap = this.findOrCreateMap(entityRef);
-    const effectsArray = getOrCreateArray(effectsMap, effect.type);
+    const effectsArray = getOrCreate(effectsMap, effect.type, () => []);
     effectsArray.push(runtimeEffect);
     const entityKey = generateEntityKey(entityRef);
 
@@ -108,7 +108,7 @@ export class RuntimeEffectService extends BaseLogger {
     this.log('applyEffect');
 
     const entityRef = decodeEntityKey(entityKey);
-    const entity = this.runtimeEntityService.getEntityByType(entityRef.type, entityRef.id);
+    const entity = this.registryService.getByRef(entityRef);
 
     if (!entity) return;
 

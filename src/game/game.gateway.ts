@@ -1,30 +1,34 @@
+import { Namespace, Socket } from 'socket.io';
+import { AuthSocket } from 'src/common/decorators/auth-socket.decorator';
+import { ClientToServerEvents } from 'src/common/enums/game-socket-events.enum';
+import { WsAuthGuard } from 'src/common/guards/ws-guard.guard';
+import { TItem } from 'src/common/types/item.type';
+import { AuthenticatedSocket } from 'src/common/types/socket/auth-socket.type';
+
+import { UseGuards } from '@nestjs/common';
 import {
-  WebSocketGateway,
-  SubscribeMessage,
+  ConnectedSocket,
   MessageBody,
   OnGatewayConnection,
   OnGatewayDisconnect,
+  SubscribeMessage,
+  WebSocketGateway,
   WebSocketServer,
-  ConnectedSocket,
 } from '@nestjs/websockets';
-import { GameService } from './game.service';
-import { Namespace, Socket } from 'socket.io';
-import { ClientToServerEvents } from 'src/common/enums/game-socket-events.enum';
-import { RequestMoveToDto } from './dto/request-move-to.dto';
-import { RequestAttackMoveDto } from './dto/request-attack-move.dto';
-import { RequestSkillUseDto } from './dto/request-use-skill.dto';
-import { SocketService } from './services/socket/socket.service';
-import { RequestUseTeleportDto } from './dto/request-use-teleport.dto';
-import { DirectMessageInput } from './services/chat/dto/direct-message.input';
-import { TItem } from 'src/common/types/item.type';
-import { RuntimeEquipmentService } from './services/player-state/services/runtime-equipment/runtime-equipment.service';
-import { UseGuards } from '@nestjs/common';
-import { WsAuthGuard } from 'src/common/guards/ws-guard.guard';
-import { AuthSocket } from 'src/common/decorators/auth-socket.decorator';
-import { AuthenticatedSocket } from 'src/common/types/socket/auth-socket.type';
+
 import { RequestEquipDto } from './dto/equipment/request-equip.dto';
 import { RequestUnEquipDto } from './dto/equipment/request-un-equip.dto';
 import { RequestUseItemDto } from './dto/item/request-use-item.dto';
+import { RequestAttackMoveDto } from './dto/request-attack-move.dto';
+import { RequestMoveToDto } from './dto/request-move-to.dto';
+import { RequestQuestAcceptDto } from './dto/request-quest-accept.dto';
+import { RequestTalkToNpcDto } from './dto/request-talk-to-npc.dto';
+import { RequestSkillUseDto } from './dto/request-use-skill.dto';
+import { RequestUseTeleportDto } from './dto/request-use-teleport.dto';
+import { GameService } from './game.service';
+import { DirectMessageInput } from './services/chat/dto/direct-message.input';
+import { GameConnectionService } from './services/game-core/game-connection/game-connection.service';
+import { SocketService } from './services/socket/socket.service';
 
 @WebSocketGateway({
   namespace: 'game',
@@ -37,6 +41,7 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(
     private readonly gameService: GameService,
     private readonly socketService: SocketService,
+    private readonly gameConnectionService: GameConnectionService,
   ) {}
 
   @WebSocketServer()
@@ -49,15 +54,19 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   public handleConnection(client: Socket) {
     console.log('Client connected:', client.id);
-    return this.gameService.handleConnection(client);
+    return this.gameConnectionService.handleConnection(client);
   }
 
   public handleDisconnect(client: Socket) {
-    return this.gameService.handleDisconnect(client);
+    return this.gameConnectionService.handleDisconnect(client);
   }
 
   @SubscribeMessage(ClientToServerEvents.PlayerWalk)
-  public playerWalk(@ConnectedSocket() client: Socket, @MessageBody() input: RequestMoveToDto) {
+  @UseGuards(WsAuthGuard)
+  public playerWalk(
+    @AuthSocket() client: AuthenticatedSocket,
+    @MessageBody() input: RequestMoveToDto,
+  ) {
     return this.gameService.requestMoveTo(client, input);
   }
 
@@ -83,7 +92,8 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage(ClientToServerEvents.RequestInitialState)
-  public async handleInitialData(client: Socket) {
+  @UseGuards(WsAuthGuard)
+  public async handleInitialData(@AuthSocket() client: AuthenticatedSocket) {
     console.log('Client initial:', client.id);
     return await this.gameService.getInitialData(client);
   }
@@ -136,5 +146,23 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   public requestUseItem(@AuthSocket() client: AuthenticatedSocket, input: RequestUseItemDto) {
     console.log('USE ITEM');
     return this.gameService.handleUseItem(client, input);
+  }
+
+  @SubscribeMessage(ClientToServerEvents.RequestTalkToNpc)
+  @UseGuards(WsAuthGuard)
+  public async requestTalkToNpc(
+    @AuthSocket() socket: AuthenticatedSocket,
+    @MessageBody() input: RequestTalkToNpcDto,
+  ) {
+    return await this.gameService.requestTalkToNpc(socket, input);
+  }
+
+  @SubscribeMessage(ClientToServerEvents.RequestAcceptQuest)
+  @UseGuards(WsAuthGuard)
+  public requestQuestAccept(
+    @AuthSocket() socket: AuthenticatedSocket,
+    @MessageBody() input: RequestQuestAcceptDto,
+  ) {
+    return this.gameService.requestQuestAccept(socket, input);
   }
 }

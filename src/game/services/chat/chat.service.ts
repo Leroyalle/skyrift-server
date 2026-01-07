@@ -1,14 +1,17 @@
-import { Injectable } from '@nestjs/common';
+import { Socket } from 'socket.io';
+import { ServerToClientEvents } from 'src/common/enums/game-socket-events.enum';
+import { RedisKeys } from 'src/common/enums/redis-keys.enum';
 import { RedisKeysFactory } from 'src/common/infra/redis-keys-factory.infra';
 import { RedisService } from 'src/infrastructure/redis/redis.service';
+
+import { Injectable } from '@nestjs/common';
+
+import { PlayerStateService } from '../characters/player-state/player-state.service';
 import { SocketService } from '../socket/socket.service';
-import { ServerToClientEvents } from 'src/common/enums/game-socket-events.enum';
-import { PlayerStateService } from '../player-state/player-state.service';
-import { Socket } from 'socket.io';
-import { RedisKeys } from 'src/common/enums/redis-keys.enum';
+
 import { DirectMessageInput } from './dto/direct-message.input';
-import { MessageData } from './types/message-data.type';
 import { DirectMessageData } from './types/direct-message-data.type';
+import { MessageData } from './types/message-data.type';
 
 @Injectable()
 export class ChatService {

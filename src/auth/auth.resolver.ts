@@ -1,16 +1,18 @@
-import { Resolver, Mutation, Args } from '@nestjs/graphql';
-import { AuthService } from './auth.service';
-import { Auth } from './entities/auth.entity';
-import { RegisterInput } from './dto/register.input';
-import { Logout } from './entities/logout.entity';
-import { UseGuards } from '@nestjs/common';
+import { Response } from 'express';
+import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { AccessTokenGuard } from 'src/common/guards/access-token.guard';
 import { RefreshTokenGuard } from 'src/common/guards/refresh-token.guard';
-import { CurrentUser } from 'src/common/decorators/current-user.decorator';
 import { PayloadUser } from 'src/common/types/user-request.type';
-import { LoginInput } from './dto/login.input';
-import { Response } from 'express';
+
+import { UseGuards } from '@nestjs/common';
+import { Args, Mutation, Resolver } from '@nestjs/graphql';
 import { Context } from '@nestjs/graphql';
+
+import { AuthService } from './auth.service';
+import { LoginInput } from './dto/login.input';
+import { RegisterInput } from './dto/register.input';
+import { Auth } from './entities/auth.entity';
+import { Logout } from './entities/logout.entity';
 
 @Resolver(() => Auth)
 export class AuthResolver {

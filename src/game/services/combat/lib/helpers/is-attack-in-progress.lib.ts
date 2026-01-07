@@ -1,4 +1,5 @@
 import { PositionDto } from 'src/common/dto/position.dto';
+
 import { IAttackInitiation } from '../../services/projectile/types/projectile.type';
 
 export function isAttackInProgress(

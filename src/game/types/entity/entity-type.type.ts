@@ -1,1 +1,1 @@
-export type EntityType = 'player' | 'mob';
+export type EntityType = 'player' | 'mob' | 'npc';

@@ -1,9 +1,11 @@
-import { Injectable } from '@nestjs/common';
-import { ICreateSpawn } from './types/create-spawn.type';
-import { InjectRepository } from '@nestjs/typeorm';
-import { MobSpawn } from './entities/mob-spawn.entity';
 import { Repository } from 'typeorm';
+
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+
+import { MobSpawn } from './entities/mob-spawn.entity';
 import { NpcSpawn } from './entities/npc-spawn.entity';
+import { ICreateSpawn } from './types/create-spawn.type';
 
 @Injectable()
 export class SpawnService {

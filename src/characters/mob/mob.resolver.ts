@@ -1,6 +1,7 @@
 import { Resolver } from '@nestjs/graphql';
-import { MobService } from './mob.service';
+
 import { Mob } from './entities/mob.entity';
+import { MobService } from './mob.service';
 
 @Resolver(() => Mob)
 export class MobResolver {

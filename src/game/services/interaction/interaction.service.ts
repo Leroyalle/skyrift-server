@@ -1,31 +1,43 @@
-import { Injectable } from '@nestjs/common';
-import { InteractionType, PendingInteraction } from './types/pending-interactions.type';
-import { PlayerStateService } from 'src/game/services/player-state/player-state.service';
-import { SocketService } from '../socket/socket.service';
-import { LocationService } from 'src/world/location/location.service';
 import { Socket } from 'socket.io';
-import { RequestUseTeleportDto } from 'src/game/dto/request-use-teleport.dto';
-import { verifyUserDataInSocket } from 'src/game/lib/verify-user-data-in-socket.lib';
-import { isPlayerInTeleportArea } from 'src/game/lib/teleport/is-player-in-teleport-radius.lib';
 import { IRuntimeCharacter } from 'src/characters/character/types/runtime-character';
-import { SpatialGridService } from '../spatial-grid/spatial-grid.service';
-import { RedisService } from 'src/infrastructure/redis/redis.service';
-import { RedisKeysFactory } from 'src/common/infra/redis-keys-factory.infra';
-import { RedisKeys } from 'src/common/enums/redis-keys.enum';
-import { ServerToClientEvents } from 'src/common/enums/game-socket-events.enum';
-import { CachedLocation } from 'src/world/location/types/cashed-location.type';
 import { PositionDto } from 'src/common/dto/position.dto';
-import { Teleport } from 'src/world/location/types/teleport.type';
-import { PathFindingService } from '../path-finding/path-finding.service';
+import { ServerToClientEvents } from 'src/common/enums/game-socket-events.enum';
+import { RedisKeys } from 'src/common/enums/redis-keys.enum';
+import { RedisKeysFactory } from 'src/common/infra/redis-keys-factory.infra';
+import { AuthenticatedSocket } from 'src/common/types/socket/auth-socket.type';
+import { RequestQuestAcceptDto } from 'src/game/dto/request-quest-accept.dto';
+import { RequestTalkToNpcDto } from 'src/game/dto/request-talk-to-npc.dto';
+import { RequestUseTeleportDto } from 'src/game/dto/request-use-teleport.dto';
 import { getTileByPosition } from 'src/game/lib/helpers/get-tile-by-position.lib';
+import { isPlayerInTeleportArea } from 'src/game/lib/teleport/is-player-in-teleport-radius.lib';
+import { verifyUserDataInSocket } from 'src/game/lib/verify-user-data-in-socket.lib';
+import { PlayerStateService } from 'src/game/services/characters/player-state/player-state.service';
+import { RedisService } from 'src/infrastructure/redis/redis.service';
+import { LocationService } from 'src/world/location/location.service';
+import { CachedLocation } from 'src/world/location/types/cashed-location.type';
+import { Teleport } from 'src/world/location/types/teleport.type';
+
+import { Injectable } from '@nestjs/common';
+
+import { IRuntimeNpc } from '../characters/runtime-npc/types/runtime-npc.type';
+import { isNpc } from '../combat/lib/entity/guards/is-npc';
+import { isPlayer } from '../combat/lib/entity/guards/is-player.lib';
+import { ActionQueueService } from '../combat/services/action-queue/action-queue.service';
+import { EntityRegistryService } from '../entity-registry/entity-registry.service';
 import { GameInitialDataService } from '../game-core/game-initial-data/game-initial-data.service';
 import { MovementQueueService } from '../movement/services/movement-queue/movement-queue.service';
-import { ActionQueueService } from '../combat/services/action-queue/action-queue.service';
+import { PathFindingService } from '../path-finding/path-finding.service';
+import { SocketService } from '../socket/socket.service';
+import { SpatialGridService } from '../spatial-grid/spatial-grid.service';
+
+import { RuntimeQuestService } from './services/runtime-quest/runtime-quest.service';
+import { IRuntimeQuest } from './services/runtime-quest/types/runtime-quest.type';
+import { InteractionType, PendingInteraction } from './types/pending-interactions.type';
 
 @Injectable()
 export class InteractionService {
   constructor(
-    private readonly playerStateService: PlayerStateService,
+    private readonly registryService: EntityRegistryService,
     private readonly socketService: SocketService,
     private readonly locationService: LocationService,
     private readonly pathFindingService: PathFindingService,
@@ -34,6 +46,8 @@ export class InteractionService {
     private readonly gameInitialDataService: GameInitialDataService,
     private readonly movementQueueService: MovementQueueService,
     private readonly actionQueueService: ActionQueueService,
+    private readonly playerStateService: PlayerStateService,
+    private readonly runtimeQuestService: RuntimeQuestService,
   ) {}
 
   private readonly pendingInteractions = new Map<string, PendingInteraction>();
@@ -49,9 +63,12 @@ export class InteractionService {
   public async tickInteractions() {
     for (const interaction of this.pendingInteractions.values()) {
       console.log('[tickInteractions]', interaction);
-      const playerState = this.playerStateService.getCharacterState(interaction.characterId);
+      const playerState = this.registryService.getByRef({
+        type: 'player',
+        id: interaction.characterId,
+      });
 
-      if (!playerState) {
+      if (!playerState || !isPlayer(playerState)) {
         this.deletePendingInteraction(interaction.characterId);
         continue;
       }
@@ -60,49 +77,171 @@ export class InteractionService {
 
       const currentLocation = await this.locationService.loadLocation(playerState.locationId);
 
-      if (!currentLocation) return;
+      if (!currentLocation) continue;
 
       switch (intType) {
-        case InteractionType.Teleport:
-          {
-            if (!interaction.area || !interaction.targetId) return;
+        case InteractionType.Teleport: {
+          const result = await this.resolveTeleport(playerState, interaction, currentLocation);
+          if (!result) {
+            this.deletePendingInteraction(playerState.id);
 
-            const teleport = currentLocation.teleportsMap[interaction.targetId];
-
-            if (!teleport) continue;
-
-            if (isPlayerInTeleportArea(playerState, teleport)) {
-              console.log('use teleport');
-              this.movementQueueService.delete(playerState);
-              this.actionQueueService.clearPendingActions(playerState, []);
-              this.pendingInteractions.delete(playerState.id);
-              await this.useTeleport(playerState, teleport);
-              console.log('teleport used, after use teleport');
-              console.log(
-                'teleport used, after delete pending interaction',
-                this.pendingInteractions.size,
-              );
-
-              continue;
-            } else {
-              console.log('start interaction movement');
-              await this.startInteractionMovement(
-                playerState,
-                {
-                  x: interaction.area.x,
-                  y: interaction.area.y,
-                },
-                currentLocation,
-              );
-            }
+            continue;
           }
-
           break;
+        }
+
+        case InteractionType.Talk: {
+          const result = await this.resolveTalk(interaction, playerState, currentLocation);
+          if (!result) {
+            this.deletePendingInteraction(playerState.id);
+            continue;
+          }
+          break;
+        }
 
         default:
           break;
       }
     }
+  }
+
+  private async resolveTalk(
+    interaction: PendingInteraction,
+    playerState: IRuntimeCharacter,
+    location: CachedLocation,
+  ): Promise<boolean> {
+    if (!interaction.targetId) return false;
+    const npc = this.registryService.getByRef({ type: 'npc', id: interaction.targetId });
+
+    if (!npc || !isNpc(npc)) {
+      this.deletePendingInteraction(playerState.id);
+      return false;
+    }
+
+    const result = await this.checkDistanceAndSetMovement(playerState, npc, location);
+
+    if (!result) return false;
+
+    const quests = this.runtimeQuestService.getAvailableQuests(playerState, npc.givenQuests);
+
+    this.socketService.sendToUser(playerState.userId, ServerToClientEvents.QuestList, {
+      quests: quests,
+    });
+
+    return true;
+  }
+
+  private async resolveTeleport(
+    playerState: IRuntimeCharacter,
+    interaction: PendingInteraction,
+    currentLocation: CachedLocation,
+  ): Promise<boolean> {
+    if (!interaction.area || !interaction.targetId) return false;
+
+    const teleport = currentLocation.teleportsMap[interaction.targetId];
+
+    if (!teleport) return false;
+
+    if (isPlayerInTeleportArea(playerState, teleport)) {
+      console.log('use teleport');
+      this.movementQueueService.delete(playerState);
+      this.actionQueueService.clearPendingActions(playerState, []);
+      this.pendingInteractions.delete(playerState.id);
+      await this.useTeleport(playerState, teleport);
+    } else {
+      console.log('start interaction movement');
+      await this.startInteractionMovement(
+        playerState,
+        {
+          x: interaction.area.x,
+          y: interaction.area.y,
+        },
+        currentLocation,
+      );
+    }
+
+    return true;
+  }
+
+  private async checkDistanceAndSetMovement(
+    playerState: IRuntimeCharacter,
+    npc: IRuntimeNpc,
+    location: CachedLocation,
+  ): Promise<boolean> {
+    const steps = await this.pathFindingService.getPlayerPath(
+      playerState.locationId,
+      {
+        ...getTileByPosition(playerState.x, playerState.y),
+      },
+      { ...getTileByPosition(npc.x, npc.y) },
+      location.passableMap,
+    );
+
+    if (!steps) return false;
+
+    if (steps.length > 1) {
+      this.movementQueueService.set(playerState, steps);
+      return false;
+    }
+
+    return true;
+  }
+
+  public async requestTalkToNpc(client: AuthenticatedSocket, input: RequestTalkToNpcDto) {
+    const character = this.registryService.getByRef({
+      type: 'player',
+      id: client.userData.characterId,
+    });
+
+    if (!character || !isPlayer(character)) return;
+
+    const npc = this.registryService.getByRef({ type: 'npc', id: input.npcId });
+
+    if (!npc || !isNpc(npc)) return;
+
+    const currentLocation = await this.locationService.loadLocation(npc.locationId);
+
+    if (!currentLocation) return;
+
+    const result = await this.checkDistanceAndSetMovement(character, npc, currentLocation);
+
+    if (!result) return;
+
+    this.setPendingInteraction({
+      characterId: character.id,
+      type: InteractionType.Talk,
+      targetId: npc.id,
+    });
+  }
+
+  public requestQuestAccept(client: AuthenticatedSocket, input: RequestQuestAcceptDto) {
+    const character = this.registryService.getByRef({
+      type: 'player',
+      id: client.userData.characterId,
+    });
+
+    if (!character || !isPlayer(character)) return;
+
+    const npc = this.registryService.getByRef({ type: 'npc', id: input.npcId });
+
+    if (!npc || !isNpc(npc)) return;
+
+    const quest = npc.givenQuests.find(q => q.id === input.questId);
+
+    if (!quest) return;
+
+    const playerQuest: IRuntimeQuest = {
+      completedAt: null,
+      progress: null,
+      quest,
+      stepIndex: 0,
+    };
+
+    this.runtimeQuestService.acceptQuest(character, playerQuest);
+
+    this.socketService.sendToUser(character.userId, ServerToClientEvents.QuestStarted, {
+      quest: playerQuest,
+    });
   }
 
   public async requestUseTeleport(client: Socket, input: RequestUseTeleportDto) {
@@ -114,9 +253,12 @@ export class InteractionService {
     }
 
     console.log('requestUseTeleport', input);
-    const playerState = this.playerStateService.getCharacterState(client.userData.characterId);
+    const playerState = this.registryService.getByRef({
+      type: 'player',
+      id: client.userData.characterId,
+    });
 
-    if (!playerState) return;
+    if (!playerState || !isPlayer(playerState)) return;
 
     const currentLocation = await this.locationService.loadLocation(playerState.locationId);
 
@@ -158,21 +300,16 @@ export class InteractionService {
 
   private async startInteractionMovement(
     playerState: IRuntimeCharacter,
-    area: PositionDto,
+    pixelTarget: PositionDto,
     currentLocation: CachedLocation,
   ) {
     const fromTile = getTileByPosition(playerState.x, playerState.y, currentLocation.tileWidth);
 
-    const targetTile = getTileByPosition(area.x, area.y, currentLocation.tileWidth);
+    const targetTile = getTileByPosition(pixelTarget.x, pixelTarget.y, currentLocation.tileWidth);
 
-    const prevSteps = this.movementQueueService.get(playerState);
-
-    // const prevSteps = this.movementService.getMovementQueue(
-    //   playerState.type,
-    //   playerState.id,
-    // );
-
-    if (prevSteps?.steps[-1] === targetTile) return;
+    // TODO: проверить
+    // const prevSteps = this.movementQueueService.get(playerState);
+    // if (prevSteps?.steps[-1] === targetTile) return;
 
     const steps = await this.pathFindingService.getPlayerPath(
       playerState.locationId,
@@ -184,7 +321,6 @@ export class InteractionService {
     if (!steps) return;
 
     this.movementQueueService.set(playerState, steps);
-    // this.movementService.setMovementQueue(playerState, steps);
 
     return steps;
   }

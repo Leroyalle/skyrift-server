@@ -1,4 +1,3 @@
-import { Field, ID, Int, InterfaceType, ObjectType } from '@nestjs/graphql';
 import { Bag } from 'src/characters/character/bag/entities/bag.entity';
 import { ArmorSlotEnum, WeaponSlotEnum } from 'src/common/enums/equipment-slot.enum';
 import { ItemTypeEnum } from 'src/common/enums/item-type.enum';
@@ -10,6 +9,8 @@ import {
   PrimaryGeneratedColumn,
   TableInheritance,
 } from 'typeorm';
+
+import { Field, ID, Int, InterfaceType, ObjectType } from '@nestjs/graphql';
 
 @ObjectType()
 class TextureConfig {

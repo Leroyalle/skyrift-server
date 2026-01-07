@@ -1,4 +1,5 @@
 import { Effect } from 'src/effect/entities/effect.entity';
+
 import { IRuntimeEffect } from '../types/runtime-effect.type';
 
 export function buildRuntimeEffect(effect: Effect): IRuntimeEffect {

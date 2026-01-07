@@ -1,11 +1,14 @@
-import { Injectable } from '@nestjs/common';
 import { CharacterSkill } from 'src/characters/character/character-skill/entities/character-skill.entity';
 import { generateEntityKey } from 'src/game/lib/entity/generate-entity-key.lib';
 import { EntityRef } from 'src/game/types/entity/entity-ref.type';
 import { EntityKey } from 'src/game/types/entity/keys/entity-key.type';
 import { ActionType, PendingAction } from 'src/game/types/pending-actions.type';
-import { actionRules } from './constants/action-rules.constants';
+
+import { Injectable } from '@nestjs/common';
+
 import { TargetAction } from '../../types/target-action.type';
+
+import { actionRules } from './constants/action-rules.constants';
 
 @Injectable()
 export class ActionQueueService {

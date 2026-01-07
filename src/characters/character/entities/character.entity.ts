@@ -1,12 +1,15 @@
-import { ObjectType, Field, Int } from '@nestjs/graphql';
 import { CharacterClass } from 'src/character-class/entities/character-class.entity';
-import { BaseItem } from 'src/item/entities/item.entity';
-import { Location } from 'src/world/location/entities/location.entity';
-import { User } from 'src/user/entities/user.entity';
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne } from 'typeorm';
-import { CharacterSkill } from '../character-skill/entities/character-skill.entity';
 import { ActorEntity } from 'src/common/entities/actor-entity.entity';
+import { BaseItem } from 'src/item/entities/item.entity';
+import { PlayerQuest } from 'src/quest/entities/player-quest.entity';
+import { User } from 'src/user/entities/user.entity';
+import { Location } from 'src/world/location/entities/location.entity';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne } from 'typeorm';
+
+import { Field, Int, ObjectType } from '@nestjs/graphql';
+
 import { Bag } from '../bag/entities/bag.entity';
+import { CharacterSkill } from '../character-skill/entities/character-skill.entity';
 import { Equipment } from '../equipment/entities/equipment.entity';
 
 @ObjectType()
@@ -63,4 +66,8 @@ export class Character extends ActorEntity {
   @OneToOne(() => Equipment, equipment => equipment.character)
   @Field(() => Equipment)
   equipment: Equipment;
+
+  @OneToMany(() => PlayerQuest, playerQuest => playerQuest.player)
+  @Field(() => [PlayerQuest])
+  quests: PlayerQuest[];
 }

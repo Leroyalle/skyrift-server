@@ -1,9 +1,9 @@
-import { Injectable } from '@nestjs/common';
-import { CreateItemInput } from './dto/create-item.input';
-import { UpdateItemInput } from './dto/update-item.input';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Armor, BaseItem, Resource, Weapon } from './entities/item.entity';
 import { Repository } from 'typeorm';
+
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+
+import { Armor, Resource, Weapon } from './entities/item.entity';
 
 @Injectable()
 export class ItemService {

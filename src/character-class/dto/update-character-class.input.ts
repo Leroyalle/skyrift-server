@@ -1,5 +1,6 @@
+import { Field, InputType, Int, PartialType } from '@nestjs/graphql';
+
 import { CreateCharacterClassInput } from './create-character-class.input';
-import { InputType, Field, Int, PartialType } from '@nestjs/graphql';
 
 @InputType()
 export class UpdateCharacterClassInput extends PartialType(CreateCharacterClassInput) {

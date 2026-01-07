@@ -1,8 +1,9 @@
-import { Injectable } from '@nestjs/common';
 import { Namespace, Socket } from 'socket.io';
 import { PositionDto } from 'src/common/dto/position.dto';
 import { ServerToClientEvents } from 'src/common/enums/game-socket-events.enum';
 import { PlayerData } from 'src/common/types/player-data.type';
+
+import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class SocketService {
