@@ -1,7 +1,8 @@
 import { Module } from '@nestjs/common';
-import { NpcService } from './npc.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
+
 import { Npc } from './entities/npc.entity';
+import { NpcService } from './npc.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Npc])],

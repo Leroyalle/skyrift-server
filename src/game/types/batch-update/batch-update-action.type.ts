@@ -1,4 +1,5 @@
 import { EffectType } from 'src/common/enums/skill/effect-type.enum';
+
 import { EntityRef } from '../entity/entity-ref.type';
 import { ActionType } from '../pending-actions.type';
 

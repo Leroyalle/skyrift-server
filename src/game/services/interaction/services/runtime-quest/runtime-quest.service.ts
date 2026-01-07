@@ -1,6 +1,8 @@
-import { Injectable } from '@nestjs/common';
 import { IRuntimeCharacter } from 'src/characters/character/types/runtime-character';
 import { Quest } from 'src/quest/entities/quest.entity';
+
+import { Injectable } from '@nestjs/common';
+
 import { IRuntimeQuest } from './types/runtime-quest.type';
 
 @Injectable()

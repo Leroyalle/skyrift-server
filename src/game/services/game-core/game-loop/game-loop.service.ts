@@ -1,12 +1,13 @@
 import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
-import { MovementService } from '../../movement/movement.service';
+
+import { RuntimeMobService } from '../../characters/runtime-mob/runtime-mob.service';
 import { CombatService } from '../../combat/combat.service';
 import { AoeService } from '../../combat/services/aoe/aoe.service';
-import { RegenerationService } from '../../regeneration/regeneration.service';
-import { InteractionService } from '../../interaction/interaction.service';
-import { RuntimeEffectService } from '../../runtime-effect/runtime-effect.service';
 import { ProjectileService } from '../../combat/services/projectile/projectile.service';
-import { RuntimeMobService } from '../../characters/runtime-mob/runtime-mob.service';
+import { InteractionService } from '../../interaction/interaction.service';
+import { MovementService } from '../../movement/movement.service';
+import { RegenerationService } from '../../regeneration/regeneration.service';
+import { RuntimeEffectService } from '../../runtime-effect/runtime-effect.service';
 
 @Injectable()
 export class GameLoopService implements OnModuleInit, OnModuleDestroy {

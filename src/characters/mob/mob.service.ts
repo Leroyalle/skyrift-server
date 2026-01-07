@@ -1,7 +1,9 @@
-import { Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
-import { Mob } from './entities/mob.entity';
+
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+
+import { Mob } from './entities/mob.entity';
 
 @Injectable()
 export class MobService {

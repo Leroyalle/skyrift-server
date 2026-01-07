@@ -1,8 +1,9 @@
-import { Resolver, Query, Mutation, Args, Int } from '@nestjs/graphql';
+import { Args, Int, Mutation, Query, Resolver } from '@nestjs/graphql';
+
 import { CharacterSkillService } from './character-skill.service';
-import { CharacterSkill } from './entities/character-skill.entity';
 import { CreateCharacterSkillInput } from './dto/create-character-skill.input';
 import { UpdateCharacterSkillInput } from './dto/update-character-skill.input';
+import { CharacterSkill } from './entities/character-skill.entity';
 
 @Resolver(() => CharacterSkill)
 export class CharacterSkillResolver {

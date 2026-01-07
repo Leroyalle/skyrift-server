@@ -1,18 +1,20 @@
-import { Injectable } from '@nestjs/common';
+import { Socket } from 'socket.io';
 import { AuthService } from 'src/auth/auth.service';
 import { CharacterService } from 'src/characters/character/character.service';
+import { IRuntimeCharacter } from 'src/characters/character/types/runtime-character';
+import { ServerToClientEvents } from 'src/common/enums/game-socket-events.enum';
+import { RedisKeys } from 'src/common/enums/redis-keys.enum';
 import { JwtPayload } from 'src/common/types/jwt-payload.type';
 import { AuthenticatedSocket } from 'src/common/types/socket/auth-socket.type';
 import { RedisService } from 'src/infrastructure/redis/redis.service';
 import { UserService } from 'src/user/user.service';
-import { SocketService } from '../../socket/socket.service';
-import { RedisKeys } from 'src/common/enums/redis-keys.enum';
+
+import { Injectable } from '@nestjs/common';
+
 import { PlayerStateService } from '../../characters/player-state/player-state.service';
-import { ServerToClientEvents } from 'src/common/enums/game-socket-events.enum';
+import { SocketService } from '../../socket/socket.service';
 import { SpatialGridService } from '../../spatial-grid/spatial-grid.service';
-import { IRuntimeCharacter } from 'src/characters/character/types/runtime-character';
 import { GameInitialDataService } from '../game-initial-data/game-initial-data.service';
-import { Socket } from 'socket.io';
 
 @Injectable()
 export class GameConnectionService {

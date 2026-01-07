@@ -1,25 +1,28 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
-import { IProjectile } from './types/projectile.type';
-import { EntityKey } from 'src/game/types/entity/keys/entity-key.type';
-import { isAttackInProgress } from '../../lib/helpers/is-attack-in-progress.lib';
-import { decodeEntityKey } from 'src/game/lib/entity/decode-entity-key.lib';
-import { EntityRef } from 'src/game/types/entity/entity-ref.type';
-import { generateEntityKey } from 'src/game/lib/entity/generate-entity-key.lib';
-import { TRuntimeEntity } from 'src/game/types/entity/runtime-entity.type';
-import { isMob } from '../../lib/entity/guards/is-mob.lib';
-import { ActionType } from 'src/game/types/pending-actions.type';
 import { CharacterSkill } from 'src/characters/character/character-skill/entities/character-skill.entity';
-import { isPlayer } from '../../lib/entity/guards/is-player.lib';
-import { SkillType } from 'src/common/enums/skill/skill-type.enum';
-import { BatchUpdateAction } from 'src/game/types/batch-update/batch-update-action.type';
-import { getOrCreate } from 'src/game/lib/helpers/get-or-create-array.lib';
-import { SocketService } from 'src/game/services/socket/socket.service';
-import { ActionQueueService } from '../action-queue/action-queue.service';
-import { RedisKeys } from 'src/common/enums/redis-keys.enum';
 import { ServerToClientEvents } from 'src/common/enums/game-socket-events.enum';
+import { RedisKeys } from 'src/common/enums/redis-keys.enum';
+import { SkillType } from 'src/common/enums/skill/skill-type.enum';
+import { decodeEntityKey } from 'src/game/lib/entity/decode-entity-key.lib';
+import { generateEntityKey } from 'src/game/lib/entity/generate-entity-key.lib';
+import { getOrCreate } from 'src/game/lib/helpers/get-or-create-array.lib';
 import { getTileByPosition } from 'src/game/lib/helpers/get-tile-by-position.lib';
 import { RuntimeMobService } from 'src/game/services/characters/runtime-mob/runtime-mob.service';
 import { EntityRegistryService } from 'src/game/services/entity-registry/entity-registry.service';
+import { SocketService } from 'src/game/services/socket/socket.service';
+import { BatchUpdateAction } from 'src/game/types/batch-update/batch-update-action.type';
+import { EntityRef } from 'src/game/types/entity/entity-ref.type';
+import { EntityKey } from 'src/game/types/entity/keys/entity-key.type';
+import { TRuntimeEntity } from 'src/game/types/entity/runtime-entity.type';
+import { ActionType } from 'src/game/types/pending-actions.type';
+
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
+
+import { isMob } from '../../lib/entity/guards/is-mob.lib';
+import { isPlayer } from '../../lib/entity/guards/is-player.lib';
+import { isAttackInProgress } from '../../lib/helpers/is-attack-in-progress.lib';
+import { ActionQueueService } from '../action-queue/action-queue.service';
+
+import { IProjectile } from './types/projectile.type';
 
 @Injectable()
 export class ProjectileService {

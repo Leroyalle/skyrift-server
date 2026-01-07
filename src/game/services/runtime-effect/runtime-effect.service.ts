@@ -1,20 +1,23 @@
-import { Injectable } from '@nestjs/common';
-import { IRuntimeEffect } from './types/runtime-effect.type';
-import { EntityKey } from 'src/game/types/entity/keys/entity-key.type';
-import { decodeEntityKey } from 'src/game/lib/entity/decode-entity-key.lib';
+import { ServerToClientEvents } from 'src/common/enums/game-socket-events.enum';
 import { EffectType } from 'src/common/enums/skill/effect-type.enum';
+import { BaseLogger } from 'src/common/infra/logger.infra';
+import { RedisKeysFactory } from 'src/common/infra/redis-keys-factory.infra';
+import { Effect } from 'src/effect/entities/effect.entity';
+import { decodeEntityKey } from 'src/game/lib/entity/decode-entity-key.lib';
+import { generateEntityKey } from 'src/game/lib/entity/generate-entity-key.lib';
 import { getOrCreate } from 'src/game/lib/helpers/get-or-create-array.lib';
 import { BatchUpdateAction } from 'src/game/types/batch-update/batch-update-action.type';
-import { ActionType } from 'src/game/types/pending-actions.type';
-import { SocketService } from '../socket/socket.service';
-import { RedisKeysFactory } from 'src/common/infra/redis-keys-factory.infra';
-import { ServerToClientEvents } from 'src/common/enums/game-socket-events.enum';
 import { EntityRef } from 'src/game/types/entity/entity-ref.type';
-import { Effect } from 'src/effect/entities/effect.entity';
-import { buildRuntimeEffect } from './lib/build-runtime-effect.lib';
-import { generateEntityKey } from 'src/game/lib/entity/generate-entity-key.lib';
-import { BaseLogger } from 'src/common/infra/logger.infra';
+import { EntityKey } from 'src/game/types/entity/keys/entity-key.type';
+import { ActionType } from 'src/game/types/pending-actions.type';
+
+import { Injectable } from '@nestjs/common';
+
 import { EntityRegistryService } from '../entity-registry/entity-registry.service';
+import { SocketService } from '../socket/socket.service';
+
+import { buildRuntimeEffect } from './lib/build-runtime-effect.lib';
+import { IRuntimeEffect } from './types/runtime-effect.type';
 
 @Injectable()
 export class RuntimeEffectService extends BaseLogger {

@@ -1,12 +1,14 @@
-import { Resolver, Query, Mutation, Args, Int } from '@nestjs/graphql';
+import { CurrentUser } from 'src/common/decorators/current-user.decorator';
+import { AccessTokenGuard } from 'src/common/guards/access-token.guard';
+import { PayloadUser } from 'src/common/types/user-request.type';
+
+import { UseGuards } from '@nestjs/common';
+import { Args, Int, Mutation, Query, Resolver } from '@nestjs/graphql';
+
 import { CharacterService } from './character.service';
-import { Character } from './entities/character.entity';
 import { CreateCharacterInput } from './dto/create-character.input';
 import { UpdateCharacterInput } from './dto/update-character.input';
-import { CurrentUser } from 'src/common/decorators/current-user.decorator';
-import { PayloadUser } from 'src/common/types/user-request.type';
-import { UseGuards } from '@nestjs/common';
-import { AccessTokenGuard } from 'src/common/guards/access-token.guard';
+import { Character } from './entities/character.entity';
 
 @Resolver(() => Character)
 export class CharacterResolver {

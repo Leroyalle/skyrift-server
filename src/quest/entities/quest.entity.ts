@@ -1,9 +1,12 @@
-import { Field, ID, Int, ObjectType } from '@nestjs/graphql';
-import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { PlayerQuest } from './player-quest.entity';
-import { QuestStep } from '../types/quest-step.type';
-import { QuestPrerequisite } from '../types/prerequisites.type';
 import { Npc } from 'src/characters/npc/entities/npc.entity';
+import { Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+
+import { Field, ID, Int, ObjectType } from '@nestjs/graphql';
+
+import { QuestPrerequisite } from '../types/prerequisites.type';
+import { QuestStep } from '../types/quest-step.type';
+
+import { PlayerQuest } from './player-quest.entity';
 
 @ObjectType()
 @Entity('quests')

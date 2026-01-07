@@ -1,7 +1,7 @@
-import { ObjectType, Field, Int } from '@nestjs/graphql';
 import { CharacterClass } from 'src/character-class/entities/character-class.entity';
 import { CharacterSkill } from 'src/characters/character/character-skill/entities/character-skill.entity';
 import { SkillType } from 'src/common/enums/skill/skill-type.enum';
+import { Effect } from 'src/effect/entities/effect.entity';
 import {
   Column,
   Entity,
@@ -11,7 +11,8 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { Effect } from 'src/effect/entities/effect.entity';
+
+import { Field, Int, ObjectType } from '@nestjs/graphql';
 
 @Entity()
 @ObjectType()

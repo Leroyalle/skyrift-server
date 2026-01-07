@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
-import { EffectService } from './effect.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
+
+import { EffectService } from './effect.service';
 import { Effect } from './entities/effect.entity';
 
 @Module({

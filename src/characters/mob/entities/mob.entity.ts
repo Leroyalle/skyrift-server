@@ -1,7 +1,9 @@
-import { ObjectType, Field, Int } from '@nestjs/graphql';
-import { Column, Entity, ManyToOne } from 'typeorm';
-import { MobSpawn } from '../../../world/spawn/entities/mob-spawn.entity';
 import { ActorEntity } from 'src/common/entities/actor-entity.entity';
+import { Column, Entity, ManyToOne } from 'typeorm';
+
+import { Field, Int, ObjectType } from '@nestjs/graphql';
+
+import { MobSpawn } from '../../../world/spawn/entities/mob-spawn.entity';
 
 @Entity()
 @ObjectType()

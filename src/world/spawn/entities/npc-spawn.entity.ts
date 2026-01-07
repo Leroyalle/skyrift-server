@@ -1,8 +1,10 @@
-import { EntitySpawn } from 'src/world/spawn/entities/entity-spawn.entity';
-import { Npc } from '../../../characters/npc/entities/npc.entity';
-import { Entity, ManyToOne, OneToMany } from 'typeorm';
-import { Field, ObjectType } from '@nestjs/graphql';
 import { Location } from 'src/world/location/entities/location.entity';
+import { EntitySpawn } from 'src/world/spawn/entities/entity-spawn.entity';
+import { Entity, ManyToOne, OneToMany } from 'typeorm';
+
+import { Field, ObjectType } from '@nestjs/graphql';
+
+import { Npc } from '../../../characters/npc/entities/npc.entity';
 
 @ObjectType()
 @Entity('npc_spawn')

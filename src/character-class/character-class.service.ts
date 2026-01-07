@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+
 import { CreateCharacterClassInput } from './dto/create-character-class.input';
 import { UpdateCharacterClassInput } from './dto/update-character-class.input';
 

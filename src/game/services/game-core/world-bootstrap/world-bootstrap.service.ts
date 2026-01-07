@@ -1,10 +1,12 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { TRuntimeEntity } from 'src/game/types/entity/runtime-entity.type';
 import { LocationService } from 'src/world/location/location.service';
+
+import { Injectable, OnModuleInit } from '@nestjs/common';
+
 import { buildRuntimeMobs } from '../../characters/runtime-mob/lib/build-runtime-mobs.lib';
+import { buildRuntimeNpc } from '../../characters/runtime-npc/lib/build-runtime-npc.lib';
 import { EntityRegistryService } from '../../entity-registry/entity-registry.service';
 import { SpatialGridService } from '../../spatial-grid/spatial-grid.service';
-import { TRuntimeEntity } from 'src/game/types/entity/runtime-entity.type';
-import { buildRuntimeNpc } from '../../characters/runtime-npc/lib/build-runtime-npc.lib';
 
 @Injectable()
 export class WorldBootstrapService implements OnModuleInit {

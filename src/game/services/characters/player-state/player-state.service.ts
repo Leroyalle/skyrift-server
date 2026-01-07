@@ -1,13 +1,16 @@
-import { Injectable } from '@nestjs/common';
 import { CharacterService } from 'src/characters/character/character.service';
+import { Character } from 'src/characters/character/entities/character.entity';
 import { IRuntimeCharacter } from 'src/characters/character/types/runtime-character';
 import { RedisKeysFactory } from 'src/common/infra/redis-keys-factory.infra';
 import { RedisService } from 'src/infrastructure/redis/redis.service';
 import { CachedLocation } from 'src/world/location/types/cashed-location.type';
 import { Teleport } from 'src/world/location/types/teleport.type';
-import { Character } from 'src/characters/character/entities/character.entity';
-import { buildRuntimeCharacter } from './lib/build-runtime-character.lib';
+
+import { Injectable } from '@nestjs/common';
+
 import { EntityRegistryService } from '../../entity-registry/entity-registry.service';
+
+import { buildRuntimeCharacter } from './lib/build-runtime-character.lib';
 
 @Injectable()
 export class PlayerStateService {

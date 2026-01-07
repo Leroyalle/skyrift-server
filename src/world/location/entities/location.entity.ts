@@ -1,9 +1,10 @@
-import { Field, ID, Int, ObjectType } from '@nestjs/graphql';
 import { Character } from 'src/characters/character/entities/character.entity';
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { TiledMap } from 'src/common/types/tiled-map.type';
 import { MobSpawn } from 'src/world/spawn/entities/mob-spawn.entity';
 import { NpcSpawn } from 'src/world/spawn/entities/npc-spawn.entity';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+
+import { Field, ID, Int, ObjectType } from '@nestjs/graphql';
 
 @Entity()
 @ObjectType()

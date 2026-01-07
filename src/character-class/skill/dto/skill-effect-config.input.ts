@@ -1,5 +1,6 @@
-import { ObjectType, Field, Int } from '@nestjs/graphql';
 import { EffectType } from 'src/common/enums/skill/effect-type.enum';
+
+import { Field, Int, ObjectType } from '@nestjs/graphql';
 
 @ObjectType()
 export class SkillEffectConfig {

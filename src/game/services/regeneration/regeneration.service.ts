@@ -1,10 +1,12 @@
-import { Injectable } from '@nestjs/common';
-import { BatchUpdateRegeneration } from 'src/game/types/batch-update/batch-update-regeneration.type';
-import { SocketService } from '../socket/socket.service';
-import { RedisKeys } from 'src/common/enums/redis-keys.enum';
 import { ServerToClientEvents } from 'src/common/enums/game-socket-events.enum';
+import { RedisKeys } from 'src/common/enums/redis-keys.enum';
 import { getOrCreate } from 'src/game/lib/helpers/get-or-create-array.lib';
+import { BatchUpdateRegeneration } from 'src/game/types/batch-update/batch-update-regeneration.type';
+
+import { Injectable } from '@nestjs/common';
+
 import { EntityRegistryService } from '../entity-registry/entity-registry.service';
+import { SocketService } from '../socket/socket.service';
 
 @Injectable()
 export class RegenerationService {

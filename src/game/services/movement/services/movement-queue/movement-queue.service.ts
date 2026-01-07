@@ -1,10 +1,13 @@
-import { Injectable } from '@nestjs/common';
-import { EntityMovementQueue } from '../../types/movement-queue.type';
-import { EntityRef } from 'src/game/types/entity/entity-ref.type';
 import { PositionDto } from 'src/common/dto/position.dto';
 import { generateEntityKey } from 'src/game/lib/entity/generate-entity-key.lib';
+import { EntityRef } from 'src/game/types/entity/entity-ref.type';
 import { EntityKey } from 'src/game/types/entity/keys/entity-key.type';
+
+import { Injectable } from '@nestjs/common';
+
 import { PlayerStateService } from '../../../characters/player-state/player-state.service';
+import { EntityMovementQueue } from '../../types/movement-queue.type';
+
 import { isCharacterMovementQueue } from './lib/guards/is-character-movement-queue.lib';
 
 @Injectable()

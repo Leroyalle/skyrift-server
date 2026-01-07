@@ -1,20 +1,23 @@
-import { Injectable } from '@nestjs/common';
-import { BatchUpdateAction, Target } from 'src/game/types/batch-update/batch-update-action.type';
-import { ActiveAoEZone } from './types/active-aoe-zone.type';
+import { CharacterSkill } from 'src/characters/character/character-skill/entities/character-skill.entity';
+import { IRuntimeCharacter } from 'src/characters/character/types/runtime-character';
+import { PositionDto } from 'src/common/dto/position.dto';
+import { ServerToClientEvents } from 'src/common/enums/game-socket-events.enum';
+import { RedisKeys } from 'src/common/enums/redis-keys.enum';
+import { getOrCreate } from 'src/game/lib/helpers/get-or-create-array.lib';
+import { EntityRegistryService } from 'src/game/services/entity-registry/entity-registry.service';
 import { SocketService } from 'src/game/services/socket/socket.service';
 import { SpatialGridService } from 'src/game/services/spatial-grid/spatial-grid.service';
+import { BatchUpdateAction, Target } from 'src/game/types/batch-update/batch-update-action.type';
 import { TRuntimeEntity } from 'src/game/types/entity/runtime-entity.type';
 import { ActionType } from 'src/game/types/pending-actions.type';
-import { RedisKeys } from 'src/common/enums/redis-keys.enum';
-import { ServerToClientEvents } from 'src/common/enums/game-socket-events.enum';
-import { IRuntimeCharacter } from 'src/characters/character/types/runtime-character';
-import { CharacterSkill } from 'src/characters/character/character-skill/entities/character-skill.entity';
-import { PositionDto } from 'src/common/dto/position.dto';
 import { v4 as uuidv4 } from 'uuid';
-import { getOrCreate } from 'src/game/lib/helpers/get-or-create-array.lib';
+
+import { Injectable } from '@nestjs/common';
+
 import { isMob } from '../../lib/entity/guards/is-mob.lib';
 import { isPlayer } from '../../lib/entity/guards/is-player.lib';
-import { EntityRegistryService } from 'src/game/services/entity-registry/entity-registry.service';
+
+import { ActiveAoEZone } from './types/active-aoe-zone.type';
 
 @Injectable()
 export class AoeService {

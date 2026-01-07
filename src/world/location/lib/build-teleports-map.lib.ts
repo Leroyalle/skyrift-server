@@ -1,7 +1,9 @@
 import { TiledMap } from 'src/common/types/tiled-map.type';
-import { Teleport } from '../types/teleport.type';
 import { isObjectsLayer } from 'src/seed/guards/is-objects-layer';
+
+import { Teleport } from '../types/teleport.type';
 import { TeleportProperties } from '../types/teleportProperties.type';
+
 import { isValidTeleportProperties } from './is-valid-teleport-properties.lib';
 
 export const buildTeleportsMap = (map: TiledMap) => {

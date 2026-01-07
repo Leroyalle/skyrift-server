@@ -1,8 +1,10 @@
-import { Injectable } from '@nestjs/common';
-import { PlayerStateService } from '../../player-state.service';
+import { EquipmentSlotEnum } from 'src/common/enums/equipment-slot.enum';
 import { TItem } from 'src/common/types/item.type';
 import { Armor, Weapon } from 'src/item/entities/item.entity';
-import { EquipmentSlotEnum } from 'src/common/enums/equipment-slot.enum';
+
+import { Injectable } from '@nestjs/common';
+
+import { PlayerStateService } from '../../player-state.service';
 
 @Injectable()
 export class RuntimeEquipmentService {

@@ -5,9 +5,7 @@ import { EntityRef } from 'src/game/types/entity/entity-ref.type';
 import { EntityType } from 'src/game/types/entity/entity-type.type';
 
 export interface RuntimeActorEntity<E extends EntityType>
-  extends ActorRuntimeStats,
-    UniqueFields,
-    IActorState<E> {
+  extends ActorRuntimeStats, UniqueFields, IActorState<E> {
   type: E;
 }
 

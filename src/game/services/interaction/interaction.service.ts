@@ -1,35 +1,38 @@
-import { Injectable } from '@nestjs/common';
-import { InteractionType, PendingInteraction } from './types/pending-interactions.type';
-import { PlayerStateService } from 'src/game/services/characters/player-state/player-state.service';
-import { SocketService } from '../socket/socket.service';
-import { LocationService } from 'src/world/location/location.service';
 import { Socket } from 'socket.io';
-import { RequestUseTeleportDto } from 'src/game/dto/request-use-teleport.dto';
-import { verifyUserDataInSocket } from 'src/game/lib/verify-user-data-in-socket.lib';
-import { isPlayerInTeleportArea } from 'src/game/lib/teleport/is-player-in-teleport-radius.lib';
 import { IRuntimeCharacter } from 'src/characters/character/types/runtime-character';
-import { SpatialGridService } from '../spatial-grid/spatial-grid.service';
-import { RedisService } from 'src/infrastructure/redis/redis.service';
-import { RedisKeysFactory } from 'src/common/infra/redis-keys-factory.infra';
-import { RedisKeys } from 'src/common/enums/redis-keys.enum';
-import { ServerToClientEvents } from 'src/common/enums/game-socket-events.enum';
-import { CachedLocation } from 'src/world/location/types/cashed-location.type';
 import { PositionDto } from 'src/common/dto/position.dto';
-import { Teleport } from 'src/world/location/types/teleport.type';
-import { PathFindingService } from '../path-finding/path-finding.service';
+import { ServerToClientEvents } from 'src/common/enums/game-socket-events.enum';
+import { RedisKeys } from 'src/common/enums/redis-keys.enum';
+import { RedisKeysFactory } from 'src/common/infra/redis-keys-factory.infra';
+import { AuthenticatedSocket } from 'src/common/types/socket/auth-socket.type';
+import { RequestQuestAcceptDto } from 'src/game/dto/request-quest-accept.dto';
+import { RequestTalkToNpcDto } from 'src/game/dto/request-talk-to-npc.dto';
+import { RequestUseTeleportDto } from 'src/game/dto/request-use-teleport.dto';
 import { getTileByPosition } from 'src/game/lib/helpers/get-tile-by-position.lib';
+import { isPlayerInTeleportArea } from 'src/game/lib/teleport/is-player-in-teleport-radius.lib';
+import { verifyUserDataInSocket } from 'src/game/lib/verify-user-data-in-socket.lib';
+import { PlayerStateService } from 'src/game/services/characters/player-state/player-state.service';
+import { RedisService } from 'src/infrastructure/redis/redis.service';
+import { LocationService } from 'src/world/location/location.service';
+import { CachedLocation } from 'src/world/location/types/cashed-location.type';
+import { Teleport } from 'src/world/location/types/teleport.type';
+
+import { Injectable } from '@nestjs/common';
+
+import { IRuntimeNpc } from '../characters/runtime-npc/types/runtime-npc.type';
+import { isNpc } from '../combat/lib/entity/guards/is-npc';
+import { isPlayer } from '../combat/lib/entity/guards/is-player.lib';
+import { ActionQueueService } from '../combat/services/action-queue/action-queue.service';
+import { EntityRegistryService } from '../entity-registry/entity-registry.service';
 import { GameInitialDataService } from '../game-core/game-initial-data/game-initial-data.service';
 import { MovementQueueService } from '../movement/services/movement-queue/movement-queue.service';
-import { ActionQueueService } from '../combat/services/action-queue/action-queue.service';
-import { isPlayer } from '../combat/lib/entity/guards/is-player.lib';
+import { PathFindingService } from '../path-finding/path-finding.service';
+import { SocketService } from '../socket/socket.service';
+import { SpatialGridService } from '../spatial-grid/spatial-grid.service';
+
 import { RuntimeQuestService } from './services/runtime-quest/runtime-quest.service';
-import { isNpc } from '../combat/lib/entity/guards/is-npc';
-import { RequestTalkToNpcDto } from 'src/game/dto/request-talk-to-npc.dto';
-import { IRuntimeNpc } from '../characters/runtime-npc/types/runtime-npc.type';
-import { AuthenticatedSocket } from 'src/common/types/socket/auth-socket.type';
 import { IRuntimeQuest } from './services/runtime-quest/types/runtime-quest.type';
-import { RequestQuestAcceptDto } from 'src/game/dto/request-quest-accept.dto';
-import { EntityRegistryService } from '../entity-registry/entity-registry.service';
+import { InteractionType, PendingInteraction } from './types/pending-interactions.type';
 
 @Injectable()
 export class InteractionService {

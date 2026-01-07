@@ -1,5 +1,7 @@
 import { PositionDto } from 'src/common/dto/position.dto';
+
 import { TargetAction } from '../services/combat/types/target-action.type';
+
 import { EntityRef } from './entity/entity-ref.type';
 
 export type PendingAction = {

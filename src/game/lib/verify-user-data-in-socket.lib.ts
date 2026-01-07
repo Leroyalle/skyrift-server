@@ -1,5 +1,5 @@
-import { PlayerData } from 'src/common/types/player-data.type';
 import { Socket } from 'socket.io';
+import { PlayerData } from 'src/common/types/player-data.type';
 
 export function verifyUserDataInSocket(client: Socket): client is Socket & {
   userData: PlayerData;

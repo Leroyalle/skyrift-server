@@ -1,51 +1,37 @@
-import { Injectable } from '@nestjs/common';
-import { LocationService } from 'src/world/location/location.service';
-import { IRuntimeMob } from './types/runtime-mob.type';
 import { PositionDto } from 'src/common/dto/position.dto';
-import { getTileByPosition } from 'src/game/lib/helpers/get-tile-by-position.lib';
-import { getRandomValue } from 'src/common/lib/get-random-value.lib';
-import { CachedLocation } from 'src/world/location/types/cashed-location.type';
-import { RangeArea } from './types/range-area.type';
-import { isEntityCombatStatus } from 'src/game/lib/entity/is-entity-combat-status.lib';
-import { EntityRef } from 'src/game/types/entity/entity-ref.type';
-import { RedisKeys } from 'src/common/enums/redis-keys.enum';
 import { ServerToClientEvents } from 'src/common/enums/game-socket-events.enum';
-import { SpatialGridService } from '../../spatial-grid/spatial-grid.service';
+import { RedisKeys } from 'src/common/enums/redis-keys.enum';
+import { getRandomValue } from 'src/common/lib/get-random-value.lib';
+import { isEntityCombatStatus } from 'src/game/lib/entity/is-entity-combat-status.lib';
+import { getTileByPosition } from 'src/game/lib/helpers/get-tile-by-position.lib';
+import { EntityRef } from 'src/game/types/entity/entity-ref.type';
+import { LocationService } from 'src/world/location/location.service';
+import { CachedLocation } from 'src/world/location/types/cashed-location.type';
+
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
+
 import { CombatService } from '../../combat/combat.service';
-import { PathFindingService } from '../../path-finding/path-finding.service';
-import { MovementQueueService } from '../../movement/services/movement-queue/movement-queue.service';
-import { SocketService } from '../../socket/socket.service';
 import { EntityRegistryService } from '../../entity-registry/entity-registry.service';
+import { MovementQueueService } from '../../movement/services/movement-queue/movement-queue.service';
+import { PathFindingService } from '../../path-finding/path-finding.service';
+import { SocketService } from '../../socket/socket.service';
+import { SpatialGridService } from '../../spatial-grid/spatial-grid.service';
+
+import { RangeArea } from './types/range-area.type';
+import { IRuntimeMob } from './types/runtime-mob.type';
 
 @Injectable()
 export class RuntimeMobService {
   constructor(
     private readonly spatialGridService: SpatialGridService<IRuntimeMob>,
     private readonly locationService: LocationService,
+    @Inject(forwardRef(() => CombatService))
     private readonly combatService: CombatService,
     private readonly pathFindingService: PathFindingService,
     private readonly movementQueueService: MovementQueueService,
     private readonly socketService: SocketService,
     private readonly registryService: EntityRegistryService,
   ) {}
-
-  // private readonly mobsByLocation = new Map<string, Set<string>>();
-  // private readonly mobsById = new Map<string, IRuntimeMob>();
-
-  // public async onModuleInit() {
-  //   const locations = await this.locationService.findAndCacheAll();
-  //   for (const location of locations) {
-  //     const mobsSet = getOrCreate(this.mobsByLocation, location.id, () => new Set());
-  //     location.mobSpawn.forEach(mobSpawn => {
-  //       const runtimeMobs = buildRuntimeMobs(mobSpawn);
-  //       runtimeMobs.forEach(runtimeMob => {
-  //         mobsSet.add(runtimeMob.id);
-  //         this.mobsById.set(runtimeMob.id, runtimeMob);
-  //         this.spatialGridService.add(runtimeMob);
-  //       });
-  //     });
-  //   }
-  // }
 
   public async tickAiMobs() {
     const mobsEntries = this.registryService.mobsArray;
@@ -220,7 +206,6 @@ export class RuntimeMobService {
     mob.currentTarget = mob.aggro.clear();
     mob.state = 'return';
     this.movementQueueService.set(mob, path);
-    // this.movementService.setMovementQueue(mob, path);
   }
 
   private getRandomTileInRange(

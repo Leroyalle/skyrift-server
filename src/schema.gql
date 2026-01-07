@@ -292,18 +292,28 @@ type MobSpawn {
   location: Location!
 }
 
-type PlayerQuest {
-  id: ID!
-}
-
-type Quest {
+type Location {
   id: ID!
   name: String!
-  description: String!
-  expReward: Int!
-  goldReward: Int!
-  playerQuests: PlayerQuest!
-  giverNpc: Npc!
+  filename: String!
+  tiledMap: TiledMap!
+  passableMap: [[Int!]!]!
+  width: Int!
+  height: Int!
+  tileWidth: Int!
+  tileHeight: Int!
+  characters: [Character!]!
+  mobSpawn: [MobSpawn!]!
+  npcSpawn: [NpcSpawn!]!
+}
+
+type NpcSpawn {
+  id: ID!
+  spawnX: Int!
+  spawnY: Int!
+  areaRadius: Int!
+  entity: [Npc!]!
+  location: Location!
 }
 
 type Npc {
@@ -353,28 +363,18 @@ type Npc {
   givenQuests: [Quest!]!
 }
 
-type NpcSpawn {
-  id: ID!
-  spawnX: Int!
-  spawnY: Int!
-  areaRadius: Int!
-  entity: [Npc!]!
-  location: Location!
-}
-
-type Location {
+type Quest {
   id: ID!
   name: String!
-  filename: String!
-  tiledMap: TiledMap!
-  passableMap: [[Int!]!]!
-  width: Int!
-  height: Int!
-  tileWidth: Int!
-  tileHeight: Int!
-  characters: [Character!]!
-  mobSpawn: [MobSpawn!]!
-  npcSpawn: [NpcSpawn!]!
+  description: String!
+  expReward: Int!
+  goldReward: Int!
+  playerQuests: PlayerQuest!
+  giverNpc: Npc!
+}
+
+type PlayerQuest {
+  id: ID!
 }
 
 type TextureConfig {

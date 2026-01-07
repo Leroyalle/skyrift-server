@@ -1,9 +1,11 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
 import { Repository } from 'typeorm';
-import { Effect } from './entities/effect.entity';
+
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { EffectKey } from './types/effect-key.type';
+
+import { Effect } from './entities/effect.entity';
 import { generateEffectKey } from './lib/generate-effect-key.lib';
+import { EffectKey } from './types/effect-key.type';
 import { EffectRef } from './types/effect-ref.type';
 
 @Injectable()

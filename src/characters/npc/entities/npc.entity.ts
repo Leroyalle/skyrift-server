@@ -1,8 +1,10 @@
 import { ActorEntity } from 'src/common/entities/actor-entity.entity';
-import { NpcSpawn } from '../../../world/spawn/entities/npc-spawn.entity';
-import { Entity, ManyToOne, OneToMany } from 'typeorm';
-import { Field, ObjectType } from '@nestjs/graphql';
 import { Quest } from 'src/quest/entities/quest.entity';
+import { Entity, ManyToOne, OneToMany } from 'typeorm';
+
+import { Field, ObjectType } from '@nestjs/graphql';
+
+import { NpcSpawn } from '../../../world/spawn/entities/npc-spawn.entity';
 
 @ObjectType()
 @Entity('npc')

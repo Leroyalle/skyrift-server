@@ -1,5 +1,7 @@
 import { MobSpawn } from 'src/world/spawn/entities/mob-spawn.entity';
+
 import { IRuntimeMob } from '../types/runtime-mob.type';
+
 import { AggroTable } from './aggro.lib';
 
 export function buildRuntimeMobs(mobSpawn: MobSpawn): IRuntimeMob[] {

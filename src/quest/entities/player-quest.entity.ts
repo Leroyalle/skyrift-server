@@ -1,8 +1,10 @@
 import { Character } from 'src/characters/character/entities/character.entity';
 import { Timestamp } from 'src/common/entities/timestamp.entity';
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { Quest } from './quest.entity';
+
 import { Field, ID, ObjectType } from '@nestjs/graphql';
+
+import { Quest } from './quest.entity';
 
 @ObjectType()
 @Entity('player_quests')

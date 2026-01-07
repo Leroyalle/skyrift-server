@@ -1,4 +1,5 @@
 import { NpcSpawn } from 'src/world/spawn/entities/npc-spawn.entity';
+
 import { IRuntimeNpc } from '../types/runtime-npc.type';
 
 export function buildRuntimeNpc(npcSpawn: NpcSpawn): IRuntimeNpc[] {

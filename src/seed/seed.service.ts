@@ -1,38 +1,41 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { User } from '../user/entities/user.entity';
-import { DataSource, Repository } from 'typeorm';
-import { Location } from 'src/world/location/entities/location.entity';
-import { Property, TiledMap } from 'src/common/types/tiled-map.type';
+import * as argon2 from 'argon2';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as xml2js from 'xml2js';
-import { Faction } from 'src/faction/entities/faction.entity';
 import { CharacterClass } from 'src/character-class/entities/character-class.entity';
-import { Character } from 'src/characters/character/entities/character.entity';
-import * as argon2 from 'argon2';
-import { CharacterSkill } from 'src/characters/character/character-skill/entities/character-skill.entity';
 import { Skill } from 'src/character-class/skill/entities/skill.entity';
-import { SkillType } from 'src/common/enums/skill/skill-type.enum';
-import { EffectType } from 'src/common/enums/skill/effect-type.enum';
-import { isTileLayer } from './guards/is-tile-layer';
-import { v4 as uuidv4 } from 'uuid';
-import { isObjectsLayer } from './guards/is-objects-layer';
-import { FactionEnum } from 'src/faction/types/faction.enum';
+import { Bag } from 'src/characters/character/bag/entities/bag.entity';
+import { CharacterSkill } from 'src/characters/character/character-skill/entities/character-skill.entity';
+import { Character } from 'src/characters/character/entities/character.entity';
 import { Mob } from 'src/characters/mob/entities/mob.entity';
-import { MobSpawn } from 'src/world/spawn/entities/mob-spawn.entity';
-import { Effect } from 'src/effect/entities/effect.entity';
-import { ItemTypeEnum } from 'src/common/enums/item-type.enum';
+import { MobService } from 'src/characters/mob/mob.service';
+import { NpcService } from 'src/characters/npc/npc.service';
 import { WeaponSlotEnum } from 'src/common/enums/equipment-slot.enum';
+import { ItemTypeEnum } from 'src/common/enums/item-type.enum';
+import { EffectType } from 'src/common/enums/skill/effect-type.enum';
+import { SkillType } from 'src/common/enums/skill/skill-type.enum';
+import { Property, TiledMap } from 'src/common/types/tiled-map.type';
+import { Effect } from 'src/effect/entities/effect.entity';
+import { Faction } from 'src/faction/entities/faction.entity';
+import { FactionEnum } from 'src/faction/types/faction.enum';
 import { BaseItem, Weapon } from 'src/item/entities/item.entity';
 import { ItemService } from 'src/item/item.service';
-import { Bag } from 'src/characters/character/bag/entities/bag.entity';
 import { QuestService } from 'src/quest/quest.service';
-import { NpcService } from 'src/characters/npc/npc.service';
-import { MobService } from 'src/characters/mob/mob.service';
-import { SpawnService } from 'src/world/spawn/spawn.service';
-import { setupNpc } from './lib/setup-npc.lib';
 import { StepType } from 'src/quest/types/quest-step.type';
+import { Location } from 'src/world/location/entities/location.entity';
+import { MobSpawn } from 'src/world/spawn/entities/mob-spawn.entity';
+import { SpawnService } from 'src/world/spawn/spawn.service';
+import { DataSource, Repository } from 'typeorm';
+import { v4 as uuidv4 } from 'uuid';
+import * as xml2js from 'xml2js';
+
+import { Inject, Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+
+import { User } from '../user/entities/user.entity';
+
+import { isObjectsLayer } from './guards/is-objects-layer';
+import { isTileLayer } from './guards/is-tile-layer';
+import { setupNpc } from './lib/setup-npc.lib';
 
 @Injectable()
 export class SeedService {

@@ -1,12 +1,13 @@
+import { Npc } from 'src/characters/npc/entities/npc.entity';
 import { PositionDto } from 'src/common/dto/position.dto';
 import { RuntimeActorEntity } from 'src/common/types/actor-entity.type';
 import { TDirection } from 'src/game/types/entity/direction.type';
-import { NpcSpawn } from 'src/world/spawn/entities/npc-spawn.entity';
 import { EntityType } from 'src/game/types/entity/entity-type.type';
-import { Npc } from 'src/characters/npc/entities/npc.entity';
+import { NpcSpawn } from 'src/world/spawn/entities/npc-spawn.entity';
 
 export interface IRuntimeNpc
-  extends NpcSummary,
+  extends
+    NpcSummary,
     NpcSpawnSummary,
     RuntimeActorEntity<'npc'>,
     RuntimeNpcStats,

@@ -1,8 +1,10 @@
-import { Module } from '@nestjs/common';
-import { BagService } from './bag.service';
-import { BagResolver } from './bag.resolver';
 import { ItemModule } from 'src/item/item.module';
+
+import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+
+import { BagResolver } from './bag.resolver';
+import { BagService } from './bag.service';
 import { Bag } from './entities/bag.entity';
 
 @Module({
