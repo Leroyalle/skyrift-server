@@ -1,11 +1,15 @@
-import { Injectable } from '@nestjs/common';
 import { CharacterService } from 'src/characters/character/character.service';
+import { Character } from 'src/characters/character/entities/character.entity';
 import { IRuntimeCharacter } from 'src/characters/character/types/runtime-character';
 import { RedisKeysFactory } from 'src/common/infra/redis-keys-factory.infra';
 import { RedisService } from 'src/infrastructure/redis/redis.service';
 import { CachedLocation } from 'src/world/location/types/cashed-location.type';
 import { Teleport } from 'src/world/location/types/teleport.type';
-import { Character } from 'src/characters/character/entities/character.entity';
+
+import { Injectable } from '@nestjs/common';
+
+import { EntityRegistryService } from '../../entity-registry/entity-registry.service';
+
 import { buildRuntimeCharacter } from './lib/build-runtime-character.lib';
 
 @Injectable()
@@ -13,9 +17,10 @@ export class PlayerStateService {
   constructor(
     private readonly redisService: RedisService,
     private readonly characterService: CharacterService,
+    private readonly registerService: EntityRegistryService,
   ) {}
 
-  private readonly playersStates: Map<string, IRuntimeCharacter> = new Map();
+  // private readonly playersStates: Map<string, IRuntimeCharacter> = new Map();
 
   public async join(character: Character) {
     console.log('[join]', character);
@@ -27,11 +32,11 @@ export class PlayerStateService {
 
     await this.redisService.set(RedisKeysFactory.playerNameToId(character.name), character.id);
 
-    let runtimeCharacter = this.playersStates.get(character.id);
+    let runtimeCharacter = this.registerService.getByRef({ type: 'player', id: character.id });
 
     if (!runtimeCharacter) {
       runtimeCharacter = buildRuntimeCharacter(character);
-      this.playersStates.set(character.id, runtimeCharacter);
+      this.registerService.add(runtimeCharacter);
     }
 
     return runtimeCharacter;
@@ -52,7 +57,11 @@ export class PlayerStateService {
   }
 
   public async leave(userId: string, playerId: string, locationId: string) {
-    this.playersStates.delete(playerId);
+    this.registerService.remove({
+      type: 'player',
+      id: playerId,
+      locationId,
+    });
 
     await this.redisService.srem(RedisKeysFactory.locationPlayers(locationId), playerId);
 
@@ -60,9 +69,13 @@ export class PlayerStateService {
   }
 
   public async syncCharacterToDb(characterId: string) {
-    const character = this.playersStates.get(characterId);
+    const character = this.registerService.getByRef({
+      type: 'player',
+      id: characterId,
+    });
 
     if (!character) return;
+
     const {
       lastMoveAt: _,
       lastAttackAt: __,
@@ -78,12 +91,8 @@ export class PlayerStateService {
     return character;
   }
 
-  public getCharacterState(characterId: string) {
-    return this.playersStates.get(characterId);
-  }
-
-  public getCharactersArray() {
-    return Array.from(this.playersStates.values());
+  public getCharacterState(characterId: string): IRuntimeCharacter | undefined {
+    return this.registerService.getByRef({ type: 'player', id: characterId });
   }
 
   public changeUserLocation(

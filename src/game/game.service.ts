@@ -1,39 +1,39 @@
-import { Injectable } from '@nestjs/common';
 import { Socket } from 'socket.io';
 import { AuthService } from 'src/auth/auth.service';
-import { UserService } from 'src/user/user.service';
 import { CharacterService } from 'src/characters/character/character.service';
-import { ServerToClientEvents } from 'src/common/enums/game-socket-events.enum';
-import { RedisService } from 'src/infrastructure/redis/redis.service';
-import { RedisKeys } from 'src/common/enums/redis-keys.enum';
-import { RequestMoveToDto } from './dto/request-move-to.dto';
-import { PlayerStateService } from './services/player-state/player-state.service';
-import { RequestAttackMoveDto } from './dto/request-attack-move.dto';
-import { JwtPayload } from 'src/common/types/jwt-payload.type';
-import { RequestSkillUseDto } from './dto/request-use-skill.dto';
 import { IRuntimeCharacter } from 'src/characters/character/types/runtime-character';
-import { MovementService } from './services/movement/movement.service';
-import { CombatService } from './services/combat/combat.service';
-import { SocketService } from './services/socket/socket.service';
-import { SpatialGridService } from './services/spatial-grid/spatial-grid.service';
-import { RequestUseTeleportDto } from './dto/request-use-teleport.dto';
-import { InteractionService } from './services/interaction/interaction.service';
-import { ChatService } from './services/chat/chat.service';
-import { DirectMessageInput } from './services/chat/dto/direct-message.input';
+import { ServerToClientEvents } from 'src/common/enums/game-socket-events.enum';
+import { RedisKeys } from 'src/common/enums/redis-keys.enum';
 import { BaseLogger } from 'src/common/infra/logger.infra';
-import { GameInitialDataService } from './services/game-core/game-initial-data/game-initial-data.service';
-import { PongReturnData } from './types/pong-return-data.type';
-import { InventoryService } from './services/player-state/services/inventory/inventory.service';
 import { TItem } from 'src/common/types/item.type';
-import { RequestEquipDto } from './dto/equipment/request-equip.dto';
-import { RuntimeEquipmentService } from './services/player-state/services/runtime-equipment/runtime-equipment.service';
+import { JwtPayload } from 'src/common/types/jwt-payload.type';
 import { AuthenticatedSocket } from 'src/common/types/socket/auth-socket.type';
+import { RedisService } from 'src/infrastructure/redis/redis.service';
+import { UserService } from 'src/user/user.service';
+
+import { Injectable } from '@nestjs/common';
+
+import { RequestEquipDto } from './dto/equipment/request-equip.dto';
 import { RequestUnEquipDto } from './dto/equipment/request-un-equip.dto';
 import { RequestUseItemDto } from './dto/item/request-use-item.dto';
-import { ItemTypeEnum } from 'src/common/enums/item-type.enum';
-import { isArmor } from 'src/item/guards/is-armor';
-import { isWeapon } from 'src/item/guards/is-weapon';
-import { WeaponSlotEnum } from 'src/common/enums/equipment-slot.enum';
+import { RequestAttackMoveDto } from './dto/request-attack-move.dto';
+import { RequestMoveToDto } from './dto/request-move-to.dto';
+import { RequestQuestAcceptDto } from './dto/request-quest-accept.dto';
+import { RequestTalkToNpcDto } from './dto/request-talk-to-npc.dto';
+import { RequestSkillUseDto } from './dto/request-use-skill.dto';
+import { RequestUseTeleportDto } from './dto/request-use-teleport.dto';
+import { PlayerStateService } from './services/characters/player-state/player-state.service';
+import { InventoryService } from './services/characters/player-state/services/inventory/inventory.service';
+import { RuntimeEquipmentService } from './services/characters/player-state/services/runtime-equipment/runtime-equipment.service';
+import { ChatService } from './services/chat/chat.service';
+import { DirectMessageInput } from './services/chat/dto/direct-message.input';
+import { CombatService } from './services/combat/combat.service';
+import { GameInitialDataService } from './services/game-core/game-initial-data/game-initial-data.service';
+import { InteractionService } from './services/interaction/interaction.service';
+import { MovementService } from './services/movement/movement.service';
+import { SocketService } from './services/socket/socket.service';
+import { SpatialGridService } from './services/spatial-grid/spatial-grid.service';
+import { PongReturnData } from './types/pong-return-data.type';
 
 @Injectable()
 export class GameService extends BaseLogger {
@@ -215,7 +215,7 @@ export class GameService extends BaseLogger {
     this.socketService.sendToUser(userId, ServerToClientEvents.GameInitialState, initialData);
   }
 
-  public async requestMoveTo(client: Socket, input: RequestMoveToDto) {
+  public async requestMoveTo(client: AuthenticatedSocket, input: RequestMoveToDto) {
     await this.movementService.requestMoveTo(client, input);
   }
 
@@ -318,5 +318,13 @@ export class GameService extends BaseLogger {
 
   public handleUseItem(client: AuthenticatedSocket, input: RequestUseItemDto) {
     return this.inventoryService.use(client.userData.characterId, input.itemId);
+  }
+
+  public async requestTalkToNpc(socket: AuthenticatedSocket, input: RequestTalkToNpcDto) {
+    return await this.interactionService.requestTalkToNpc(socket, input);
+  }
+
+  public requestQuestAccept(socket: AuthenticatedSocket, input: RequestQuestAcceptDto) {
+    return this.interactionService.requestQuestAccept(socket, input);
   }
 }

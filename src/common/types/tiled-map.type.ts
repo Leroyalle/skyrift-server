@@ -1,4 +1,4 @@
-import { ObjectType, Field, Int, Float } from '@nestjs/graphql';
+import { Field, Float, Int, ObjectType } from '@nestjs/graphql';
 
 @ObjectType()
 export class Property {

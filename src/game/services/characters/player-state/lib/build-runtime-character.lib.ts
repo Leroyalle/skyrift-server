@@ -1,5 +1,6 @@
 import { Character } from 'src/characters/character/entities/character.entity';
 import { IRuntimeCharacter } from 'src/characters/character/types/runtime-character';
+import { PlayerQuest } from 'src/quest/entities/player-quest.entity';
 
 export const buildRuntimeCharacter = (character: Character): IRuntimeCharacter => {
   return {
@@ -35,5 +36,25 @@ export const buildRuntimeCharacter = (character: Character): IRuntimeCharacter =
     walkSpeed: character.walkSpeed,
     bag: character.bag,
     equipment: character.equipment,
+    completedQuestIds: collectCompletedQuests(character.quests),
+    activeQuests: collectActiveQuests(character.quests),
   };
 };
+
+function collectCompletedQuests(quests: PlayerQuest[]) {
+  return quests.reduce<Set<string>>((acc, quest) => {
+    if (quest.completedAt) {
+      acc.add(quest.id);
+    }
+    return acc;
+  }, new Set());
+}
+
+function collectActiveQuests(quests: PlayerQuest[]) {
+  return quests.reduce<Array<PlayerQuest>>((acc, quest) => {
+    if (!quest.completedAt) {
+      acc.push(quest);
+    }
+    return acc;
+  }, []);
+}

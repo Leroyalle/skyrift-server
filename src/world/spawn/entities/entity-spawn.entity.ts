@@ -1,8 +1,9 @@
-import { Field, ID, Int, InterfaceType } from '@nestjs/graphql';
 import { Mob } from 'src/characters/mob/entities/mob.entity';
 import { Npc } from 'src/characters/npc/entities/npc.entity';
 import { Location } from 'src/world/location/entities/location.entity';
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn, TableInheritance } from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn, TableInheritance } from 'typeorm';
+
+import { Field, ID, Int, InterfaceType } from '@nestjs/graphql';
 
 @InterfaceType()
 @Entity()
@@ -24,9 +25,7 @@ export abstract class EntitySpawn {
   @Field(() => Int)
   areaRadius: number;
 
-  @ManyToOne(() => Location, location => location.mobSpawn)
-  @Field(() => Location)
-  location: Location;
+  abstract location: Location;
 
   abstract entity: (Mob | Npc)[];
 }

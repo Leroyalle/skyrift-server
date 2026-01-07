@@ -1,8 +1,9 @@
-import { Resolver, Query, Mutation, Args, Int } from '@nestjs/graphql';
-import { FactionService } from './faction.service';
-import { Faction } from './entities/faction.entity';
+import { Args, Int, Mutation, Query, Resolver } from '@nestjs/graphql';
+
 import { CreateFactionInput } from './dto/create-faction.input';
 import { UpdateFactionInput } from './dto/update-faction.input';
+import { Faction } from './entities/faction.entity';
+import { FactionService } from './faction.service';
 
 @Resolver(() => Faction)
 export class FactionResolver {

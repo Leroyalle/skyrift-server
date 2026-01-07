@@ -1,67 +1,40 @@
-import { forwardRef, Inject, Injectable, OnModuleInit } from '@nestjs/common';
-import { LocationService } from 'src/world/location/location.service';
-import { IRuntimeMob } from './types/runtime-mob.type';
 import { PositionDto } from 'src/common/dto/position.dto';
-import { getTileByPosition } from 'src/game/lib/helpers/get-tile-by-position.lib';
-import { SpatialGridService } from '../spatial-grid/spatial-grid.service';
-import { CombatService } from '../combat/combat.service';
-import { PathFindingService } from '../path-finding/path-finding.service';
-import { buildRuntimeMob } from './lib/build-runtime-mob.lib';
-import { getRandomValue } from 'src/common/lib/get-random-value.lib';
-import { CachedLocation } from 'src/world/location/types/cashed-location.type';
-import { RangeArea } from './types/range-area.type';
-import { isEntityCombatStatus } from 'src/game/lib/entity/is-entity-combat-status.lib';
-import { EntityRef } from 'src/game/types/entity/entity-ref.type';
-import { RuntimeEntityService } from '../runtime-entity/runtime-entity.service';
-import { MovementQueueService } from '../movement/services/movement-queue/movement-queue.service';
-import { SocketService } from '../socket/socket.service';
-import { RedisKeys } from 'src/common/enums/redis-keys.enum';
 import { ServerToClientEvents } from 'src/common/enums/game-socket-events.enum';
+import { RedisKeys } from 'src/common/enums/redis-keys.enum';
+import { getRandomValue } from 'src/common/lib/get-random-value.lib';
+import { isEntityCombatStatus } from 'src/game/lib/entity/is-entity-combat-status.lib';
+import { getTileByPosition } from 'src/game/lib/helpers/get-tile-by-position.lib';
+import { EntityRef } from 'src/game/types/entity/entity-ref.type';
+import { LocationService } from 'src/world/location/location.service';
+import { CachedLocation } from 'src/world/location/types/cashed-location.type';
+
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
+
+import { CombatService } from '../../combat/combat.service';
+import { EntityRegistryService } from '../../entity-registry/entity-registry.service';
+import { MovementQueueService } from '../../movement/services/movement-queue/movement-queue.service';
+import { PathFindingService } from '../../path-finding/path-finding.service';
+import { SocketService } from '../../socket/socket.service';
+import { SpatialGridService } from '../../spatial-grid/spatial-grid.service';
+
+import { RangeArea } from './types/range-area.type';
+import { IRuntimeMob } from './types/runtime-mob.type';
 
 @Injectable()
-export class RuntimeMobService implements OnModuleInit {
+export class RuntimeMobService {
   constructor(
     private readonly spatialGridService: SpatialGridService<IRuntimeMob>,
     private readonly locationService: LocationService,
     @Inject(forwardRef(() => CombatService))
     private readonly combatService: CombatService,
     private readonly pathFindingService: PathFindingService,
-    private readonly runtimeEntityService: RuntimeEntityService,
     private readonly movementQueueService: MovementQueueService,
     private readonly socketService: SocketService,
+    private readonly registryService: EntityRegistryService,
   ) {}
 
-  private readonly mobsByLocation = new Map<string, Set<string>>();
-  private readonly mobsById = new Map<string, IRuntimeMob>();
-
-  public async onModuleInit() {
-    const locations = await this.locationService.findAndCacheAll();
-    for (const location of locations) {
-      const mobsSet = this.getOrCreateActiveMobsLocationMap(location.id);
-      location.mobSpawn.forEach(mobSpawn => {
-        const runtimeMobs = buildRuntimeMob(mobSpawn);
-        runtimeMobs.forEach(runtimeMob => {
-          mobsSet.add(runtimeMob.id);
-          this.mobsById.set(runtimeMob.id, runtimeMob);
-          this.spatialGridService.add(runtimeMob);
-        });
-      });
-    }
-  }
-
-  public getMobsByLocation(locationId: string): IRuntimeMob[] {
-    const mobsIds = this.mobsByLocation.get(locationId) ?? [];
-    const mobs: IRuntimeMob[] = [];
-    for (const mId of mobsIds.values()) {
-      const mob = this.getById(mId);
-      if (!mob) continue;
-      mobs.push(mob);
-    }
-    return mobs;
-  }
-
   public async tickAiMobs() {
-    const mobsEntries = Array.from(this.mobsById.values());
+    const mobsEntries = this.registryService.mobsArray;
 
     for (const mob of mobsEntries) {
       const now = Date.now();
@@ -140,7 +113,7 @@ export class RuntimeMobService implements OnModuleInit {
   }
 
   private checkVictimIsActual(runtimeMob: IRuntimeMob, victimRef: EntityRef): boolean {
-    const victim = this.runtimeEntityService.getEntityByType(victimRef.type, victimRef.id);
+    const victim = this.registryService.getByRef(victimRef);
 
     if (!victim) return false;
 
@@ -233,15 +206,6 @@ export class RuntimeMobService implements OnModuleInit {
     mob.currentTarget = mob.aggro.clear();
     mob.state = 'return';
     this.movementQueueService.set(mob, path);
-    // this.movementService.setMovementQueue(mob, path);
-  }
-
-  public get mobsArray() {
-    return Array.from(this.mobsById.values());
-  }
-
-  public getById(id: string) {
-    return this.mobsById.get(id);
   }
 
   private getRandomTileInRange(
@@ -271,17 +235,8 @@ export class RuntimeMobService implements OnModuleInit {
     return uniqueTiles[tileIndex];
   }
 
-  private getOrCreateActiveMobsLocationMap(locationId: string): Set<string> {
-    let mobsSet = this.mobsByLocation.get(locationId);
-    if (!mobsSet) {
-      mobsSet = new Set();
-      this.mobsByLocation.set(locationId, mobsSet);
-    }
-    return mobsSet;
-  }
-
   public resetRespawnTime(runtimeMobId: string): IRuntimeMob | undefined {
-    const spawnMob = this.mobsById.get(runtimeMobId);
+    const spawnMob = this.registryService.getByRef({ type: 'mob', id: runtimeMobId });
     if (!spawnMob) return;
     spawnMob.respawnIn = null;
     return spawnMob;
@@ -299,7 +254,8 @@ export class RuntimeMobService implements OnModuleInit {
   }
 
   public setRespawn(runtimeMobId: string) {
-    const spawnMob = this.mobsById.get(runtimeMobId);
+    const spawnMob = this.registryService.getByRef({ type: 'mob', id: runtimeMobId });
+
     if (!spawnMob) return;
     const now = Date.now();
     spawnMob.respawnIn = now + spawnMob.respawnTime;

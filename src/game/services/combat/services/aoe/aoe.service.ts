@@ -1,28 +1,30 @@
-import { Injectable } from '@nestjs/common';
-import { BatchUpdateAction, Target } from 'src/game/types/batch-update/batch-update-action.type';
-import { ActiveAoEZone } from './types/active-aoe-zone.type';
+import { CharacterSkill } from 'src/characters/character/character-skill/entities/character-skill.entity';
+import { IRuntimeCharacter } from 'src/characters/character/types/runtime-character';
+import { PositionDto } from 'src/common/dto/position.dto';
+import { ServerToClientEvents } from 'src/common/enums/game-socket-events.enum';
+import { RedisKeys } from 'src/common/enums/redis-keys.enum';
+import { getOrCreate } from 'src/game/lib/helpers/get-or-create-array.lib';
+import { EntityRegistryService } from 'src/game/services/entity-registry/entity-registry.service';
 import { SocketService } from 'src/game/services/socket/socket.service';
-import { PlayerStateService } from 'src/game/services/player-state/player-state.service';
 import { SpatialGridService } from 'src/game/services/spatial-grid/spatial-grid.service';
+import { BatchUpdateAction, Target } from 'src/game/types/batch-update/batch-update-action.type';
 import { TRuntimeEntity } from 'src/game/types/entity/runtime-entity.type';
 import { ActionType } from 'src/game/types/pending-actions.type';
-import { RedisKeys } from 'src/common/enums/redis-keys.enum';
-import { ServerToClientEvents } from 'src/common/enums/game-socket-events.enum';
-import { IRuntimeCharacter } from 'src/characters/character/types/runtime-character';
-import { CharacterSkill } from 'src/characters/character/character-skill/entities/character-skill.entity';
-import { PositionDto } from 'src/common/dto/position.dto';
 import { v4 as uuidv4 } from 'uuid';
-import { RuntimeEntityService } from 'src/game/services/runtime-entity/runtime-entity.service';
-import { getOrCreateArray } from 'src/game/lib/helpers/get-or-create-array.lib';
+
+import { Injectable } from '@nestjs/common';
+
 import { isMob } from '../../lib/entity/guards/is-mob.lib';
+import { isPlayer } from '../../lib/entity/guards/is-player.lib';
+
+import { ActiveAoEZone } from './types/active-aoe-zone.type';
 
 @Injectable()
 export class AoeService {
   constructor(
     private readonly socketService: SocketService,
-    private readonly playerStateService: PlayerStateService,
     private readonly spatialGridService: SpatialGridService<TRuntimeEntity>,
-    private readonly runtimeEntityService: RuntimeEntityService,
+    private readonly registryService: EntityRegistryService,
   ) {}
 
   private readonly activeAoEZones: Map<string, ActiveAoEZone> = new Map();
@@ -41,8 +43,8 @@ export class AoeService {
       if (zone.lastUsedAt && now - zone.lastUsedAt <= 1000) continue;
 
       // FIXME: update for all entities
-      const attacker = this.playerStateService.getCharacterState(zone.casterId);
-      if (!attacker) {
+      const attacker = this.registryService.getByRef({ type: 'player', id: zone.casterId });
+      if (!attacker || !isPlayer(attacker)) {
         this.despawnAoEZone(zone);
         continue;
       }
@@ -66,11 +68,11 @@ export class AoeService {
       //   batchLocation = [];
       //   updatesByLocation.set(zone.locationId, batchLocation);
       // }
-      const batchLocation = getOrCreateArray(updatesByLocation, zone.locationId);
+      const batchLocation = getOrCreate(updatesByLocation, zone.locationId, () => []);
 
       const targets: Target[] = [];
-      entities.forEach(({ id, type }) => {
-        const victim = this.runtimeEntityService.getEntityByType(type, id);
+      entities.forEach(ref => {
+        const victim = this.registryService.getByRef(ref);
         if (!victim || !cSkill.skill.damagePerSecond || !victim.isAlive) return;
         if (attacker.id === victim.id) return;
         const receivedDamage = cSkill.skill.damagePerSecond;

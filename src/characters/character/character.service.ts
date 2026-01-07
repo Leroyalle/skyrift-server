@@ -1,9 +1,11 @@
+import { Repository } from 'typeorm';
+
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+
 import { CreateCharacterInput } from './dto/create-character.input';
 import { UpdateCharacterInput } from './dto/update-character.input';
-import { InjectRepository } from '@nestjs/typeorm';
 import { Character } from './entities/character.entity';
-import { Repository } from 'typeorm';
 
 @Injectable()
 export class CharacterService {
@@ -51,6 +53,8 @@ export class CharacterService {
         bag: {
           items: true,
         },
+        equipment: true,
+        quests: true,
       },
     });
   }

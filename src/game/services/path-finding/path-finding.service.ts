@@ -1,5 +1,7 @@
-import { Injectable } from '@nestjs/common';
 import EasyStar from 'easystarjs';
+
+import { Injectable } from '@nestjs/common';
+
 import { createEasyStarInstance } from './lib/create-easystar-instance.lib';
 
 type TCoord = { x: number; y: number };

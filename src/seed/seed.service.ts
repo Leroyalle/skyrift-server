@@ -1,32 +1,41 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { User } from '../user/entities/user.entity';
-import { DataSource, Repository } from 'typeorm';
-import { Location } from 'src/world/location/entities/location.entity';
-import { Property, TiledMap } from 'src/common/types/tiled-map.type';
+import * as argon2 from 'argon2';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as xml2js from 'xml2js';
-import { Faction } from 'src/faction/entities/faction.entity';
 import { CharacterClass } from 'src/character-class/entities/character-class.entity';
-import { Character } from 'src/characters/character/entities/character.entity';
-import * as argon2 from 'argon2';
-import { CharacterSkill } from 'src/characters/character/character-skill/entities/character-skill.entity';
 import { Skill } from 'src/character-class/skill/entities/skill.entity';
-import { SkillType } from 'src/common/enums/skill/skill-type.enum';
-import { EffectType } from 'src/common/enums/skill/effect-type.enum';
-import { isTileLayer } from './guards/is-tile-layer';
-import { v4 as uuidv4 } from 'uuid';
-import { isObjectsLayer } from './guards/is-objects-layer';
-import { FactionEnum } from 'src/faction/types/faction.enum';
+import { Bag } from 'src/characters/character/bag/entities/bag.entity';
+import { CharacterSkill } from 'src/characters/character/character-skill/entities/character-skill.entity';
+import { Character } from 'src/characters/character/entities/character.entity';
 import { Mob } from 'src/characters/mob/entities/mob.entity';
-import { MobSpawn } from 'src/world/spawn/entities/mob-spawn.entity';
-import { Effect } from 'src/effect/entities/effect.entity';
-import { ItemTypeEnum } from 'src/common/enums/item-type.enum';
+import { MobService } from 'src/characters/mob/mob.service';
+import { NpcService } from 'src/characters/npc/npc.service';
 import { WeaponSlotEnum } from 'src/common/enums/equipment-slot.enum';
+import { ItemTypeEnum } from 'src/common/enums/item-type.enum';
+import { EffectType } from 'src/common/enums/skill/effect-type.enum';
+import { SkillType } from 'src/common/enums/skill/skill-type.enum';
+import { Property, TiledMap } from 'src/common/types/tiled-map.type';
+import { Effect } from 'src/effect/entities/effect.entity';
+import { Faction } from 'src/faction/entities/faction.entity';
+import { FactionEnum } from 'src/faction/types/faction.enum';
 import { BaseItem, Weapon } from 'src/item/entities/item.entity';
 import { ItemService } from 'src/item/item.service';
-import { Bag } from 'src/characters/character/bag/entities/bag.entity';
+import { QuestService } from 'src/quest/quest.service';
+import { StepType } from 'src/quest/types/quest-step.type';
+import { Location } from 'src/world/location/entities/location.entity';
+import { MobSpawn } from 'src/world/spawn/entities/mob-spawn.entity';
+import { SpawnService } from 'src/world/spawn/spawn.service';
+import { DataSource, Repository } from 'typeorm';
+import { v4 as uuidv4 } from 'uuid';
+import * as xml2js from 'xml2js';
+
+import { Inject, Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+
+import { User } from '../user/entities/user.entity';
+
+import { isObjectsLayer } from './guards/is-objects-layer';
+import { isTileLayer } from './guards/is-tile-layer';
+import { setupNpc } from './lib/setup-npc.lib';
 
 @Injectable()
 export class SeedService {
@@ -56,7 +65,11 @@ export class SeedService {
     // private baseItemRepository: Repository<BaseItem>,
     // @InjectRepository(Bag)
     // private bagRepository: Repository<Bag>,
-    private dataSource: DataSource,
+    private readonly dataSource: DataSource,
+    private readonly questService: QuestService,
+    private readonly npcService: NpcService,
+    private readonly mobService: MobService,
+    private readonly spawnService: SpawnService,
   ) {}
 
   public async run() {
@@ -112,7 +125,6 @@ export class SeedService {
       logo: 'https://example.com/archer_logo.png',
     });
 
-    // Доминион Рассвета
     const paladinClass = await this.characterClassRepository.save({
       name: 'Паладин',
       description: 'Тяжёлая броня и щит, держит фронт и защищает союзников.',
@@ -134,7 +146,6 @@ export class SeedService {
       logo: 'https://example.com/magistr_logo.png',
     });
 
-    // Серебролистые
     const wardClass = await this.characterClassRepository.save({
       name: 'Хранитель',
       description: 'Защитник леса, крепкая броня и природная магия.',
@@ -156,7 +167,6 @@ export class SeedService {
       logo: 'https://example.com/druid_logo.png',
     });
 
-    // Алый Ковен
     const bloodguardClass = await this.characterClassRepository.save({
       name: 'Кровавый Щит',
       description: 'Использует магию крови для защиты себя и ослабления врагов.',
@@ -178,7 +188,6 @@ export class SeedService {
       logo: 'https://example.com/hemomancer_logo.png',
     });
 
-    // Пламенорождённые
     const fireguardClass = await this.characterClassRepository.save({
       name: 'Пиростраж',
       description: 'Держит фронт и сжигает врагов вокруг.',
@@ -222,7 +231,7 @@ export class SeedService {
       }),
     );
 
-    const demonMob = this.mobRepository.create({
+    const orcMob = this.mobRepository.create({
       name: 'Суленыч',
       magicDefense: 1,
       physicalDefense: 1,
@@ -250,7 +259,7 @@ export class SeedService {
       }),
     });
 
-    await this.mobRepository.save(demonMob);
+    await this.mobRepository.save(orcMob);
 
     const firstCharacter = await this.characterRepository.save({
       name: 'Leroyalle',
@@ -365,6 +374,50 @@ export class SeedService {
     await this.characterSkillRepository.save({
       character: firstCharacter,
       skill: fireHailSkill,
+    });
+
+    const magisterNpc = await this.npcService.create({
+      ...setupNpc({ name: 'Магистр СГ', x: 2000, y: 1000, givenQuests: [] }),
+    });
+
+    const firstQuest = await this.questService.createQuest({
+      name: 'Ель - хвойная',
+      description: 'Отпили и притащи огромную ветвь ели в кабинет магистра',
+      expReward: 100,
+      goldReward: 200,
+      itemRewards: [
+        {
+          quantity: 1,
+          templateId: elvenBowItem.id,
+        },
+      ],
+      prerequisites: [],
+      steps: [
+        {
+          id: 'first',
+          description: 'Убейте 5 орков',
+          type: StepType.Kill,
+          count: 5,
+          mobTemplateId: orcMob.id,
+          target: 'mob',
+        },
+        {
+          id: 'final',
+          description: 'Поговорите с магистром',
+          type: StepType.Talk,
+          npcId: magisterNpc.id,
+        },
+      ],
+      playerQuests: [],
+      giverNpc: magisterNpc,
+    });
+
+    await this.questService.createPlayerQuest({
+      completedAt: null,
+      player: firstCharacter,
+      quest: firstQuest,
+      stepIndex: 0,
+      progress: null,
     });
 
     console.log('Listings seeded');

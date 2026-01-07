@@ -1,8 +1,10 @@
-import { Injectable } from '@nestjs/common';
-import { Repository } from 'typeorm';
-import { Bag } from './entities/bag.entity';
-import { InjectRepository } from '@nestjs/typeorm';
 import { TItem } from 'src/common/types/item.type';
+import { Repository } from 'typeorm';
+
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+
+import { Bag } from './entities/bag.entity';
 
 @Injectable()
 export class BagService {

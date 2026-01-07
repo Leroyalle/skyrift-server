@@ -1,28 +1,31 @@
-import { Injectable } from '@nestjs/common';
-import { PlayerStateService } from 'src/game/services/player-state/player-state.service';
-import { LocationService } from 'src/world/location/location.service';
-import { SocketService } from '../socket/socket.service';
-import { RequestMoveToDto } from 'src/game/dto/request-move-to.dto';
-import { Socket } from 'socket.io';
-import { BatchUpdateMovement } from 'src/game/types/batch-update/batch-update-movement.type';
-import { SpatialGridService } from '../spatial-grid/spatial-grid.service';
-import { getDirection } from 'src/game/lib/helpers/get-direction.lib';
-import { RedisKeys } from 'src/common/enums/redis-keys.enum';
-import { ServerToClientEvents } from 'src/common/enums/game-socket-events.enum';
-import { PathFindingService } from '../path-finding/path-finding.service';
-import { InteractionService } from '../interaction/interaction.service';
-import { RuntimeMobService } from '../runtime-mob/runtime-mob.service';
-import { TRuntimeEntity } from 'src/game/types/entity/runtime-entity.type';
 import { PositionDto } from 'src/common/dto/position.dto';
-import { isPlayer } from '../combat/lib/entity/guards/is-player.lib';
-import { isMob } from '../combat/lib/entity/guards/is-mob.lib';
-import { getPixelByTile } from 'src/game/lib/helpers/get-pixels-by-tile.lib';
-import { RuntimeEffectService } from '../runtime-effect/runtime-effect.service';
+import { ServerToClientEvents } from 'src/common/enums/game-socket-events.enum';
+import { RedisKeys } from 'src/common/enums/redis-keys.enum';
 import { EffectType } from 'src/common/enums/skill/effect-type.enum';
-import { MovementQueueService } from './services/movement-queue/movement-queue.service';
-import { RuntimeEntityService } from '../runtime-entity/runtime-entity.service';
+import { AuthenticatedSocket } from 'src/common/types/socket/auth-socket.type';
+import { RequestMoveToDto } from 'src/game/dto/request-move-to.dto';
 import { decodeEntityKey } from 'src/game/lib/entity/decode-entity-key.lib';
+import { getDirection } from 'src/game/lib/helpers/get-direction.lib';
+import { getPixelByTile } from 'src/game/lib/helpers/get-pixels-by-tile.lib';
+import { PlayerStateService } from 'src/game/services/characters/player-state/player-state.service';
+import { BatchUpdateMovement } from 'src/game/types/batch-update/batch-update-movement.type';
+import { TRuntimeEntity } from 'src/game/types/entity/runtime-entity.type';
+import { LocationService } from 'src/world/location/location.service';
+
+import { Injectable } from '@nestjs/common';
+
+import { RuntimeMobService } from '../characters/runtime-mob/runtime-mob.service';
+import { isMob } from '../combat/lib/entity/guards/is-mob.lib';
+import { isPlayer } from '../combat/lib/entity/guards/is-player.lib';
+import { EntityRegistryService } from '../entity-registry/entity-registry.service';
+import { InteractionService } from '../interaction/interaction.service';
+import { PathFindingService } from '../path-finding/path-finding.service';
+import { RuntimeEffectService } from '../runtime-effect/runtime-effect.service';
+import { SocketService } from '../socket/socket.service';
+import { SpatialGridService } from '../spatial-grid/spatial-grid.service';
+
 import { isCharacterMovementQueue } from './services/movement-queue/lib/guards/is-character-movement-queue.lib';
+import { MovementQueueService } from './services/movement-queue/movement-queue.service';
 
 @Injectable()
 export class MovementService {
@@ -36,16 +39,10 @@ export class MovementService {
     private readonly runtimeMobService: RuntimeMobService,
     private readonly runtimeEffectService: RuntimeEffectService,
     private readonly movementQueueService: MovementQueueService,
-    private readonly runtimeEntityService: RuntimeEntityService,
+    private readonly registryService: EntityRegistryService,
   ) {}
 
-  public async requestMoveTo(client: Socket, input: RequestMoveToDto) {
-    if (!this.socketService.verifyUserDataInSocket(client)) {
-      this.socketService.onDisconnect(client);
-      this.socketService.notifyDisconnection(client);
-      return;
-    }
-
+  public async requestMoveTo(client: AuthenticatedSocket, input: RequestMoveToDto) {
     console.log('requestMoveTo', input);
 
     const { characterId } = client.userData;
@@ -94,7 +91,7 @@ export class MovementService {
 
     entries.forEach(([entityKey, queue]) => {
       const entityRef = decodeEntityKey(entityKey);
-      const entity = this.runtimeEntityService.getEntityByType(entityRef.type, entityRef.id);
+      const entity = this.registryService.getByRef(entityRef);
 
       if (!entity) return;
 

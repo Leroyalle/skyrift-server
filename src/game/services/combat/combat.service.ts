@@ -1,50 +1,51 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
-import { PlayerStateService } from '../player-state/player-state.service';
-import { SkillType } from 'src/common/enums/skill/skill-type.enum';
+import { Socket } from 'socket.io';
 import { PositionDto } from 'src/common/dto/position.dto';
-import { BatchUpdateAction } from 'src/game/types/batch-update/batch-update-action.type';
-import { ActionType, PendingAction } from 'src/game/types/pending-actions.type';
-import { LocationService } from 'src/world/location/location.service';
-import { SocketService } from '../socket/socket.service';
-import { IActionContext } from 'src/game/types/action-context.type';
-import { getDirection } from 'src/game/lib/helpers/get-direction.lib';
 import { ServerToClientEvents } from 'src/common/enums/game-socket-events.enum';
 import { RedisKeys } from 'src/common/enums/redis-keys.enum';
-import { ApplyAutoAttackResult } from 'src/game/types/attack/apply-auto-attack-result.type';
-import { ApplySkillResult, CooldownResult } from 'src/game/types/attack/apply-skill-result.type';
-import { Socket } from 'socket.io';
+import { SkillType } from 'src/common/enums/skill/skill-type.enum';
 import { RequestAttackMoveDto } from 'src/game/dto/request-attack-move.dto';
 import { RequestSkillUseDto } from 'src/game/dto/request-use-skill.dto';
-import { TargetAction } from './types/target-action.type';
-import { CachedLocation } from 'src/world/location/types/cashed-location.type';
-import { PathFindingService } from '../path-finding/path-finding.service';
-import { isEnemyFaction } from './lib/entity/guards/is-enemy-faction.lib';
+import { getDirection } from 'src/game/lib/helpers/get-direction.lib';
+import { getOrCreate } from 'src/game/lib/helpers/get-or-create-array.lib';
+import { getTileByPosition } from 'src/game/lib/helpers/get-tile-by-position.lib';
+import { IActionContext } from 'src/game/types/action-context.type';
+import { ApplyAutoAttackResult } from 'src/game/types/attack/apply-auto-attack-result.type';
+import { ApplySkillResult, CooldownResult } from 'src/game/types/attack/apply-skill-result.type';
+import { BatchUpdateAction } from 'src/game/types/batch-update/batch-update-action.type';
+import { EntityRef } from 'src/game/types/entity/entity-ref.type';
 import { EntityType } from 'src/game/types/entity/entity-type.type';
+import { TRuntimeEntity } from 'src/game/types/entity/runtime-entity.type';
+import { ActionType, PendingAction } from 'src/game/types/pending-actions.type';
+import { LocationService } from 'src/world/location/location.service';
+import { CachedLocation } from 'src/world/location/types/cashed-location.type';
+
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
+
+import { RuntimeMobService } from '../characters/runtime-mob/runtime-mob.service';
+import { EntityRegistryService } from '../entity-registry/entity-registry.service';
+import { MovementQueueService } from '../movement/services/movement-queue/movement-queue.service';
+import { PathFindingService } from '../path-finding/path-finding.service';
+import { SocketService } from '../socket/socket.service';
+
+import { isEnemyFaction } from './lib/entity/guards/is-enemy-faction.lib';
+import { isMob } from './lib/entity/guards/is-mob.lib';
 import { isPlayer } from './lib/entity/guards/is-player.lib';
 import { findEntitySkill } from './lib/entity/helpers/get/find-entity-skill.lib';
-import { RuntimeMobService } from '../runtime-mob/runtime-mob.service';
-import { TRuntimeEntity } from 'src/game/types/entity/runtime-entity.type';
-import { EntityRef } from 'src/game/types/entity/entity-ref.type';
-import { AoeService } from './services/aoe/aoe.service';
-import { RuntimeEntityService } from '../runtime-entity/runtime-entity.service';
 import { ActionQueueService } from './services/action-queue/action-queue.service';
-import { isMob } from './lib/entity/guards/is-mob.lib';
+import { AoeService } from './services/aoe/aoe.service';
 import { ProjectileService } from './services/projectile/projectile.service';
-import { MovementQueueService } from '../movement/services/movement-queue/movement-queue.service';
-import { getTileByPosition } from 'src/game/lib/helpers/get-tile-by-position.lib';
-import { getOrCreateArray } from 'src/game/lib/helpers/get-or-create-array.lib';
+import { TargetAction } from './types/target-action.type';
 
 @Injectable()
 export class CombatService {
   constructor(
-    private readonly playerStateService: PlayerStateService,
     private readonly pathFindingService: PathFindingService,
     private readonly locationService: LocationService,
     private readonly socketService: SocketService,
     @Inject(forwardRef(() => RuntimeMobService))
     private readonly runtimeMobService: RuntimeMobService,
     private readonly aoeService: AoeService,
-    private readonly runtimeEntityService: RuntimeEntityService,
+    private readonly registryService: EntityRegistryService,
     private readonly actionQueueService: ActionQueueService,
     private readonly projectileService: ProjectileService,
     private readonly movementQueueService: MovementQueueService,
@@ -59,10 +60,7 @@ export class CombatService {
 
       console.log('ACTION', action);
 
-      const attacker = this.runtimeEntityService.getEntityByType(
-        action.attackerRef.type,
-        action.attackerRef.id,
-      );
+      const attacker = this.registryService.getByRef(action.attackerRef);
 
       if (!attacker) continue;
 
@@ -75,10 +73,7 @@ export class CombatService {
       let targetTile: { x: number; y: number } | null = null;
 
       if (action.target.kind === 'target') {
-        const victim = this.runtimeEntityService.getEntityByType(
-          action.target.type,
-          action.target.id,
-        );
+        const victim = this.registryService.getByRef(action.target);
 
         if (!victim) continue;
 
@@ -117,12 +112,7 @@ export class CombatService {
         attacker.state = 'attack';
       }
 
-      // let batchLocation = updatesByLocation.get(location.id);
-      // if (!batchLocation) {
-      //   batchLocation = [];
-      //   updatesByLocation.set(location.id, batchLocation);
-      // }
-      const batchLocation = getOrCreateArray(updatesByLocation, location.id);
+      const batchLocation = getOrCreate(updatesByLocation, location.id, () => []);
 
       const actionCtx: IActionContext = {
         attacker,
@@ -153,13 +143,17 @@ export class CombatService {
       return;
     }
 
-    console.log('request attack move for player');
-
-    const attacker = this.playerStateService.getCharacterState(client.userData.characterId);
+    const attacker = this.registryService.getByRef({
+      type: 'player',
+      id: client.userData.characterId,
+    });
 
     if (!attacker) return;
 
-    const victim = this.runtimeEntityService.getEntityByType(input.type, input.targetId);
+    const victim = this.registryService.getByRef({
+      type: input.type,
+      id: input.targetId,
+    });
 
     if (!victim) return;
 
@@ -167,11 +161,11 @@ export class CombatService {
   }
 
   public async requestAttackMoveForMob(runtimeMobId: string, characterId: string) {
-    const attacker = this.runtimeMobService.getById(runtimeMobId);
+    const attacker = this.registryService.getByRef({ type: 'mob', id: runtimeMobId });
 
     if (!attacker) return;
 
-    const victim = this.playerStateService.getCharacterState(characterId);
+    const victim = this.registryService.getByRef({ type: 'player', id: characterId });
 
     if (!victim) return;
 
@@ -216,9 +210,12 @@ export class CombatService {
       return;
     }
 
-    const attacker = this.playerStateService.getCharacterState(client.userData.characterId);
+    const attacker = this.registryService.getByRef({
+      type: 'player',
+      id: client.userData.characterId,
+    });
 
-    if (!attacker) return;
+    if (!attacker || !isPlayer(attacker)) return;
 
     const characterSkill = attacker.characterSkills.find(skill => skill.id === input.skillId);
 
@@ -228,10 +225,7 @@ export class CombatService {
       if (!input.targetRef) return;
       // FIXME: сделать универсальным и для мобов
       // const victim = this.playerStateService.getCharacterState(input.targetId);
-      const victim = this.runtimeEntityService.getEntityByType(
-        input.targetRef.type,
-        input.targetRef.id,
-      );
+      const victim = this.registryService.getByRef(input.targetRef);
 
       if (!victim) return;
 
@@ -273,7 +267,7 @@ export class CombatService {
   }
 
   public processRequestAttackCancel(ref: EntityRef) {
-    const attacker = this.runtimeEntityService.getEntityByType(ref.type, ref.id);
+    const attacker = this.registryService.getByRef(ref);
 
     if (!attacker) return;
 
@@ -291,7 +285,7 @@ export class CombatService {
     currentTarget: { id: string; type: EntityType } | null;
   } | null {
     if (target.kind === 'target') {
-      const victim = this.runtimeEntityService.getEntityByType(target.type, target.id);
+      const victim = this.registryService.getByRef(target);
       if (!victim || !victim.isAlive) return null;
       return {
         tile: {
@@ -417,10 +411,7 @@ export class CombatService {
 
         if (action.target.kind !== 'target') return;
 
-        const victim = this.runtimeEntityService.getEntityByType(
-          action.target.type,
-          action.target.id,
-        );
+        const victim = this.registryService.getByRef(action.target);
 
         if (!victim || ctx.attacker.locationId !== victim.locationId) {
           ctx.attacker.currentTarget = null;
@@ -430,54 +421,6 @@ export class CombatService {
 
         this.startAttacking(ctx.attacker, victim, action);
         break;
-        // const attackerDirection = getDirection(
-        //   {
-        //     x: ctx.attacker.x,
-        //     y: ctx.attacker.y,
-        //   },
-        //   {
-        //     x: victim.x,
-        //     y: victim.y,
-        //   },
-        // );
-
-        // const victimRef = {
-        //   id: action.target.id,
-        //   type: action.target.type,
-        // };
-
-        // this.applyMiniRoot(ctx.attacker, 200);
-
-        // this.socketService.sendTo(
-        //   RedisKeys.Location + ctx.attacker.locationId,
-        //   ServerToClientEvents.EntityAttackStart,
-        //   {
-        //     attackerRef: {
-        //       ...action.attackerRef,
-        //       direction: attackerDirection,
-        //     },
-        //     victimRef,
-        //     actionType: ActionType.AutoAttack,
-        //     skillId: action.skillId,
-        //   },
-        // );
-
-        // this.applyAction(ctx.attacker, victim, ctx.now, action);
-        // const attackResult = this.autoAttack(
-        //   action.attackerRef,
-        //   victimRef,
-        //   ctx.now,
-        // );
-
-        // if (!attackResult) return;
-
-        // const { victimIsAlive, ...croppedAttackResult } = attackResult;
-
-        // ctx.batchLocation.push(croppedAttackResult);
-
-        // if (!victimIsAlive) {
-        //   ctx.removeAction();
-        // }
       }
 
       case ActionType.Skill: {
@@ -489,7 +432,7 @@ export class CombatService {
         let victim: TRuntimeEntity | undefined;
 
         if (action.target.kind === 'target') {
-          victim = this.runtimeEntityService.getEntityByType(action.target.type, action.target.id);
+          victim = this.registryService.getByRef(action.target);
           if (!victim || !victim.isAlive) return;
           targetTile = getTileByPosition(victim.x, victim.y, ctx.tileSize);
         } else if (action.target.kind === 'aoe') {
@@ -547,8 +490,8 @@ export class CombatService {
     victimRef: EntityRef,
     now: number,
   ): ApplyAutoAttackResult | undefined {
-    const attacker = this.runtimeEntityService.getEntityByType(attackerRef.type, attackerRef.id);
-    const victim = this.runtimeEntityService.getEntityByType(victimRef.type, victimRef.id);
+    const attacker = this.registryService.getByRef(attackerRef);
+    const victim = this.registryService.getByRef(victimRef);
 
     if (!attacker) return;
 
@@ -620,10 +563,11 @@ export class CombatService {
     now: number,
   ): ApplySkillResult | undefined {
     // TODO: update for mob skills
-    const attacker = this.playerStateService.getCharacterState(attackerRef.id);
-    const victim = this.runtimeEntityService.getEntityByType(victimRef.type, victimRef.id);
+    const attacker = this.registryService.getByRef({ type: 'player', id: attackerRef.id });
+    const victim = this.registryService.getByRef(victimRef);
 
-    if (!attacker || !victim || attacker.locationId !== victim.locationId) return;
+    if (!attacker || !isPlayer(attacker) || !victim || attacker.locationId !== victim.locationId)
+      return;
 
     const characterSkill = attacker.characterSkills.find(skill => skill.id === skillId);
 
@@ -675,8 +619,9 @@ export class CombatService {
     skillId: string,
     area: PositionDto,
   ): { cooldown: CooldownResult } | undefined {
-    const attacker = this.playerStateService.getCharacterState(attackerId);
-    if (!attacker) return;
+    const attacker = this.registryService.getByRef({ type: 'player', id: attackerId });
+
+    if (!attacker || !isPlayer(attacker)) return;
 
     const characterSkill = attacker.characterSkills.find(skill => skill.id === skillId);
 

@@ -1,16 +1,18 @@
+import * as argon2 from 'argon2';
+import { JwtPayload } from 'src/common/types/jwt-payload.type';
+import { UserService } from 'src/user/user.service';
+
 import {
   BadRequestException,
   ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
+
 import { LoginInput } from './dto/login.input';
 import { RegisterInput } from './dto/register.input';
-import { JwtService } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
-import { UserService } from 'src/user/user.service';
-import * as argon2 from 'argon2';
-import { JwtPayload } from 'src/common/types/jwt-payload.type';
 
 @Injectable()
 export class AuthService {

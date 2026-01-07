@@ -1,4 +1,5 @@
-import { Resolver, Query, Args, Int } from '@nestjs/graphql';
+import { Args, Int, Query, Resolver } from '@nestjs/graphql';
+
 import { BagService } from './bag.service';
 import { Bag } from './entities/bag.entity';
 

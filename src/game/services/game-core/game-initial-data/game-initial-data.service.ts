@@ -1,19 +1,21 @@
-import { Injectable } from '@nestjs/common';
+import { IRuntimeCharacter } from 'src/characters/character/types/runtime-character';
+import { RedisKeysFactory } from 'src/common/infra/redis-keys-factory.infra';
+import { GameInitialData } from 'src/game/types/game-initial-data.type';
 import { RedisService } from 'src/infrastructure/redis/redis.service';
 import { LocationService } from 'src/world/location/location.service';
-import { RedisKeysFactory } from 'src/common/infra/redis-keys-factory.infra';
-import { IRuntimeCharacter } from 'src/characters/character/types/runtime-character';
-import { GameInitialData } from 'src/game/types/game-initial-data.type';
-import { PlayerStateService } from '../../player-state/player-state.service';
-import { RuntimeMobService } from '../../runtime-mob/runtime-mob.service';
+
+import { Injectable } from '@nestjs/common';
+
+import { PlayerStateService } from '../../characters/player-state/player-state.service';
 import { AoeService } from '../../combat/services/aoe/aoe.service';
+import { EntityRegistryService } from '../../entity-registry/entity-registry.service';
 
 @Injectable()
 export class GameInitialDataService {
   constructor(
     private readonly redisService: RedisService,
     private readonly playerStateService: PlayerStateService,
-    private readonly runtimeMobService: RuntimeMobService,
+    private readonly registryService: EntityRegistryService,
     private readonly locationService: LocationService,
     private readonly aoeService: AoeService,
   ) {}
@@ -47,7 +49,7 @@ export class GameInitialDataService {
 
     const aoeZones = this.aoeService.getActiveAoeZones(character.locationId);
 
-    const mobs = this.runtimeMobService.getMobsByLocation(character.locationId);
+    const mobs = this.registryService.getEntitiesByLocation('mob', character.locationId);
 
     return {
       character,

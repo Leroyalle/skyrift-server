@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+
 import { CreateSkillInput } from './dto/create-skill.input';
 import { UpdateSkillInput } from './dto/update-skill.input';
 

@@ -1,13 +1,15 @@
-import { Injectable } from '@nestjs/common';
 import { Bag } from 'src/characters/character/bag/entities/bag.entity';
-import { TItem } from 'src/common/types/item.type';
-import { PlayerStateService } from '../../player-state.service';
-import { SocketService } from 'src/game/services/socket/socket.service';
-import { RedisKeys } from 'src/common/enums/redis-keys.enum';
 import { ServerToClientEvents } from 'src/common/enums/game-socket-events.enum';
 import { ItemTypeEnum } from 'src/common/enums/item-type.enum';
+import { RedisKeys } from 'src/common/enums/redis-keys.enum';
+import { TItem } from 'src/common/types/item.type';
+import { SocketService } from 'src/game/services/socket/socket.service';
 import { isArmor } from 'src/item/guards/is-armor';
 import { isWeapon } from 'src/item/guards/is-weapon';
+
+import { Injectable } from '@nestjs/common';
+
+import { PlayerStateService } from '../../player-state.service';
 import { RuntimeEquipmentService } from '../runtime-equipment/runtime-equipment.service';
 
 @Injectable()

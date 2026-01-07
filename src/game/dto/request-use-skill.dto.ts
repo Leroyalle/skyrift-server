@@ -1,5 +1,7 @@
-import { InputType } from '@nestjs/graphql';
 import { PositionDto } from 'src/common/dto/position.dto';
+
+import { InputType } from '@nestjs/graphql';
+
 import { EntityRef } from '../types/entity/entity-ref.type';
 
 @InputType()

@@ -1,18 +1,19 @@
-import { Injectable } from '@nestjs/common';
-import { PlayerStateService } from 'src/game/services/player-state/player-state.service';
-import { BatchUpdateRegeneration } from 'src/game/types/batch-update/batch-update-regeneration.type';
-import { SocketService } from '../socket/socket.service';
-import { RedisKeys } from 'src/common/enums/redis-keys.enum';
 import { ServerToClientEvents } from 'src/common/enums/game-socket-events.enum';
-import { RuntimeMobService } from '../runtime-mob/runtime-mob.service';
-import { getOrCreateArray } from 'src/game/lib/helpers/get-or-create-array.lib';
+import { RedisKeys } from 'src/common/enums/redis-keys.enum';
+import { getOrCreate } from 'src/game/lib/helpers/get-or-create-array.lib';
+import { BatchUpdateRegeneration } from 'src/game/types/batch-update/batch-update-regeneration.type';
+
+import { Injectable } from '@nestjs/common';
+
+import { EntityRegistryService } from '../entity-registry/entity-registry.service';
+import { SocketService } from '../socket/socket.service';
 
 @Injectable()
 export class RegenerationService {
   constructor(
-    private readonly playerStateService: PlayerStateService,
+    private readonly registryService: EntityRegistryService,
+
     private readonly socketService: SocketService,
-    private readonly runtimeMobService: RuntimeMobService,
   ) {}
   // TODO: add for mobs
   public tickRegeneration() {
@@ -20,7 +21,7 @@ export class RegenerationService {
 
     const now = Date.now();
 
-    const characters = this.playerStateService.getCharactersArray();
+    const characters = this.registryService.charactersArray;
 
     characters.forEach(char => {
       if (now - char.lastHpRegenerationTime < 5000) return;
@@ -31,14 +32,7 @@ export class RegenerationService {
       char.hp = Math.min(char.hp + hpDelta, char.maxHp);
       char.lastHpRegenerationTime = now;
 
-      // let locationBatch = updatesByLocation.get(char.locationId);
-
-      // if (!locationBatch) {
-      //   locationBatch = [];
-      //   updatesByLocation.set(char.locationId, locationBatch);
-      // }
-
-      const locationBatch = getOrCreateArray(updatesByLocation, char.locationId);
+      const locationBatch = getOrCreate(updatesByLocation, char.locationId, () => []);
 
       locationBatch.push({
         id: char.id,
@@ -48,7 +42,7 @@ export class RegenerationService {
       });
     });
 
-    const mobs = this.runtimeMobService.mobsArray;
+    const mobs = this.registryService.mobsArray;
 
     mobs.forEach(mob => {
       if (now - mob.lastHpRegenerationTime < 5000) return;
@@ -62,7 +56,7 @@ export class RegenerationService {
       mob.hp = Math.min(mob.hp + hpDelta, mob.maxHp);
       mob.lastHpRegenerationTime = now;
 
-      const locationBatch = getOrCreateArray(updatesByLocation, mob.locationId);
+      const locationBatch = getOrCreate(updatesByLocation, mob.locationId, () => []);
 
       locationBatch.push({
         id: mob.id,
