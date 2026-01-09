@@ -8,6 +8,7 @@ import { CharacterSkill } from 'src/characters/character/character-skill/entitie
 import { Character } from 'src/characters/character/entities/character.entity';
 import { Mob } from 'src/characters/mob/entities/mob.entity';
 import { MobService } from 'src/characters/mob/mob.service';
+import { Npc } from 'src/characters/npc/entities/npc.entity';
 import { NpcService } from 'src/characters/npc/npc.service';
 import { WeaponSlotEnum } from 'src/common/enums/equipment-slot.enum';
 import { ItemTypeEnum } from 'src/common/enums/item-type.enum';
@@ -252,6 +253,8 @@ export class SeedService {
       basePhysicalDamage: 41,
     });
 
+    await this.mobRepository.save(orcMob);
+
     await this.spawnService.createSpawn({
       entities: [orcMob],
       spawnX: 1700,
@@ -259,8 +262,6 @@ export class SeedService {
       areaRadius: 3,
       location: savedLocations[0],
     });
-
-    await this.mobRepository.save(orcMob);
 
     const firstCharacter = await this.characterRepository.save({
       name: 'Leroyalle',
@@ -437,7 +438,6 @@ export class SeedService {
       'bag',
       'base_item',
       'effect',
-      'mob_spawn',
       'mob',
       'character_skill',
       'skill',
@@ -446,6 +446,13 @@ export class SeedService {
       'faction',
       'location',
       'user',
+      'equipment',
+      'npc_spawn',
+      'mob_spawn',
+      'entity_spawn',
+      'npc',
+      'quests',
+      'player_quests',
     ];
 
     await this.dataSource.query(`TRUNCATE TABLE ${tables.map(t => `"${t}"`).join(', ')} CASCADE`);

@@ -10,6 +10,7 @@ export class NpcService {
   constructor(@InjectRepository(Npc) private readonly npcRepository: Repository<Npc>) {}
 
   public async create(npc: Omit<Npc, 'id'>): Promise<Npc> {
-    return await this.npcRepository.save(npc);
+    const entity = this.npcRepository.create(npc);
+    return await this.npcRepository.save(entity);
   }
 }
