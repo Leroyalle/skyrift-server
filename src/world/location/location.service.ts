@@ -24,11 +24,11 @@ export class LocationService {
     const findLocations = await this.locationRepository.find({
       relations: {
         mobSpawn: {
-          entity: true,
+          entities: true,
           location: true,
         },
         npcSpawn: {
-          entity: true,
+          entities: true,
           location: true,
         },
       },

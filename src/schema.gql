@@ -288,7 +288,7 @@ type MobSpawn {
   spawnX: Int!
   spawnY: Int!
   areaRadius: Int!
-  entity: [Mob!]!
+  entities: [Mob!]!
   location: Location!
 }
 
