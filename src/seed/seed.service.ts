@@ -380,6 +380,14 @@ export class SeedService {
       ...setupNpc({ name: 'Магистр СГ', x: 2000, y: 1000, givenQuests: [] }),
     });
 
+    await this.spawnService.createSpawn({
+      entities: [magisterNpc],
+      spawnX: 2000,
+      spawnY: 1000,
+      areaRadius: 0,
+      location: savedLocations[0],
+    });
+
     const firstQuest = await this.questService.createQuest({
       name: 'Ель - хвойная',
       description: 'Отпили и притащи огромную ветвь ели в кабинет магистра',

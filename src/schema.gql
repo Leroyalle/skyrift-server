@@ -312,7 +312,7 @@ type NpcSpawn {
   spawnX: Int!
   spawnY: Int!
   areaRadius: Int!
-  entity: [Npc!]!
+  entities: [Npc!]!
   location: Location!
 }
 

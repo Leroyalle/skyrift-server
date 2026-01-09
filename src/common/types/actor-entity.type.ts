@@ -30,9 +30,3 @@ type ActorStateMap = {
   mob: MobActionState;
   npc: NpcActionState;
 };
-
-// type ActorState<E> = E extends IRuntimeCharacter
-//   ? CharacterActionState
-//   : E extends IRuntimeMob
-//     ? MobActionState
-//     : BaseEntityStates;

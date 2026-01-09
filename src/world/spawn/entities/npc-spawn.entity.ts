@@ -11,7 +11,7 @@ import { Npc } from '../../../characters/npc/entities/npc.entity';
 export class NpcSpawn extends EntitySpawn {
   @OneToMany(() => Npc, npc => npc.spawn)
   @Field(() => [Npc])
-  entity: Npc[];
+  entities: Npc[];
 
   @ManyToOne(() => Location, location => location.npcSpawn)
   @Field(() => Location)

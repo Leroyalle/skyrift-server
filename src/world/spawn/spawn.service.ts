@@ -18,20 +18,17 @@ export class SpawnService {
     private readonly npcSpawnRepository: Repository<NpcSpawn>,
   ) {}
 
-  public async createSpawn(input: ICreateSpawn) {
-    switch (input.type) {
-      case 'mob': {
-        await this.mobSpawnRepository.save(input.entity);
-        break;
+  public async createSpawn(spawn: ICreateSpawn): Promise<void> {
+    for (const entity of spawn.entities) {
+      if (entity instanceof MobSpawn) {
+        await this.mobSpawnRepository.save(spawn);
+        return;
       }
 
-      case 'npc': {
-        await this.npcSpawnRepository.save(input.entity);
-        break;
+      if (entity instanceof NpcSpawn) {
+        await this.npcSpawnRepository.save(spawn);
+        return;
       }
-
-      default:
-        break;
     }
   }
 }

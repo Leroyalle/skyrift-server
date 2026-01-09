@@ -84,7 +84,6 @@ export class InteractionService {
           const result = await this.resolveTeleport(playerState, interaction, currentLocation);
           if (!result) {
             this.deletePendingInteraction(playerState.id);
-
             continue;
           }
           break;

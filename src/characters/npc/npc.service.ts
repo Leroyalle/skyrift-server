@@ -9,7 +9,7 @@ import { Npc } from './entities/npc.entity';
 export class NpcService {
   constructor(@InjectRepository(Npc) private readonly npcRepository: Repository<Npc>) {}
 
-  public async create(npc: Omit<Npc, 'id'>) {
+  public async create(npc: Omit<Npc, 'id'>): Promise<Npc> {
     return await this.npcRepository.save(npc);
   }
 }

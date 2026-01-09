@@ -50,6 +50,7 @@ export class GameInitialDataService {
     const aoeZones = this.aoeService.getActiveAoeZones(character.locationId);
 
     const mobs = this.registryService.getEntitiesByLocation('mob', character.locationId);
+    const npcs = this.registryService.getEntitiesByLocation('npc', character.locationId);
 
     return {
       character,
@@ -57,6 +58,7 @@ export class GameInitialDataService {
       players: otherPlayers,
       aoeZones,
       mobs,
+      npcs,
     };
   }
 }

@@ -27,5 +27,5 @@ export abstract class EntitySpawn {
 
   abstract location: Location;
 
-  abstract entity: (Mob | Npc)[];
+  abstract entities: (Mob | Npc)[];
 }
