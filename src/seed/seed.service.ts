@@ -250,13 +250,14 @@ export class SeedService {
       critMultiplier: 1,
       baseMagicDamage: 30,
       basePhysicalDamage: 41,
-      spawn: this.mobSpawnRepository.create({
-        spawnX: 1900,
-        spawnY: 1000,
-        areaRadius: 3,
-        location: savedLocations[0],
-        entity: [],
-      }),
+    });
+
+    await this.spawnService.createSpawn({
+      entities: [orcMob],
+      spawnX: 1700,
+      spawnY: 1200,
+      areaRadius: 3,
+      location: savedLocations[0],
     });
 
     await this.mobRepository.save(orcMob);
