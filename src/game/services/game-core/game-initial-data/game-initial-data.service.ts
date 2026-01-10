@@ -1,5 +1,6 @@
 import { IRuntimeCharacter } from 'src/characters/character/types/runtime-character';
 import { RedisKeysFactory } from 'src/common/infra/redis-keys-factory.infra';
+import { getOrCreate } from 'src/game/lib/helpers/get-or-create-array.lib';
 import { GameInitialData } from 'src/game/types/game-initial-data.type';
 import { RedisService } from 'src/infrastructure/redis/redis.service';
 import { LocationService } from 'src/world/location/location.service';
@@ -59,9 +60,17 @@ export class GameInitialDataService {
 
     const questsByNpc = this.questIndexService.getByNpcs(npcs);
     const availableQuests = this.runtimeQuestService.getAvailableQuests(character, questsByNpc);
-    const quests = availableQuests.map<IAvailableQuestPayload>(quest => ({
-      npcId: quest.giverNpc.id,
-      questId: quest.id,
+
+    const npcToQuestId = new Map<string, string[]>();
+
+    for (const quest of availableQuests) {
+      const quests = getOrCreate(npcToQuestId, quest.giverNpc.id, () => []);
+      quests.push(quest.id);
+    }
+
+    const npcsWithAvailableQuests = npcs.map(npc => ({
+      ...npc,
+      hasAvailableQuests: npcToQuestId.has(npc.id),
     }));
 
     return {
@@ -70,8 +79,7 @@ export class GameInitialDataService {
       players: otherPlayers,
       aoeZones,
       mobs,
-      npcs,
-      availableQuests: quests,
+      npcs: npcsWithAvailableQuests,
     };
   }
 }

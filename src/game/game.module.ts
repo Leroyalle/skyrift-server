@@ -5,6 +5,7 @@ import { MobModule } from 'src/characters/mob/mob.module';
 import { WsAuthGuard } from 'src/common/guards/ws-guard.guard';
 import { EffectModule } from 'src/effect/effect.module';
 import { RedisModule } from 'src/infrastructure/redis/redis.module';
+import { QuestModule } from 'src/quest/quest.module';
 import { UserModule } from 'src/user/user.module';
 import { LocationModule } from 'src/world/location/location.module';
 
@@ -28,6 +29,7 @@ import { GameInitialDataService } from './services/game-core/game-initial-data/g
 import { GameLoopService } from './services/game-core/game-loop/game-loop.service';
 import { WorldBootstrapService } from './services/game-core/world-bootstrap/world-bootstrap.service';
 import { InteractionService } from './services/interaction/interaction.service';
+import { QuestIndexService } from './services/interaction/services/quest/quest-index/quest-index.service';
 import { RuntimeQuestService } from './services/interaction/services/quest/runtime-quest/runtime-quest.service';
 import { MovementService } from './services/movement/movement.service';
 import { MovementQueueService } from './services/movement/services/movement-queue/movement-queue.service';
@@ -47,6 +49,7 @@ import { SpatialGridService } from './services/spatial-grid/spatial-grid.service
     MobModule,
     EffectModule,
     BagModule,
+    QuestModule,
   ],
   providers: [
     WsAuthGuard,
@@ -76,6 +79,7 @@ import { SpatialGridService } from './services/spatial-grid/spatial-grid.service
     EntityRegistryService,
     WorldBootstrapService,
     GameConnectionService,
+    QuestIndexService,
   ],
 })
 export class GameModule {}
