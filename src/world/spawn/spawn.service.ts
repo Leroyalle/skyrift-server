@@ -21,33 +21,33 @@ export class SpawnService {
   ) {}
 
   public async createSpawn(spawn: ICreateSpawn): Promise<void> {
-    const mobSpawner: Mob[] = [];
-    const npcSpawner: Npc[] = [];
+    const mobs: Mob[] = [];
+    const npcs: Npc[] = [];
     for (const entity of spawn.entities) {
       if (entity instanceof Mob) {
-        mobSpawner.push(entity);
+        mobs.push(entity);
         continue;
       }
 
       if (entity instanceof Npc) {
-        npcSpawner.push(entity);
+        npcs.push(entity);
         continue;
       }
     }
 
-    if (mobSpawner.length) {
+    if (mobs.length) {
       const mobSpawnEntity = this.mobSpawnRepository.create({
         ...spawn,
-        entities: mobSpawner,
+        entities: mobs,
       });
 
       await this.mobSpawnRepository.save(mobSpawnEntity);
     }
 
-    if (npcSpawner.length) {
+    if (npcs.length) {
       const npcSpawnEntity = this.npcSpawnRepository.create({
         ...spawn,
-        entities: npcSpawner,
+        entities: npcs,
       });
       await this.npcSpawnRepository.save(npcSpawnEntity);
     }

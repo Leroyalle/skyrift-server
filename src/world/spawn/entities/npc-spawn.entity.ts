@@ -1,6 +1,6 @@
 import { Location } from 'src/world/location/entities/location.entity';
 import { EntitySpawn } from 'src/world/spawn/entities/entity-spawn.entity';
-import { ChildEntity, Entity, ManyToOne, OneToMany } from 'typeorm';
+import { ChildEntity, ManyToOne, OneToMany } from 'typeorm';
 
 import { Field, ObjectType } from '@nestjs/graphql';
 

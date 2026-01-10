@@ -7,15 +7,18 @@ import { IRuntimeQuest } from './types/runtime-quest.type';
 
 @Injectable()
 export class RuntimeQuestService {
-  constructor() {}
-
-  public getAvailableQuests(playerState: IRuntimeCharacter, quests: Quest[]) {
+  public getAvailableQuests(playerState: IRuntimeCharacter, quests: Quest[]): Quest[] {
     const availableQuests = quests.filter(quest => {
+      if (playerState.completedQuestIds.has(quest.id)) return false;
+
+      if (playerState.activeQuests.some(activeQuest => activeQuest.quest.id === quest.id))
+        return false;
+
       quest.prerequisites.every(prerequisite => {
         if (prerequisite.type === 'level') {
           return playerState.level >= prerequisite.minLevel;
         } else if (prerequisite.type === 'quest_completed') {
-          return playerState.completedQuestIds.has(quest.id);
+          return playerState.completedQuestIds.has(prerequisite.questId);
         }
       });
     });

@@ -28,7 +28,7 @@ import { GameInitialDataService } from './services/game-core/game-initial-data/g
 import { GameLoopService } from './services/game-core/game-loop/game-loop.service';
 import { WorldBootstrapService } from './services/game-core/world-bootstrap/world-bootstrap.service';
 import { InteractionService } from './services/interaction/interaction.service';
-import { RuntimeQuestService } from './services/interaction/services/runtime-quest/runtime-quest.service';
+import { RuntimeQuestService } from './services/interaction/services/quest/runtime-quest/runtime-quest.service';
 import { MovementService } from './services/movement/movement.service';
 import { MovementQueueService } from './services/movement/services/movement-queue/movement-queue.service';
 import { PathFindingService } from './services/path-finding/path-finding.service';

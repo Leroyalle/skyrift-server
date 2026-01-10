@@ -9,6 +9,9 @@ import { Injectable } from '@nestjs/common';
 import { PlayerStateService } from '../../characters/player-state/player-state.service';
 import { AoeService } from '../../combat/services/aoe/aoe.service';
 import { EntityRegistryService } from '../../entity-registry/entity-registry.service';
+import { QuestIndexService } from '../../interaction/services/quest/quest-index/quest-index.service';
+import { RuntimeQuestService } from '../../interaction/services/quest/runtime-quest/runtime-quest.service';
+import { IAvailableQuestPayload } from '../../interaction/services/quest/runtime-quest/types/available-quest-payload.type';
 
 @Injectable()
 export class GameInitialDataService {
@@ -18,6 +21,8 @@ export class GameInitialDataService {
     private readonly registryService: EntityRegistryService,
     private readonly locationService: LocationService,
     private readonly aoeService: AoeService,
+    private readonly runtimeQuestService: RuntimeQuestService,
+    private readonly questIndexService: QuestIndexService,
   ) {}
 
   public async loadInitialData(
@@ -52,6 +57,13 @@ export class GameInitialDataService {
     const mobs = this.registryService.getEntitiesByLocation('mob', character.locationId);
     const npcs = this.registryService.getEntitiesByLocation('npc', character.locationId);
 
+    const questsByNpc = this.questIndexService.getByNpcs(npcs);
+    const availableQuests = this.runtimeQuestService.getAvailableQuests(character, questsByNpc);
+    const quests = availableQuests.map<IAvailableQuestPayload>(quest => ({
+      npcId: quest.giverNpc.id,
+      questId: quest.id,
+    }));
+
     return {
       character,
       location,
@@ -59,6 +71,7 @@ export class GameInitialDataService {
       aoeZones,
       mobs,
       npcs,
+      availableQuests: quests,
     };
   }
 }
