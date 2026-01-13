@@ -8,9 +8,9 @@ import { Field, ObjectType } from '@nestjs/graphql';
 @ChildEntity()
 @ObjectType()
 export class MobSpawn extends EntitySpawn {
-  @OneToMany(() => Mob, mob => mob.spawn)
+  @OneToMany(() => Mob, mob => mob.spawn, { cascade: true })
   @Field(() => [Mob])
-  entity: Mob[];
+  entities: Mob[];
 
   @ManyToOne(() => Location, location => location.mobSpawn)
   @Field(() => Location)

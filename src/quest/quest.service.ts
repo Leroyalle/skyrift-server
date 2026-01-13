@@ -23,6 +23,10 @@ export class QuestService {
     return await this.questRepository.findOneBy({ id });
   }
 
+  public async findAll() {
+    return await this.questRepository.find({ relations: { giverNpc: true } });
+  }
+
   public async markAsCompleted(id: string) {
     return await this.playerQuestRepository.update(id, { completedAt: new Date() });
   }

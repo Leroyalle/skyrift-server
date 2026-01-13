@@ -30,8 +30,8 @@ import { PathFindingService } from '../path-finding/path-finding.service';
 import { SocketService } from '../socket/socket.service';
 import { SpatialGridService } from '../spatial-grid/spatial-grid.service';
 
-import { RuntimeQuestService } from './services/runtime-quest/runtime-quest.service';
-import { IRuntimeQuest } from './services/runtime-quest/types/runtime-quest.type';
+import { RuntimeQuestService } from './services/quest/runtime-quest/runtime-quest.service';
+import { IRuntimeQuest } from './services/quest/runtime-quest/types/runtime-quest.type';
 import { InteractionType, PendingInteraction } from './types/pending-interactions.type';
 
 @Injectable()
@@ -84,7 +84,6 @@ export class InteractionService {
           const result = await this.resolveTeleport(playerState, interaction, currentLocation);
           if (!result) {
             this.deletePendingInteraction(playerState.id);
-
             continue;
           }
           break;

@@ -9,7 +9,7 @@ import { NpcSpawn } from '../../../world/spawn/entities/npc-spawn.entity';
 @ObjectType()
 @Entity('npc')
 export class Npc extends ActorEntity {
-  @ManyToOne(() => NpcSpawn, spawn => spawn.entity)
+  @ManyToOne(() => NpcSpawn, spawn => spawn.entities)
   @Field(() => NpcSpawn)
   spawn: NpcSpawn;
 

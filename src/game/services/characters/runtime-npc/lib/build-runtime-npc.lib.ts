@@ -3,10 +3,10 @@ import { NpcSpawn } from 'src/world/spawn/entities/npc-spawn.entity';
 import { IRuntimeNpc } from '../types/runtime-npc.type';
 
 export function buildRuntimeNpc(npcSpawn: NpcSpawn): IRuntimeNpc[] {
-  if (!npcSpawn.entity) throw new Error('Npc is not loaded in spawn!');
+  if (!npcSpawn.entities) throw new Error('Npc is not loaded in spawn!');
   if (!npcSpawn.location) throw new Error('Location is not loaded in spawn!');
 
-  return npcSpawn.entity.map(npc => ({
+  return npcSpawn.entities.map(npc => ({
     x: npc.x,
     y: npc.y,
     walkSpeed: npc.walkSpeed,

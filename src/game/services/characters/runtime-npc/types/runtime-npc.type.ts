@@ -13,7 +13,7 @@ export interface IRuntimeNpc
     RuntimeNpcStats,
     UniqueStats<'npc'> {}
 
-type NpcSpawnSummary = Omit<NpcSpawn, 'location' | 'entity'>;
+type NpcSpawnSummary = Omit<NpcSpawn, 'location' | 'entities'>;
 type NpcSummary = Omit<Npc, 'spawn' | 'updatedAt' | 'createdAt'>;
 
 interface RuntimeNpcStats {

@@ -45,7 +45,7 @@ export class Quest {
   playerQuests: PlayerQuest[];
 
   @Column({ type: 'jsonb', nullable: true })
-  prerequisites: QuestPrerequisite[];
+  prerequisites: QuestPrerequisite[] | null;
 
   @ManyToOne(() => Npc, npc => npc.givenQuests)
   @Field(() => Npc)

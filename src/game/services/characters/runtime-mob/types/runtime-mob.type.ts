@@ -15,7 +15,7 @@ export interface IRuntimeMob
     RuntimeMobStats,
     UniqueStats<'mob'> {}
 
-type MobSpawnSummary = Omit<MobSpawn, 'location' | 'entity'>;
+type MobSpawnSummary = Omit<MobSpawn, 'location' | 'entities'>;
 type MobSummary = Omit<Mob, 'spawn' | 'updatedAt' | 'createdAt'>;
 
 interface RuntimeMobStats {

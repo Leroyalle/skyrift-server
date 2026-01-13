@@ -75,9 +75,9 @@ export class Weapon extends BaseItem {
 @ObjectType({ implements: BaseItem })
 @ChildEntity(ItemTypeEnum.ARMOR)
 export class Armor extends BaseItem {
-  @Column({ nullable: true })
+  @Column({ nullable: true, default: 1 })
   @Field(() => Int)
-  defense: number;
+  physicalDefense: number;
 
   @Column({ type: 'int', default: 1 })
   @Field({ description: 'Прочность предмета' })
@@ -86,6 +86,10 @@ export class Armor extends BaseItem {
   @Column({ nullable: true })
   @Field(() => ArmorSlotEnum)
   slot: ArmorSlotEnum;
+
+  @Column(() => TextureConfig, { prefix: false })
+  @Field(() => TextureConfig)
+  texture: TextureConfig;
 }
 
 @ObjectType({ implements: BaseItem })
