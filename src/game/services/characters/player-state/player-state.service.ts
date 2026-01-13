@@ -23,8 +23,6 @@ export class PlayerStateService {
   // private readonly playersStates: Map<string, IRuntimeCharacter> = new Map();
 
   public async join(character: Character) {
-    console.log('[join]', character);
-
     await this.redisService.sadd(
       RedisKeysFactory.locationPlayers(character.locationId),
       character.id,

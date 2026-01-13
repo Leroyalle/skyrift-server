@@ -14,9 +14,7 @@ interface BaseItem {
 enum ItemTypeEnum {
   WEAPON
   ARMOR
-  POTION
   RESOURCE
-  MISC
 }
 
 type Faction {
@@ -409,11 +407,12 @@ type Armor implements BaseItem {
   itemType: ItemTypeEnum!
   iconKey: String!
   bag: Bag
-  defense: Int!
+  physicalDefense: Int!
 
   """Прочность предмета"""
   durability: Float!
   slot: ArmorSlotEnum!
+  texture: TextureConfig!
 }
 
 """Слоты брони"""

@@ -12,7 +12,6 @@ import { AoeService } from '../../combat/services/aoe/aoe.service';
 import { EntityRegistryService } from '../../entity-registry/entity-registry.service';
 import { QuestIndexService } from '../../interaction/services/quest/quest-index/quest-index.service';
 import { RuntimeQuestService } from '../../interaction/services/quest/runtime-quest/runtime-quest.service';
-import { IAvailableQuestPayload } from '../../interaction/services/quest/runtime-quest/types/available-quest-payload.type';
 
 @Injectable()
 export class GameInitialDataService {
