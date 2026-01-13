@@ -8,8 +8,9 @@ import { CharacterSkill } from 'src/characters/character/character-skill/entitie
 import { Character } from 'src/characters/character/entities/character.entity';
 import { Mob } from 'src/characters/mob/entities/mob.entity';
 import { MobService } from 'src/characters/mob/mob.service';
+import { Npc } from 'src/characters/npc/entities/npc.entity';
 import { NpcService } from 'src/characters/npc/npc.service';
-import { WeaponSlotEnum } from 'src/common/enums/equipment-slot.enum';
+import { ArmorSlotEnum, WeaponSlotEnum } from 'src/common/enums/equipment-slot.enum';
 import { ItemTypeEnum } from 'src/common/enums/item-type.enum';
 import { EffectType } from 'src/common/enums/skill/effect-type.enum';
 import { SkillType } from 'src/common/enums/skill/skill-type.enum';
@@ -250,16 +251,17 @@ export class SeedService {
       critMultiplier: 1,
       baseMagicDamage: 30,
       basePhysicalDamage: 41,
-      spawn: this.mobSpawnRepository.create({
-        spawnX: 1900,
-        spawnY: 1000,
-        areaRadius: 3,
-        location: savedLocations[0],
-        entity: [],
-      }),
     });
 
     await this.mobRepository.save(orcMob);
+
+    await this.spawnService.createSpawn({
+      entities: [orcMob],
+      spawnX: 1700,
+      spawnY: 1200,
+      areaRadius: 3,
+      location: savedLocations[0],
+    });
 
     const firstCharacter = await this.characterRepository.save({
       name: 'Leroyalle',
@@ -302,18 +304,30 @@ export class SeedService {
 
     console.log('Characters saved');
 
-    const elvenBowItem = await this.itemService.saveWeapon({
+    const elvenBowItem = await this.itemService.createAndSave({
       magicDamage: 0,
       physicalDamage: 50,
       durability: 1,
+      itemType: ItemTypeEnum.WEAPON,
       slot: WeaponSlotEnum.MAIN_HAND,
       name: 'Эльфийский лук',
       iconKey: '',
       bag: firstCharacter.bag,
-      texture: { atlasKey: 'items', frameName: 'elven-bow' },
+      texture: { atlasKey: 'elven_bow', frameName: 'elven-bow' },
     });
 
-    firstCharacter.bag.items.push(elvenBowItem);
+    const ironHelmetItem = await this.itemService.createAndSave({
+      durability: 1,
+      slot: ArmorSlotEnum.HEAD,
+      name: 'Железный шлем',
+      physicalDefense: 10,
+      iconKey: '',
+      bag: firstCharacter.bag,
+      texture: { atlasKey: 'helmet_iron', frameName: 'helmet_iron' },
+      itemType: ItemTypeEnum.ARMOR,
+    });
+
+    firstCharacter.bag.items.push(elvenBowItem, ironHelmetItem);
     await this.characterRepository.save(firstCharacter);
 
     const stanEffect = await this.effectRepository.save({
@@ -377,7 +391,15 @@ export class SeedService {
     });
 
     const magisterNpc = await this.npcService.create({
-      ...setupNpc({ name: 'Магистр СГ', x: 2000, y: 1000, givenQuests: [] }),
+      ...setupNpc({ name: 'Магистр СГ', x: 1800, y: 1000, givenQuests: [] }),
+    });
+
+    await this.spawnService.createSpawn({
+      entities: [magisterNpc],
+      spawnX: 2000,
+      spawnY: 1000,
+      areaRadius: 0,
+      location: savedLocations[0],
     });
 
     const firstQuest = await this.questService.createQuest({
@@ -391,7 +413,7 @@ export class SeedService {
           templateId: elvenBowItem.id,
         },
       ],
-      prerequisites: [],
+      prerequisites: null,
       steps: [
         {
           id: 'first',
@@ -412,13 +434,13 @@ export class SeedService {
       giverNpc: magisterNpc,
     });
 
-    await this.questService.createPlayerQuest({
-      completedAt: null,
-      player: firstCharacter,
-      quest: firstQuest,
-      stepIndex: 0,
-      progress: null,
-    });
+    // await this.questService.createPlayerQuest({
+    //   completedAt: null,
+    //   player: firstCharacter,
+    //   quest: firstQuest,
+    //   stepIndex: 0,
+    //   progress: null,
+    // });
 
     console.log('Listings seeded');
   }
@@ -428,7 +450,6 @@ export class SeedService {
       'bag',
       'base_item',
       'effect',
-      'mob_spawn',
       'mob',
       'character_skill',
       'skill',
@@ -437,6 +458,13 @@ export class SeedService {
       'faction',
       'location',
       'user',
+      'equipment',
+      'npc_spawn',
+      'mob_spawn',
+      'entity_spawn',
+      'npc',
+      'quests',
+      'player_quests',
     ];
 
     await this.dataSource.query(`TRUNCATE TABLE ${tables.map(t => `"${t}"`).join(', ')} CASCADE`);

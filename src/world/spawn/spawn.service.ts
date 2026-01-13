@@ -1,3 +1,5 @@
+import { Mob } from 'src/characters/mob/entities/mob.entity';
+import { Npc } from 'src/characters/npc/entities/npc.entity';
 import { Repository } from 'typeorm';
 
 import { Injectable } from '@nestjs/common';
@@ -18,20 +20,36 @@ export class SpawnService {
     private readonly npcSpawnRepository: Repository<NpcSpawn>,
   ) {}
 
-  public async createSpawn(input: ICreateSpawn) {
-    switch (input.type) {
-      case 'mob': {
-        await this.mobSpawnRepository.save(input.entity);
-        break;
+  public async createSpawn(spawn: ICreateSpawn): Promise<void> {
+    const mobs: Mob[] = [];
+    const npcs: Npc[] = [];
+    for (const entity of spawn.entities) {
+      if (entity instanceof Mob) {
+        mobs.push(entity);
+        continue;
       }
 
-      case 'npc': {
-        await this.npcSpawnRepository.save(input.entity);
-        break;
+      if (entity instanceof Npc) {
+        npcs.push(entity);
+        continue;
       }
+    }
 
-      default:
-        break;
+    if (mobs.length) {
+      const mobSpawnEntity = this.mobSpawnRepository.create({
+        ...spawn,
+        entities: mobs,
+      });
+
+      await this.mobSpawnRepository.save(mobSpawnEntity);
+    }
+
+    if (npcs.length) {
+      const npcSpawnEntity = this.npcSpawnRepository.create({
+        ...spawn,
+        entities: npcs,
+      });
+      await this.npcSpawnRepository.save(npcSpawnEntity);
     }
   }
 }

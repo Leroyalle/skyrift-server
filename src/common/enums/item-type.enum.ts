@@ -3,9 +3,9 @@ import { registerEnumType } from '@nestjs/graphql';
 export enum ItemTypeEnum {
   WEAPON = 'weapon',
   ARMOR = 'armor',
-  POTION = 'potion',
+  // POTION = 'potion',
   RESOURCE = 'resource',
-  MISC = 'misc',
+  // MISC = 'misc',
 }
 
 registerEnumType(ItemTypeEnum, {

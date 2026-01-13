@@ -54,7 +54,9 @@ export class CharacterService {
           items: true,
         },
         equipment: true,
-        quests: true,
+        quests: {
+          quest: true,
+        },
       },
     });
   }
