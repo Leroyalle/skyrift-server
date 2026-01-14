@@ -1,4 +1,5 @@
-import { Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Equipment } from 'src/equipment/entities/equipment.entity';
+import { Column, JoinColumn, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 import { Field, ID, Int, ObjectType } from '@nestjs/graphql';
 
@@ -90,4 +91,8 @@ export abstract class ActorEntity extends Timestamp {
   @Column({ default: 450 })
   @Field(() => Int, { defaultValue: 450 })
   walkSpeed: number;
+
+  @OneToOne(() => Equipment)
+  @JoinColumn({ name: 'equipmentId' })
+  equipment: Equipment;
 }

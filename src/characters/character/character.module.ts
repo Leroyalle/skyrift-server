@@ -6,15 +6,9 @@ import { CharacterSkillModule } from './character-skill/character-skill.module';
 import { CharacterResolver } from './character.resolver';
 import { CharacterService } from './character.service';
 import { Character } from './entities/character.entity';
-import { EquipmentModule } from './equipment/equipment.module';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([Character]),
-    CharacterSkillModule,
-    BagModule,
-    EquipmentModule,
-  ],
+  imports: [TypeOrmModule.forFeature([Character]), CharacterSkillModule, BagModule],
   providers: [CharacterResolver, CharacterService],
   exports: [CharacterService],
 })

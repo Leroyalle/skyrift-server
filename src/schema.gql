@@ -156,6 +156,78 @@ type CharacterClass {
   skills: [Skill!]!
 }
 
+type Bag {
+  id: ID!
+  items: [BaseItem!]!
+  character: Character!
+
+  """Максимальный размер сумки"""
+  maxSlots: Int!
+
+  """Текущий размер сумки"""
+  currentSlots: Int!
+}
+
+type TextureConfig {
+  atlasKey: String!
+  frameName: String!
+}
+
+type Weapon implements BaseItem {
+  id: ID!
+  name: String!
+  itemType: ItemTypeEnum!
+  iconKey: String!
+  bag: Bag
+  physicalDamage: Int!
+  magicDamage: Int!
+
+  """Прочность предмета"""
+  durability: Float!
+  slot: WeaponSlotEnum!
+  texture: TextureConfig!
+}
+
+"""Слоты оружия"""
+enum WeaponSlotEnum {
+  MAIN_HAND
+  OFF_HAND
+}
+
+type Armor implements BaseItem {
+  id: ID!
+  name: String!
+  itemType: ItemTypeEnum!
+  iconKey: String!
+  bag: Bag
+  physicalDefense: Int!
+
+  """Прочность предмета"""
+  durability: Float!
+  slot: ArmorSlotEnum!
+  texture: TextureConfig!
+}
+
+"""Слоты брони"""
+enum ArmorSlotEnum {
+  HEAD
+  BODY
+  GLOVES
+  LEGS
+  CLOAK
+}
+
+type Resource implements BaseItem {
+  id: ID!
+  name: String!
+  itemType: ItemTypeEnum!
+  iconKey: String!
+  bag: Bag
+
+  """Описание предмета"""
+  description: String!
+}
+
 type Property {
   name: String!
   type: String!
@@ -375,93 +447,6 @@ type PlayerQuest {
   id: ID!
 }
 
-type TextureConfig {
-  atlasKey: String!
-  frameName: String!
-}
-
-type Weapon implements BaseItem {
-  id: ID!
-  name: String!
-  itemType: ItemTypeEnum!
-  iconKey: String!
-  bag: Bag
-  physicalDamage: Int!
-  magicDamage: Int!
-
-  """Прочность предмета"""
-  durability: Float!
-  slot: WeaponSlotEnum!
-  texture: TextureConfig!
-}
-
-"""Слоты оружия"""
-enum WeaponSlotEnum {
-  MAIN_HAND
-  OFF_HAND
-}
-
-type Armor implements BaseItem {
-  id: ID!
-  name: String!
-  itemType: ItemTypeEnum!
-  iconKey: String!
-  bag: Bag
-  physicalDefense: Int!
-
-  """Прочность предмета"""
-  durability: Float!
-  slot: ArmorSlotEnum!
-  texture: TextureConfig!
-}
-
-"""Слоты брони"""
-enum ArmorSlotEnum {
-  HEAD
-  BODY
-  GLOVES
-  LEGS
-  CLOAK
-}
-
-type Resource implements BaseItem {
-  id: ID!
-  name: String!
-  itemType: ItemTypeEnum!
-  iconKey: String!
-  bag: Bag
-
-  """Описание предмета"""
-  description: String!
-}
-
-type Bag {
-  id: ID!
-  items: [BaseItem!]!
-  character: Character!
-
-  """Максимальный размер сумки"""
-  maxSlots: Int!
-
-  """Текущий размер сумки"""
-  currentSlots: Int!
-}
-
-type Equipment {
-  id: ID!
-  ownerId: String!
-  ownerType: String!
-  head: BaseItem!
-  body: BaseItem!
-  gloves: BaseItem!
-  legs: BaseItem!
-  mainHand: BaseItem!
-  offHand: BaseItem!
-  ring1: BaseItem!
-  ring2: BaseItem!
-  cloak: BaseItem!
-}
-
 type Character {
   id: ID!
 
@@ -533,7 +518,6 @@ type Character {
   """Навыки персонаж"""
   characterSkills: [CharacterSkill!]!
   bag: Bag!
-  equipment: Equipment!
   quests: [PlayerQuest!]!
 }
 

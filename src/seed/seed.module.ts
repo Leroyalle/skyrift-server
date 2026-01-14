@@ -6,6 +6,7 @@ import { Mob } from 'src/characters/mob/entities/mob.entity';
 import { MobModule } from 'src/characters/mob/mob.module';
 import { NpcModule } from 'src/characters/npc/npc.module';
 import { Effect } from 'src/effect/entities/effect.entity';
+import { EquipmentModule } from 'src/equipment/equipment.module';
 import { Faction } from 'src/faction/entities/faction.entity';
 import { ItemModule } from 'src/item/item.module';
 import { QuestModule } from 'src/quest/quest.module';
@@ -38,6 +39,7 @@ import { SeedService } from './seed.service';
     NpcModule,
     MobModule,
     SpawnModule,
+    EquipmentModule,
   ],
   providers: [SeedService],
 })

@@ -26,6 +26,7 @@ export function buildRuntimeNpc(npcSpawn: NpcSpawn): IRuntimeNpc[] {
     level: npc.level,
     lastMoveAt: 0,
     lastHpRegenerationTime: 0,
+    equipment: npc.equipment,
     lastDirection: 'down',
     lastAttackAt: 0,
     isInSpawnArea: true,

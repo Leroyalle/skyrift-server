@@ -1,6 +1,7 @@
 import { ActorEntity } from 'src/common/entities/actor-entity.entity';
+import { Equipment } from 'src/equipment/entities/equipment.entity';
 import { Quest } from 'src/quest/entities/quest.entity';
-import { Entity, ManyToOne, OneToMany } from 'typeorm';
+import { Entity, JoinColumn, ManyToOne, OneToMany, OneToOne } from 'typeorm';
 
 import { Field, ObjectType } from '@nestjs/graphql';
 

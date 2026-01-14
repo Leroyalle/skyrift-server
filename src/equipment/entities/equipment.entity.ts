@@ -1,10 +1,9 @@
-import { Character } from 'src/characters/character/entities/character.entity';
 import { BaseItem } from 'src/item/entities/item.entity';
-import { Column, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 import { Field, ID, ObjectType } from '@nestjs/graphql';
 
-import { EquipmentOwnerType } from '../../types/equipment-owner-type';
+import { EquipmentOwnerType } from '../types/equipment-owner-type';
 
 @ObjectType()
 @Entity('equipment')
@@ -17,17 +16,6 @@ export class Equipment {
   // @OneToOne(() => Character, character => character.equipment)
   // @JoinColumn()
   // character: Character;
-
-  @Field()
-  @Column()
-  ownerId: string;
-
-  @Field()
-  @Column({
-    type: 'enum',
-    enum: EquipmentOwnerType,
-  })
-  ownerType: EquipmentOwnerType;
 
   @Field(() => BaseItem)
   @ManyToOne(() => BaseItem, { nullable: true })

@@ -11,6 +11,7 @@ export function buildRuntimeMobs(mobSpawn: MobSpawn): IRuntimeMob[] {
     spawnId: mobSpawn.id,
     id: mob.id,
     name: mob.name,
+    equipment: mob.equipment,
     x: mobSpawn.spawnX,
     y: mobSpawn.spawnY,
     spawnX: mobSpawn.spawnX,
