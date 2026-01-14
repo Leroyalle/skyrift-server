@@ -449,7 +449,8 @@ type Bag {
 
 type Equipment {
   id: ID!
-  character: Character!
+  ownerId: String!
+  ownerType: String!
   head: BaseItem!
   body: BaseItem!
   gloves: BaseItem!

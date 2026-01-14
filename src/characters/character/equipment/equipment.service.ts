@@ -1,7 +1,10 @@
+import { EntityRef } from 'src/game/types/entity/entity-ref.type';
 import { Repository } from 'typeorm';
 
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+
+import { EquipmentOwnerType } from '../types/equipment-owner-type';
 
 import { Equipment } from './entities/equipment.entity';
 
@@ -12,18 +15,20 @@ export class EquipmentService {
     private readonly equipmentRepository: Repository<Equipment>,
   ) {}
 
-  public async findCharacterEquipment(characterId: string) {
+  public async findEquipmentByRef(ref: EntityRef) {
     return await this.equipmentRepository.findOneBy({
-      character: { id: characterId },
+      ownerId: ref.id,
+      ownerType: ref.type as EquipmentOwnerType,
     });
   }
 
-  public async updateEquipment(characterId: string, payload: Partial<Equipment>) {
-    let equipment = await this.findCharacterEquipment(characterId);
+  public async updateEquipment(ref: EntityRef, payload: Partial<Equipment>) {
+    let equipment = await this.findEquipmentByRef(ref);
 
     if (!equipment) {
       equipment = this.equipmentRepository.create({
-        character: { id: characterId },
+        ownerId: ref.id,
+        ownerType: ref.type as EquipmentOwnerType,
         ...payload,
       });
     } else {

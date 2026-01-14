@@ -63,7 +63,8 @@ export class Character extends ActorEntity {
   @Field(() => Bag)
   bag: Bag;
 
-  @OneToOne(() => Equipment, equipment => equipment.character)
+  @OneToOne(() => Equipment)
+  @JoinColumn({ name: 'equipmentId' })
   @Field(() => Equipment)
   equipment: Equipment;
 
