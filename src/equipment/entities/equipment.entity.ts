@@ -19,13 +19,13 @@ export class Equipment {
 
   @Field(() => BaseItem)
   @ManyToOne(() => BaseItem, { nullable: true })
-  @JoinColumn({ name: 'headId' })
-  head: BaseItem | null;
+  @JoinColumn({ name: 'helmetId' })
+  helmet: BaseItem | null;
 
   @Field(() => BaseItem)
   @ManyToOne(() => BaseItem, { nullable: true })
-  @JoinColumn({ name: 'bodyId' })
-  body: BaseItem | null;
+  @JoinColumn({ name: 'breastplateId' })
+  breastplate: BaseItem | null;
 
   @Field(() => BaseItem)
   @ManyToOne(() => BaseItem, { nullable: true })

@@ -323,7 +323,7 @@ export class SeedService {
 
     const ironHelmetItem = await this.itemService.createAndSave({
       durability: 1,
-      slot: ArmorSlotEnum.HEAD,
+      slot: ArmorSlotEnum.HELMET,
       name: 'Железный шлем',
       physicalDefense: 10,
       iconKey: '',

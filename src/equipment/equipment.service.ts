@@ -19,7 +19,7 @@ export class EquipmentService {
   public async createInitEquip() {
     const helmet = await this.itemService.createAndSave({
       itemType: ItemTypeEnum.ARMOR,
-      slot: ArmorSlotEnum.HEAD,
+      slot: ArmorSlotEnum.HELMET,
       texture: {
         atlasKey: 'helmet_iron',
         frameName: 'helmet-iron',
@@ -31,9 +31,9 @@ export class EquipmentService {
       bag: null,
     });
 
-    const body = await this.itemService.createAndSave({
+    const breastplate = await this.itemService.createAndSave({
       itemType: ItemTypeEnum.ARMOR,
-      slot: ArmorSlotEnum.BODY,
+      slot: ArmorSlotEnum.BREASTPLATE,
       texture: {
         atlasKey: 'body_iron',
         frameName: 'body-iron',
@@ -46,8 +46,8 @@ export class EquipmentService {
     });
 
     const equipment = this.equipmentRepository.create({
-      head: helmet,
-      body: body,
+      helmet,
+      breastplate,
     });
 
     return await this.equipmentRepository.save(equipment);

@@ -10,6 +10,7 @@ export function buildRuntimeMobs(mobSpawn: MobSpawn): IRuntimeMob[] {
   return mobSpawn.entities.map(mob => ({
     spawnId: mobSpawn.id,
     id: mob.id,
+    appearance: mob.appearance,
     name: mob.name,
     equipment: mob.equipment,
     x: mobSpawn.spawnX,

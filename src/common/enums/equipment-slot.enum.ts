@@ -1,8 +1,8 @@
 import { registerEnumType } from '@nestjs/graphql';
 
 export enum ArmorSlotEnum {
-  HEAD = 'head',
-  BODY = 'body',
+  HELMET = 'helmet',
+  BREASTPLATE = 'breastplate',
   GLOVES = 'gloves',
   LEGS = 'legs',
   CLOAK = 'cloak',

@@ -5,6 +5,14 @@ import { Field, ID, Int, ObjectType } from '@nestjs/graphql';
 
 import { Timestamp } from './timestamp.entity';
 
+class Appearance {
+  @Column({ default: 'body_base' })
+  body: string;
+
+  @Column({ default: 'head_base' })
+  head: string;
+}
+
 @ObjectType()
 export abstract class ActorEntity extends Timestamp {
   @PrimaryGeneratedColumn('uuid')
@@ -95,4 +103,7 @@ export abstract class ActorEntity extends Timestamp {
   @OneToOne(() => Equipment)
   @JoinColumn({ name: 'equipmentId' })
   equipment: Equipment;
+
+  @Column(() => Appearance, { prefix: true })
+  appearance: Appearance;
 }

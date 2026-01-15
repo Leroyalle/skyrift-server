@@ -210,8 +210,8 @@ type Armor implements BaseItem {
 
 """Слоты брони"""
 enum ArmorSlotEnum {
-  HEAD
-  BODY
+  HELMET
+  BREASTPLATE
   GLOVES
   LEGS
   CLOAK

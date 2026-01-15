@@ -5,6 +5,7 @@ import { PlayerQuest } from 'src/quest/entities/player-quest.entity';
 export const buildRuntimeCharacter = (character: Character): IRuntimeCharacter => {
   return {
     id: character.id,
+    appearance: character.appearance,
     name: character.name,
     x: character.x,
     y: character.y,
