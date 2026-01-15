@@ -88,6 +88,7 @@ export class GameService extends BaseLogger {
         findUser.id,
         characterId,
       );
+
       if (!findCharacter) {
         console.log('Disconnect by findCharacter');
         client.disconnect();

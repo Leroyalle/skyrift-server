@@ -8,6 +8,7 @@ export function buildRuntimeNpc(npcSpawn: NpcSpawn): IRuntimeNpc[] {
 
   return npcSpawn.entities.map(npc => ({
     x: npc.x,
+    appearance: npc.appearance,
     y: npc.y,
     walkSpeed: npc.walkSpeed,
     type: 'npc',
@@ -26,6 +27,7 @@ export function buildRuntimeNpc(npcSpawn: NpcSpawn): IRuntimeNpc[] {
     level: npc.level,
     lastMoveAt: 0,
     lastHpRegenerationTime: 0,
+    equipment: npc.equipment,
     lastDirection: 'down',
     lastAttackAt: 0,
     isInSpawnArea: true,
