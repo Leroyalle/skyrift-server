@@ -1,3 +1,4 @@
+import { equipmentRelations } from 'src/common/constants/equipment-relation.constant';
 import { Repository } from 'typeorm';
 
 import { Injectable, NotFoundException } from '@nestjs/common';
@@ -53,7 +54,7 @@ export class CharacterService {
         bag: {
           items: true,
         },
-        equipment: true,
+        equipment: equipmentRelations,
         quests: {
           quest: true,
         },

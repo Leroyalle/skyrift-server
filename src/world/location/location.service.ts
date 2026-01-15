@@ -6,6 +6,8 @@ import { Repository } from 'typeorm';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
+import { equipmentRelations } from '../../common/constants/equipment-relation.constant';
+
 import { Location } from './entities/location.entity';
 import { buildTeleportsMap } from './lib/build-teleports-map.lib';
 
@@ -24,11 +26,13 @@ export class LocationService {
     const findLocations = await this.locationRepository.find({
       relations: {
         mobSpawn: {
-          entities: true,
+          entities: {
+            equipment: equipmentRelations,
+          },
           location: true,
         },
         npcSpawn: {
-          entities: true,
+          entities: { equipment: equipmentRelations },
           location: true,
         },
       },

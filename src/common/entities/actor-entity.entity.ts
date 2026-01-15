@@ -1,8 +1,17 @@
-import { Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Equipment } from 'src/equipment/entities/equipment.entity';
+import { Column, JoinColumn, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 import { Field, ID, Int, ObjectType } from '@nestjs/graphql';
 
 import { Timestamp } from './timestamp.entity';
+
+class Appearance {
+  @Column({ default: 'body_base' })
+  body: string;
+
+  @Column({ default: 'head_base' })
+  head: string;
+}
 
 @ObjectType()
 export abstract class ActorEntity extends Timestamp {
@@ -90,4 +99,11 @@ export abstract class ActorEntity extends Timestamp {
   @Column({ default: 450 })
   @Field(() => Int, { defaultValue: 450 })
   walkSpeed: number;
+
+  @OneToOne(() => Equipment)
+  @JoinColumn({ name: 'equipmentId' })
+  equipment: Equipment;
+
+  @Column(() => Appearance, { prefix: true })
+  appearance: Appearance;
 }

@@ -7,6 +7,7 @@ import { CharacterModule } from './characters/character/character.module';
 import { MobModule } from './characters/mob/mob.module';
 import { NpcModule } from './characters/npc/npc.module';
 import { EffectModule } from './effect/effect.module';
+import { EquipmentModule } from './equipment/equipment.module';
 import { FactionModule } from './faction/faction.module';
 import { GameModule } from './game/game.module';
 import { DatabaseModule } from './infrastructure/database/database.module';
@@ -37,6 +38,7 @@ import { WorldModule } from './world/world.module';
     GameModule,
     MobModule,
     EffectModule,
+    EquipmentModule,
     NpcModule,
     WorldModule,
     QuestModule,

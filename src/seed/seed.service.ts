@@ -16,6 +16,7 @@ import { EffectType } from 'src/common/enums/skill/effect-type.enum';
 import { SkillType } from 'src/common/enums/skill/skill-type.enum';
 import { Property, TiledMap } from 'src/common/types/tiled-map.type';
 import { Effect } from 'src/effect/entities/effect.entity';
+import { EquipmentService } from 'src/equipment/equipment.service';
 import { Faction } from 'src/faction/entities/faction.entity';
 import { FactionEnum } from 'src/faction/types/faction.enum';
 import { BaseItem, Weapon } from 'src/item/entities/item.entity';
@@ -70,6 +71,7 @@ export class SeedService {
     private readonly questService: QuestService,
     private readonly npcService: NpcService,
     private readonly mobService: MobService,
+    private readonly equipmentService: EquipmentService,
     private readonly spawnService: SpawnService,
   ) {}
 
@@ -247,6 +249,7 @@ export class SeedService {
       respawnTime: 5000,
       level: 3,
       expReward: 20,
+      equipment: await this.equipmentService.createInitEquip(),
       attackSpeed: 1000,
       critMultiplier: 1,
       baseMagicDamage: 30,
@@ -269,6 +272,7 @@ export class SeedService {
       characterClass: lunarClass,
       level: 1,
       location: savedLocations[0],
+      equipment: await this.equipmentService.createInitEquip(),
       x: 2016,
       y: 960,
       maxHp: 1000,
@@ -292,6 +296,7 @@ export class SeedService {
       level: 1,
       location: savedLocations[0],
       x: 2016,
+      equipment: await this.equipmentService.createInitEquip(),
       y: 960,
       maxHp: 1000,
       hp: 1000,
@@ -318,7 +323,7 @@ export class SeedService {
 
     const ironHelmetItem = await this.itemService.createAndSave({
       durability: 1,
-      slot: ArmorSlotEnum.HEAD,
+      slot: ArmorSlotEnum.HELMET,
       name: 'Железный шлем',
       physicalDefense: 10,
       iconKey: '',
@@ -392,6 +397,7 @@ export class SeedService {
 
     const magisterNpc = await this.npcService.create({
       ...setupNpc({ name: 'Магистр СГ', x: 1800, y: 1000, givenQuests: [] }),
+      equipment: await this.equipmentService.createInitEquip(),
     });
 
     await this.spawnService.createSpawn({

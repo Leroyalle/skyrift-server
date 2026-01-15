@@ -8,9 +8,9 @@ import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne } from 'type
 
 import { Field, Int, ObjectType } from '@nestjs/graphql';
 
+import { Equipment } from '../../../equipment/entities/equipment.entity';
 import { Bag } from '../bag/entities/bag.entity';
 import { CharacterSkill } from '../character-skill/entities/character-skill.entity';
-import { Equipment } from '../equipment/entities/equipment.entity';
 
 @ObjectType()
 @Entity()
@@ -63,11 +63,7 @@ export class Character extends ActorEntity {
   @Field(() => Bag)
   bag: Bag;
 
-  @OneToOne(() => Equipment, equipment => equipment.character)
-  @Field(() => Equipment)
-  equipment: Equipment;
-
-  @OneToMany(() => PlayerQuest, playerQuest => playerQuest.player)
+  @OneToMany(() => PlayerQuest, playerQuest => playerQuest.player, { cascade: true })
   @Field(() => [PlayerQuest])
   quests: PlayerQuest[];
 }
