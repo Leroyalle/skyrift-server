@@ -1,6 +1,5 @@
 import { ArmorSlotEnum } from 'src/common/enums/equipment-slot.enum';
 import { ItemTypeEnum } from 'src/common/enums/item-type.enum';
-import { EntityRef } from 'src/game/types/entity/entity-ref.type';
 import { ItemService } from 'src/item/item.service';
 import { Repository } from 'typeorm';
 
@@ -8,7 +7,6 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { Equipment } from './entities/equipment.entity';
-import { EquipmentOwnerType } from './types/equipment-owner-type';
 
 @Injectable()
 export class EquipmentService {
@@ -17,13 +15,6 @@ export class EquipmentService {
     private readonly equipmentRepository: Repository<Equipment>,
     private readonly itemService: ItemService,
   ) {}
-
-  // public async findEquipmentByRef(ref: EntityRef) {
-  //   return await this.equipmentRepository.findOneBy({
-  //     ownerId: ref.id,
-  //     ownerType: ref.type as EquipmentOwnerType,
-  //   });
-  // }
 
   public async createInitEquip() {
     const helmet = await this.itemService.createAndSave({
@@ -61,20 +52,4 @@ export class EquipmentService {
 
     return await this.equipmentRepository.save(equipment);
   }
-
-  // public async updateEquipment(ref: EntityRef, payload: Partial<Equipment>) {
-  //   let equipment = await this.findEquipmentByRef(ref);
-
-  //   if (!equipment) {
-  //     equipment = this.equipmentRepository.create({
-  //       ownerId: ref.id,
-  //       ownerType: ref.type as EquipmentOwnerType,
-  //       ...payload,
-  //     });
-  //   } else {
-  //     Object.assign(equipment, payload);
-  //   }
-
-  //   return await this.equipmentRepository.save(equipment);
-  // }
 }

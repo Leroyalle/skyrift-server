@@ -1,6 +1,7 @@
 import { CharacterService } from 'src/characters/character/character.service';
 import { Character } from 'src/characters/character/entities/character.entity';
 import { IRuntimeCharacter } from 'src/characters/character/types/runtime-character';
+import { PositionDto } from 'src/common/dto/position.dto';
 import { RedisKeysFactory } from 'src/common/infra/redis-keys-factory.infra';
 import { RedisService } from 'src/infrastructure/redis/redis.service';
 import { CachedLocation } from 'src/world/location/types/cashed-location.type';
@@ -40,14 +41,7 @@ export class PlayerStateService {
     return runtimeCharacter;
   }
 
-  public moveTo(
-    character: IRuntimeCharacter,
-    position: {
-      x: number;
-      y: number;
-    },
-    lastMoveAt: number,
-  ) {
+  public moveTo(character: IRuntimeCharacter, position: PositionDto, lastMoveAt: number) {
     character.x = position.x;
     character.y = position.y;
     character.lastMoveAt = lastMoveAt;

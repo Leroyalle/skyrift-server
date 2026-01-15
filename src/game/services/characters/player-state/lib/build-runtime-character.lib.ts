@@ -35,6 +35,7 @@ export const buildRuntimeCharacter = (character: Character): IRuntimeCharacter =
     type: 'player',
     walkSpeed: character.walkSpeed,
     bag: character.bag,
+    // equipment: { id, ...equip } = character.equipment,
     equipment: character.equipment,
     completedQuestIds: collectCompletedQuests(character.quests),
     activeQuests: collectActiveQuests(character.quests),
