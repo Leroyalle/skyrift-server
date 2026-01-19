@@ -8,6 +8,7 @@ import { getOrCreate } from 'src/game/lib/helpers/get-or-create-array.lib';
 import { getTileByPosition } from 'src/game/lib/helpers/get-tile-by-position.lib';
 import { RuntimeMobService } from 'src/game/services/characters/runtime-mob/runtime-mob.service';
 import { EntityRegistryService } from 'src/game/services/entity-registry/entity-registry.service';
+import { MovementQueueService } from 'src/game/services/movement/services/movement-queue/movement-queue.service';
 import { SocketService } from 'src/game/services/socket/socket.service';
 import { BatchUpdateAction } from 'src/game/types/batch-update/batch-update-action.type';
 import { EntityRef } from 'src/game/types/entity/entity-ref.type';
@@ -30,6 +31,8 @@ export class ProjectileService {
     private readonly registryService: EntityRegistryService,
     private readonly socketService: SocketService,
     private readonly actionQueueService: ActionQueueService,
+    private readonly movementQueueService: MovementQueueService,
+
     @Inject(forwardRef(() => RuntimeMobService))
     private readonly runtimeMobService: RuntimeMobService,
   ) {}
@@ -162,8 +165,11 @@ export class ProjectileService {
     }
     if (remainingHp <= 0) {
       this.actionQueueService.clearPendingActions(attacker, []);
+      this.actionQueueService.clearPendingActions(victim, []);
+      this.movementQueueService.delete(victim);
+
       if (isMob(victim)) {
-        this.runtimeMobService.setRespawn(victim.id);
+        this.runtimeMobService.killMob(victim.id);
       }
     }
     return { remainingHp };
