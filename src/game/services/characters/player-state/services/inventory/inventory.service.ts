@@ -50,7 +50,26 @@ export class InventoryService {
       case ItemTypeEnum.WEAPON:
       case ItemTypeEnum.ARMOR: {
         if (isArmor(item) || isWeapon(item)) {
-          this.equipmentService.equip(character.id, item, item.slot);
+          const result = this.equipmentService.equip(character.id, item, item.slot);
+          if (result.success) {
+            this.socketService.sendTo(
+              RedisKeys.Location + character.locationId,
+              ServerToClientEvents.EquipmentEquipped,
+              {
+                entityRef: {
+                  id: character.id,
+                  type: character.type,
+                },
+                item,
+                slot: item.slot,
+              },
+            );
+          } else {
+            this.socketService.sendToUser(character.userId, ServerToClientEvents.GameNotification, {
+              type: 'error',
+              message: result.error,
+            });
+          }
         }
         break;
       }
