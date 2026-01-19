@@ -18,7 +18,7 @@ export class PlayerStateService {
   constructor(
     private readonly redisService: RedisService,
     private readonly characterService: CharacterService,
-    private readonly registerService: EntityRegistryService,
+    private readonly registryService: EntityRegistryService,
   ) {}
 
   // private readonly playersStates: Map<string, IRuntimeCharacter> = new Map();
@@ -31,11 +31,11 @@ export class PlayerStateService {
 
     await this.redisService.set(RedisKeysFactory.playerNameToId(character.name), character.id);
 
-    let runtimeCharacter = this.registerService.getByRef({ type: 'player', id: character.id });
+    let runtimeCharacter = this.registryService.getByRef({ type: 'player', id: character.id });
 
     if (!runtimeCharacter) {
       runtimeCharacter = buildRuntimeCharacter(character);
-      this.registerService.add(runtimeCharacter);
+      this.registryService.add(runtimeCharacter);
     }
 
     return runtimeCharacter;
@@ -49,7 +49,7 @@ export class PlayerStateService {
   }
 
   public async leave(userId: string, playerId: string, locationId: string) {
-    this.registerService.remove({
+    this.registryService.remove({
       type: 'player',
       id: playerId,
       locationId,
@@ -61,7 +61,7 @@ export class PlayerStateService {
   }
 
   public async syncCharacterToDb(characterId: string) {
-    const character = this.registerService.getByRef({
+    const character = this.registryService.getByRef({
       type: 'player',
       id: characterId,
     });
@@ -84,7 +84,7 @@ export class PlayerStateService {
   }
 
   public getCharacterState(characterId: string): IRuntimeCharacter | undefined {
-    return this.registerService.getByRef({ type: 'player', id: characterId });
+    return this.registryService.getByRef({ type: 'player', id: characterId });
   }
 
   public changeUserLocation(

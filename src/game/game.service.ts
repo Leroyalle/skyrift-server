@@ -289,10 +289,17 @@ export class GameService extends BaseLogger {
       });
       return;
     }
-    this.socketService.sendToUser(
+    this.socketService.sendTo(
       RedisKeys.Location + character.locationId,
       ServerToClientEvents.EquipmentEquipped,
-      { characterId: character.id, item: input.item, slot: input.slot },
+      {
+        entityRef: {
+          id: character.id,
+          type: character.type,
+        },
+        item: input.item,
+        slot: input.slot,
+      },
     );
   }
 

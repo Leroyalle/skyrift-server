@@ -16,7 +16,7 @@ export class EquipmentService {
     private readonly itemService: ItemService,
   ) {}
 
-  public async createInitEquip() {
+  public async createInitEquip(breast: 'red' | 'dark'): Promise<Equipment> {
     const helmet = await this.itemService.createAndSave({
       itemType: ItemTypeEnum.ARMOR,
       slot: ArmorSlotEnum.HELMET,
@@ -35,12 +35,12 @@ export class EquipmentService {
       itemType: ItemTypeEnum.ARMOR,
       slot: ArmorSlotEnum.BREASTPLATE,
       texture: {
-        atlasKey: 'body_iron',
-        frameName: 'body-iron',
+        atlasKey: `breastplate_${breast}`,
+        frameName: `breastplate-${breast}`,
       },
       physicalDefense: 11,
-      name: 'Железная броня',
-      iconKey: 'body-iron',
+      name: 'Темный нагрудник',
+      iconKey: `breastplate-${breast}`,
       durability: 1,
       bag: null,
     });
