@@ -249,7 +249,7 @@ export class SeedService {
       respawnTime: 5000,
       level: 3,
       expReward: 20,
-      equipment: await this.equipmentService.createInitEquip(),
+      equipment: await this.equipmentService.createInitEquip('dark'),
       attackSpeed: 1000,
       critMultiplier: 1,
       baseMagicDamage: 30,
@@ -272,7 +272,7 @@ export class SeedService {
       characterClass: lunarClass,
       level: 1,
       location: savedLocations[0],
-      equipment: await this.equipmentService.createInitEquip(),
+      equipment: await this.equipmentService.createInitEquip('red'),
       x: 2016,
       y: 960,
       maxHp: 1000,
@@ -296,7 +296,7 @@ export class SeedService {
       level: 1,
       location: savedLocations[0],
       x: 2016,
-      equipment: await this.equipmentService.createInitEquip(),
+      equipment: await this.equipmentService.createInitEquip('red'),
       y: 960,
       maxHp: 1000,
       hp: 1000,
@@ -397,7 +397,7 @@ export class SeedService {
 
     const magisterNpc = await this.npcService.create({
       ...setupNpc({ name: 'Магистр СГ', x: 1800, y: 1000, givenQuests: [] }),
-      equipment: await this.equipmentService.createInitEquip(),
+      equipment: await this.equipmentService.createInitEquip('dark'),
     });
 
     await this.spawnService.createSpawn({
