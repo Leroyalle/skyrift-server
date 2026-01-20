@@ -10,7 +10,6 @@ export class RuntimeQuestService {
   public getAvailableQuests(playerState: IRuntimeCharacter, quests: Quest[]): Quest[] {
     const availableQuests = quests.filter(quest => {
       if (playerState.completedQuestIds.has(quest.id)) return false;
-      console.log('playerstate', playerState);
 
       if (playerState.activeQuests.some(activeQuest => activeQuest.quest.id === quest.id))
         return false;

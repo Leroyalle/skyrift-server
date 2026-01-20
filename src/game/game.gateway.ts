@@ -130,8 +130,10 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage(ClientToServerEvents.RequestEquipItem)
   @UseGuards(WsAuthGuard)
-  public requestEquipItem(@AuthSocket() client: AuthenticatedSocket, input: RequestEquipDto) {
-    console.log('EQUIP ITEM');
+  public requestEquipItem(
+    @AuthSocket() client: AuthenticatedSocket,
+    @MessageBody() input: RequestEquipDto,
+  ) {
     return this.gameService.handleEquip(client, input);
   }
 
