@@ -397,10 +397,8 @@ export class CombatService {
       // setEntityState<RuntimeEntity>(attacker, 'pursue');
       attacker.state = 'pursue';
       pendingAction.state = 'move-to-target';
-      console.log('[resolve_pending_action]: SET STEPS');
     } else {
       pendingAction.state = 'attack';
-      console.log('[resolve_pending_action]: attack');
     }
   }
 
