@@ -1,6 +1,9 @@
 import { EquipmentSlotEnum } from 'src/common/enums/equipment-slot.enum';
+import { ItemTypeEnum } from 'src/common/enums/item-type.enum';
 import { TItem } from 'src/common/types/item.type';
 import { Armor, Weapon } from 'src/item/entities/item.entity';
+import { isArmor } from 'src/item/guards/is-armor';
+import { isWeapon } from 'src/item/guards/is-weapon';
 
 import { Injectable } from '@nestjs/common';
 
@@ -11,7 +14,7 @@ export class RuntimeEquipmentService {
   constructor(private readonly playerStateService: PlayerStateService) {}
 
   public checkCanEquip(item: TItem, slot: EquipmentSlotEnum): boolean {
-    if (!(item instanceof Weapon) && !(item instanceof Armor)) return false;
+    if (!isWeapon(item) && !isArmor(item)) return false;
 
     if (item.slot !== slot) return false;
 

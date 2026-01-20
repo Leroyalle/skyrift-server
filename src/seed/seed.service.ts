@@ -332,7 +332,21 @@ export class SeedService {
       itemType: ItemTypeEnum.ARMOR,
     });
 
-    firstCharacter.bag.items.push(elvenBowItem, ironHelmetItem);
+    const breastplate = await this.itemService.createAndSave({
+      itemType: ItemTypeEnum.ARMOR,
+      slot: ArmorSlotEnum.BREASTPLATE,
+      texture: {
+        atlasKey: `breastplate_dark`,
+        frameName: `breastplate-dark`,
+      },
+      physicalDefense: 11,
+      name: 'Темный нагрудник',
+      iconKey: `breastplate-dark`,
+      durability: 1,
+      bag: firstCharacter.bag,
+    });
+
+    firstCharacter.bag.items.push(elvenBowItem, ironHelmetItem, breastplate);
     await this.characterRepository.save(firstCharacter);
 
     const stanEffect = await this.effectRepository.save({
