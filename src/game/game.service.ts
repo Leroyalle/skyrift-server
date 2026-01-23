@@ -280,6 +280,7 @@ export class GameService extends BaseLogger {
     const character = this.playerStateService.getCharacterState(client.userData.characterId);
     if (!character) return;
 
+    this.inventoryService.delete(character.bag, input.item);
     const result = this.equipmentService.equip(character.id, input.item, input.slot);
 
     if (!result.success) {
@@ -287,19 +288,28 @@ export class GameService extends BaseLogger {
         type: 'error',
         message: result.error || 'Не удалось экипировать предмет',
       });
+      console.log('[handleEquip] error', result.error);
       return;
     }
 
     this.socketService.sendTo(
+      // FIXME: сейчас шлется всем событие, нужно одному + всем смена экипировки, либо оставить
       RedisKeys.Location + character.locationId,
-      ServerToClientEvents.EquipmentEquipped,
+      ServerToClientEvents.ItemMoved,
       {
         entityRef: {
           id: character.id,
           type: character.type,
         },
-        item: input.item,
-        slot: input.slot,
+        itemId: input.item.id,
+        from: {
+          container: 'bag',
+          // slot: result.fromSlot,
+        },
+        to: {
+          container: 'equipment',
+          slot: input.slot,
+        },
       },
     );
   }
@@ -318,11 +328,36 @@ export class GameService extends BaseLogger {
       return;
     }
 
-    this.socketService.sendToUser(
+    if (result.item) {
+      this.inventoryService.add(character.bag, result.item);
+    }
+
+    this.socketService.sendTo(
+      // FIXME: сейчас шлется всем событие, нужно одному + всем смена экипировки, либо оставить
       RedisKeys.Location + character.locationId,
-      ServerToClientEvents.EquipmentUnequipped,
-      { characterId: character.id, slot: input.slot },
+      ServerToClientEvents.ItemMoved,
+      {
+        entityRef: {
+          id: character.id,
+          type: character.type,
+        },
+        // FIXME: строже типизировать, сделать обязательным вместо !
+        itemId: result.item!.id,
+        from: {
+          container: 'equipment',
+          slot: input.slot,
+        },
+        to: {
+          container: 'bag',
+        },
+      },
     );
+
+    // this.socketService.sendTo(
+    //   RedisKeys.Location + character.locationId,
+    //   ServerToClientEvents.EquipmentUnequipped,
+    //   { characterId: character.id, slot: input.slot },
+    // );
   }
 
   public handleUseItem(client: AuthenticatedSocket, input: RequestUseItemDto) {
