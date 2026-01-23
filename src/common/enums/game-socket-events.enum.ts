@@ -17,8 +17,12 @@ export enum ServerToClientEvents {
   ChatDirect = 'chat:direct',
   PongTime = 'time:pong',
   RespawnMob = 'mob:respawn',
+
   BagItemAdded = 'bag:item-added',
   BagItemRemoved = 'bag:item-removed',
+
+  ItemMoved = 'item:moved',
+
   EquipmentEquipped = 'equipment:equipped',
   EquipmentUnequipped = 'equipment:unequipped',
 

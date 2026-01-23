@@ -1,7 +1,7 @@
 import { EquipmentSlotEnum } from 'src/common/enums/equipment-slot.enum';
 import { ItemTypeEnum } from 'src/common/enums/item-type.enum';
 import { TItem } from 'src/common/types/item.type';
-import { Armor, Weapon } from 'src/item/entities/item.entity';
+import { Armor, BaseItem, Weapon } from 'src/item/entities/item.entity';
 import { isArmor } from 'src/item/guards/is-armor';
 import { isWeapon } from 'src/item/guards/is-weapon';
 
@@ -50,7 +50,7 @@ export class RuntimeEquipmentService {
   public unEquip(
     characterId: string,
     slot: EquipmentSlotEnum,
-  ): { success: boolean; error?: string } {
+  ): { success: boolean; error?: string; item?: TItem | null } {
     const character = this.playerStateService.getCharacterState(characterId);
 
     if (!character) {
@@ -60,10 +60,12 @@ export class RuntimeEquipmentService {
       };
     }
 
+    const item = character.equipment[slot] as TItem;
     character.equipment[slot] = null;
 
     return {
       success: true,
+      item,
     };
   }
 }
