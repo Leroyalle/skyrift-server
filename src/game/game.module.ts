@@ -22,6 +22,7 @@ import { ChatService } from './services/chat/chat.service';
 import { CombatService } from './services/combat/combat.service';
 import { ActionQueueService } from './services/combat/services/action-queue/action-queue.service';
 import { AoeService } from './services/combat/services/aoe/aoe.service';
+import { CombatCalculationService } from './services/combat/services/combat-calculation/combat-calculation.service';
 import { ProjectileService } from './services/combat/services/projectile/projectile.service';
 import { EntityRegistryService } from './services/entity-registry/entity-registry.service';
 import { GameConnectionService } from './services/game-core/game-connection/game-connection.service';
@@ -80,6 +81,7 @@ import { SpatialGridService } from './services/spatial-grid/spatial-grid.service
     WorldBootstrapService,
     GameConnectionService,
     QuestIndexService,
+    CombatCalculationService,
   ],
 })
 export class GameModule {}

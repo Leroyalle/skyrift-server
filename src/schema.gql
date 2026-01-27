@@ -201,6 +201,7 @@ type Armor implements BaseItem {
   iconKey: String!
   bag: Bag
   physicalDefense: Int!
+  magicDefense: Int!
 
   """Прочность предмета"""
   durability: Float!
