@@ -38,15 +38,15 @@ export class RuntimeMobService {
 
     for (const mob of mobsEntries) {
       const now = Date.now();
-      if (mob.respawnIn || mob.state === 'dead') {
+      if (!mob.isAlive) {
         if (mob.respawnIn && now >= mob.respawnIn) {
           this.respawn(mob.id);
         }
-
         continue;
       }
 
       if (mob.nextThinkAt && mob.nextThinkAt > now) continue;
+      console.log('mob.isAlive ', mob.isAlive, ' mob.state ', mob.state);
 
       const currentMobPath = this.movementQueueService.get(mob);
 
@@ -246,10 +246,30 @@ export class RuntimeMobService {
     const mob = this.resetRespawnTime(id);
     if (!mob) return;
 
+    mob.hp = mob.maxHp;
+    mob.isAlive = true;
+    mob.state = 'idle';
+
+    mob.aggro.clear();
+    mob.currentTarget = null;
+
+    mob.x = mob.spawnX;
+    mob.y = mob.spawnY;
+
+    this.spatialGridService.add(mob);
+
     this.socketService.sendTo(
       RedisKeys.Location + mob.locationId,
       ServerToClientEvents.RespawnMob,
-      { id },
+      {
+        id: mob.id,
+        hp: mob.hp,
+        maxHp: mob.maxHp,
+        isAlive: mob.isAlive,
+        x: mob.x,
+        y: mob.y,
+        state: mob.state,
+      },
     );
   }
 
@@ -261,7 +281,29 @@ export class RuntimeMobService {
     spawnMob.respawnIn = now + spawnMob.respawnTime;
   }
 
+  public killMob(id: string) {
+    const mob = this.registryService.getByRef({ type: 'mob', id });
+
+    if (!mob) return;
+    mob.isAlive = false;
+    mob.state = 'dead';
+    mob.aggro.clear();
+    mob.currentTarget = null;
+
+    this.spatialGridService.remove(mob);
+
+    this.setRespawn(id);
+
+    this.socketService.sendTo(
+      RedisKeys.Location + mob.locationId,
+      ServerToClientEvents.KillMob,
+      id,
+    );
+  }
   public moveTo(runtimeMob: IRuntimeMob, to: PositionDto, now: number): IRuntimeMob {
+    console.log(
+      `[MOVE] Mob ${runtimeMob.name} (${runtimeMob.id}) from (${runtimeMob.x},${runtimeMob.y}) to (${to.x},${to.y}) state=${runtimeMob.state} isAlive=${runtimeMob.isAlive}`,
+    );
     runtimeMob.x = to.x;
     runtimeMob.y = to.y;
     runtimeMob.lastMoveAt = now;

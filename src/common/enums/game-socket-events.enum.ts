@@ -16,6 +16,7 @@ export enum ServerToClientEvents {
   ChatLocation = 'chat:location',
   ChatDirect = 'chat:direct',
   PongTime = 'time:pong',
+  KillMob = 'mob:kill',
   RespawnMob = 'mob:respawn',
 
   BagItemAdded = 'bag:item-added',
