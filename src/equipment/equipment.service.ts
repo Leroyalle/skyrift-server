@@ -26,8 +26,9 @@ export class EquipmentService {
       },
       physicalDefense: 20,
       name: 'Железный шлем',
-      iconKey: 'helmet-iron',
+      iconKey: 'helmet_iron',
       durability: 1,
+      magicDefense: 1,
       bag: null,
     });
 
@@ -39,9 +40,10 @@ export class EquipmentService {
         frameName: `breastplate-${breast}`,
       },
       physicalDefense: 11,
-      name: 'Темный нагрудник',
-      iconKey: `breastplate-${breast}`,
+      name: `${breast === 'red' ? 'Красный' : 'Темный'} нагрудник`,
+      iconKey: `breastplate_${breast}`,
       durability: 1,
+      magicDefense: 1,
       bag: null,
     });
 

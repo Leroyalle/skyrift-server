@@ -21,6 +21,7 @@ import { isMob } from '../../lib/entity/guards/is-mob.lib';
 import { isPlayer } from '../../lib/entity/guards/is-player.lib';
 import { isAttackInProgress } from '../../lib/helpers/is-attack-in-progress.lib';
 import { ActionQueueService } from '../action-queue/action-queue.service';
+import { CombatCalculationService } from '../combat-calculation/combat-calculation.service';
 
 import { IProjectile } from './types/projectile.type';
 
@@ -32,6 +33,7 @@ export class ProjectileService {
     private readonly actionQueueService: ActionQueueService,
     @Inject(forwardRef(() => RuntimeMobService))
     private readonly runtimeMobService: RuntimeMobService,
+    private readonly combatCalculationService: CombatCalculationService,
   ) {}
 
   private readonly projectilesMap = new Map<EntityKey, Map<number, IProjectile>>();
@@ -118,6 +120,13 @@ export class ProjectileService {
     switch (skill?.skill.type) {
       case SkillType.Target: {
         const receivedDamage = skill.skill.damage;
+        // const {} = this.combatCalculationService.calculateCombat({
+        //   attacker,
+        //   victim,
+        //   source: ActionType.Skill,
+        //   skill,
+        // });
+
         const { remainingHp } = this.applyProjectile(attacker, victim, -receivedDamage);
         this.applyMiniRoot(victim, 200, now);
         return {

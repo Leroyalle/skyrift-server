@@ -326,10 +326,11 @@ export class SeedService {
       slot: ArmorSlotEnum.HELMET,
       name: 'Железный шлем',
       physicalDefense: 10,
-      iconKey: '',
+      iconKey: 'helmet_iron',
       bag: firstCharacter.bag,
       texture: { atlasKey: 'helmet_iron', frameName: 'helmet_iron' },
       itemType: ItemTypeEnum.ARMOR,
+      magicDefense: 1,
     });
 
     const breastplate = await this.itemService.createAndSave({
@@ -341,9 +342,10 @@ export class SeedService {
       },
       physicalDefense: 11,
       name: 'Темный нагрудник',
-      iconKey: `breastplate-dark`,
+      iconKey: `breastplate_dark`,
       durability: 1,
       bag: firstCharacter.bag,
+      magicDefense: 1,
     });
 
     firstCharacter.bag.items.push(elvenBowItem, ironHelmetItem, breastplate);

@@ -79,6 +79,10 @@ export class Armor extends BaseItem {
   @Field(() => Int)
   physicalDefense: number;
 
+  @Column({ nullable: true, default: 1 })
+  @Field(() => Int)
+  magicDefense: number;
+
   @Column({ type: 'int', default: 1 })
   @Field({ description: 'Прочность предмета' })
   durability: number;
