@@ -43,25 +43,38 @@ export class InventoryService {
           message: 'Предмет не найден',
         },
       );
+
+      console.log('[InventoryService.use] Предмет не найден');
       return;
     }
 
     switch (item.itemType) {
       case ItemTypeEnum.WEAPON:
       case ItemTypeEnum.ARMOR: {
+        console.log('IN SWITCH');
         if (isArmor(item) || isWeapon(item)) {
           const result = this.equipmentService.equip(character.id, item, item.slot);
+          console.log('AFTER EQUIP', result);
           if (result.success) {
             this.socketService.sendTo(
+              // TODO: вынести отсюда сокет
+              // FIXME: сейчас шлется всем событие, нужно одному + всем смена экипировки, либо оставить
               RedisKeys.Location + character.locationId,
-              ServerToClientEvents.EquipmentEquipped,
+              ServerToClientEvents.ItemMoved,
               {
                 entityRef: {
                   id: character.id,
                   type: character.type,
                 },
-                item,
-                slot: item.slot,
+                itemId: itemId,
+                from: {
+                  container: 'bag',
+                  // slot: result.fromSlot,
+                },
+                to: {
+                  container: 'equipment',
+                  slot: item.slot,
+                },
               },
             );
           } else {
