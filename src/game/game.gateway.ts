@@ -148,7 +148,10 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage(ClientToServerEvents.RequestUseItem)
   @UseGuards(WsAuthGuard)
-  public requestUseItem(@AuthSocket() client: AuthenticatedSocket, input: RequestUseItemDto) {
+  public requestUseItem(
+    @AuthSocket() client: AuthenticatedSocket,
+    @MessageBody() input: RequestUseItemDto,
+  ) {
     console.log('USE ITEM');
     return this.gameService.handleUseItem(client, input);
   }
