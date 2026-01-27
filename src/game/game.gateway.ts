@@ -139,7 +139,10 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage(ClientToServerEvents.RequestUnEquipItem)
   @UseGuards(WsAuthGuard)
-  public requestUnEquipItem(@AuthSocket() client: AuthenticatedSocket, input: RequestUnEquipDto) {
+  public requestUnEquipItem(
+    @AuthSocket() client: AuthenticatedSocket,
+    @MessageBody() input: RequestUnEquipDto,
+  ) {
     return this.gameService.handleUnEquip(client, input);
   }
 

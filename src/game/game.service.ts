@@ -315,6 +315,7 @@ export class GameService extends BaseLogger {
   }
 
   public handleUnEquip(client: AuthenticatedSocket, input: RequestUnEquipDto) {
+    console.log('HANDLE UN EQUIP', input);
     const character = this.playerStateService.getCharacterState(client.userData.characterId);
     if (!character) return;
 
