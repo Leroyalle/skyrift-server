@@ -1,7 +1,6 @@
 import { EquipmentSlotEnum } from 'src/common/enums/equipment-slot.enum';
-import { ItemTypeEnum } from 'src/common/enums/item-type.enum';
 import { TItem } from 'src/common/types/item.type';
-import { Armor, BaseItem, Weapon } from 'src/item/entities/item.entity';
+import { Armor, Weapon } from 'src/item/entities/item.entity';
 import { isArmor } from 'src/item/guards/is-armor';
 import { isWeapon } from 'src/item/guards/is-weapon';
 
@@ -25,7 +24,7 @@ export class RuntimeEquipmentService {
     characterId: string,
     item: TItem,
     slot: EquipmentSlotEnum,
-  ): { success: boolean; error?: string } {
+  ): { success: true; oldItem: Weapon | Armor | null } | { success: false; error?: string } {
     if (!this.checkCanEquip(item, slot))
       return {
         success: false,
@@ -40,10 +39,13 @@ export class RuntimeEquipmentService {
         error: 'Персонаж не найден',
       };
 
+    const oldItem = character.equipment[slot] as Weapon | Armor | null;
+
     character.equipment[slot] = item;
 
     return {
       success: true,
+      oldItem,
     };
   }
 
