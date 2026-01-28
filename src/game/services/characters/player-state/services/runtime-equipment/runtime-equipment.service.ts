@@ -12,6 +12,13 @@ import { PlayerStateService } from '../../player-state.service';
 export class RuntimeEquipmentService {
   constructor(private readonly playerStateService: PlayerStateService) {}
 
+  /**
+   * Метод проверяет можн ли экипировать предмет
+   * @param item Экипируемый предмет
+   * @param slot Экипируемый слот
+   * @returns Boolean можно ли экпировать предмет
+   */
+
   public checkCanEquip(item: TItem, slot: EquipmentSlotEnum): boolean {
     if (!isWeapon(item) && !isArmor(item)) return false;
 
@@ -19,6 +26,14 @@ export class RuntimeEquipmentService {
 
     return true;
   }
+
+  /**
+   * Метод экипирует предмет в выбранный слот
+   * @param characterId Айди персонажа
+   * @param item Экипируемый предмет
+   * @param slot Экипируемый слот
+   * @returns При успехе старый надетый предмет, при ошибке текст
+   */
 
   public equip(
     characterId: string,
@@ -48,6 +63,13 @@ export class RuntimeEquipmentService {
       oldItem,
     };
   }
+
+  /**
+   * Метод снимает предмет из экипировки по слоту и возвращает предмет надетый до снятия
+   * @param characterId Айди персонажа
+   * @param slot Слот
+   * @returns Предмет надетый до снятия
+   */
 
   public unEquip(
     characterId: string,

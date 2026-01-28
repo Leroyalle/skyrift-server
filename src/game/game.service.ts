@@ -494,8 +494,6 @@ export class GameService extends BaseLogger {
         );
       }
     }
-
-    // return this.inventoryService.use(client.userData.characterId, input.itemId);
   }
 
   public async requestTalkToNpc(socket: AuthenticatedSocket, input: RequestTalkToNpcDto) {
