@@ -1,4 +1,5 @@
 import { Bag } from 'src/characters/character/bag/entities/bag.entity';
+import { IRuntimeCharacter } from 'src/characters/character/types/runtime-character';
 import { ServerToClientEvents } from 'src/common/enums/game-socket-events.enum';
 import { ItemTypeEnum } from 'src/common/enums/item-type.enum';
 import { RedisKeys } from 'src/common/enums/redis-keys.enum';
@@ -31,6 +32,8 @@ export class InventoryService {
   public use(characterId: string, itemId: string) {
     const character = this.playerStateService.getCharacterState(characterId);
     if (!character) return;
+
+    console.log('character.bag.items', character.bag.items);
 
     const item = character.bag.items.find(item => item.id === itemId);
 
@@ -92,4 +95,55 @@ export class InventoryService {
         break;
     }
   }
+
+  public checkCanUse(
+    characterId: string,
+    itemId: string,
+  ): { success: true; item: TItem } | { success: false; error: string } {
+    const character = this.playerStateService.getCharacterState(characterId);
+
+    if (!character)
+      return {
+        success: false,
+        error: 'Персонаж не найден',
+      };
+
+    console.log('character.bag.items', character.bag.items);
+
+    const item = character.bag.items.find(item => item.id === itemId);
+
+    if (!item) {
+      console.log('[InventoryService.use] Предмет не найден');
+      return {
+        success: false,
+        error: 'Предмет не найден',
+      };
+    }
+
+    return {
+      success: true,
+      item: item as TItem,
+    };
+  }
+
+  public resolveUse = (item: TItem): { action: 'equip' | 'use' | 'error' } => {
+    switch (item.itemType) {
+      case ItemTypeEnum.WEAPON:
+      case ItemTypeEnum.ARMOR: {
+        return {
+          action: 'equip',
+        };
+      }
+
+      default: {
+        return {
+          action: 'error',
+        };
+      }
+    }
+
+    return {
+      action: 'error',
+    };
+  };
 }

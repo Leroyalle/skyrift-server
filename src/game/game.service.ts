@@ -9,6 +9,8 @@ import { TItem } from 'src/common/types/item.type';
 import { JwtPayload } from 'src/common/types/jwt-payload.type';
 import { AuthenticatedSocket } from 'src/common/types/socket/auth-socket.type';
 import { RedisService } from 'src/infrastructure/redis/redis.service';
+import { isArmor } from 'src/item/guards/is-armor';
+import { isWeapon } from 'src/item/guards/is-weapon';
 import { UserService } from 'src/user/user.service';
 
 import { Injectable } from '@nestjs/common';
@@ -33,6 +35,7 @@ import { InteractionService } from './services/interaction/interaction.service';
 import { MovementService } from './services/movement/movement.service';
 import { SocketService } from './services/socket/socket.service';
 import { SpatialGridService } from './services/spatial-grid/spatial-grid.service';
+import { TEquipResult } from './types/equipment/equip-result';
 import { PongReturnData } from './types/pong-return-data.type';
 
 @Injectable()
@@ -292,25 +295,45 @@ export class GameService extends BaseLogger {
       return;
     }
 
+    const payload: TEquipResult = {
+      entityRef: {
+        id: character.id,
+        type: character.type,
+      },
+      changes: [
+        {
+          from: {
+            container: 'bag',
+          },
+          to: {
+            container: 'equipment',
+            slot: input.slot,
+          },
+          itemId: input.item.id,
+        },
+      ],
+    };
+
+    if (result.oldItem) {
+      this.inventoryService.add(character.bag, result.oldItem);
+
+      payload.changes.push({
+        from: {
+          container: 'equipment',
+          slot: result.oldItem.slot,
+        },
+        to: {
+          container: 'bag',
+        },
+        itemId: result.oldItem.id,
+      });
+    }
+
     this.socketService.sendTo(
       // FIXME: сейчас шлется всем событие, нужно одному + всем смена экипировки, либо оставить
       RedisKeys.Location + character.locationId,
       ServerToClientEvents.ItemMoved,
-      {
-        entityRef: {
-          id: character.id,
-          type: character.type,
-        },
-        itemId: input.item.id,
-        from: {
-          container: 'bag',
-          // slot: result.fromSlot,
-        },
-        to: {
-          container: 'equipment',
-          slot: input.slot,
-        },
-      },
+      payload,
     );
   }
 
@@ -333,25 +356,45 @@ export class GameService extends BaseLogger {
       this.inventoryService.add(character.bag, result.item);
     }
 
+    const payload: TEquipResult = {
+      entityRef: {
+        id: character.id,
+        type: character.type,
+      },
+      changes: [
+        {
+          from: {
+            container: 'equipment',
+            slot: input.slot,
+          },
+          to: {
+            container: 'bag',
+          },
+          itemId: result.item!.id,
+        },
+      ],
+    };
+
     this.socketService.sendTo(
       // FIXME: сейчас шлется всем событие, нужно одному + всем смена экипировки, либо оставить
       RedisKeys.Location + character.locationId,
       ServerToClientEvents.ItemMoved,
-      {
-        entityRef: {
-          id: character.id,
-          type: character.type,
-        },
-        // FIXME: строже типизировать, сделать обязательным вместо !
-        itemId: result.item!.id,
-        from: {
-          container: 'equipment',
-          slot: input.slot,
-        },
-        to: {
-          container: 'bag',
-        },
-      },
+      payload,
+      // {
+      //   entityRef: {
+      //     id: character.id,
+      //     type: character.type,
+      //   },
+      //   // FIXME: строже типизировать, сделать обязательным вместо !
+      //   itemId: result.item!.id,
+      //   from: {
+      //     container: 'equipment',
+      //     slot: input.slot,
+      //   },
+      //   to: {
+      //     container: 'bag',
+      //   },
+      // },
     );
 
     // this.socketService.sendTo(
@@ -362,7 +405,97 @@ export class GameService extends BaseLogger {
   }
 
   public handleUseItem(client: AuthenticatedSocket, input: RequestUseItemDto) {
-    return this.inventoryService.use(client.userData.characterId, input.itemId);
+    const character = this.playerStateService.getCharacterState(client.userData.characterId);
+    if (!character) return;
+
+    const resultCanUse = this.inventoryService.checkCanUse(
+      client.userData.characterId,
+      input.itemId,
+    );
+
+    if (!resultCanUse.success) {
+      this.socketService.sendToUser(client.userData.userId, ServerToClientEvents.GameNotification, {
+        type: 'error',
+        message: resultCanUse.error || 'Не удалось использовать предмет',
+      });
+      return;
+    }
+
+    const resultResolve = this.inventoryService.resolveUse(resultCanUse.item);
+
+    if (resultResolve.action === 'error') {
+      this.socketService.sendToUser(client.userData.userId, ServerToClientEvents.GameNotification, {
+        type: 'error',
+        message: 'Не удалось использовать предмет',
+      });
+      return;
+    }
+
+    if (resultResolve.action === 'equip') {
+      if (isArmor(resultCanUse.item) || isWeapon(resultCanUse.item)) {
+        this.inventoryService.delete(character.bag, resultCanUse.item);
+        const resultEquip = this.equipmentService.equip(
+          client.userData.characterId,
+          resultCanUse.item,
+          resultCanUse.item.slot,
+        );
+
+        if (!resultEquip.success) {
+          this.socketService.sendToUser(character.userId, ServerToClientEvents.GameNotification, {
+            type: 'error',
+            message: resultEquip.error || 'Не удалось экипировать предмет',
+          });
+          console.log('[handleEquip] error', resultEquip.error);
+          return;
+        }
+
+        const payload: TEquipResult = {
+          entityRef: {
+            id: character.id,
+            type: character.type,
+          },
+          changes: [
+            {
+              from: {
+                container: 'bag',
+              },
+              itemId: resultCanUse.item.id,
+              to: {
+                container: 'equipment',
+                slot: resultCanUse.item.slot,
+              },
+            },
+          ],
+        };
+
+        if (resultEquip.oldItem) {
+          this.inventoryService.add(character.bag, resultEquip.oldItem);
+
+          // NOTE: важен порядок changes
+          payload.changes.unshift({
+            from: {
+              container: 'equipment',
+              slot: resultEquip.oldItem.slot,
+            },
+            itemId: resultEquip.oldItem.id,
+            to: {
+              container: 'bag',
+            },
+          });
+        }
+
+        console.log('USE ITEM PAYLOAD', payload.changes);
+
+        this.socketService.sendTo(
+          // FIXME: сейчас шлется всем событие, нужно одному + всем смена экипировки, либо оставить
+          RedisKeys.Location + character.locationId,
+          ServerToClientEvents.ItemMoved,
+          payload,
+        );
+      }
+    }
+
+    // return this.inventoryService.use(client.userData.characterId, input.itemId);
   }
 
   public async requestTalkToNpc(socket: AuthenticatedSocket, input: RequestTalkToNpcDto) {
