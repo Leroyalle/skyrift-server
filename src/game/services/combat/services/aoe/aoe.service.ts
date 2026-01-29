@@ -80,7 +80,7 @@ export class AoeService {
         victim.hp = remainingHp;
         victim.isAlive = remainingHp > 0;
         if (isMob(victim)) {
-          victim.aggro.updateThreatMap(attacker, receivedDamage);
+          victim.aggro.updateThreatMap({ type: attacker.type, id: attacker.id }, receivedDamage);
         }
         zone.lastUsedAt = now;
         targets.push({
