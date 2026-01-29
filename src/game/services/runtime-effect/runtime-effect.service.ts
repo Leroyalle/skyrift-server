@@ -13,6 +13,7 @@ import { ActionType } from 'src/game/types/pending-actions.type';
 
 import { Injectable } from '@nestjs/common';
 
+import { CombatCalculationService } from '../combat/services/combat-calculation/combat-calculation.service';
 import { EntityRegistryService } from '../entity-registry/entity-registry.service';
 import { SocketService } from '../socket/socket.service';
 
@@ -24,6 +25,7 @@ export class RuntimeEffectService extends BaseLogger {
   constructor(
     private readonly registryService: EntityRegistryService,
     private readonly socketService: SocketService,
+    private readonly combatCalculationService: CombatCalculationService,
   ) {
     super();
   }
@@ -71,10 +73,13 @@ export class RuntimeEffectService extends BaseLogger {
     }
   }
 
-  public addEffect(entityRef: EntityRef, effect: Effect): void {
-    this.log('addEffect');
+  public addEffect(entityRef: EntityRef, effect: Effect & { attackerRef: EntityRef }): void {
     const runtimeEffect: IRuntimeEffect = buildRuntimeEffect(effect);
-    const effectsMap = this.findOrCreateMap(entityRef);
+    const effectsMap = getOrCreate(
+      this.activeEffects,
+      generateEntityKey(entityRef),
+      () => new Map<EffectType, IRuntimeEffect[]>(),
+    );
     const effectsArray = getOrCreate(effectsMap, effect.type, () => []);
     effectsArray.push(runtimeEffect);
     const entityKey = generateEntityKey(entityRef);
@@ -87,12 +92,6 @@ export class RuntimeEffectService extends BaseLogger {
     if (!map) return;
     console.log('FINDBYMAP', Boolean(map));
     return map.get(type);
-  }
-
-  private findOrCreateMap(entityRef: EntityRef): Map<EffectType, IRuntimeEffect[]> {
-    const entityKey = generateEntityKey(entityRef);
-    const effectsMap = this.activeEffects.get(entityKey) ?? new Map<EffectType, IRuntimeEffect[]>();
-    return effectsMap;
   }
 
   // FIXME: удалить в типе ентити эффекты
@@ -108,28 +107,39 @@ export class RuntimeEffectService extends BaseLogger {
     this.log('applyEffect');
 
     const entityRef = decodeEntityKey(entityKey);
-    const entity = this.registryService.getByRef(entityRef);
+    const victim = this.registryService.getByRef(entityRef);
+    const attacker = this.registryService.getByRef(effect.attackerRef);
 
-    if (!entity) return;
+    if (!victim || !attacker) return;
 
     switch (effect.type) {
       case EffectType.DamageOverTime: {
         if (!effect.damagePerSecond) return;
-        const receivedDamage = effect.damagePerSecond;
-        const remainedHp = Math.max(entity.hp - receivedDamage, 0);
+        const result = this.combatCalculationService.calculateCombat({
+          attacker,
+          victim,
+          source: ActionType.Effect,
+          effect,
+        });
 
-        entity.hp = remainedHp;
-        entity.isAlive = remainedHp > 0;
+        if (!result) return;
+
+        const { receivedDamage, remainingHp } = result;
+        // const receivedDamage = effect.damagePerSecond;
+        // const remainedHp = Math.max(victim.hp - receivedDamage, 0);
+
+        victim.hp = remainingHp;
+        victim.isAlive = remainingHp > 0;
         effect.lastUsedAt = now;
         return {
           type: ActionType.Effect,
           skillId: null,
           targets: [
             {
-              hp: entity.hp,
-              id: entity.id,
-              type: entity.type,
-              isAlive: entity.isAlive,
+              hp: victim.hp,
+              id: victim.id,
+              type: victim.type,
+              isAlive: victim.isAlive,
               receivedDamage,
               appliedEffects: [
                 {
