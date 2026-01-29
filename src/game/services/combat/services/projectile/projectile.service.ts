@@ -190,7 +190,10 @@ export class ProjectileService {
     victim.isAlive = remainingHp > 0;
 
     if (isMob(victim)) {
-      victim.aggro.updateThreatMap(attacker, Math.abs(receivedDamage));
+      victim.aggro.updateThreatMap(
+        { type: attacker.type, id: attacker.id },
+        Math.abs(receivedDamage),
+      );
     }
     if (remainingHp <= 0) {
       this.actionQueueService.clearPendingActions(attacker, []);

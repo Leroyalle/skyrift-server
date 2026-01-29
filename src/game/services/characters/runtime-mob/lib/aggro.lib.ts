@@ -12,7 +12,6 @@ export class AggroTable {
   }
 
   public updateThreatMap(entityRef: EntityRef, damage: number): void {
-    console.log('updateThreatMap', entityRef, damage);
     const key = generateEntityKey(entityRef);
     const entityThreat = (this.threatMap.get(key) ?? 0) + damage;
     this.threatMap.set(key, entityThreat);

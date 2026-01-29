@@ -101,6 +101,10 @@ export class CombatCalculationService {
       },
       damageType === 'physical' ? attacker.basePhysicalDamage : attacker.baseMagicDamage,
     );
+
+    console.log('VICTIM DEFENSE', victimDefense);
+    console.log('ATTACKER POWER', attackerPower);
+
     return {
       victimDefense,
       attackerPower,
