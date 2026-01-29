@@ -67,12 +67,12 @@ export class CombatCalculationService {
       }
     }
 
-    const victimDefenseHp = victim.hp + victimDefense;
-    const remainingHp = Math.max(Math.min(victimDefenseHp - attackerPower, victim.maxHp), 0);
+    const receivedDamage = Math.max(attackerPower - victimDefense, 0);
+    const remainingHp = Math.max(Math.min(victim.hp - receivedDamage, victim.maxHp), 0);
 
     return {
       remainingHp,
-      receivedDamage: attackerPower,
+      receivedDamage,
     };
   }
 
