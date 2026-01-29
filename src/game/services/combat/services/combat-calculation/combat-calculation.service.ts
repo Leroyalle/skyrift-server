@@ -1,6 +1,8 @@
 import { CharacterSkill } from 'src/characters/character/character-skill/entities/character-skill.entity';
+import { EffectType } from 'src/common/enums/skill/effect-type.enum';
 import { SkillType } from 'src/common/enums/skill/skill-type.enum';
 import { toEntries } from 'src/common/lib/to-entries.lib';
+import { IRuntimeEffect } from 'src/game/services/runtime-effect/types/runtime-effect.type';
 import { TRuntimeEntity } from 'src/game/types/entity/runtime-entity.type';
 import { ActionType } from 'src/game/types/pending-actions.type';
 import { isArmor } from 'src/item/guards/is-armor';
@@ -11,7 +13,7 @@ import { Injectable } from '@nestjs/common';
 type CalculateCombat = {
   attacker: TRuntimeEntity;
   victim: TRuntimeEntity;
-} & (Auto | Skill);
+} & (Auto | Skill | Effect);
 
 type Auto = {
   source: ActionType.AutoAttack;
@@ -22,10 +24,10 @@ type Skill = {
   skill: CharacterSkill;
 };
 
-// type Effect = {
-//   source: ActionType.Effect;
-//   effectId: string;
-// };
+type Effect = {
+  source: ActionType.Effect;
+  effect: IRuntimeEffect;
+};
 
 type ReturnValue = {
   remainingHp: number;
@@ -36,7 +38,7 @@ type DamageType = 'physical' | 'magic';
 
 @Injectable()
 export class CombatCalculationService {
-  public calculateCombat(data: CalculateCombat): ReturnValue {
+  public calculateCombat(data: CalculateCombat): ReturnValue | undefined {
     const { attacker, victim } = data;
     // TODO: передавать тип урона или брать из аттакера
     const damageType: DamageType = 'physical';
@@ -53,12 +55,24 @@ export class CombatCalculationService {
       }
     }
 
-    const victimDefenseHp = victim.hp + victimDefense;
-    const remainingHp = victimDefenseHp - attackerPower;
+    if (data.source === ActionType.Effect) {
+      switch (data.effect.type) {
+        case EffectType.DamageOverTime:
+          if (!data.effect.damagePerSecond) return;
+          attackerPower += data.effect.damagePerSecond;
+          break;
+
+        default:
+          break;
+      }
+    }
+
+    const receivedDamage = Math.max(attackerPower - victimDefense, 0);
+    const remainingHp = Math.max(Math.min(victim.hp - receivedDamage, victim.maxHp), 0);
 
     return {
       remainingHp,
-      receivedDamage: attackerPower,
+      receivedDamage,
     };
   }
 
@@ -87,6 +101,10 @@ export class CombatCalculationService {
       },
       damageType === 'physical' ? attacker.basePhysicalDamage : attacker.baseMagicDamage,
     );
+
+    console.log('VICTIM DEFENSE', victimDefense);
+    console.log('ATTACKER POWER', attackerPower);
+
     return {
       victimDefense,
       attackerPower,

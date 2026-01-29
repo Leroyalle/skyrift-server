@@ -24,7 +24,7 @@ export class EquipmentService {
         atlasKey: 'helmet_iron',
         frameName: 'helmet-iron',
       },
-      physicalDefense: 20,
+      physicalDefense: 100,
       name: 'Железный шлем',
       iconKey: 'helmet_iron',
       durability: 1,

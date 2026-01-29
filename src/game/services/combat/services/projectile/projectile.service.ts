@@ -122,15 +122,20 @@ export class ProjectileService {
 
     switch (skill?.skill.type) {
       case SkillType.Target: {
-        const receivedDamage = skill.skill.damage;
-        // const {} = this.combatCalculationService.calculateCombat({
-        //   attacker,
-        //   victim,
-        //   source: ActionType.Skill,
-        //   skill,
-        // });
+        // const receivedDamage = skill.skill.damage;
+        const result = this.combatCalculationService.calculateCombat({
+          attacker,
+          victim,
+          source: ActionType.Skill,
+          skill,
+        });
 
-        const { remainingHp } = this.applyProjectile(attacker, victim, -receivedDamage);
+        if (!result) return;
+
+        const { remainingHp, receivedDamage } = result;
+
+        // const { remainingHp } =
+        this.applyProjectile(attacker, victim, remainingHp, -receivedDamage);
         this.applyMiniRoot(victim, 200, now);
         return {
           type: ActionType.Skill,
@@ -147,9 +152,19 @@ export class ProjectileService {
         };
       }
       default: {
-        const receivedDamage = attacker.basePhysicalDamage;
-        const { remainingHp } = this.applyProjectile(attacker, victim, -receivedDamage);
+        const result = this.combatCalculationService.calculateCombat({
+          attacker,
+          victim,
+          source: ActionType.AutoAttack,
+        });
+
+        if (!result) return;
+
+        const { remainingHp, receivedDamage } = result;
+
+        this.applyProjectile(attacker, victim, remainingHp, -receivedDamage);
         this.applyMiniRoot(victim, 200, now);
+
         return {
           type: ActionType.AutoAttack,
           skillId: null,
@@ -167,10 +182,21 @@ export class ProjectileService {
     }
   }
 
-  private applyProjectile(attacker: TRuntimeEntity, victim: TRuntimeEntity, hpValue: number) {
-    const remainingHp = this.updateHp(victim, hpValue);
+  private applyProjectile(
+    attacker: TRuntimeEntity,
+    victim: TRuntimeEntity,
+    remainingHp: number,
+    receivedDamage: number,
+  ) {
+    // const remainingHp = this.updateHp(victim, hpValue);
+    victim.hp = remainingHp;
+    victim.isAlive = remainingHp > 0;
+
     if (isMob(victim)) {
-      victim.aggro.updateThreatMap(attacker, Math.abs(hpValue));
+      victim.aggro.updateThreatMap(
+        { type: attacker.type, id: attacker.id },
+        Math.abs(receivedDamage),
+      );
     }
     if (remainingHp <= 0) {
       this.actionQueueService.clearPendingActions(attacker, []);
@@ -182,12 +208,5 @@ export class ProjectileService {
       }
     }
     return { remainingHp };
-  }
-
-  private updateHp(victim: TRuntimeEntity, delta: number): number {
-    const remainingHp = Math.max(Math.min(victim.hp + delta, victim.maxHp), 0);
-    victim.hp = remainingHp;
-    victim.isAlive = remainingHp > 0;
-    return remainingHp;
   }
 }

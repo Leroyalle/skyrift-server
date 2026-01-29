@@ -58,8 +58,6 @@ export class CombatService {
       if (queue.length === 0) continue;
       const action = queue[0];
 
-      console.log('ACTION', action);
-
       const attacker = this.registryService.getByRef(action.attackerRef);
 
       if (!attacker) continue;
@@ -508,7 +506,7 @@ export class CombatService {
     victim.isAlive = isAlive;
 
     if (isMob(victim)) {
-      victim.aggro.updateThreatMap(attacker, receivedDamage);
+      victim.aggro.updateThreatMap({ type: attacker.type, id: attacker.id }, receivedDamage);
       if (!victim.isAlive) {
         this.runtimeMobService.setRespawn(victim.id);
       }
