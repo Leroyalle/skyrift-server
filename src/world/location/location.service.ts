@@ -32,7 +32,7 @@ export class LocationService {
           location: true,
         },
         npcSpawn: {
-          entities: { equipment: equipmentRelations },
+          entities: { equipment: equipmentRelations, givenQuests: true },
           location: true,
         },
       },

@@ -30,6 +30,7 @@ import { PathFindingService } from '../path-finding/path-finding.service';
 import { SocketService } from '../socket/socket.service';
 import { SpatialGridService } from '../spatial-grid/spatial-grid.service';
 
+import { QuestIndexService } from './services/quest/quest-index/quest-index.service';
 import { RuntimeQuestService } from './services/quest/runtime-quest/runtime-quest.service';
 import { IRuntimeQuest } from './services/quest/runtime-quest/types/runtime-quest.type';
 import { InteractionType, PendingInteraction } from './types/pending-interactions.type';
@@ -48,6 +49,7 @@ export class InteractionService {
     private readonly actionQueueService: ActionQueueService,
     private readonly playerStateService: PlayerStateService,
     private readonly runtimeQuestService: RuntimeQuestService,
+    private readonly questIndexService: QuestIndexService,
   ) {}
 
   private readonly pendingInteractions = new Map<string, PendingInteraction>();
@@ -92,9 +94,12 @@ export class InteractionService {
         case InteractionType.Talk: {
           const result = await this.resolveTalk(interaction, playerState, currentLocation);
           if (!result) {
-            this.deletePendingInteraction(playerState.id);
-            continue;
+            console.log('[tickInteractions.resolveTalk] result is false');
           }
+          // if (!result) {
+          this.deletePendingInteraction(playerState.id);
+          continue;
+          // }
           break;
         }
 
@@ -198,12 +203,15 @@ export class InteractionService {
 
     if (!npc || !isNpc(npc)) return;
 
+    console.log('AFTER FIND NPC AND PLAYER');
+
     const currentLocation = await this.locationService.loadLocation(npc.locationId);
 
     if (!currentLocation) return;
 
     const result = await this.checkDistanceAndSetMovement(character, npc, currentLocation);
 
+    console.log('RESULT CHECK DISTANCE INTERACTION', result);
     if (!result) return;
 
     this.setPendingInteraction({
@@ -221,18 +229,18 @@ export class InteractionService {
 
     if (!character || !isPlayer(character)) return;
 
-    const npc = this.registryService.getByRef({ type: 'npc', id: input.npcId });
+    const findQuest = this.questIndexService.getById(input.questId);
 
-    if (!npc || !isNpc(npc)) return;
+    if (!findQuest) return;
 
-    const quest = npc.givenQuests.find(q => q.id === input.questId);
+    // const quest = findQuest.giverNpc.givenQuests.find(q => q.id === input.questId);
 
-    if (!quest) return;
+    // if (!quest) return;
 
     const playerQuest: IRuntimeQuest = {
       completedAt: null,
       progress: null,
-      quest,
+      quest: findQuest,
       stepIndex: 0,
     };
 

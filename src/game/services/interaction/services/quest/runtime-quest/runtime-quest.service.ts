@@ -3,11 +3,16 @@ import { Quest } from 'src/quest/entities/quest.entity';
 
 import { Injectable } from '@nestjs/common';
 
+import { QuestIndexService } from '../quest-index/quest-index.service';
+
 import { IRuntimeQuest } from './types/runtime-quest.type';
 
 @Injectable()
 export class RuntimeQuestService {
+  constructor(private readonly questIndexService: QuestIndexService) {}
+
   public getAvailableQuests(playerState: IRuntimeCharacter, quests: Quest[]): Quest[] {
+    console.log('QUESTS', quests);
     const availableQuests = quests.filter(quest => {
       if (playerState.completedQuestIds.has(quest.id)) return false;
 
