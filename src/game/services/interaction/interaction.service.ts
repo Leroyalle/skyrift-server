@@ -246,9 +246,7 @@ export class InteractionService {
 
     this.runtimeQuestService.acceptQuest(character, playerQuest);
 
-    this.socketService.sendToUser(character.userId, ServerToClientEvents.QuestStarted, {
-      quest: playerQuest,
-    });
+    this.socketService.sendToUser(character.userId, ServerToClientEvents.QuestStarted, playerQuest);
   }
 
   public async requestUseTeleport(client: Socket, input: RequestUseTeleportDto) {
