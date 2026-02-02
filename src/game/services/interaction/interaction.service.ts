@@ -30,9 +30,11 @@ import { PathFindingService } from '../path-finding/path-finding.service';
 import { SocketService } from '../socket/socket.service';
 import { SpatialGridService } from '../spatial-grid/spatial-grid.service';
 
+import { QuestIndexService } from './services/quest/quest-index/quest-index.service';
 import { RuntimeQuestService } from './services/quest/runtime-quest/runtime-quest.service';
 import { IRuntimeQuest } from './services/quest/runtime-quest/types/runtime-quest.type';
 import { InteractionType, PendingInteraction } from './types/pending-interactions.type';
+import { IQuestStartedPayload } from './types/quest-started-payload.type';
 
 @Injectable()
 export class InteractionService {
@@ -48,6 +50,7 @@ export class InteractionService {
     private readonly actionQueueService: ActionQueueService,
     private readonly playerStateService: PlayerStateService,
     private readonly runtimeQuestService: RuntimeQuestService,
+    private readonly questIndexService: QuestIndexService,
   ) {}
 
   private readonly pendingInteractions = new Map<string, PendingInteraction>();
@@ -92,9 +95,12 @@ export class InteractionService {
         case InteractionType.Talk: {
           const result = await this.resolveTalk(interaction, playerState, currentLocation);
           if (!result) {
-            this.deletePendingInteraction(playerState.id);
-            continue;
+            console.log('[tickInteractions.resolveTalk] result is false');
           }
+          // if (!result) {
+          this.deletePendingInteraction(playerState.id);
+          continue;
+          // }
           break;
         }
 
@@ -121,6 +127,7 @@ export class InteractionService {
 
     if (!result) return false;
 
+    // FIXME: при выдачи списка квестов показывать еще и активные квесты
     const quests = this.runtimeQuestService.getAvailableQuests(playerState, npc.givenQuests);
 
     this.socketService.sendToUser(playerState.userId, ServerToClientEvents.QuestList, {
@@ -198,12 +205,15 @@ export class InteractionService {
 
     if (!npc || !isNpc(npc)) return;
 
+    console.log('AFTER FIND NPC AND PLAYER');
+
     const currentLocation = await this.locationService.loadLocation(npc.locationId);
 
     if (!currentLocation) return;
 
     const result = await this.checkDistanceAndSetMovement(character, npc, currentLocation);
 
+    console.log('RESULT CHECK DISTANCE INTERACTION', result);
     if (!result) return;
 
     this.setPendingInteraction({
@@ -221,26 +231,46 @@ export class InteractionService {
 
     if (!character || !isPlayer(character)) return;
 
-    const npc = this.registryService.getByRef({ type: 'npc', id: input.npcId });
+    const findQuest = this.questIndexService.getById(input.questId);
 
-    if (!npc || !isNpc(npc)) return;
+    if (!findQuest) return;
 
-    const quest = npc.givenQuests.find(q => q.id === input.questId);
+    const npc = this.registryService.getByRef({ type: 'npc', id: findQuest.giverNpc.id });
 
-    if (!quest) return;
+    if (!npc) return;
+
+    // const quest = findQuest.giverNpc.givenQuests.find(q => q.id === input.questId);
+
+    // if (!quest) return;
 
     const playerQuest: IRuntimeQuest = {
       completedAt: null,
       progress: null,
-      quest,
+      quest: findQuest,
       stepIndex: 0,
     };
 
-    this.runtimeQuestService.acceptQuest(character, playerQuest);
+    // FIXME: нужно передавать опциональный айдишник player quest тк будет мешать сохранению не до конца выполненного квеста
 
-    this.socketService.sendToUser(character.userId, ServerToClientEvents.QuestStarted, {
+    this.runtimeQuestService.acceptQuest(character, playerQuest);
+    const quests = this.runtimeQuestService.getAvailableQuests(character, npc.givenQuests);
+
+    // const updatedNpc = findQuest.giverNpc.givenQuests.filter(q => q.id === input.questId);
+    // this.runtimeQuestService.acceptQuest(character, playerQuest);
+
+    const payload: IQuestStartedPayload = {
       quest: playerQuest,
-    });
+      update: {
+        npc: [
+          {
+            id: findQuest.giverNpc.id,
+            questState: quests.length ? 'available' : 'active',
+          },
+        ],
+      },
+    };
+
+    this.socketService.sendToUser(character.userId, ServerToClientEvents.QuestStarted, payload);
   }
 
   public async requestUseTeleport(client: Socket, input: RequestUseTeleportDto) {
