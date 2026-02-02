@@ -50,6 +50,15 @@ export class PathFindingService {
     });
   }
 
+  /**
+   * Просчитывает путь для сущности с учетом коллизий
+   * @description просчитывает массив шагов из точки А в Б с учетом коллизий
+   * @param locationId Айди локации
+   * @param tilesFrom Тайловые координаты откуда
+   * @param tilesTo Тайловые координаты куда
+   * @param map Матрица проходимости локации
+   * @returns Массив шагов в формате {x, y} или null если путь не найден
+   */
   public getPlayerPath(
     locationId: string,
     tilesFrom: TCoord,

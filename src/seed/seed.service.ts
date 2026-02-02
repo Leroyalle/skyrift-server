@@ -234,32 +234,62 @@ export class SeedService {
       }),
     );
 
-    const orcMob = this.mobRepository.create({
-      name: 'Суленыч',
-      magicDefense: 1,
-      physicalDefense: 1,
-      attackRange: 1,
-      walkSpeed: 300,
-      chaseSpeed: 450,
-      triggerRange: 3,
-      x: 2016,
-      y: 960,
-      maxHp: 1000,
-      hp: 1000,
-      respawnTime: 5000,
-      level: 3,
-      expReward: 20,
-      equipment: await this.equipmentService.createInitEquip('dark'),
-      attackSpeed: 1000,
-      critMultiplier: 1,
-      baseMagicDamage: 30,
-      basePhysicalDamage: 41,
-    });
+    const mobs: Mob[] = [];
 
-    await this.mobRepository.save(orcMob);
+    for (let i = 0; i <= 5; i++) {
+      const orcMob = this.mobRepository.create({
+        name: 'Суленыч #' + i,
+        magicDefense: 1,
+        physicalDefense: 1,
+        attackRange: 1,
+        walkSpeed: 300,
+        chaseSpeed: 450,
+        triggerRange: 3,
+        x: 2016,
+        y: 960,
+        maxHp: 1000,
+        hp: 1000,
+        respawnTime: 5000,
+        level: 3,
+        expReward: 20,
+        equipment: await this.equipmentService.createInitEquip('dark'),
+        attackSpeed: 1000,
+        critMultiplier: 1,
+        baseMagicDamage: 30,
+        basePhysicalDamage: 41,
+      });
+
+      await this.mobRepository.save(orcMob);
+
+      mobs.push(orcMob);
+    }
+
+    // const orcMob = this.mobRepository.create({
+    //   name: 'Суленыч',
+    //   magicDefense: 1,
+    //   physicalDefense: 1,
+    //   attackRange: 1,
+    //   walkSpeed: 300,
+    //   chaseSpeed: 450,
+    //   triggerRange: 3,
+    //   x: 2016,
+    //   y: 960,
+    //   maxHp: 1000,
+    //   hp: 1000,
+    //   respawnTime: 5000,
+    //   level: 3,
+    //   expReward: 20,
+    //   equipment: await this.equipmentService.createInitEquip('dark'),
+    //   attackSpeed: 1000,
+    //   critMultiplier: 1,
+    //   baseMagicDamage: 30,
+    //   basePhysicalDamage: 41,
+    // });
+
+    // await this.mobRepository.save(orcMob);
 
     await this.spawnService.createSpawn({
-      entities: [orcMob],
+      entities: mobs,
       spawnX: 1700,
       spawnY: 1200,
       areaRadius: 3,
@@ -412,7 +442,7 @@ export class SeedService {
     });
 
     const magisterNpc = await this.npcService.create({
-      ...setupNpc({ name: 'Магистр СГ', x: 1800, y: 1000, givenQuests: [] }),
+      ...setupNpc({ name: 'Нпс', x: 1800, y: 1000, givenQuests: [] }),
       equipment: await this.equipmentService.createInitEquip('dark'),
     });
 
@@ -426,7 +456,7 @@ export class SeedService {
 
     const firstQuest = await this.questService.createQuest({
       name: 'Ель - хвойная',
-      description: 'Отпили и притащи огромную ветвь ели в кабинет магистра',
+      description: 'Убей 5 орков где-то поблизости',
       expReward: 100,
       goldReward: 200,
       itemRewards: [
@@ -442,7 +472,7 @@ export class SeedService {
           description: 'Убейте 5 орков',
           type: StepType.Kill,
           count: 5,
-          mobTemplateId: orcMob.id,
+          mobTemplateId: mobs[0].id,
           target: 'mob',
         },
         {
