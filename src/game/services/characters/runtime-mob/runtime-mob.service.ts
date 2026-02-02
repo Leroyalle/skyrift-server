@@ -16,6 +16,7 @@ import { MovementQueueService } from '../../movement/services/movement-queue/mov
 import { PathFindingService } from '../../path-finding/path-finding.service';
 import { SocketService } from '../../socket/socket.service';
 import { SpatialGridService } from '../../spatial-grid/spatial-grid.service';
+import { MobLootService } from '../mob/loot/mob-loot.service';
 
 import { RangeArea } from './types/range-area.type';
 import { IRuntimeMob } from './types/runtime-mob.type';
@@ -31,6 +32,7 @@ export class RuntimeMobService {
     private readonly movementQueueService: MovementQueueService,
     private readonly socketService: SocketService,
     private readonly registryService: EntityRegistryService,
+    private readonly mobLootService: MobLootService,
   ) {}
 
   public async tickAiMobs() {
@@ -261,15 +263,7 @@ export class RuntimeMobService {
     this.socketService.sendTo(
       RedisKeys.Location + mob.locationId,
       ServerToClientEvents.RespawnMob,
-      {
-        id: mob.id,
-        hp: mob.hp,
-        maxHp: mob.maxHp,
-        isAlive: mob.isAlive,
-        x: mob.x,
-        y: mob.y,
-        state: mob.state,
-      },
+      mob,
     );
   }
 
@@ -290,15 +284,18 @@ export class RuntimeMobService {
     mob.aggro.clear();
     mob.currentTarget = null;
 
+    const droppedLoot = this.mobLootService.generateLoot(mob.loot ?? []);
+
     this.spatialGridService.remove(mob);
 
     this.setRespawn(id);
 
-    this.socketService.sendTo(
-      RedisKeys.Location + mob.locationId,
-      ServerToClientEvents.KillMob,
-      id,
-    );
+    // console.log(, droppedLoot);
+    console.log('DROPPPPPPPED LOOOOOOOOOOOT ', mob.loot);
+    this.socketService.sendTo(RedisKeys.Location + mob.locationId, ServerToClientEvents.KillMob, {
+      mob,
+      loot: droppedLoot,
+    });
   }
   public moveTo(runtimeMob: IRuntimeMob, to: PositionDto, now: number): IRuntimeMob {
     console.log(

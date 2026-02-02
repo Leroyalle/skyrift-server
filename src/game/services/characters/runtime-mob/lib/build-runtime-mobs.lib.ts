@@ -48,5 +48,6 @@ export function buildRuntimeMobs(mobSpawn: MobSpawn): IRuntimeMob[] {
     attackRange: mob.attackRange,
     areaRadius: mobSpawn.areaRadius,
     aggro: new AggroTable(),
+    loot: mob.loot || [],
   }));
 }

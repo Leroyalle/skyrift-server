@@ -1,4 +1,5 @@
 import { ActorEntity } from 'src/common/entities/actor-entity.entity';
+import { LootItem } from 'src/game/services/characters/mob/loot/types/mob-lot.types';
 import { Column, Entity, ManyToOne } from 'typeorm';
 
 import { Field, Int, ObjectType } from '@nestjs/graphql';
@@ -27,4 +28,8 @@ export class Mob extends ActorEntity {
   @ManyToOne(() => MobSpawn, spawn => spawn.entities)
   @Field(() => MobSpawn)
   spawn: MobSpawn;
+
+  @Column({ type: 'jsonb', nullable: true })
+  @Field(() => String, { nullable: true })
+  loot?: LootItem[];
 }

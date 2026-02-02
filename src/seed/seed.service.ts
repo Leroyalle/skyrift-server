@@ -19,6 +19,7 @@ import { Effect } from 'src/effect/entities/effect.entity';
 import { EquipmentService } from 'src/equipment/equipment.service';
 import { Faction } from 'src/faction/entities/faction.entity';
 import { FactionEnum } from 'src/faction/types/faction.enum';
+import { LootRarity } from 'src/game/services/characters/mob/loot/types/mob-lot.types';
 import { BaseItem, Weapon } from 'src/item/entities/item.entity';
 import { ItemService } from 'src/item/item.service';
 import { QuestService } from 'src/quest/quest.service';
@@ -26,7 +27,7 @@ import { StepType } from 'src/quest/types/quest-step.type';
 import { Location } from 'src/world/location/entities/location.entity';
 import { MobSpawn } from 'src/world/spawn/entities/mob-spawn.entity';
 import { SpawnService } from 'src/world/spawn/spawn.service';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, DeepPartial, Repository } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import * as xml2js from 'xml2js';
 
@@ -236,7 +237,9 @@ export class SeedService {
 
     const mobs: Mob[] = [];
 
-    for (let i = 0; i <= 5; i++) {
+    for (let i = 1; i <= 1; i++) {
+      const x = 2016;
+      const y = 960;
       const orcMob = this.mobRepository.create({
         name: 'Суленыч #' + i,
         magicDefense: 1,
@@ -245,11 +248,11 @@ export class SeedService {
         walkSpeed: 300,
         chaseSpeed: 450,
         triggerRange: 3,
-        x: 2016,
-        y: 960,
-        maxHp: 1000,
-        hp: 1000,
-        respawnTime: 5000,
+        x,
+        y,
+        maxHp: 25,
+        hp: 25,
+        respawnTime: 500000,
         level: 3,
         expReward: 20,
         equipment: await this.equipmentService.createInitEquip('dark'),
@@ -257,6 +260,42 @@ export class SeedService {
         critMultiplier: 1,
         baseMagicDamage: 30,
         basePhysicalDamage: 41,
+        loot: [
+          {
+            itemType: ItemTypeEnum.ARMOR,
+            name: 'Железный шлем',
+            iconKey: 'helmet_iron',
+            rarity: LootRarity.UNCOMMON,
+            chance: 0.4,
+
+            armorSlot: ArmorSlotEnum.HELMET,
+            physicalDefense: 13,
+            magicDefense: 1,
+            durability: 1,
+
+            texture: {
+              atlasKey: 'helmet_iron',
+              frameName: 'helmet-iron',
+            },
+          },
+
+          {
+            itemType: ItemTypeEnum.ARMOR,
+            name: 'Темный нагрудник',
+            iconKey: 'breastplate_dark',
+            rarity: LootRarity.UNCOMMON,
+            chance: 0.2,
+
+            armorSlot: ArmorSlotEnum.BREASTPLATE,
+            physicalDefense: 11,
+            magicDefense: 1,
+            durability: 1,
+            texture: {
+              atlasKey: 'breastplate_dark',
+              frameName: 'breastplate-dark',
+            },
+          },
+        ],
       });
 
       await this.mobRepository.save(orcMob);
@@ -512,7 +551,7 @@ export class SeedService {
       'user',
       'equipment',
       'npc_spawn',
-      'mob_spawn',
+      // 'mob_spawn',
       'entity_spawn',
       'npc',
       'quests',

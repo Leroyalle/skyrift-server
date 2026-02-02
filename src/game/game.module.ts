@@ -13,6 +13,7 @@ import { Module } from '@nestjs/common';
 
 import { GameGateway } from './game.gateway';
 import { GameService } from './game.service';
+import { MobLootService } from './services/characters/mob/loot/mob-loot.service';
 import { PlayerStateService } from './services/characters/player-state/player-state.service';
 import { InventoryService } from './services/characters/player-state/services/inventory/inventory.service';
 import { RuntimeEquipmentService } from './services/characters/player-state/services/runtime-equipment/runtime-equipment.service';
@@ -60,6 +61,7 @@ import { SpatialGridService } from './services/spatial-grid/spatial-grid.service
     MovementService,
     CombatService,
     SpatialGridService,
+    MobLootService,
     SocketService,
     PathFindingService,
     RegenerationService,

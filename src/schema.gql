@@ -352,6 +352,7 @@ type Mob {
   expReward: Int!
   respawnTime: Int!
   spawn: MobSpawn!
+  loot: String
 }
 
 type MobSpawn {
