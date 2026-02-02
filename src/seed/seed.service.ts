@@ -456,7 +456,7 @@ export class SeedService {
 
     const firstQuest = await this.questService.createQuest({
       name: 'Ель - хвойная',
-      description: 'Отпили и притащи огромную ветвь ели в кабинет магистра',
+      description: 'Убей 5 орков где-то поблизости',
       expReward: 100,
       goldReward: 200,
       itemRewards: [

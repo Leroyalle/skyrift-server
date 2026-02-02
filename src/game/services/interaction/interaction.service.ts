@@ -34,6 +34,7 @@ import { QuestIndexService } from './services/quest/quest-index/quest-index.serv
 import { RuntimeQuestService } from './services/quest/runtime-quest/runtime-quest.service';
 import { IRuntimeQuest } from './services/quest/runtime-quest/types/runtime-quest.type';
 import { InteractionType, PendingInteraction } from './types/pending-interactions.type';
+import { IQuestStartedPayload } from './types/quest-started-payload.type';
 
 @Injectable()
 export class InteractionService {
@@ -126,6 +127,7 @@ export class InteractionService {
 
     if (!result) return false;
 
+    // FIXME: при выдачи списка квестов показывать еще и активные квесты
     const quests = this.runtimeQuestService.getAvailableQuests(playerState, npc.givenQuests);
 
     this.socketService.sendToUser(playerState.userId, ServerToClientEvents.QuestList, {
@@ -233,6 +235,10 @@ export class InteractionService {
 
     if (!findQuest) return;
 
+    const npc = this.registryService.getByRef({ type: 'npc', id: findQuest.giverNpc.id });
+
+    if (!npc) return;
+
     // const quest = findQuest.giverNpc.givenQuests.find(q => q.id === input.questId);
 
     // if (!quest) return;
@@ -244,9 +250,27 @@ export class InteractionService {
       stepIndex: 0,
     };
 
-    this.runtimeQuestService.acceptQuest(character, playerQuest);
+    // FIXME: нужно передавать опциональный айдишник player quest тк будет мешать сохранению не до конца выполненного квеста
 
-    this.socketService.sendToUser(character.userId, ServerToClientEvents.QuestStarted, playerQuest);
+    this.runtimeQuestService.acceptQuest(character, playerQuest);
+    const quests = this.runtimeQuestService.getAvailableQuests(character, npc.givenQuests);
+
+    // const updatedNpc = findQuest.giverNpc.givenQuests.filter(q => q.id === input.questId);
+    // this.runtimeQuestService.acceptQuest(character, playerQuest);
+
+    const payload: IQuestStartedPayload = {
+      quest: playerQuest,
+      update: {
+        npc: [
+          {
+            id: findQuest.giverNpc.id,
+            questState: quests.length ? 'available' : 'active',
+          },
+        ],
+      },
+    };
+
+    this.socketService.sendToUser(character.userId, ServerToClientEvents.QuestStarted, payload);
   }
 
   public async requestUseTeleport(client: Socket, input: RequestUseTeleportDto) {

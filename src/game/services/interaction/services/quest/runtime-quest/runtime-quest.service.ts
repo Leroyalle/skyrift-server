@@ -12,7 +12,6 @@ export class RuntimeQuestService {
   constructor(private readonly questIndexService: QuestIndexService) {}
 
   public getAvailableQuests(playerState: IRuntimeCharacter, quests: Quest[]): Quest[] {
-    console.log('QUESTS', quests);
     const availableQuests = quests.filter(quest => {
       if (playerState.completedQuestIds.has(quest.id)) return false;
 
@@ -33,7 +32,13 @@ export class RuntimeQuestService {
     return availableQuests;
   }
 
+  public isQuestIsActive(playerState: IRuntimeCharacter, quest: Quest) {
+    return playerState.activeQuests.some(activeQuest => activeQuest.quest.id === quest.id);
+  }
+
   public acceptQuest(playerState: IRuntimeCharacter, quest: IRuntimeQuest) {
+    if (playerState.activeQuests.some(activeQuest => activeQuest.quest.id === quest.quest.id))
+      return;
     playerState.activeQuests.push(quest);
   }
 }

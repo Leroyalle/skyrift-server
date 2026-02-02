@@ -1,13 +1,14 @@
 import { IRuntimeCharacter } from 'src/characters/character/types/runtime-character';
 import { RedisKeysFactory } from 'src/common/infra/redis-keys-factory.infra';
 import { getOrCreate } from 'src/game/lib/helpers/get-or-create-array.lib';
-import { GameInitialData } from 'src/game/types/game-initial-data.type';
+import { IGameInitialData } from 'src/game/types/game-initial-data.type';
 import { RedisService } from 'src/infrastructure/redis/redis.service';
 import { LocationService } from 'src/world/location/location.service';
 
 import { Injectable } from '@nestjs/common';
 
 import { PlayerStateService } from '../../characters/player-state/player-state.service';
+import { INpcWithQuestState } from '../../characters/runtime-npc/types/npc-with-quest-state.type';
 import { AoeService } from '../../combat/services/aoe/aoe.service';
 import { EntityRegistryService } from '../../entity-registry/entity-registry.service';
 import { QuestIndexService } from '../../interaction/services/quest/quest-index/quest-index.service';
@@ -28,7 +29,7 @@ export class GameInitialDataService {
   public async loadInitialData(
     characterId: string,
     locationId: string,
-  ): Promise<GameInitialData | undefined> {
+  ): Promise<IGameInitialData | undefined> {
     const character = this.playerStateService.getCharacterState(characterId);
 
     if (!character) return;
@@ -60,25 +61,38 @@ export class GameInitialDataService {
     const questsByNpc = this.questIndexService.getByNpcs(npcs);
     const availableQuests = this.runtimeQuestService.getAvailableQuests(character, questsByNpc);
 
-    const npcToQuestId = new Map<string, string[]>();
+    const npcToaAvailableQuestId = new Map<string, string[]>();
 
     for (const quest of availableQuests) {
-      const quests = getOrCreate(npcToQuestId, quest.giverNpc.id, () => []);
+      const quests = getOrCreate(npcToaAvailableQuestId, quest.giverNpc.id, () => []);
       quests.push(quest.id);
     }
 
-    const npcsWithAvailableQuests = npcs.map(npc => ({
-      ...npc,
-      hasAvailableQuests: npcToQuestId.has(npc.id),
-    }));
+    const npcToActiveQuestQuestId = new Map<string, string>();
 
-    return {
+    for (const quest of character.activeQuests) {
+      npcToActiveQuestQuestId.set(quest.quest.giverNpc.id, quest.quest.id);
+    }
+
+    const npcsWithQuestState = npcs.map<INpcWithQuestState>(npc => {
+      const hasActiveQuest = npcToActiveQuestQuestId.has(npc.id);
+      const hasAvailableQuest = npcToaAvailableQuestId.has(npc.id);
+      return {
+        ...npc,
+        // TODO: добавть ready стейт для несданных квестов
+        questState: hasAvailableQuest ? 'available' : hasActiveQuest ? 'active' : 'none',
+      };
+    });
+
+    const payload: IGameInitialData = {
       character,
       location,
       players: otherPlayers,
       aoeZones,
       mobs,
-      npcs: npcsWithAvailableQuests,
+      npcs: npcsWithQuestState,
     };
+
+    return payload;
   }
 }
