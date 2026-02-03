@@ -4,10 +4,10 @@ import { ItemService } from 'src/item/item.service';
 
 import { Injectable } from '@nestjs/common';
 
-import { LootDrop, LootItem, LootRarity } from './types/mob-lot.types';
+import { LootDrop, LootItem, LootRarity } from './types/loot.types';
 
 @Injectable()
-export class MobLootService {
+export class LootService {
   constructor(private readonly itemService: ItemService) {}
   private readonly rarityMultiplier = {
     [LootRarity.COMMON]: 1,
@@ -17,7 +17,7 @@ export class MobLootService {
     [LootRarity.LEGENDARY]: 0.05,
   };
 
-  public async generateLoot(lootData: LootItem[]): Promise<LootDrop[]> {
+  public generateLoot(lootData: LootItem[]): LootDrop[] {
     const generateLoot: LootDrop[] = [];
 
     for (const lootItem of lootData) {
@@ -25,7 +25,7 @@ export class MobLootService {
 
       const amount = this.rollAmount(lootItem);
 
-      const item = await this.itemService.createAndSave(lootItem);
+      const item = this.itemService.create(lootItem);
       generateLoot.push({ item, amount });
     }
     return generateLoot;

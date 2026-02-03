@@ -19,7 +19,7 @@ import { Effect } from 'src/effect/entities/effect.entity';
 import { EquipmentService } from 'src/equipment/equipment.service';
 import { Faction } from 'src/faction/entities/faction.entity';
 import { FactionEnum } from 'src/faction/types/faction.enum';
-import { LootRarity } from 'src/game/services/characters/mob/loot/types/mob-lot.types';
+import { LootRarity } from 'src/game/services/loot/types/loot.types';
 import { BaseItem, Weapon } from 'src/item/entities/item.entity';
 import { ItemService } from 'src/item/item.service';
 import { QuestService } from 'src/quest/quest.service';

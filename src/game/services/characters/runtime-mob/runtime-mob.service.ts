@@ -12,11 +12,11 @@ import { forwardRef, Inject, Injectable } from '@nestjs/common';
 
 import { CombatService } from '../../combat/combat.service';
 import { EntityRegistryService } from '../../entity-registry/entity-registry.service';
+import { LootService } from '../../loot/loot.service';
 import { MovementQueueService } from '../../movement/services/movement-queue/movement-queue.service';
 import { PathFindingService } from '../../path-finding/path-finding.service';
 import { SocketService } from '../../socket/socket.service';
 import { SpatialGridService } from '../../spatial-grid/spatial-grid.service';
-import { MobLootService } from '../mob/loot/mob-loot.service';
 
 import { RangeArea } from './types/range-area.type';
 import { IRuntimeMob } from './types/runtime-mob.type';
@@ -32,7 +32,7 @@ export class RuntimeMobService {
     private readonly movementQueueService: MovementQueueService,
     private readonly socketService: SocketService,
     private readonly registryService: EntityRegistryService,
-    private readonly mobLootService: MobLootService,
+    private readonly mobLootService: LootService,
   ) {}
 
   public async tickAiMobs() {

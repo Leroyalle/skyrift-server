@@ -22,20 +22,40 @@ export class ItemService {
     private readonly resourceRepo: Repository<Resource>,
   ) {}
 
+  public create(input: { itemType: ItemTypeEnum.WEAPON } & Omit<Weapon, 'id'>): Weapon;
+  public create(input: { itemType: ItemTypeEnum.ARMOR } & Omit<Armor, 'id'>): Armor;
+  public create(input: { itemType: ItemTypeEnum.RESOURCE } & Omit<Resource, 'id'>): Resource;
+
+  public create(input: CreateItemInput): Weapon | Armor | Resource {
+    switch (input.itemType) {
+      case ItemTypeEnum.WEAPON:
+        return this.weaponRepo.create(input);
+      case ItemTypeEnum.ARMOR:
+        return this.armorRepo.create(input);
+      case ItemTypeEnum.RESOURCE:
+        return this.resourceRepo.create(input);
+      default:
+        throw new Error('Unknown itemType in create method');
+    }
+  }
+
   public async createAndSave(input: CreateItemInput): Promise<Weapon | Armor | Resource> {
     switch (input.itemType) {
       case ItemTypeEnum.WEAPON: {
-        const weapon = this.weaponRepo.create(input);
+        // const weapon = this.weaponRepo.create(input);
+        const weapon = this.create(input);
         return this.weaponRepo.save(weapon);
       }
 
       case ItemTypeEnum.ARMOR: {
-        const armor = this.armorRepo.create(input);
+        // const armor = this.armorRepo.create(input);
+        const armor = this.create(input);
         return this.armorRepo.save(armor);
       }
 
       case ItemTypeEnum.RESOURCE: {
-        const resource = this.resourceRepo.create(input);
+        // const resource = this.resourceRepo.create(input);
+        const resource = this.create(input);
         return this.resourceRepo.save(resource);
       }
 

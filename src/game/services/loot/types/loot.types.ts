@@ -26,12 +26,6 @@ export interface BaseLoot {
   name: string;
 
   iconKey: string;
-
-  texture?: {
-    atlasKey: string;
-
-    frameName: string;
-  };
 }
 
 export interface WeaponLoot extends BaseLoot {
@@ -41,6 +35,10 @@ export interface WeaponLoot extends BaseLoot {
   physicalDamage?: number;
   magicDamage?: number;
   durability?: number;
+  texture: {
+    atlasKey: string;
+    frameName: string;
+  };
 }
 
 export interface ArmorLoot extends BaseLoot {
@@ -50,12 +48,16 @@ export interface ArmorLoot extends BaseLoot {
   magicDefense: number;
   physicalDefense?: number;
   durability?: number;
+  texture: {
+    atlasKey: string;
+    frameName: string;
+  };
 }
 
 export interface ResourceLoot extends BaseLoot {
   itemType: ItemTypeEnum.RESOURCE;
-
   description: string;
+  atlasKey: string;
 }
 
 export type LootItem = WeaponLoot | ArmorLoot | ResourceLoot;

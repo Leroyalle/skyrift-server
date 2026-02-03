@@ -1,5 +1,5 @@
 import { ActorEntity } from 'src/common/entities/actor-entity.entity';
-import { LootItem } from 'src/game/services/characters/mob/loot/types/mob-lot.types';
+import { LootItem } from 'src/game/services/loot/types/loot.types';
 import { Column, Entity, ManyToOne } from 'typeorm';
 
 import { Field, Int, ObjectType } from '@nestjs/graphql';
