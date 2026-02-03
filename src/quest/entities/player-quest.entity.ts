@@ -4,6 +4,9 @@ import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 import { Field, ID, ObjectType } from '@nestjs/graphql';
 
+import { QuestProgress } from '../types/quest-progress.type';
+import { StepType } from '../types/quest-step.type';
+
 import { Quest } from './quest.entity';
 
 @ObjectType()
@@ -23,7 +26,7 @@ export class PlayerQuest extends Timestamp {
   stepIndex: number;
 
   @Column({ type: 'jsonb', nullable: true })
-  progress: Record<string, any> | null;
+  progress: QuestProgress<StepType> | null;
 
   @Column({ type: 'timestamp', nullable: true })
   completedAt: Date | null;

@@ -21,6 +21,8 @@ import { CachedLocation } from 'src/world/location/types/cashed-location.type';
 
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 
+import { isMob } from '../../lib/guards/is-mob.lib';
+import { isPlayer } from '../../lib/guards/is-player.lib';
 import { RuntimeMobService } from '../characters/runtime-mob/runtime-mob.service';
 import { EntityRegistryService } from '../entity-registry/entity-registry.service';
 import { MovementQueueService } from '../movement/services/movement-queue/movement-queue.service';
@@ -28,8 +30,6 @@ import { PathFindingService } from '../path-finding/path-finding.service';
 import { SocketService } from '../socket/socket.service';
 
 import { isEnemyFaction } from './lib/entity/guards/is-enemy-faction.lib';
-import { isMob } from './lib/entity/guards/is-mob.lib';
-import { isPlayer } from './lib/entity/guards/is-player.lib';
 import { findEntitySkill } from './lib/entity/helpers/get/find-entity-skill.lib';
 import { ActionQueueService } from './services/action-queue/action-queue.service';
 import { AoeService } from './services/aoe/aoe.service';

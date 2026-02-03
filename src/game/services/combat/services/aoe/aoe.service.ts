@@ -14,8 +14,8 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { Injectable } from '@nestjs/common';
 
-import { isMob } from '../../lib/entity/guards/is-mob.lib';
-import { isPlayer } from '../../lib/entity/guards/is-player.lib';
+import { isMob } from '../../../../lib/guards/is-mob.lib';
+import { isPlayer } from '../../../../lib/guards/is-player.lib';
 
 import { ActiveAoEZone } from './types/active-aoe-zone.type';
 

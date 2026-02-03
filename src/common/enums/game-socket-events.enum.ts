@@ -32,6 +32,8 @@ export enum ServerToClientEvents {
   QuestList = 'quest:list',
   QuestStarted = 'quest:started',
   QuestCompleted = 'quest:completed',
+  QuestStepCompleted = 'quest:step-completed',
+  QuestProgress = 'quest:progress',
 }
 
 export enum ClientToServerEvents {

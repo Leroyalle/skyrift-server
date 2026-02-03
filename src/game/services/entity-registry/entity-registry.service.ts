@@ -6,11 +6,11 @@ import { TRuntimeEntity } from 'src/game/types/entity/runtime-entity.type';
 
 import { Injectable } from '@nestjs/common';
 
+import { isMob } from '../../lib/guards/is-mob.lib';
+import { isNpc } from '../../lib/guards/is-npc';
+import { isPlayer } from '../../lib/guards/is-player.lib';
 import { IRuntimeMob } from '../characters/runtime-mob/types/runtime-mob.type';
 import { IRuntimeNpc } from '../characters/runtime-npc/types/runtime-npc.type';
-import { isMob } from '../combat/lib/entity/guards/is-mob.lib';
-import { isNpc } from '../combat/lib/entity/guards/is-npc';
-import { isPlayer } from '../combat/lib/entity/guards/is-player.lib';
 
 type PlayerRef = { type: Extract<EntityType, 'player'>; id: string };
 type MobRef = { type: Extract<EntityType, 'mob'>; id: string };

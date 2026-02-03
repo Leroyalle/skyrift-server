@@ -8,6 +8,7 @@ import { getOrCreate } from 'src/game/lib/helpers/get-or-create-array.lib';
 import { getTileByPosition } from 'src/game/lib/helpers/get-tile-by-position.lib';
 import { RuntimeMobService } from 'src/game/services/characters/runtime-mob/runtime-mob.service';
 import { EntityRegistryService } from 'src/game/services/entity-registry/entity-registry.service';
+import { RuntimeQuestService } from 'src/game/services/interaction/services/quest/runtime-quest/runtime-quest.service';
 import { SocketService } from 'src/game/services/socket/socket.service';
 import { BatchUpdateAction } from 'src/game/types/batch-update/batch-update-action.type';
 import { EntityRef } from 'src/game/types/entity/entity-ref.type';
@@ -17,8 +18,8 @@ import { ActionType } from 'src/game/types/pending-actions.type';
 
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 
-import { isMob } from '../../lib/entity/guards/is-mob.lib';
-import { isPlayer } from '../../lib/entity/guards/is-player.lib';
+import { isMob } from '../../../../lib/guards/is-mob.lib';
+import { isPlayer } from '../../../../lib/guards/is-player.lib';
 import { isAttackInProgress } from '../../lib/helpers/is-attack-in-progress.lib';
 import { ActionQueueService } from '../action-queue/action-queue.service';
 import { CombatCalculationService } from '../combat-calculation/combat-calculation.service';
@@ -34,6 +35,7 @@ export class ProjectileService {
     @Inject(forwardRef(() => RuntimeMobService))
     private readonly runtimeMobService: RuntimeMobService,
     private readonly combatCalculationService: CombatCalculationService,
+    private readonly runtimeQuestService: RuntimeQuestService,
   ) {}
 
   private readonly projectilesMap = new Map<EntityKey, Map<number, IProjectile>>();
@@ -199,6 +201,30 @@ export class ProjectileService {
       this.actionQueueService.clearPendingActions(attacker, []);
       if (isMob(victim)) {
         this.runtimeMobService.setRespawn(victim.id);
+      }
+      if (isPlayer(attacker)) {
+        const result = this.runtimeQuestService.onKillEntity(attacker, victim);
+        if (result.type === 'none') return;
+        if (result.type === 'quest_completed') {
+          this.socketService.sendToUser(attacker.id, ServerToClientEvents.QuestCompleted, {
+            questId: result.questId,
+          });
+        }
+        if (result.type === 'step_completed') {
+          this.socketService.sendToUser(attacker.id, ServerToClientEvents.QuestStepCompleted, {
+            questId: result.questId,
+            nextStepIndex: result.nextStepIndex,
+          });
+        }
+
+        if (result.type === 'progress') {
+          this.socketService.sendToUser(attacker.id, ServerToClientEvents.QuestProgress, {
+            current: result.current,
+            required: result.required,
+            questId: result.questId,
+            stepIndex: result.stepIndex,
+          });
+        }
       }
     }
     return { remainingHp };

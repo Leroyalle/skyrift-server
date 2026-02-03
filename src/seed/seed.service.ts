@@ -472,8 +472,12 @@ export class SeedService {
           description: 'Убейте 5 орков',
           type: StepType.Kill,
           count: 5,
-          mobTemplateId: mobs[0].id,
-          target: 'mob',
+          entityRef: {
+            type: 'mob',
+            id: mobs[0].id,
+          },
+          // mobTemplateId: mobs[0].id,
+          // target: 'mob',
         },
         {
           id: 'final',

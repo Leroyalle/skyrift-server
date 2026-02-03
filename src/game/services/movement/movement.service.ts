@@ -14,9 +14,9 @@ import { LocationService } from 'src/world/location/location.service';
 
 import { Injectable } from '@nestjs/common';
 
+import { isMob } from '../../lib/guards/is-mob.lib';
+import { isPlayer } from '../../lib/guards/is-player.lib';
 import { RuntimeMobService } from '../characters/runtime-mob/runtime-mob.service';
-import { isMob } from '../combat/lib/entity/guards/is-mob.lib';
-import { isPlayer } from '../combat/lib/entity/guards/is-player.lib';
 import { EntityRegistryService } from '../entity-registry/entity-registry.service';
 import { InteractionService } from '../interaction/interaction.service';
 import { PathFindingService } from '../path-finding/path-finding.service';

@@ -19,9 +19,9 @@ import { Teleport } from 'src/world/location/types/teleport.type';
 
 import { Injectable } from '@nestjs/common';
 
+import { isNpc } from '../../lib/guards/is-npc';
+import { isPlayer } from '../../lib/guards/is-player.lib';
 import { IRuntimeNpc } from '../characters/runtime-npc/types/runtime-npc.type';
-import { isNpc } from '../combat/lib/entity/guards/is-npc';
-import { isPlayer } from '../combat/lib/entity/guards/is-player.lib';
 import { ActionQueueService } from '../combat/services/action-queue/action-queue.service';
 import { EntityRegistryService } from '../entity-registry/entity-registry.service';
 import { GameInitialDataService } from '../game-core/game-initial-data/game-initial-data.service';

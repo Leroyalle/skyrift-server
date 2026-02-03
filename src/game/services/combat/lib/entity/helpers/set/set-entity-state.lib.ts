@@ -9,7 +9,7 @@ import {
 import { BaseEntityStates } from 'src/game/types/entity/base-entity-states.type';
 import { TRuntimeEntity } from 'src/game/types/entity/runtime-entity.type';
 
-import { isMob } from '../../guards/is-mob.lib';
+import { isMob } from '../../../../../../lib/guards/is-mob.lib';
 
 type EntityState<T> = T extends IRuntimeCharacter
   ? CharacterActionState

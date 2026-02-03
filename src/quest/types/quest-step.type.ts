@@ -1,3 +1,5 @@
+import { EntityRef } from 'src/game/types/entity/entity-ref.type';
+
 export type QuestStep = KillStep | CollectStep | TalkStep;
 
 interface BaseQuestStep {
@@ -7,8 +9,7 @@ interface BaseQuestStep {
 
 export interface KillStep extends BaseQuestStep {
   type: StepType.Kill;
-  target: 'mob' | 'npc';
-  mobTemplateId: string;
+  entityRef: EntityRef;
   count: number;
 }
 export interface CollectStep extends BaseQuestStep {
