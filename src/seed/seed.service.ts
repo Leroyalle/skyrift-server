@@ -240,6 +240,8 @@ export class SeedService {
     for (let i = 1; i <= 1; i++) {
       const x = 2016;
       const y = 960;
+      const equipment = await this.equipmentService.createInitEquip('dark');
+      console.log('equipment', equipment);
       const orcMob = this.mobRepository.create({
         name: 'Суленыч #' + i,
         magicDefense: 1,
@@ -255,45 +257,22 @@ export class SeedService {
         respawnTime: 500000,
         level: 3,
         expReward: 20,
-        equipment: await this.equipmentService.createInitEquip('dark'),
+        equipment,
         attackSpeed: 1000,
         critMultiplier: 1,
         baseMagicDamage: 30,
         basePhysicalDamage: 41,
         loot: [
           {
-            itemType: ItemTypeEnum.ARMOR,
-            name: 'Железный шлем',
-            iconKey: 'helmet_iron',
+            itemId: equipment.helmet?.id,
             rarity: LootRarity.UNCOMMON,
             chance: 0.4,
-
-            armorSlot: ArmorSlotEnum.HELMET,
-            physicalDefense: 13,
-            magicDefense: 1,
-            durability: 1,
-
-            texture: {
-              atlasKey: 'helmet_iron',
-              frameName: 'helmet-iron',
-            },
           },
-
           {
-            itemType: ItemTypeEnum.ARMOR,
-            name: 'Темный нагрудник',
-            iconKey: 'breastplate_dark',
+            itemId: equipment.breastplate?.id,
             rarity: LootRarity.UNCOMMON,
             chance: 0.2,
-
-            armorSlot: ArmorSlotEnum.BREASTPLATE,
-            physicalDefense: 11,
-            magicDefense: 1,
-            durability: 1,
-            texture: {
-              atlasKey: 'breastplate_dark',
-              frameName: 'breastplate-dark',
-            },
+            durability: 0.3,
           },
         ],
       });

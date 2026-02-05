@@ -17,19 +17,19 @@ export class LootService {
     [LootRarity.LEGENDARY]: 0.05,
   };
 
-  public generateLoot(lootData: LootItem[]): LootDrop[] {
-    const generateLoot: LootDrop[] = [];
+  // public generateLoot(lootData: LootItem[]): LootDrop[] {
+  //   const generateLoot: LootDrop[] = [];
 
-    for (const lootItem of lootData) {
-      if (!this.rollDrop(lootItem)) continue;
+  //   for (const lootItem of lootData) {
+  //     if (!this.rollDrop(lootItem)) continue;
 
-      const amount = this.rollAmount(lootItem);
+  //     const amount = this.rollAmount(lootItem);
 
-      const item = this.itemService.create(lootItem);
-      generateLoot.push({ item, amount });
-    }
-    return generateLoot;
-  }
+  //     const item = this.itemService.create(lootItem);
+  //     generateLoot.push({ item, amount });
+  //   }
+  //   return generateLoot;
+  // }
 
   private rollDrop(lootItem: LootItem): boolean {
     this.assertChance(lootItem.chance);
@@ -44,7 +44,7 @@ export class LootService {
     const max = lootItem.maxAmount ?? min;
 
     if (min <= 0 || max <= 0 || min > max) {
-      throw new Error(`Invalid amount range: min:${min} max:${max} name: ${lootItem.name}`);
+      throw new Error(`Invalid amount range: min:${min} max:${max} name: `);
     }
     const baseAmount = Math.floor(Math.random() * (max - min + 1)) + min;
     const rarityMultiplier = this.rarityMultiplier[lootItem.rarity] ?? 1;
@@ -52,61 +52,61 @@ export class LootService {
     return Math.max(finalAmount, 1);
   }
 
-  private createItem(lootItem: LootItem): BaseItem {
-    switch (lootItem.itemType) {
-      case ItemTypeEnum.WEAPON: {
-        const weapon = new Weapon();
+  // private createItem(lootItem: LootItem): BaseItem {
+  //   switch (lootItem.itemType) {
+  //     case ItemTypeEnum.WEAPON: {
+  //       const weapon = new Weapon();
 
-        weapon.name = lootItem.name;
-        weapon.itemType = ItemTypeEnum.WEAPON;
-        weapon.iconKey = lootItem.iconKey;
-        weapon.slot = lootItem.weaponSlot;
-        weapon.physicalDamage = lootItem.physicalDamage ?? 0;
-        weapon.magicDamage = lootItem.magicDamage ?? 0;
-        weapon.durability = 100;
+  //       weapon.name = lootItem.name;
+  //       weapon.itemType = ItemTypeEnum.WEAPON;
+  //       weapon.iconKey = lootItem.iconKey;
+  //       weapon.slot = lootItem.weaponSlot;
+  //       weapon.physicalDamage = lootItem.physicalDamage ?? 0;
+  //       weapon.magicDamage = lootItem.magicDamage ?? 0;
+  //       weapon.durability = 100;
 
-        if (lootItem.texture) {
-          weapon.texture = {
-            atlasKey: lootItem.texture.atlasKey,
-            frameName: lootItem.texture.frameName,
-          };
-        }
-        return weapon;
-      }
+  //       if (lootItem.texture) {
+  //         weapon.texture = {
+  //           atlasKey: lootItem.texture.atlasKey,
+  //           frameName: lootItem.texture.frameName,
+  //         };
+  //       }
+  //       return weapon;
+  //     }
 
-      case ItemTypeEnum.ARMOR: {
-        const armor = new Armor();
+  //     case ItemTypeEnum.ARMOR: {
+  //       const armor = new Armor();
 
-        armor.name = lootItem.name;
-        armor.itemType = ItemTypeEnum.ARMOR;
-        armor.iconKey = lootItem.iconKey;
-        armor.slot = lootItem.armorSlot;
-        armor.physicalDefense = lootItem.physicalDefense ?? 0;
-        armor.magicDefense = lootItem.magicDefense ?? 0;
-        armor.durability = 100;
+  //       armor.name = lootItem.name;
+  //       armor.itemType = ItemTypeEnum.ARMOR;
+  //       armor.iconKey = lootItem.iconKey;
+  //       armor.slot = lootItem.armorSlot;
+  //       armor.physicalDefense = lootItem.physicalDefense ?? 0;
+  //       armor.magicDefense = lootItem.magicDefense ?? 0;
+  //       armor.durability = 100;
 
-        if (lootItem.texture) {
-          armor.texture = {
-            atlasKey: lootItem.texture.atlasKey,
-            frameName: lootItem.texture.frameName,
-          };
-        }
-        return armor;
-      }
+  //       if (lootItem.texture) {
+  //         armor.texture = {
+  //           atlasKey: lootItem.texture.atlasKey,
+  //           frameName: lootItem.texture.frameName,
+  //         };
+  //       }
+  //       return armor;
+  //     }
 
-      case ItemTypeEnum.RESOURCE: {
-        const resource = new Resource();
+  //     case ItemTypeEnum.RESOURCE: {
+  //       const resource = new Resource();
 
-        resource.name = lootItem.name;
-        resource.itemType = ItemTypeEnum.RESOURCE;
-        resource.iconKey = lootItem.iconKey;
-        resource.description = lootItem.description;
-        return resource;
-      }
-      default:
-        throw new Error(`Unsupported loot item type`);
-    }
-  }
+  //       resource.name = lootItem.name;
+  //       resource.itemType = ItemTypeEnum.RESOURCE;
+  //       resource.iconKey = lootItem.iconKey;
+  //       resource.description = lootItem.description;
+  //       return resource;
+  //     }
+  //     default:
+  //       throw new Error(`Unsupported loot item type`);
+  //   }
+  // }
 
   private assertChance(chance: number) {
     if (chance < 0 || chance > 1) {

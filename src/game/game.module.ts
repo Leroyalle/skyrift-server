@@ -5,6 +5,7 @@ import { MobModule } from 'src/characters/mob/mob.module';
 import { WsAuthGuard } from 'src/common/guards/ws-guard.guard';
 import { EffectModule } from 'src/effect/effect.module';
 import { RedisModule } from 'src/infrastructure/redis/redis.module';
+import { ItemModule } from 'src/item/item.module';
 import { QuestModule } from 'src/quest/quest.module';
 import { UserModule } from 'src/user/user.module';
 import { LocationModule } from 'src/world/location/location.module';
@@ -13,7 +14,6 @@ import { Module } from '@nestjs/common';
 
 import { GameGateway } from './game.gateway';
 import { GameService } from './game.service';
-import { MobLootService } from './services/characters/mob/loot/mob-loot.service';
 import { PlayerStateService } from './services/characters/player-state/player-state.service';
 import { InventoryService } from './services/characters/player-state/services/inventory/inventory.service';
 import { RuntimeEquipmentService } from './services/characters/player-state/services/runtime-equipment/runtime-equipment.service';
@@ -33,6 +33,8 @@ import { WorldBootstrapService } from './services/game-core/world-bootstrap/worl
 import { InteractionService } from './services/interaction/interaction.service';
 import { QuestIndexService } from './services/interaction/services/quest/quest-index/quest-index.service';
 import { RuntimeQuestService } from './services/interaction/services/quest/runtime-quest/runtime-quest.service';
+import { ItemRegistryService } from './services/item-registry/item-registry.service';
+import { LootService } from './services/loot/loot.service';
 import { MovementService } from './services/movement/movement.service';
 import { MovementQueueService } from './services/movement/services/movement-queue/movement-queue.service';
 import { PathFindingService } from './services/path-finding/path-finding.service';
@@ -52,6 +54,7 @@ import { SpatialGridService } from './services/spatial-grid/spatial-grid.service
     EffectModule,
     BagModule,
     QuestModule,
+    ItemModule,
   ],
   providers: [
     WsAuthGuard,
@@ -61,7 +64,7 @@ import { SpatialGridService } from './services/spatial-grid/spatial-grid.service
     MovementService,
     CombatService,
     SpatialGridService,
-    MobLootService,
+    LootService,
     SocketService,
     PathFindingService,
     RegenerationService,
@@ -80,6 +83,7 @@ import { SpatialGridService } from './services/spatial-grid/spatial-grid.service
     RuntimeQuestService,
     RuntimeNpcService,
     EntityRegistryService,
+    ItemRegistryService,
     WorldBootstrapService,
     GameConnectionService,
     QuestIndexService,

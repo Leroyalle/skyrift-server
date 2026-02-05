@@ -284,7 +284,8 @@ export class RuntimeMobService {
     mob.aggro.clear();
     mob.currentTarget = null;
 
-    const droppedLoot = this.mobLootService.generateLoot(mob.loot ?? []);
+    // const droppedLoot = this.mobLootService.generateLoot(mob.loot ?? []);
+    const droppedLoot = [];
 
     this.spatialGridService.remove(mob);
 
