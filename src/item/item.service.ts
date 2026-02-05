@@ -1,4 +1,5 @@
 import { ItemTypeEnum } from 'src/common/enums/item-type.enum';
+import { ItemRegistryService } from 'src/game/services/item-registry/item-registry.service';
 import { Repository } from 'typeorm';
 
 import { Injectable } from '@nestjs/common';
@@ -20,6 +21,7 @@ export class ItemService {
     private readonly armorRepo: Repository<Armor>,
     @InjectRepository(Resource)
     private readonly resourceRepo: Repository<Resource>,
+    private readonly itemRegistryService: ItemRegistryService,
   ) {}
 
   public create(input: { itemType: ItemTypeEnum.WEAPON } & Omit<Weapon, 'id'>): Weapon;
@@ -40,28 +42,38 @@ export class ItemService {
   }
 
   public async createAndSave(input: CreateItemInput): Promise<Weapon | Armor | Resource> {
+    let item: Weapon | Armor | Resource;
+
     switch (input.itemType) {
       case ItemTypeEnum.WEAPON: {
-        // const weapon = this.weaponRepo.create(input);
-        const weapon = this.create(input);
-        return this.weaponRepo.save(weapon);
+        // const weapon = this.create(input);
+        // return this.weaponRepo.save(weapon);
+        item = this.create(input);
+        item = await this.weaponRepo.save(item);
+        break;
       }
 
       case ItemTypeEnum.ARMOR: {
-        // const armor = this.armorRepo.create(input);
-        const armor = this.create(input);
-        return this.armorRepo.save(armor);
+        item = this.create(input);
+        item = await this.armorRepo.save(item);
+        break;
+        // const armor = this.create(input);
+        // return this.armorRepo.save(armor);
       }
 
       case ItemTypeEnum.RESOURCE: {
-        // const resource = this.resourceRepo.create(input);
-        const resource = this.create(input);
-        return this.resourceRepo.save(resource);
+        // const resource = this.create(input);
+        // return this.resourceRepo.save(resource);
+        item = this.create(input);
+        item = await this.resourceRepo.save(item);
+        break;
       }
 
       default:
         throw new Error('Unknown itemType');
     }
+    this.itemRegistryService.add(item);
+    return item;
   }
 
   public async findAllItems() {

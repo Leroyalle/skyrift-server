@@ -284,15 +284,13 @@ export class RuntimeMobService {
     mob.aggro.clear();
     mob.currentTarget = null;
 
-    // const droppedLoot = this.mobLootService.generateLoot(mob.loot ?? []);
-    const droppedLoot = [];
+    const droppedLoot = this.mobLootService.generateLoot(mob.loot ?? []);
 
     this.spatialGridService.remove(mob);
 
     this.setRespawn(id);
 
-    // console.log(, droppedLoot);
-    console.log('DROPPPPPPPED LOOOOOOOOOOOT ', mob.loot);
+    console.log('DROPPED LOOT:', droppedLoot);
     this.socketService.sendTo(RedisKeys.Location + mob.locationId, ServerToClientEvents.KillMob, {
       mob,
       loot: droppedLoot,

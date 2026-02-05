@@ -254,7 +254,7 @@ export class SeedService {
         y,
         maxHp: 25,
         hp: 25,
-        respawnTime: 500000,
+        respawnTime: 5000,
         level: 3,
         expReward: 20,
         equipment,
