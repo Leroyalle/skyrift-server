@@ -63,4 +63,13 @@ export class ItemService {
         throw new Error('Unknown itemType');
     }
   }
+
+  public async findAllItems() {
+    const [weapons, armors, resources] = await Promise.all([
+      this.weaponRepo.find(),
+      this.armorRepo.find(),
+      this.resourceRepo.find(),
+    ]);
+    return [...weapons, ...armors, ...resources];
+  }
 }
