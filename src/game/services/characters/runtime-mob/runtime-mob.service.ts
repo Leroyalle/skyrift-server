@@ -297,9 +297,6 @@ export class RuntimeMobService {
     });
   }
   public moveTo(runtimeMob: IRuntimeMob, to: PositionDto, now: number): IRuntimeMob {
-    console.log(
-      `[MOVE] Mob ${runtimeMob.name} (${runtimeMob.id}) from (${runtimeMob.x},${runtimeMob.y}) to (${to.x},${to.y}) state=${runtimeMob.state} isAlive=${runtimeMob.isAlive}`,
-    );
     runtimeMob.x = to.x;
     runtimeMob.y = to.y;
     runtimeMob.lastMoveAt = now;

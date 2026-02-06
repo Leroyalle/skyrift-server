@@ -267,6 +267,7 @@ export class SeedService {
             itemId: equipment.helmet?.id,
             rarity: LootRarity.UNCOMMON,
             chance: 0.4,
+            durability: 0.3,
           },
           {
             itemId: equipment.breastplate?.id,
