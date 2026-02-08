@@ -6,18 +6,12 @@ import { Injectable } from '@nestjs/common';
 export class ItemRegistryService {
   private readonly items = new Map<string, TItem>();
 
-  constructor() {
-    console.log('[ItemRegistry] ctor instance =', Math.random().toString(36).slice(2));
-  }
-
   get itemsArray(): TItem[] {
     return Array.from(this.items.values());
   }
 
   public add(item: TItem): void {
-    console.log('[ItemRegistry] add', item.id, item.name, 'size before =', this.items.size);
     this.items.set(item.id, item);
-    console.log('[ItemRegistry] size after =', this.items.size);
   }
 
   public remove(item: TItem): void {

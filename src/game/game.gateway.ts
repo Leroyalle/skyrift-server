@@ -173,4 +173,10 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ) {
     return this.gameService.requestQuestAccept(socket, input);
   }
+
+  @SubscribeMessage(ClientToServerEvents.RequestLoot)
+  @UseGuards(WsAuthGuard)
+  public requestLoot(@AuthSocket() client: AuthenticatedSocket, @MessageBody() sourceId: string) {
+    return this.gameService.requestLoot(client, sourceId);
+  }
 }

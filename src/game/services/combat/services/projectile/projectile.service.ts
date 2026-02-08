@@ -204,7 +204,7 @@ export class ProjectileService {
       this.movementQueueService.delete(victim);
 
       if (isMob(victim)) {
-        this.runtimeMobService.killMob(victim.id);
+        this.runtimeMobService.killMob(victim.id, attacker.id);
       }
     }
     return { remainingHp };

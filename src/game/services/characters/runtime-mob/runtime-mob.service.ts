@@ -12,7 +12,7 @@ import { forwardRef, Inject, Injectable } from '@nestjs/common';
 
 import { CombatService } from '../../combat/combat.service';
 import { EntityRegistryService } from '../../entity-registry/entity-registry.service';
-import { LootService } from '../../loot/loot.service';
+import { LootRuntimeService } from '../../loot/loot-runtime.service';
 import { MovementQueueService } from '../../movement/services/movement-queue/movement-queue.service';
 import { PathFindingService } from '../../path-finding/path-finding.service';
 import { SocketService } from '../../socket/socket.service';
@@ -32,7 +32,7 @@ export class RuntimeMobService {
     private readonly movementQueueService: MovementQueueService,
     private readonly socketService: SocketService,
     private readonly registryService: EntityRegistryService,
-    private readonly mobLootService: LootService,
+    private readonly lootRuntimeService: LootRuntimeService,
   ) {}
 
   public async tickAiMobs() {
@@ -48,7 +48,6 @@ export class RuntimeMobService {
       }
 
       if (mob.nextThinkAt && mob.nextThinkAt > now) continue;
-      console.log('mob.isAlive ', mob.isAlive, ' mob.state ', mob.state);
 
       const currentMobPath = this.movementQueueService.get(mob);
 
@@ -275,7 +274,7 @@ export class RuntimeMobService {
     spawnMob.respawnIn = now + spawnMob.respawnTime;
   }
 
-  public killMob(id: string) {
+  public killMob(id: string, atackerId: string) {
     const mob = this.registryService.getByRef({ type: 'mob', id });
 
     if (!mob) return;
@@ -284,16 +283,25 @@ export class RuntimeMobService {
     mob.aggro.clear();
     mob.currentTarget = null;
 
-    const droppedLoot = this.mobLootService.generateLoot(mob.loot ?? []);
+    this.lootRuntimeService.add(
+      {
+        id: mob.id,
+        type: 'mob',
+        locationId: mob.locationId,
+      },
+      mob.loot ?? [],
+      [atackerId],
+    );
+    // const droppedLoot = this.lootService.generateLoot(mob.loot ?? []);
 
     this.spatialGridService.remove(mob);
 
     this.setRespawn(id);
 
-    console.log('DROPPED LOOT:', droppedLoot);
+    // console.log('DROPPED LOOT:', droppedLoot);
     this.socketService.sendTo(RedisKeys.Location + mob.locationId, ServerToClientEvents.KillMob, {
       mob,
-      loot: droppedLoot,
+      // loot: droppedLoot,
     });
   }
   public moveTo(runtimeMob: IRuntimeMob, to: PositionDto, now: number): IRuntimeMob {

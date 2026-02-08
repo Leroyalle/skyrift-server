@@ -241,7 +241,6 @@ export class SeedService {
       const x = 2016;
       const y = 960;
       const equipment = await this.equipmentService.createInitEquip('dark');
-      console.log('equipment', equipment);
       const orcMob = this.mobRepository.create({
         name: 'Суленыч #' + i,
         magicDefense: 1,
@@ -254,7 +253,8 @@ export class SeedService {
         y,
         maxHp: 25,
         hp: 25,
-        respawnTime: 5000,
+        // respawnTime: 5000,
+        respawnTime: 300000,
         level: 3,
         expReward: 20,
         equipment,

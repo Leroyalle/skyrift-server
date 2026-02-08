@@ -33,6 +33,9 @@ export enum ServerToClientEvents {
   QuestList = 'quest:list',
   QuestStarted = 'quest:started',
   QuestCompleted = 'quest:completed',
+
+  LootOpened = 'loot:opened',
+  LootUpdated = 'loot:updated',
 }
 
 export enum ClientToServerEvents {
@@ -51,6 +54,8 @@ export enum ClientToServerEvents {
   RequestEquipItem = 'equipment:request-equip', // Изменено
   RequestUnEquipItem = 'equipment:request-unEquip',
   RequestUseItem = 'bag:request-use-item',
+
+  RequestLoot = 'loot:request-open-loot',
 
   RequestAcceptQuest = 'quest:request-accept',
   RequestTurnInQuest = 'quest:request-turn-in',
