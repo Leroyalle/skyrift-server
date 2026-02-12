@@ -20,28 +20,12 @@ export class LootRuntimeService {
       createdAt: Date.now(),
     });
   }
+  get lootArray(): LootContext[] {
+    return Array.from(this.lootContext.values());
+  }
 
-  public takeLoot(
-    sourceId: string,
-    characterId: string,
-    itemId: string,
-  ): {
-    success: boolean;
-    message?: string;
-  } {
-    const lootSource = this.lootContext.get(sourceId);
-    if (!lootSource) return { success: false, message: 'Loot not found' };
-
-    const loot = lootSource.perPlayerLoot.get(characterId);
-    if (!loot) return { success: false, message: 'No loot available for you ☝️🤓' };
-
-    const drop = loot.find(d => d.item.id === itemId);
-    if (!drop) return { success: false, message: 'Item not found in loot' };
-
-    const lootIndex = loot.indexOf(drop);
-    loot.splice(lootIndex, 1);
-
-    return { success: true };
+  public getAll() {
+    return this.lootContext;
   }
 
   public getById(sourceId: string): LootContext | undefined {

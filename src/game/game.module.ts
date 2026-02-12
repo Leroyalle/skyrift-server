@@ -33,6 +33,7 @@ import { WorldBootstrapService } from './services/game-core/world-bootstrap/worl
 import { InteractionService } from './services/interaction/interaction.service';
 import { QuestIndexService } from './services/interaction/services/quest/quest-index/quest-index.service';
 import { RuntimeQuestService } from './services/interaction/services/quest/runtime-quest/runtime-quest.service';
+import { LootInteractionService } from './services/loot/loot-interaction.service';
 import { LootRuntimeService } from './services/loot/loot-runtime.service';
 import { LootService } from './services/loot/loot.service';
 import { MovementService } from './services/movement/movement.service';
@@ -64,7 +65,6 @@ import { SpatialGridService } from './services/spatial-grid/spatial-grid.service
     MovementService,
     CombatService,
     SpatialGridService,
-    LootService,
     SocketService,
     PathFindingService,
     RegenerationService,
@@ -87,6 +87,8 @@ import { SpatialGridService } from './services/spatial-grid/spatial-grid.service
     GameConnectionService,
     QuestIndexService,
     LootRuntimeService,
+    LootService,
+    LootInteractionService,
     CombatCalculationService,
   ],
 })

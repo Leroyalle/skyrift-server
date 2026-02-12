@@ -35,7 +35,6 @@ export enum ServerToClientEvents {
   QuestCompleted = 'quest:completed',
 
   LootOpened = 'loot:opened',
-  LootUpdated = 'loot:updated',
 }
 
 export enum ClientToServerEvents {
@@ -56,6 +55,7 @@ export enum ClientToServerEvents {
   RequestUseItem = 'bag:request-use-item',
 
   RequestLoot = 'loot:request-open-loot',
+  RequestLootTake = 'loot:request-take',
 
   RequestAcceptQuest = 'quest:request-accept',
   RequestTurnInQuest = 'quest:request-turn-in',

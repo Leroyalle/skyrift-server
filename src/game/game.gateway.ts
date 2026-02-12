@@ -176,7 +176,10 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage(ClientToServerEvents.RequestLoot)
   @UseGuards(WsAuthGuard)
-  public requestLoot(@AuthSocket() client: AuthenticatedSocket, @MessageBody() sourceId: string) {
-    return this.gameService.requestLoot(client, sourceId);
+  public requestLoot(
+    @AuthSocket() client: AuthenticatedSocket,
+    @MessageBody() payload: { sourceId: string },
+  ) {
+    return this.gameService.requestLoot(client, payload.sourceId);
   }
 }

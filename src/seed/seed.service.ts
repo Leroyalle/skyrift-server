@@ -235,8 +235,68 @@ export class SeedService {
       }),
     );
 
-    const mobs: Mob[] = [];
+    const firstCharacter = await this.characterRepository.save({
+      name: 'Leroyalle',
+      user: firstUser,
+      characterClass: lunarClass,
+      level: 1,
+      location: savedLocations[0],
+      equipment: await this.equipmentService.createInitEquip('red'),
+      x: 2016,
+      y: 960,
+      maxHp: 1000,
+      hp: 1000,
+      baseMagicDamage: 20,
+      basePhysicalDamage: 50,
+      critMultiplier: 1,
+      experienceToNextLevel: 400,
+      attackRange: 4,
+      attackSpeed: 1000,
+      isAlive: true,
+      bag: {
+        items: [],
+      },
+    });
+    const elvenBowItem = await this.itemService.createAndSave({
+      magicDamage: 0,
+      physicalDamage: 50,
+      durability: 1,
+      itemType: ItemTypeEnum.WEAPON,
+      slot: WeaponSlotEnum.MAIN_HAND,
+      name: 'Эльфийский лук',
+      iconKey: '',
+      bag: firstCharacter.bag,
+      texture: { atlasKey: 'elven_bow', frameName: 'elven-bow' },
+    });
 
+    const ironHelmetItem = await this.itemService.createAndSave({
+      durability: 1,
+      slot: ArmorSlotEnum.HELMET,
+      name: 'Железный шлем',
+      physicalDefense: 10,
+      iconKey: 'helmet_iron',
+      bag: firstCharacter.bag,
+      texture: { atlasKey: 'helmet_iron', frameName: 'helmet_iron' },
+      itemType: ItemTypeEnum.ARMOR,
+      magicDefense: 1,
+    });
+
+    const breastplate = await this.itemService.createAndSave({
+      itemType: ItemTypeEnum.ARMOR,
+      slot: ArmorSlotEnum.BREASTPLATE,
+      texture: {
+        atlasKey: `breastplate_dark`,
+        frameName: `breastplate-dark`,
+      },
+      physicalDefense: 11,
+      name: 'Темный нагрудник',
+      iconKey: `breastplate_dark`,
+      durability: 1,
+      bag: firstCharacter.bag,
+      magicDefense: 1,
+    });
+
+    const mobs: Mob[] = [];
     for (let i = 1; i <= 1; i++) {
       const x = 2016;
       const y = 960;
@@ -265,15 +325,33 @@ export class SeedService {
         loot: [
           {
             itemId: equipment.helmet?.id,
-            rarity: LootRarity.UNCOMMON,
-            chance: 0.4,
+            rarity: LootRarity.COMMON,
+            chance: 1,
             durability: 0.3,
           },
           {
             itemId: equipment.breastplate?.id,
-            rarity: LootRarity.UNCOMMON,
-            chance: 0.2,
+            rarity: LootRarity.COMMON,
+            chance: 1,
             durability: 0.3,
+          },
+          {
+            itemId: elvenBowItem.id,
+            rarity: LootRarity.COMMON,
+            chance: 1,
+            durability: 0.5,
+          },
+          {
+            itemId: ironHelmetItem.id,
+            rarity: LootRarity.COMMON,
+            chance: 1,
+            durability: 0.7,
+          },
+          {
+            itemId: breastplate.id,
+            rarity: LootRarity.COMMON,
+            chance: 1,
+            durability: 0.5,
           },
         ],
       });
@@ -315,29 +393,6 @@ export class SeedService {
       location: savedLocations[0],
     });
 
-    const firstCharacter = await this.characterRepository.save({
-      name: 'Leroyalle',
-      user: firstUser,
-      characterClass: lunarClass,
-      level: 1,
-      location: savedLocations[0],
-      equipment: await this.equipmentService.createInitEquip('red'),
-      x: 2016,
-      y: 960,
-      maxHp: 1000,
-      hp: 1000,
-      baseMagicDamage: 20,
-      basePhysicalDamage: 50,
-      critMultiplier: 1,
-      experienceToNextLevel: 400,
-      attackRange: 4,
-      attackSpeed: 1000,
-      isAlive: true,
-      bag: {
-        items: [],
-      },
-    });
-
     await this.characterRepository.save({
       name: 'Consul',
       user: secondUser,
@@ -357,45 +412,6 @@ export class SeedService {
     });
 
     console.log('Characters saved');
-
-    const elvenBowItem = await this.itemService.createAndSave({
-      magicDamage: 0,
-      physicalDamage: 50,
-      durability: 1,
-      itemType: ItemTypeEnum.WEAPON,
-      slot: WeaponSlotEnum.MAIN_HAND,
-      name: 'Эльфийский лук',
-      iconKey: '',
-      bag: firstCharacter.bag,
-      texture: { atlasKey: 'elven_bow', frameName: 'elven-bow' },
-    });
-
-    const ironHelmetItem = await this.itemService.createAndSave({
-      durability: 1,
-      slot: ArmorSlotEnum.HELMET,
-      name: 'Железный шлем',
-      physicalDefense: 10,
-      iconKey: 'helmet_iron',
-      bag: firstCharacter.bag,
-      texture: { atlasKey: 'helmet_iron', frameName: 'helmet_iron' },
-      itemType: ItemTypeEnum.ARMOR,
-      magicDefense: 1,
-    });
-
-    const breastplate = await this.itemService.createAndSave({
-      itemType: ItemTypeEnum.ARMOR,
-      slot: ArmorSlotEnum.BREASTPLATE,
-      texture: {
-        atlasKey: `breastplate_dark`,
-        frameName: `breastplate-dark`,
-      },
-      physicalDefense: 11,
-      name: 'Темный нагрудник',
-      iconKey: `breastplate_dark`,
-      durability: 1,
-      bag: firstCharacter.bag,
-      magicDefense: 1,
-    });
 
     firstCharacter.bag.items.push(elvenBowItem, ironHelmetItem, breastplate);
     await this.characterRepository.save(firstCharacter);
@@ -530,7 +546,7 @@ export class SeedService {
       'location',
       'user',
       'equipment',
-      'npc_spawn',
+      // 'npc_spawn',
       // 'mob_spawn',
       'entity_spawn',
       'npc',

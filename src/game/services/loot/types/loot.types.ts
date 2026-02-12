@@ -1,4 +1,4 @@
-import { BaseItem } from 'src/item/entities/item.entity';
+import { Armor, Resource, Weapon } from 'src/item/entities/item.entity';
 
 export enum LootRarity {
   COMMON = 'common',
@@ -18,7 +18,17 @@ export interface LootItem {
   durability?: number;
 }
 
+type ClientItem<T> = T extends Weapon
+  ? Omit<Weapon, 'bag' | 'slot' | 'texture'>
+  : T extends Armor
+    ? Omit<Armor, 'bag' | 'slot' | 'texture'>
+    : T extends Resource
+      ? Omit<Resource, 'bag'>
+      : never;
+
+export type TClientLootItem = ClientItem<Weapon | Armor | Resource>;
+
 export interface LootDrop {
-  item: BaseItem;
+  item: TClientLootItem;
   amount: number;
 }

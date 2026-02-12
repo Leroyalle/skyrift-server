@@ -32,8 +32,7 @@ import { DirectMessageInput } from './services/chat/dto/direct-message.input';
 import { CombatService } from './services/combat/combat.service';
 import { GameInitialDataService } from './services/game-core/game-initial-data/game-initial-data.service';
 import { InteractionService } from './services/interaction/interaction.service';
-import { LootRuntimeService } from './services/loot/loot-runtime.service';
-import { LootService } from './services/loot/loot.service';
+import { LootInteractionService } from './services/loot/loot-interaction.service';
 import { MovementService } from './services/movement/movement.service';
 import { SocketService } from './services/socket/socket.service';
 import { SpatialGridService } from './services/spatial-grid/spatial-grid.service';
@@ -57,8 +56,7 @@ export class GameService extends BaseLogger {
     private readonly gameInitialDataService: GameInitialDataService,
     private readonly inventoryService: InventoryService,
     private readonly equipmentService: RuntimeEquipmentService,
-    private readonly lootRuntimeService: LootRuntimeService,
-    private readonly lootService: LootService,
+    private readonly lootInteractionService: LootInteractionService,
   ) {
     super();
   }
@@ -510,27 +508,14 @@ export class GameService extends BaseLogger {
 
   public requestLoot(client: AuthenticatedSocket, sourceId: string) {
     const { userId, characterId, locationId } = client.userData;
-
-    const lootContext = this.lootRuntimeService.getById(sourceId);
-    if (!lootContext) {
+    try {
+      const loot = this.lootInteractionService.openLoot(sourceId, characterId, locationId);
+      this.socketService.sendToUser(userId, ServerToClientEvents.LootOpened, loot);
+    } catch (error) {
       this.socketService.sendToUser(userId, ServerToClientEvents.GameNotification, {
         type: 'error',
-        message: 'Лут недоступен',
+        message: (error as Error).message || 'Не удалось открыть лут',
       });
-      return;
     }
-
-    if (lootContext.source.locationId !== locationId) return;
-
-    if (!lootContext.allowedLooters.has(characterId)) return;
-
-    let loot = lootContext.perPlayerLoot.get(characterId);
-
-    if (!loot) {
-      loot = this.lootService.generateLoot(lootContext.lootItems);
-      lootContext.perPlayerLoot.set(characterId, loot);
-    }
-
-    this.socketService.sendToUser(userId, ServerToClientEvents.LootOpened, loot);
   }
 }
