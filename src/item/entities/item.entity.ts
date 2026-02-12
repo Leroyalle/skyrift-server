@@ -37,7 +37,7 @@ export abstract class BaseItem {
 
   @Field(() => ItemTypeEnum)
   @Column({ type: 'varchar' })
-  itemType: ItemTypeEnum;
+  itemType!: ItemTypeEnum;
 
   @Field()
   @Column()
@@ -51,6 +51,8 @@ export abstract class BaseItem {
 @ObjectType({ implements: BaseItem })
 @ChildEntity(ItemTypeEnum.WEAPON)
 export class Weapon extends BaseItem {
+  declare itemType: ItemTypeEnum.WEAPON;
+
   @Column({ nullable: true })
   @Field(() => Int)
   physicalDamage: number;
@@ -75,6 +77,8 @@ export class Weapon extends BaseItem {
 @ObjectType({ implements: BaseItem })
 @ChildEntity(ItemTypeEnum.ARMOR)
 export class Armor extends BaseItem {
+  declare itemType: ItemTypeEnum.ARMOR;
+
   @Column({ nullable: true, default: 1 })
   @Field(() => Int)
   physicalDefense: number;
@@ -99,6 +103,8 @@ export class Armor extends BaseItem {
 @ObjectType({ implements: BaseItem })
 @ChildEntity(ItemTypeEnum.RESOURCE)
 export class Resource extends BaseItem {
+  declare itemType: ItemTypeEnum.RESOURCE;
+
   @Column()
   @Field({ description: 'Описание предмета' })
   description: string;

@@ -1,12 +1,10 @@
+import { ItemTypeEnum } from 'src/common/enums/item-type.enum';
 
 import { Injectable } from '@nestjs/common';
 
 import { LootRuntimeService } from './loot-runtime.service';
 import { LootService } from './loot.service';
-import { LootDrop,  } from './types/loot.types';
-
-
-
+import { LootDrop } from './types/loot.types';
 
 @Injectable()
 export class LootInteractionService {
@@ -19,9 +17,7 @@ export class LootInteractionService {
     sourceId: string,
     characterId: string,
     locationId: string,
-  ):
-    | LootDrop[]
-    | undefined {
+  ): LootDrop[] | undefined {
     const ctx = this.lootRuntime.getById(sourceId);
     if (!ctx) throw new Error('Loot not found');
 
@@ -35,26 +31,51 @@ export class LootInteractionService {
     const currentLoot = ctx.perPlayerLoot.get(characterId);
     if (!currentLoot) return undefined;
 
-    return currentLoot.map(slot => ({
-      amount: slot.amount,
-      item: {
-        iconKey: slot.item.iconKey,
-        id: slot.item.id,
-        itemType: slot.item.itemType,
-        name: slot.item.name,
-        description: slot.item.description,
-        durability: slot.item.durability,
-        magicDamage: slot.item.magicDamage,
-        magicDefense: ,
-        physicalDamage:,
-        physicalDefense:,
-        bag,
-        slot,
-        texture
+    return currentLoot.map(slot => {
+      const item = slot.item;
+      const baseItem = {
+        id: item.id,
+        name: item.name,
+        iconKey: item.iconKey,
+      };
 
+      switch (item.itemType) {
+        case ItemTypeEnum.WEAPON:
+          return {
+            amount: slot.amount,
+            item: {
+              ...baseItem,
+              itemType: item.itemType,
+              physicalDamage: item.physicalDamage,
+              magicDamage: item.magicDamage,
+              durability: item.durability,
+            },
+          };
 
-      },
-    }));
+        case ItemTypeEnum.ARMOR:
+          return {
+            amount: slot.amount,
+            item: {
+              ...baseItem,
+              itemType: item.itemType,
+              physicalDefense: item.physicalDefense,
+              magicDefense: item.magicDefense,
+              durability: item.durability,
+            },
+          };
+
+        case ItemTypeEnum.RESOURCE:
+          return {
+            amount: slot.amount,
+
+            item: {
+              itemType: item.itemType,
+              ...baseItem,
+              description: item.description,
+            },
+          };
+      }
+    });
   }
 
   public takeItem(sourceId: string, characterId: string, itemId: string) {
