@@ -37,6 +37,7 @@ export class LootInteractionService {
         id: item.id,
         name: item.name,
         iconKey: item.iconKey,
+        rarity: item.rarity,
       };
 
       switch (item.itemType) {
@@ -67,7 +68,6 @@ export class LootInteractionService {
         case ItemTypeEnum.RESOURCE:
           return {
             amount: slot.amount,
-
             item: {
               itemType: item.itemType,
               ...baseItem,

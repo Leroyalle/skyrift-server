@@ -326,13 +326,13 @@ export class SeedService {
           {
             itemId: equipment.helmet?.id,
             rarity: LootRarity.COMMON,
-            chance: 1,
+            chance: 0.2,
             durability: 0.3,
           },
           {
             itemId: equipment.breastplate?.id,
             rarity: LootRarity.COMMON,
-            chance: 1,
+            chance: 0.85,
             durability: 0.3,
           },
           {
@@ -344,13 +344,13 @@ export class SeedService {
           {
             itemId: ironHelmetItem.id,
             rarity: LootRarity.COMMON,
-            chance: 1,
+            chance: 0.25,
             durability: 0.7,
           },
           {
             itemId: breastplate.id,
             rarity: LootRarity.COMMON,
-            chance: 1,
+            chance: 0.67,
             durability: 0.5,
           },
         ],

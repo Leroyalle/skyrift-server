@@ -1,4 +1,4 @@
-import { TItem } from 'src/common/types/item.type';
+import { ItemTypeEnum } from 'src/common/enums/item-type.enum';
 
 export enum LootRarity {
   COMMON = 'common',
@@ -18,11 +18,29 @@ export interface LootItem {
   durability?: number;
 }
 
-type DistributiveOmit<T, K extends keyof any> = T extends any ? Omit<T, K> : never;
-
-type ClientItem = DistributiveOmit<TItem, 'bag' | 'slot' | 'texture'>;
-
+export interface ClientItem {
+  id: string;
+  name: string;
+  iconKey: string;
+  itemType: ItemTypeEnum;
+  rarity: LootRarity;
+}
 export interface LootDrop {
-  item: ClientItem;
+  item: ClientItem &
+    (
+      | {
+          itemType: ItemTypeEnum.WEAPON;
+          physicalDamage: number;
+          magicDamage: number;
+          durability?: number;
+        }
+      | {
+          itemType: ItemTypeEnum.ARMOR;
+          physicalDefense: number;
+          magicDefense: number;
+          durability?: number;
+        }
+      | { itemType: ItemTypeEnum.RESOURCE; description: string }
+    );
   amount: number;
 }

@@ -23,12 +23,16 @@ export class LootService {
 
       const item = this.itemRegistry.getById(lootItem.itemId);
 
-      const amount = this.rollAmount(lootItem);
       if (!item) {
         console.warn(`item with id: ${lootItem.itemId} not found in registry`);
         continue;
       }
-      generateLoot.push({ item, amount });
+      const amount = this.rollAmount(lootItem);
+
+      generateLoot.push({
+        item: { ...item, rarity: lootItem.rarity },
+        amount,
+      });
     }
     return generateLoot;
   }
