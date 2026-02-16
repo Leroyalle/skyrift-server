@@ -264,7 +264,7 @@ export class SeedService {
       itemType: ItemTypeEnum.WEAPON,
       slot: WeaponSlotEnum.MAIN_HAND,
       name: 'Эльфийский лук',
-      iconKey: '',
+      iconKey: 'elven_bow',
       bag: firstCharacter.bag,
       texture: { atlasKey: 'elven_bow', frameName: 'elven-bow' },
     });
@@ -326,32 +326,14 @@ export class SeedService {
           {
             itemId: equipment.helmet?.id,
             rarity: LootRarity.COMMON,
-            chance: 0.2,
+            chance: 1,
             durability: 0.3,
           },
           {
             itemId: equipment.breastplate?.id,
-            rarity: LootRarity.COMMON,
-            chance: 0.85,
-            durability: 0.3,
-          },
-          {
-            itemId: elvenBowItem.id,
-            rarity: LootRarity.COMMON,
+            rarity: LootRarity.UNCOMMON,
             chance: 1,
-            durability: 0.5,
-          },
-          {
-            itemId: ironHelmetItem.id,
-            rarity: LootRarity.COMMON,
-            chance: 0.25,
-            durability: 0.7,
-          },
-          {
-            itemId: breastplate.id,
-            rarity: LootRarity.COMMON,
-            chance: 0.67,
-            durability: 0.5,
+            durability: 0.3,
           },
         ],
       });
@@ -413,7 +395,7 @@ export class SeedService {
 
     console.log('Characters saved');
 
-    firstCharacter.bag.items.push(elvenBowItem, ironHelmetItem, breastplate);
+    // firstCharacter.bag.items.push(elvenBowItem, ironHelmetItem, breastplate);
     await this.characterRepository.save(firstCharacter);
 
     const stanEffect = await this.effectRepository.save({

@@ -67,7 +67,6 @@ export class PlayerStateService {
     });
 
     if (!character) return;
-
     const {
       lastMoveAt: _,
       lastAttackAt: __,
@@ -77,6 +76,7 @@ export class PlayerStateService {
       ...croppedCharacter
     } = character;
 
+    console.log('charac lenght', croppedCharacter.bag.items.length);
     await this.redisService.hset(RedisKeysFactory.playerState(characterId), character);
 
     await this.characterService.update(character.id, croppedCharacter);

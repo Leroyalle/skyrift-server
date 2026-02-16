@@ -58,9 +58,10 @@ export class Character extends ActorEntity {
   @Field(() => [CharacterSkill], { description: 'Навыки персонаж' })
   characterSkills: CharacterSkill[];
 
-  @OneToOne(() => Bag, bag => bag.character, { cascade: true })
-  @JoinColumn({ name: 'bag' })
-  @Field(() => Bag)
+  @OneToOne(() => Bag, bag => bag.character, {
+    cascade: true,
+    eager: true,
+  })
   bag: Bag;
 
   @OneToMany(() => PlayerQuest, playerQuest => playerQuest.player, { cascade: true })

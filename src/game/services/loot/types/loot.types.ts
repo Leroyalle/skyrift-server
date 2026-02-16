@@ -16,6 +16,7 @@ export interface LootItem {
   minAmount?: number;
   maxAmount?: number;
   durability?: number;
+  guaranteed?: boolean;
 }
 
 export interface ClientItem {

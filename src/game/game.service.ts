@@ -510,7 +510,27 @@ export class GameService extends BaseLogger {
     const { userId, characterId, locationId } = client.userData;
     try {
       const loot = this.lootInteractionService.openLoot(sourceId, characterId, locationId);
-      this.socketService.sendToUser(userId, ServerToClientEvents.LootOpened, loot);
+      this.socketService.sendToUser(userId, ServerToClientEvents.LootOpened, { loot, sourceId });
+    } catch (error) {
+      this.socketService.sendToUser(userId, ServerToClientEvents.GameNotification, {
+        type: 'error',
+        message: (error as Error).message || 'Не удалось открыть лут',
+      });
+    }
+  }
+
+  public async requestLootTake(client: AuthenticatedSocket, sourceId: string, itemId: string) {
+    const { userId, characterId } = client.userData;
+    try {
+      const drop = await this.lootInteractionService.takeItem(sourceId, characterId, itemId);
+      if (!drop) throw new Error('Предмет не найден в луте');
+      const runtimeCharacter = this.playerStateService.getCharacterState(characterId);
+
+      if (!runtimeCharacter) throw new Error('Runtime персонаж не найден');
+      console.log('runtimeCharacter', runtimeCharacter);
+
+      this.inventoryService.add(runtimeCharacter.bag, drop);
+      this.socketService.sendToUser(userId, ServerToClientEvents.BagItemAdded, drop);
     } catch (error) {
       this.socketService.sendToUser(userId, ServerToClientEvents.GameNotification, {
         type: 'error',

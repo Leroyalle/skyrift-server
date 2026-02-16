@@ -63,11 +63,12 @@ export class CharacterService {
   }
 
   public async update(characterId: string, updateCharacterInput: UpdateCharacterInput) {
+    console.log('updateCharacterInput', updateCharacterInput);
     const character = await this.characterRepository.preload({
       ...updateCharacterInput,
       id: characterId,
     });
-
+    console.log('character', character);
     if (!character) throw new NotFoundException('Персонаж не найден');
 
     return await this.characterRepository.save(character);

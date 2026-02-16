@@ -38,6 +38,7 @@ export class LootService {
   }
 
   private rollDrop(lootItem: LootItem): boolean {
+    if (lootItem.guaranteed) return true;
     this.assertChance(lootItem.chance);
     const rarityMultiplier = this.rarityMultiplier[lootItem.rarity] ?? 1;
     const finalChance = lootItem.chance * rarityMultiplier;

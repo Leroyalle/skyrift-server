@@ -46,8 +46,6 @@ export class ItemService {
 
     switch (input.itemType) {
       case ItemTypeEnum.WEAPON: {
-        // const weapon = this.create(input);
-        // return this.weaponRepo.save(weapon);
         item = this.create(input);
         item = await this.weaponRepo.save(item);
         break;
@@ -57,13 +55,9 @@ export class ItemService {
         item = this.create(input);
         item = await this.armorRepo.save(item);
         break;
-        // const armor = this.create(input);
-        // return this.armorRepo.save(armor);
       }
 
       case ItemTypeEnum.RESOURCE: {
-        // const resource = this.create(input);
-        // return this.resourceRepo.save(resource);
         item = this.create(input);
         item = await this.resourceRepo.save(item);
         break;

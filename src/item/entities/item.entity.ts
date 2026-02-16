@@ -44,7 +44,7 @@ export abstract class BaseItem {
   iconKey: string;
 
   @ManyToOne(() => Bag, bag => bag.items, { nullable: true })
-  @Field(() => Bag, { nullable: true })
+  @Field(() => Bag, { nullable: true, name: 'bagId' })
   bag: Bag | null;
 }
 

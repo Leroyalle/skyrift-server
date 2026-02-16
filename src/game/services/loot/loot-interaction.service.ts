@@ -1,6 +1,10 @@
 import { ItemTypeEnum } from 'src/common/enums/item-type.enum';
+import { TItem } from 'src/common/types/item.type';
+import { ItemService } from 'src/item/item.service';
 
 import { Injectable } from '@nestjs/common';
+
+import { ItemRegistryService } from '../item-registry/item-registry.service';
 
 import { LootRuntimeService } from './loot-runtime.service';
 import { LootService } from './loot.service';
@@ -11,6 +15,8 @@ export class LootInteractionService {
   constructor(
     private readonly lootRuntime: LootRuntimeService,
     private readonly lootService: LootService,
+    private readonly itemRegistryService: ItemRegistryService,
+    private readonly itemService: ItemService,
   ) {}
 
   public openLoot(
@@ -78,10 +84,13 @@ export class LootInteractionService {
     });
   }
 
-  public takeItem(sourceId: string, characterId: string, itemId: string) {
+  public async takeItem(
+    sourceId: string,
+    characterId: string,
+    itemId: string,
+  ): Promise<TItem | undefined> {
     const ctx = this.lootRuntime.getById(sourceId);
     if (!ctx) throw new Error('Loot not found');
-
     const loot = ctx.perPlayerLoot.get(characterId);
     if (!loot) throw new Error('No loot opened');
 
@@ -90,6 +99,13 @@ export class LootInteractionService {
 
     const [drop] = loot.splice(lootIndex, 1);
 
+    const itemTemplate = this.itemRegistryService.getById(drop.item.id);
+    if (!itemTemplate) throw new Error('Item not found in registry');
+
+    const item = await this.itemService.createAndSave({
+      ...itemTemplate,
+      bag: null,
+    });
     if (loot.length === 0) {
       ctx.perPlayerLoot.delete(characterId);
     }
@@ -98,6 +114,6 @@ export class LootInteractionService {
       this.lootRuntime.removeById(sourceId);
     }
 
-    return drop;
+    return item;
   }
 }
