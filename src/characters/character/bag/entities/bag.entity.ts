@@ -1,6 +1,6 @@
 import { Character } from 'src/characters/character/entities/character.entity';
 import { BaseItem } from 'src/item/entities/item.entity';
-import { Column, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, OneToMany, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 import { Field, ID, Int, ObjectType } from '@nestjs/graphql';
 
@@ -16,7 +16,7 @@ export class Bag {
   items: BaseItem[];
 
   @OneToOne(() => Character, character => character.bag)
-  @JoinColumn({ name: 'characterId' })
+  @Field(() => [BaseItem])
   character: Character;
 
   @Column({ default: 10 })

@@ -5,12 +5,14 @@ import { MobModule } from 'src/characters/mob/mob.module';
 import { WsAuthGuard } from 'src/common/guards/ws-guard.guard';
 import { EffectModule } from 'src/effect/effect.module';
 import { RedisModule } from 'src/infrastructure/redis/redis.module';
+import { BaseItem } from 'src/item/entities/item.entity';
 import { ItemModule } from 'src/item/item.module';
 import { QuestModule } from 'src/quest/quest.module';
 import { UserModule } from 'src/user/user.module';
 import { LocationModule } from 'src/world/location/location.module';
 
 import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { GameGateway } from './game.gateway';
 import { GameService } from './game.service';
@@ -46,6 +48,7 @@ import { SpatialGridService } from './services/spatial-grid/spatial-grid.service
 
 @Module({
   imports: [
+    TypeOrmModule.forFeature([BaseItem]),
     AuthModule,
     UserModule,
     CharacterModule,

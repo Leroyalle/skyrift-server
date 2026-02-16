@@ -202,7 +202,6 @@ export class ProjectileService {
       this.actionQueueService.clearPendingActions(attacker, []);
       this.actionQueueService.clearPendingActions(victim, []);
       this.movementQueueService.delete(victim);
-
       if (isMob(victim)) {
         this.runtimeMobService.killMob(victim.id, attacker.id);
       }

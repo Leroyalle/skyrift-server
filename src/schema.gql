@@ -7,7 +7,7 @@ interface BaseItem {
   name: String!
   itemType: ItemTypeEnum!
   iconKey: String!
-  bagId: Bag
+  bag: Bag
 }
 
 """Типы предметов"""
@@ -159,6 +159,7 @@ type CharacterClass {
 type Bag {
   id: ID!
   items: [BaseItem!]!
+  character: [BaseItem!]!
 
   """Максимальный размер сумки"""
   maxSlots: Int!
@@ -177,7 +178,7 @@ type Weapon implements BaseItem {
   name: String!
   itemType: ItemTypeEnum!
   iconKey: String!
-  bagId: Bag
+  bag: Bag
   physicalDamage: Int!
   magicDamage: Int!
 
@@ -198,7 +199,7 @@ type Armor implements BaseItem {
   name: String!
   itemType: ItemTypeEnum!
   iconKey: String!
-  bagId: Bag
+  bag: Bag
   physicalDefense: Int!
   magicDefense: Int!
 
@@ -222,7 +223,7 @@ type Resource implements BaseItem {
   name: String!
   itemType: ItemTypeEnum!
   iconKey: String!
-  bagId: Bag
+  bag: Bag
 
   """Описание предмета"""
   description: String!
@@ -518,6 +519,7 @@ type Character {
 
   """Навыки персонаж"""
   characterSkills: [CharacterSkill!]!
+  bag: Bag!
   quests: [PlayerQuest!]!
 }
 

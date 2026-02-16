@@ -1,14 +1,21 @@
 import { Bag } from 'src/characters/character/bag/entities/bag.entity';
 import { ItemTypeEnum } from 'src/common/enums/item-type.enum';
 import { TItem } from 'src/common/types/item.type';
+import { BaseItem } from 'src/item/entities/item.entity';
+import { Repository } from 'typeorm';
 
 import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
 
 import { PlayerStateService } from '../../player-state.service';
 
 @Injectable()
 export class InventoryService {
-  constructor(private readonly playerStateService: PlayerStateService) {}
+  constructor(
+    @InjectRepository(BaseItem)
+    private readonly itemRepository: Repository<BaseItem>,
+    private readonly playerStateService: PlayerStateService,
+  ) {}
 
   public add(bag: Bag, item: TItem): void {
     bag.items.push(item);
@@ -77,4 +84,11 @@ export class InventoryService {
       }
     }
   };
+
+  public async addAndPersist(bag: Bag, item: TItem) {
+    item.bag = bag;
+    const savedItem = await this.itemRepository.save(item);
+    this.add(bag, savedItem);
+    await this.itemRepository.save(item);
+  }
 }

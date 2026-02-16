@@ -32,7 +32,7 @@ export class PlayerStateService {
     await this.redisService.set(RedisKeysFactory.playerNameToId(character.name), character.id);
 
     let runtimeCharacter = this.registryService.getByRef({ type: 'player', id: character.id });
-
+    console.log('chharacter bag dda', runtimeCharacter?.bag);
     if (!runtimeCharacter) {
       runtimeCharacter = buildRuntimeCharacter(character);
       this.registryService.add(runtimeCharacter);
@@ -73,10 +73,11 @@ export class PlayerStateService {
       lastHpRegenerationTime: ___,
       isAttacking: ____,
       userId: _____,
+      bag: ______,
       ...croppedCharacter
     } = character;
 
-    console.log('charac lenght', croppedCharacter.bag.items.length);
+    // console.log('charac lenght', croppedCharacter.bag.items.length);
     await this.redisService.hset(RedisKeysFactory.playerState(characterId), character);
 
     await this.characterService.update(character.id, croppedCharacter);
