@@ -12,6 +12,7 @@ import { RedisService } from 'src/infrastructure/redis/redis.service';
 import { isArmor } from 'src/item/guards/is-armor';
 import { isWeapon } from 'src/item/guards/is-weapon';
 import { UserService } from 'src/user/user.service';
+import { LocationService } from 'src/world/location/location.service';
 
 import { Injectable } from '@nestjs/common';
 
@@ -27,9 +28,11 @@ import { RequestUseTeleportDto } from './dto/request-use-teleport.dto';
 import { PlayerStateService } from './services/characters/player-state/player-state.service';
 import { InventoryService } from './services/characters/player-state/services/inventory/inventory.service';
 import { RuntimeEquipmentService } from './services/characters/player-state/services/runtime-equipment/runtime-equipment.service';
+import { IRuntimeNpc } from './services/characters/runtime-npc/types/runtime-npc.type';
 import { ChatService } from './services/chat/chat.service';
 import { DirectMessageInput } from './services/chat/dto/direct-message.input';
 import { CombatService } from './services/combat/combat.service';
+import { EntityRegistryService } from './services/entity-registry/entity-registry.service';
 import { GameInitialDataService } from './services/game-core/game-initial-data/game-initial-data.service';
 import { InteractionService } from './services/interaction/interaction.service';
 import { LootInteractionService } from './services/loot/loot-interaction.service';
@@ -57,6 +60,8 @@ export class GameService extends BaseLogger {
     private readonly inventoryService: InventoryService,
     private readonly equipmentService: RuntimeEquipmentService,
     private readonly lootInteractionService: LootInteractionService,
+    private readonly registryService: EntityRegistryService,
+    private readonly locationService: LocationService,
   ) {
     super();
   }
@@ -509,9 +514,45 @@ export class GameService extends BaseLogger {
   public requestLoot(client: AuthenticatedSocket, sourceId: string) {
     const { userId, characterId, locationId } = client.userData;
     try {
-      const loot = this.lootInteractionService.openLoot(sourceId, characterId, locationId);
-      this.socketService.sendToUser(userId, ServerToClientEvents.LootOpened, { loot, sourceId });
+      // const character = this.playerStateService.getCharacterState(characterId);
+      // if (!character) throw new Error('Не удалось найти игрока');
+
+      // const mob = this.registryService.getByRef({ type: 'mob', id: sourceId });
+      // console.log('sourceId', sourceId);
+      // console.log(this.registryService.mobsArray);
+      // if (!mob) throw new Error('Не удалось найти моба');
+
+      // const currentLocation = await this.locationService.loadLocation(mob.locationId);
+      // if (!currentLocation) throw new Error('Не удалось найти локацию');
+
+      // const canInteract = await this.interactionService.checkDistanceAndSetMovement(
+      //   character,
+      //   mob,
+      //   currentLocation,
+      // );
+      // if (!canInteract) return;
+      const mob = this.registryService.getByRef({ type: 'mob', id: sourceId });
+      if (!mob) throw new Error('Не удалось найти моба');
+
+      const lootWinner = mob.aggro.getCurrentTarget;
+      console.log('lootWinner', lootWinner);
+      console.log('threatMap', mob.aggro['threatMap']);
+      console.log('currentTarget', mob.aggro.getCurrentTarget);
+
+      if (!lootWinner || lootWinner.id !== characterId) {
+        return this.socketService.sendToUser(userId, ServerToClientEvents.GameNotification, {
+          type: 'error',
+          message: 'Вы не нанесли больше всего урона этому мобу',
+        });
+      }
+
+      const lootItems = this.lootInteractionService.openLoot(sourceId, characterId, locationId);
+      this.socketService.sendToUser(userId, ServerToClientEvents.LootOpened, {
+        lootItems,
+        sourceId,
+      });
     } catch (error) {
+      console.log(error);
       this.socketService.sendToUser(userId, ServerToClientEvents.GameNotification, {
         type: 'error',
         message: (error as Error).message || 'Не удалось открыть лут',
@@ -523,13 +564,19 @@ export class GameService extends BaseLogger {
     const { userId, characterId } = client.userData;
     try {
       const drop = await this.lootInteractionService.takeItem(sourceId, characterId, itemId);
-      if (!drop) throw new Error('Предмет не найден в луте');
+      if (!drop) {
+        this.socketService.sendToUser(userId, ServerToClientEvents.GameNotification, {
+          type: 'info',
+          message: 'Лут уже разобран',
+        });
+
+        return;
+      }
       const runtimeCharacter = this.playerStateService.getCharacterState(characterId);
 
       if (!runtimeCharacter) throw new Error('Runtime персонаж не найден');
 
       await this.inventoryService.addAndPersist(runtimeCharacter.bag, drop);
-      console.log('After add:', runtimeCharacter.bag.items);
       this.socketService.sendToUser(userId, ServerToClientEvents.BagItemAdded, drop);
       this.socketService.sendToUser(userId, ServerToClientEvents.LootItemRemoved, {
         sourceId,

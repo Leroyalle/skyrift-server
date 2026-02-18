@@ -25,7 +25,7 @@ export class LootInteractionService {
     locationId: string,
   ): LootDrop[] | undefined {
     const ctx = this.lootRuntime.getById(sourceId);
-    if (!ctx) throw new Error('Loot not found');
+    if (!ctx) return [];
 
     if (ctx.source.locationId !== locationId) throw new Error('Wrong location');
 
@@ -88,7 +88,7 @@ export class LootInteractionService {
     sourceId: string,
     characterId: string,
     itemId: string,
-  ): Promise<TItem | undefined> {
+  ): Promise<TItem | null> {
     const ctx = this.lootRuntime.getById(sourceId);
     if (!ctx) throw new Error('Loot not found');
     const loot = ctx.perPlayerLoot.get(characterId);
@@ -106,6 +106,7 @@ export class LootInteractionService {
       ...itemTemplate,
       bag: null,
     });
+
     if (loot.length === 0) {
       ctx.perPlayerLoot.delete(characterId);
     }

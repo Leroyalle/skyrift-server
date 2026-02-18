@@ -297,7 +297,8 @@ export class SeedService {
     });
 
     const mobs: Mob[] = [];
-    for (let i = 1; i <= 1; i++) {
+    const mobCount = 1;
+    for (let i = 1; i <= mobCount; i++) {
       const x = 2016;
       const y = 960;
       const equipment = await this.equipmentService.createInitEquip('dark');
@@ -311,10 +312,10 @@ export class SeedService {
         triggerRange: 3,
         x,
         y,
-        maxHp: 25,
-        hp: 25,
+        maxHp: 100,
+        hp: 100,
         // respawnTime: 5000,
-        respawnTime: 300000,
+        respawnTime: 3000000,
         level: 3,
         expReward: 20,
         equipment,

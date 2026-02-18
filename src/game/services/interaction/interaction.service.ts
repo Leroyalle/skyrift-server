@@ -169,7 +169,7 @@ export class InteractionService {
     return true;
   }
 
-  private async checkDistanceAndSetMovement(
+  public async checkDistanceAndSetMovement(
     playerState: IRuntimeCharacter,
     npc: IRuntimeNpc,
     location: CachedLocation,

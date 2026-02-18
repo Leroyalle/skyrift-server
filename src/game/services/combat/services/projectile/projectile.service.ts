@@ -198,6 +198,7 @@ export class ProjectileService {
         Math.abs(receivedDamage),
       );
     }
+    console.log(remainingHp);
     if (remainingHp <= 0) {
       this.actionQueueService.clearPendingActions(attacker, []);
       this.actionQueueService.clearPendingActions(victim, []);
