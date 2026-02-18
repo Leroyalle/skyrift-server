@@ -527,10 +527,9 @@ export class GameService extends BaseLogger {
       const runtimeCharacter = this.playerStateService.getCharacterState(characterId);
 
       if (!runtimeCharacter) throw new Error('Runtime персонаж не найден');
-      // console.log('runtimeCharacter', runtimeCharacter);
 
       await this.inventoryService.addAndPersist(runtimeCharacter.bag, drop);
-      // this.inventoryService.add(runtimeCharacter.bag, drop);
+      console.log('After add:', runtimeCharacter.bag.items);
       this.socketService.sendToUser(userId, ServerToClientEvents.BagItemAdded, drop);
       this.socketService.sendToUser(userId, ServerToClientEvents.LootItemRemoved, {
         sourceId,

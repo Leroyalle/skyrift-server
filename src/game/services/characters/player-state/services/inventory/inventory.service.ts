@@ -84,11 +84,15 @@ export class InventoryService {
       }
     }
   };
-
   public async addAndPersist(bag: Bag, item: TItem) {
-    item.bag = bag;
-    const savedItem = await this.itemRepository.save(item);
-    this.add(bag, savedItem);
-    await this.itemRepository.save(item);
+    await this.itemRepository.update(item.id, {
+      bag: { id: bag.id },
+    });
+
+    item.bag = { id: bag.id } as Bag;
+
+    bag.items.push(item);
+
+    return item;
   }
 }
