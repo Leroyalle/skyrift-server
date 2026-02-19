@@ -511,33 +511,28 @@ export class GameService extends BaseLogger {
     return this.interactionService.requestQuestAccept(socket, input);
   }
 
-  public requestLoot(client: AuthenticatedSocket, sourceId: string) {
+  public async requestLoot(client: AuthenticatedSocket, sourceId: string) {
     const { userId, characterId, locationId } = client.userData;
     try {
-      // const character = this.playerStateService.getCharacterState(characterId);
-      // if (!character) throw new Error('Не удалось найти игрока');
+      const character = this.playerStateService.getCharacterState(characterId);
+      if (!character) throw new Error('Не удалось найти игрока');
 
-      // const mob = this.registryService.getByRef({ type: 'mob', id: sourceId });
-      // console.log('sourceId', sourceId);
-      // console.log(this.registryService.mobsArray);
-      // if (!mob) throw new Error('Не удалось найти моба');
-
-      // const currentLocation = await this.locationService.loadLocation(mob.locationId);
-      // if (!currentLocation) throw new Error('Не удалось найти локацию');
-
-      // const canInteract = await this.interactionService.checkDistanceAndSetMovement(
-      //   character,
-      //   mob,
-      //   currentLocation,
-      // );
-      // if (!canInteract) return;
       const mob = this.registryService.getByRef({ type: 'mob', id: sourceId });
+      console.log('sourceId', sourceId);
+      console.log(this.registryService.mobsArray);
       if (!mob) throw new Error('Не удалось найти моба');
 
+      const currentLocation = await this.locationService.loadLocation(mob.locationId);
+      if (!currentLocation) throw new Error('Не удалось найти локацию');
+
+      const canInteract = await this.interactionService.checkDistanceAndSetMovement(
+        character,
+        mob,
+        currentLocation,
+      );
+      if (!canInteract) return;
+
       const lootWinner = mob.aggro.getCurrentTarget;
-      console.log('lootWinner', lootWinner);
-      console.log('threatMap', mob.aggro['threatMap']);
-      console.log('currentTarget', mob.aggro.getCurrentTarget);
 
       if (!lootWinner || lootWinner.id !== characterId) {
         return this.socketService.sendToUser(userId, ServerToClientEvents.GameNotification, {

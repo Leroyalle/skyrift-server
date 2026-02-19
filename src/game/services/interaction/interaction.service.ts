@@ -171,7 +171,7 @@ export class InteractionService {
 
   public async checkDistanceAndSetMovement(
     playerState: IRuntimeCharacter,
-    npc: IRuntimeNpc,
+    target: PositionDto,
     location: CachedLocation,
   ): Promise<boolean> {
     const steps = await this.pathFindingService.getPlayerPath(
@@ -179,7 +179,7 @@ export class InteractionService {
       {
         ...getTileByPosition(playerState.x, playerState.y),
       },
-      { ...getTileByPosition(npc.x, npc.y) },
+      { ...getTileByPosition(target.x, target.y) },
       location.passableMap,
     );
 

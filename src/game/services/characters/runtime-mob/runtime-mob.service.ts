@@ -280,7 +280,6 @@ export class RuntimeMobService {
     if (!mob) return;
     mob.isAlive = false;
     mob.state = 'dead';
-    mob.aggro.clear();
     mob.currentTarget = null;
 
     this.lootRuntimeService.add(

@@ -315,7 +315,7 @@ export class SeedService {
         maxHp: 100,
         hp: 100,
         // respawnTime: 5000,
-        respawnTime: 3000000,
+        respawnTime: 30000,
         level: 3,
         expReward: 20,
         equipment,
@@ -329,12 +329,14 @@ export class SeedService {
             rarity: LootRarity.COMMON,
             chance: 1,
             durability: 0.3,
+            guaranteed: true,
           },
           {
             itemId: equipment.breastplate?.id,
             rarity: LootRarity.UNCOMMON,
             chance: 1,
             durability: 0.3,
+            guaranteed: true,
           },
         ],
       });

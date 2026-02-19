@@ -16,6 +16,7 @@ export class AggroTable {
     const entityThreat = (this.threatMap.get(key) ?? 0) + damage;
     this.threatMap.set(key, entityThreat);
     this.updateCurrentTarget();
+    console.log('entitty treay', entityThreat);
   }
 
   private updateCurrentTarget(switchThreshold: number = 10): EntityRef | null {
@@ -51,6 +52,7 @@ export class AggroTable {
       this.currentTarget = null;
     }
     this.threatMap.delete(generateEntityKey(entityRef));
+
     return this.updateCurrentTarget();
   }
 
