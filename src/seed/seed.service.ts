@@ -315,7 +315,7 @@ export class SeedService {
         maxHp: 100,
         hp: 100,
         // respawnTime: 5000,
-        respawnTime: 30000,
+        respawnTime: 5000,
         level: 3,
         expReward: 20,
         equipment,

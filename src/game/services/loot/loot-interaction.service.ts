@@ -25,8 +25,8 @@ export class LootInteractionService {
     locationId: string,
   ): LootDrop[] | undefined {
     const ctx = this.lootRuntime.getById(sourceId);
-    if (!ctx) throw new Error('Loot not found');
-
+    // if (!ctx) throw new Error('Loot not found');
+    if (!ctx) return [];
     if (ctx.source.locationId !== locationId) throw new Error('Wrong location');
 
     if (!ctx.allowedLooters.has(characterId)) throw new Error('Access denied');

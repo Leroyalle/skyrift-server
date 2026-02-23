@@ -42,6 +42,19 @@ export class RuntimeMobService {
       const now = Date.now();
       if (!mob.isAlive) {
         if (mob.respawnIn && now >= mob.respawnIn) {
+          const lootContext = this.lootRuntimeService.getById(mob.id);
+          if (lootContext) {
+            lootContext.allowedLooters.forEach(playerId => {
+              console.log('sending LootClose to', playerId, 'socket:');
+              console.log('allowed looter:', playerId);
+              console.log('connected users:', Array.from(this.socketService.getAllUserIds()));
+              this.socketService.sendToUser(playerId, ServerToClientEvents.LootClose, {
+                sourceId: mob.id,
+              });
+            });
+            this.lootRuntimeService.removeById(mob.id);
+          }
+
           this.respawn(mob.id);
         }
         continue;

@@ -36,6 +36,7 @@ export enum ServerToClientEvents {
 
   LootOpened = 'loot:opened',
   LootItemRemoved = 'loot:removed',
+  LootClose = 'loot:close',
 }
 
 export enum ClientToServerEvents {

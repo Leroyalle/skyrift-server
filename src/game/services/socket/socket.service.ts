@@ -29,14 +29,21 @@ export class SocketService {
     this.socketIdToUserId.delete(socket.id);
     socket.disconnect(true);
   }
+  public getAllUserIds() {
+    return this.userIdToSocketId.keys();
+  }
 
   // disconnectSocket(socket: Socket) {
   //   socket.disconnect(true);
   // }
 
   public sendToUser(userId: string, event: ServerToClientEvents, payload: unknown) {
+    console.log(
+      '_______________________________________________________________________________________',
+    );
     const socketId = this.userIdToSocketId.get(userId);
     if (!socketId || !this.server) return;
+    console.log('socketTO USER', socketId, event);
     this.server.to(socketId).emit(event, payload);
   }
 
