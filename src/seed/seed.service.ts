@@ -12,6 +12,7 @@ import { Npc } from 'src/characters/npc/entities/npc.entity';
 import { NpcService } from 'src/characters/npc/npc.service';
 import { ArmorSlotEnum, WeaponSlotEnum } from 'src/common/enums/equipment-slot.enum';
 import { ItemTypeEnum } from 'src/common/enums/item-type.enum';
+import { NpcServiceType } from 'src/common/enums/npc/npc-service-type.enum';
 import { EffectType } from 'src/common/enums/skill/effect-type.enum';
 import { SkillType } from 'src/common/enums/skill/skill-type.enum';
 import { Property, TiledMap } from 'src/common/types/tiled-map.type';
@@ -463,11 +464,17 @@ export class SeedService {
 
     const magisterNpc = await this.npcService.create({
       ...setupNpc({ name: 'Нпс', x: 1800, y: 1000, givenQuests: [] }),
+      services: [NpcServiceType.Quests],
+      equipment: await this.equipmentService.createInitEquip('dark'),
+    });
+    const fixArmorNpc = await this.npcService.create({
+      ...setupNpc({ name: 'Александр', x: 1000, y: 900, givenQuests: [] }),
+      services: [NpcServiceType.Repair],
       equipment: await this.equipmentService.createInitEquip('dark'),
     });
 
     await this.spawnService.createSpawn({
-      entities: [magisterNpc],
+      entities: [magisterNpc, fixArmorNpc],
       spawnX: 2000,
       spawnY: 1000,
       areaRadius: 0,

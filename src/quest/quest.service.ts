@@ -32,6 +32,7 @@ export class QuestService {
   }
 
   public async createQuest(quest: Omit<Quest, 'id'>) {
+    console.log('quest');
     return await this.questRepository.save(quest);
   }
 

@@ -44,5 +44,6 @@ export function buildRuntimeNpc(npcSpawn: NpcSpawn): IRuntimeNpc[] {
     attackSpeed: npc.attackSpeed,
     attackRange: npc.attackRange,
     areaRadius: npcSpawn.areaRadius,
+    services: npc.services,
   }));
 }

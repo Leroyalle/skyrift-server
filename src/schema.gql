@@ -433,6 +433,7 @@ type Npc {
   walkSpeed: Int!
   spawn: NpcSpawn!
   givenQuests: [Quest!]!
+  services: [String!]
 }
 
 type Quest {
