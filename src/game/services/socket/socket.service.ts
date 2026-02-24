@@ -38,12 +38,8 @@ export class SocketService {
   // }
 
   public sendToUser(userId: string, event: ServerToClientEvents, payload: unknown) {
-    console.log(
-      '_______________________________________________________________________________________',
-    );
     const socketId = this.userIdToSocketId.get(userId);
     if (!socketId || !this.server) return;
-    console.log('socketTO USER', socketId, event);
     this.server.to(socketId).emit(event, payload);
   }
 
