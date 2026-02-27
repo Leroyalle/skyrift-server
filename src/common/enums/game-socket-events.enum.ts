@@ -23,6 +23,7 @@ export enum ServerToClientEvents {
   BagItemRemoved = 'bag:item-removed',
 
   ItemMoved = 'item:moved',
+  ItemRepaired = 'item:repaired',
 
   EquipmentEquipped = 'equipment:equipped',
   EquipmentUnequipped = 'equipment:unequipped',

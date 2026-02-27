@@ -18,6 +18,7 @@ import { Injectable } from '@nestjs/common';
 
 import { RequestEquipDto } from './dto/equipment/request-equip.dto';
 import { RequestUnEquipDto } from './dto/equipment/request-un-equip.dto';
+import { RequestNpcRepairItemDto } from './dto/item/request-fix-item.dto';
 import { RequestUseItemDto } from './dto/item/request-use-item.dto';
 import { RequestAttackMoveDto } from './dto/request-attack-move.dto';
 import { RequestMoveToDto } from './dto/request-move-to.dto';
@@ -509,9 +510,25 @@ export class GameService extends BaseLogger {
     return await this.interactionService.requestTalkToNpc(socket, input);
   }
 
-  public async requestNpcFixItem(socket: AuthenticatedSocket, input: RequestTalkToNpcDto) {
+  public requestNpcFixItem(socket: AuthenticatedSocket, input: RequestNpcRepairItemDto) {
     const { userId, characterId } = socket.userData;
-    return await this.itemRepairService.repairItem(input.gold, input.item);
+
+    const character = this.playerStateService.getCharacterState(characterId);
+    if (!character) throw new Error('Не удалось найти игрока');
+
+    const repairableItem = character.bag.items.find(bagItem => bagItem.id === input.itemId);
+    if (!repairableItem) throw new Error('Не удалось найти предмет в сумке');
+
+    if (!isArmor(repairableItem) && !isWeapon(repairableItem))
+      throw new Error('Этот предмет нельзя починить');
+
+    const result = this.itemRepairService.repairItem(repairableItem, 1000);
+    console.log(result);
+
+    this.socketService.sendToUser(userId, ServerToClientEvents.ItemRepaired, {
+      item: result.repairedItem,
+      gold: result.newGoldCount,
+    });
   }
 
   public requestQuestAccept(socket: AuthenticatedSocket, input: RequestQuestAcceptDto) {
