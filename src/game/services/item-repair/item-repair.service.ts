@@ -11,31 +11,43 @@ export class ItemRepairService {
   public repairItem(
     item: RepairableItem,
     currentGold: number,
-  ): { newGold: number; repairedItem: RepairableItem; cost: number } {
+  ): { newGoldCount: number; repairedItem: RepairableItem } {
     this.assertRepairable(item);
-
-    if (this.isFullyRepaired(item)) {
-      throw new Error('Item does not need repair');
-    }
 
     const cost = this.calculateRepairCost(item);
 
     this.assertEnoughGold(currentGold, cost);
 
     const repairedItem = this.applyRepair(item);
-    const newGold = currentGold - cost;
+    const newGoldCount = currentGold - cost;
 
-    return { newGold, repairedItem, cost };
+    return { newGoldCount, repairedItem };
+  }
+
+  public calculateRepairPreview(item: RepairableItem, currentGold: number) {
+    this.assertRepairable(item);
+
+    const cost = this.calculateRepairCost(item);
+
+    return {
+      cost,
+      canAfford: currentGold >= cost,
+      missingGold: Math.max(cost - currentGold, 0),
+    };
   }
 
   private assertRepairable(item: RepairableItem) {
     if (typeof item.durability !== 'number') {
-      throw new Error('Item has no durability');
+      throw new Error('Item cannot be repaired');
     }
-  }
 
-  private isFullyRepaired(item: RepairableItem): boolean {
-    return item.durability >= 1;
+    if (item.durability < 0 || item.durability > 1) {
+      throw new Error('Invalid durability value');
+    }
+
+    if (item.durability === 1) {
+      throw new Error('Item is already fully repaired');
+    }
   }
 
   private assertEnoughGold(currentGold: number, cost: number) {
@@ -47,9 +59,8 @@ export class ItemRepairService {
   private calculateRepairCost(item: RepairableItem): number {
     const missingDurability = 1 - item.durability;
 
-    const rarityMultiplier = this.getRarityMultiplier(item.rarity);
-
-    const cost = this.baseRepairCost * missingDurability * rarityMultiplier;
+    // const rarityMultiplier = this.getRarityMultiplier(item?.rarity);
+    const cost = this.baseRepairCost * missingDurability;
 
     return Math.ceil(cost);
   }
@@ -59,20 +70,20 @@ export class ItemRepairService {
     return item;
   }
 
-  private getRarityMultiplier(rarity?: string): number {
-    switch (rarity) {
-      case 'COMMON':
-        return 1;
-      case 'UNCOMMON':
-        return 1.2;
-      case 'RARE':
-        return 1.5;
-      case 'EPIC':
-        return 2;
-      case 'LEGENDARY':
-        return 3;
-      default:
-        return 1;
-    }
-  }
+  // private getRarityMultiplier(rarity?: string): number {
+  //   switch (rarity) {
+  //     case 'COMMON':
+  //       return 1;
+  //     case 'UNCOMMON':
+  //       return 1.2;
+  //     case 'RARE':
+  //       return 1.5;
+  //     case 'EPIC':
+  //       return 2;
+  //     case 'LEGENDARY':
+  //       return 3;
+  //     default:
+  //       return 1;
+  //   }
+  // }
 }

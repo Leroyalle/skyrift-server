@@ -19,7 +19,7 @@ export class Npc extends ActorEntity {
   @Field(() => [Quest])
   givenQuests: Quest[];
 
-  @Column({ type: 'jsonb', nullable: true })
-  @Field(() => [String], { nullable: true })
-  services: NpcServiceType[];
+  @Column({ type: 'enum', enum: NpcServiceType, default: NpcServiceType.Quests })
+  @Field(() => NpcServiceType)
+  service: NpcServiceType;
 }

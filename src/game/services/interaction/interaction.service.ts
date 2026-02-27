@@ -2,6 +2,7 @@ import { Socket } from 'socket.io';
 import { IRuntimeCharacter } from 'src/characters/character/types/runtime-character';
 import { PositionDto } from 'src/common/dto/position.dto';
 import { ServerToClientEvents } from 'src/common/enums/game-socket-events.enum';
+import { NpcServiceType } from 'src/common/enums/npc/npc-service-type.enum';
 import { RedisKeys } from 'src/common/enums/redis-keys.enum';
 import { RedisKeysFactory } from 'src/common/infra/redis-keys-factory.infra';
 import { AuthenticatedSocket } from 'src/common/types/socket/auth-socket.type';
@@ -101,7 +102,6 @@ export class InteractionService {
           this.deletePendingInteraction(playerState.id);
           continue;
           // }
-          break;
         }
 
         default:
@@ -127,14 +127,48 @@ export class InteractionService {
 
     if (!result) return false;
 
+    this.openNpcService(playerState, npc);
     // FIXME: при выдачи списка квестов показывать еще и активные квесты
-    const quests = this.runtimeQuestService.getAvailableQuests(playerState, npc.givenQuests);
+    // const quests = this.runtimeQuestService.getAvailableQuests(playerState, npc.givenQuests);
 
-    this.socketService.sendToUser(playerState.userId, ServerToClientEvents.QuestList, {
-      quests: quests,
-    });
+    // this.socketService.sendToUser(playerState.userId, ServerToClientEvents.QuestList, {
+    //   quests: quests,
+    // });
 
     return true;
+  }
+
+  private openNpcService(player: IRuntimeCharacter, npc: IRuntimeNpc) {
+    if (!npc.service) throw new Error('У NPC нету сервисов');
+
+    switch (npc.service) {
+      case NpcServiceType.Quests: {
+        const quests = this.runtimeQuestService.getAvailableQuests(player, npc.givenQuests);
+
+        this.socketService.sendToUser(player.userId, ServerToClientEvents.NpcInteractionOpened, {
+          type: 'quests',
+          npcId: npc.id,
+          quests,
+        });
+        break;
+      }
+      case NpcServiceType.Repair: {
+        this.socketService.sendToUser(player.userId, ServerToClientEvents.NpcInteractionOpened, {
+          type: 'repair',
+          npcId: npc.id,
+        });
+        break;
+      }
+      case NpcServiceType.Shop: {
+        this.socketService.sendToUser(player.userId, ServerToClientEvents.NpcInteractionOpened, {
+          type: 'shop',
+          npcId: npc.id,
+        });
+        break;
+      }
+      default:
+        throw new Error('Неизвестный тип сервиса');
+    }
   }
 
   private async resolveTeleport(

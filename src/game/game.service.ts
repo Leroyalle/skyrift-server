@@ -35,6 +35,7 @@ import { CombatService } from './services/combat/combat.service';
 import { EntityRegistryService } from './services/entity-registry/entity-registry.service';
 import { GameInitialDataService } from './services/game-core/game-initial-data/game-initial-data.service';
 import { InteractionService } from './services/interaction/interaction.service';
+import { ItemRepairService } from './services/item-repair/item-repair.service';
 import { LootInteractionService } from './services/loot/loot-interaction.service';
 import { MovementService } from './services/movement/movement.service';
 import { SocketService } from './services/socket/socket.service';
@@ -55,6 +56,7 @@ export class GameService extends BaseLogger {
     private readonly socketService: SocketService,
     private readonly spatialGridService: SpatialGridService<IRuntimeCharacter>,
     private readonly interactionService: InteractionService,
+    private readonly itemRepairService: ItemRepairService,
     private readonly chatService: ChatService,
     private readonly gameInitialDataService: GameInitialDataService,
     private readonly inventoryService: InventoryService,
@@ -505,6 +507,11 @@ export class GameService extends BaseLogger {
 
   public async requestTalkToNpc(socket: AuthenticatedSocket, input: RequestTalkToNpcDto) {
     return await this.interactionService.requestTalkToNpc(socket, input);
+  }
+
+  public async requestNpcFixItem(socket: AuthenticatedSocket, input: RequestTalkToNpcDto) {
+    const { userId, characterId } = socket.userData;
+    return await this.itemRepairService.repairItem(input.gold, input.item);
   }
 
   public requestQuestAccept(socket: AuthenticatedSocket, input: RequestQuestAcceptDto) {

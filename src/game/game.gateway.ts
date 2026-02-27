@@ -18,6 +18,7 @@ import {
 
 import { RequestEquipDto } from './dto/equipment/request-equip.dto';
 import { RequestUnEquipDto } from './dto/equipment/request-un-equip.dto';
+import { RequestNpcRepairItemDto } from './dto/item/request-fix-item.dto';
 import { RequestUseItemDto } from './dto/item/request-use-item.dto';
 import { RequestAttackMoveDto } from './dto/request-attack-move.dto';
 import { RequestMoveToDto } from './dto/request-move-to.dto';
@@ -163,6 +164,15 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() input: RequestTalkToNpcDto,
   ) {
     return await this.gameService.requestTalkToNpc(socket, input);
+  }
+
+  @SubscribeMessage(ClientToServerEvents.RequestNpcFixItem)
+  @UseGuards(WsAuthGuard)
+  public requestNpcFixItem(
+    @AuthSocket() socket: AuthenticatedSocket,
+    @MessageBody() input: RequestNpcRepairItemDto,
+  ) {
+    return this.gameService.requestNpcFixItem(socket, input);
   }
 
   @SubscribeMessage(ClientToServerEvents.RequestAcceptQuest)

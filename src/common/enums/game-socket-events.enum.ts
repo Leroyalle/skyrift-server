@@ -30,9 +30,11 @@ export enum ServerToClientEvents {
   GameError = 'game:error',
   GameNotification = 'game:notification',
 
-  QuestList = 'quest:list',
+  // QuestList = 'quest:list',
   QuestStarted = 'quest:started',
   QuestCompleted = 'quest:completed',
+
+  NpcInteractionOpened = 'npc:interaction-opened',
 
   LootOpened = 'loot:opened',
   LootItemRemoved = 'loot:removed',
@@ -62,5 +64,8 @@ export enum ClientToServerEvents {
   RequestAcceptQuest = 'quest:request-accept',
   RequestTurnInQuest = 'quest:request-turn-in',
   RequestAbandonQuest = 'quest:request-abandon',
-  RequestTalkToNpc = 'quest:request-talk-to-npc',
+
+  RequestTalkToNpc = 'npc:request-talk',
+
+  RequestNpcFixItem = 'npc:fix-item',
 }

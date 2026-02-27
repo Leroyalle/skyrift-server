@@ -464,12 +464,12 @@ export class SeedService {
 
     const magisterNpc = await this.npcService.create({
       ...setupNpc({ name: 'Нпс', x: 1800, y: 1000, givenQuests: [] }),
-      services: [NpcServiceType.Quests],
+      service: NpcServiceType.Quests,
       equipment: await this.equipmentService.createInitEquip('dark'),
     });
     const fixArmorNpc = await this.npcService.create({
       ...setupNpc({ name: 'Александр', x: 1000, y: 900, givenQuests: [] }),
-      services: [NpcServiceType.Repair],
+      service: NpcServiceType.Repair,
       equipment: await this.equipmentService.createInitEquip('dark'),
     });
 

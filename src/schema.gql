@@ -433,7 +433,14 @@ type Npc {
   walkSpeed: Int!
   spawn: NpcSpawn!
   givenQuests: [Quest!]!
-  services: [String!]
+  service: NpcServiceType!
+}
+
+"""Действие нпс"""
+enum NpcServiceType {
+  Quests
+  Repair
+  Shop
 }
 
 type Quest {
