@@ -35,6 +35,7 @@ import { WorldBootstrapService } from './services/game-core/world-bootstrap/worl
 import { InteractionService } from './services/interaction/interaction.service';
 import { QuestIndexService } from './services/interaction/services/quest/quest-index/quest-index.service';
 import { RuntimeQuestService } from './services/interaction/services/quest/runtime-quest/runtime-quest.service';
+import { ItemRepairService } from './services/item-repair/item-repair.service';
 import { LootInteractionService } from './services/loot/loot-interaction.service';
 import { LootRuntimeService } from './services/loot/loot-runtime.service';
 import { LootService } from './services/loot/loot.service';
@@ -93,6 +94,7 @@ import { SpatialGridService } from './services/spatial-grid/spatial-grid.service
     LootService,
     LootInteractionService,
     CombatCalculationService,
+    ItemRepairService,
   ],
 })
 export class GameModule {}

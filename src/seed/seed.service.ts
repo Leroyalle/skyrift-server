@@ -468,7 +468,7 @@ export class SeedService {
       equipment: await this.equipmentService.createInitEquip('dark'),
     });
     const fixArmorNpc = await this.npcService.create({
-      ...setupNpc({ name: 'Александр', x: 1000, y: 900, givenQuests: [] }),
+      ...setupNpc({ name: 'Александр', x: 1730, y: 900, givenQuests: [] }),
       service: NpcServiceType.Repair,
       equipment: await this.equipmentService.createInitEquip('dark'),
     });

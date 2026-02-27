@@ -34,6 +34,7 @@ import { SpatialGridService } from '../spatial-grid/spatial-grid.service';
 import { QuestIndexService } from './services/quest/quest-index/quest-index.service';
 import { RuntimeQuestService } from './services/quest/runtime-quest/runtime-quest.service';
 import { IRuntimeQuest } from './services/quest/runtime-quest/types/runtime-quest.type';
+import { TNpcInteractionPayload, TNpcServiceDataMap } from './types/npc-interactions-payload.types';
 import { InteractionType, PendingInteraction } from './types/pending-interactions.type';
 import { IQuestStartedPayload } from './types/quest-started-payload.type';
 
@@ -141,35 +142,33 @@ export class InteractionService {
   private openNpcService(player: IRuntimeCharacter, npc: IRuntimeNpc) {
     if (!npc.service) throw new Error('У NPC нету сервисов');
 
-    switch (npc.service) {
-      case NpcServiceType.Quests: {
-        const quests = this.runtimeQuestService.getAvailableQuests(player, npc.givenQuests);
+    const resolver = this.npcServiceResolvers[npc.service];
 
-        this.socketService.sendToUser(player.userId, ServerToClientEvents.NpcInteractionOpened, {
-          type: 'quests',
-          npcId: npc.id,
-          quests,
-        });
-        break;
-      }
-      case NpcServiceType.Repair: {
-        this.socketService.sendToUser(player.userId, ServerToClientEvents.NpcInteractionOpened, {
-          type: 'repair',
-          npcId: npc.id,
-        });
-        break;
-      }
-      case NpcServiceType.Shop: {
-        this.socketService.sendToUser(player.userId, ServerToClientEvents.NpcInteractionOpened, {
-          type: 'shop',
-          npcId: npc.id,
-        });
-        break;
-      }
-      default:
-        throw new Error('Неизвестный тип сервиса');
-    }
+    if (!resolver) throw new Error('Неизвестный тип сервиса');
+
+    const payload = {
+      type: npc.service,
+      npcId: npc.id,
+      data: resolver(player, npc),
+    };
+
+    this.socketService.sendToUser(
+      player.userId,
+      ServerToClientEvents.NpcInteractionOpened,
+      payload,
+    );
   }
+
+  private readonly npcServiceResolvers: {
+    [K in NpcServiceType]: (player: IRuntimeCharacter, npc: IRuntimeNpc) => TNpcServiceDataMap[K];
+  } = {
+    [NpcServiceType.Quests]: (player, npc) =>
+      this.runtimeQuestService.getAvailableQuests(player, npc.givenQuests),
+
+    [NpcServiceType.Repair]: () => null,
+
+    [NpcServiceType.Shop]: () => null,
+  };
 
   private async resolveTeleport(
     playerState: IRuntimeCharacter,
