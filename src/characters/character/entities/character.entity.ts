@@ -12,6 +12,8 @@ import { Equipment } from '../../../equipment/entities/equipment.entity';
 import { Bag } from '../bag/entities/bag.entity';
 import { CharacterSkill } from '../character-skill/entities/character-skill.entity';
 
+import { CharacterWallet } from './character-wallet.entity';
+
 @ObjectType()
 @Entity()
 export class Character extends ActorEntity {
@@ -66,4 +68,10 @@ export class Character extends ActorEntity {
   @OneToMany(() => PlayerQuest, playerQuest => playerQuest.player, { cascade: true })
   @Field(() => [PlayerQuest])
   quests: PlayerQuest[];
+
+  @OneToOne(() => CharacterWallet, wallet => wallet.character, {
+    cascade: true,
+  })
+  @Field(() => CharacterWallet)
+  wallet: CharacterWallet;
 }
