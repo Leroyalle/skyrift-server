@@ -61,7 +61,7 @@ export class Weapon extends BaseItem {
   @Field(() => Int)
   magicDamage: number;
 
-  @Column({ type: 'int', default: 1 })
+  @Column({ type: 'float', default: 1 })
   @Field({ description: 'Прочность предмета' })
   durability: number;
 
@@ -87,7 +87,7 @@ export class Armor extends BaseItem {
   @Field(() => Int)
   magicDefense: number;
 
-  @Column({ type: 'int', default: 1 })
+  @Column({ type: 'float', default: 1 })
   @Field({ description: 'Прочность предмета' })
   durability: number;
 

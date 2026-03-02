@@ -100,8 +100,9 @@ export abstract class ActorEntity extends Timestamp {
   @Field(() => Int, { defaultValue: 450 })
   walkSpeed: number;
 
-  @OneToOne(() => Equipment)
+  @OneToOne(() => Equipment, { cascade: true })
   @JoinColumn({ name: 'equipmentId' })
+  @Field(() => Equipment)
   equipment: Equipment;
 
   @Column(() => Appearance, { prefix: true })

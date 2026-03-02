@@ -229,6 +229,19 @@ type Resource implements BaseItem {
   description: String!
 }
 
+type Equipment {
+  id: ID!
+  helmet: BaseItem!
+  breastplate: BaseItem!
+  gloves: BaseItem!
+  legs: BaseItem!
+  mainHand: BaseItem!
+  offHand: BaseItem!
+  ring1: BaseItem!
+  ring2: BaseItem!
+  cloak: BaseItem!
+}
+
 type Property {
   name: String!
   type: String!
@@ -347,6 +360,7 @@ type Mob {
   """Y координата позиции игрока"""
   y: Int!
   walkSpeed: Int!
+  equipment: Equipment!
   triggerRange: Int!
   chaseSpeed: Int!
   expReward: Int!
@@ -431,6 +445,7 @@ type Npc {
   """Y координата позиции игрока"""
   y: Int!
   walkSpeed: Int!
+  equipment: Equipment!
   spawn: NpcSpawn!
   givenQuests: [Quest!]!
   service: NpcServiceType!
@@ -455,6 +470,12 @@ type Quest {
 
 type PlayerQuest {
   id: ID!
+}
+
+type CharacterWallet {
+  id: ID!
+  gold: Float!
+  gems: Float!
 }
 
 type Character {
@@ -500,6 +521,7 @@ type Character {
   """Y координата позиции игрока"""
   y: Int!
   walkSpeed: Int!
+  equipment: Equipment!
 
   """Опыт персонажа"""
   experience: Int!
@@ -529,6 +551,7 @@ type Character {
   characterSkills: [CharacterSkill!]!
   bag: Bag!
   quests: [PlayerQuest!]!
+  wallet: CharacterWallet!
 }
 
 type User {

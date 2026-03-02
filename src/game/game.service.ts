@@ -510,23 +510,36 @@ export class GameService extends BaseLogger {
     return await this.interactionService.requestTalkToNpc(socket, input);
   }
 
-  public requestNpcFixItem(socket: AuthenticatedSocket, input: RequestNpcRepairItemDto) {
+  public requestRepairItem(socket: AuthenticatedSocket, input: RequestNpcRepairItemDto) {
     const { userId, characterId } = socket.userData;
 
     const character = this.playerStateService.getCharacterState(characterId);
     if (!character) throw new Error('Не удалось найти игрока');
 
-    const repairableItem = character.bag.items.find(bagItem => bagItem.id === input.itemId);
-    if (!repairableItem) throw new Error('Не удалось найти предмет в сумке');
+    let repairableItem = character.bag.items.find(bagItem => bagItem.id === input.itemId) ?? null;
 
-    if (!isArmor(repairableItem) && !isWeapon(repairableItem))
+    if (!repairableItem && character.equipment) {
+      repairableItem =
+        Object.values(character.equipment)
+          .filter(value => value && typeof value === 'object' && 'id' in value)
+          .find((item: any) => item.id === input.itemId) ?? null;
+    }
+
+    if (!repairableItem) {
+      throw new Error('Не удалось найти предмет');
+    }
+
+    if (!isArmor(repairableItem) && !isWeapon(repairableItem)) {
       throw new Error('Этот предмет нельзя починить');
+    }
 
-    const result = this.itemRepairService.repairItem(repairableItem, 1000);
-    console.log(result);
+    const result = this.itemRepairService.repairItem(repairableItem, character.wallet.gold);
 
-    this.socketService.sendToUser(userId, ServerToClientEvents.ItemRepaired, {
-      item: result.repairedItem,
+    character.wallet.gold = result.newGoldCount;
+    console.log('reparii result ', result);
+    console.log(character.equipment.helmet, character.equipment.breastplate);
+    this.socketService.sendToUser(userId, ServerToClientEvents.NpcItemRepaired, {
+      itemId: result.repairedItem.id,
       gold: result.newGoldCount,
     });
   }

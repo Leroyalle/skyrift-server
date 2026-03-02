@@ -23,7 +23,6 @@ export enum ServerToClientEvents {
   BagItemRemoved = 'bag:item-removed',
 
   ItemMoved = 'item:moved',
-  ItemRepaired = 'item:repaired',
 
   EquipmentEquipped = 'equipment:equipped',
   EquipmentUnequipped = 'equipment:unequipped',
@@ -36,6 +35,7 @@ export enum ServerToClientEvents {
   QuestCompleted = 'quest:completed',
 
   NpcInteractionOpened = 'npc:interaction-opened',
+  NpcItemRepaired = 'npc:item-repaired',
 
   LootOpened = 'loot:opened',
   LootItemRemoved = 'loot:removed',
@@ -68,5 +68,5 @@ export enum ClientToServerEvents {
 
   RequestTalkToNpc = 'npc:request-talk',
 
-  RequestNpcFixItem = 'npc:fix-item',
+  RequestNpcRepairItem = 'npc:repair-item',
 }

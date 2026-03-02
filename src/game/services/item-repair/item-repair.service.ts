@@ -1,3 +1,5 @@
+import { IRuntimeCharacter } from 'src/characters/character/types/runtime-character';
+import { ItemTypeEnum } from 'src/common/enums/item-type.enum';
 import { Armor, Weapon } from 'src/item/entities/item.entity';
 
 import { Injectable } from '@nestjs/common';
@@ -7,6 +9,27 @@ type RepairableItem = Weapon | Armor;
 @Injectable()
 export class ItemRepairService {
   private readonly baseRepairCost = 100;
+
+  public getRepairableItems(
+    character: IRuntimeCharacter,
+  ): ((Armor | Weapon) & { repairCost: number })[] {
+    const bagItems = character.bag.items.filter(
+      (item): item is Weapon | Armor =>
+        (item.itemType === ItemTypeEnum.WEAPON || item.itemType === ItemTypeEnum.ARMOR) &&
+        (item as Weapon | Armor).durability < 1,
+    );
+
+    const equipItems = Object.values(character.equipment).filter(
+      (item): item is Weapon | Armor =>
+        item !== null &&
+        (item.itemType === ItemTypeEnum.WEAPON || item.itemType === ItemTypeEnum.ARMOR) &&
+        (item as Weapon | Armor).durability < 1,
+    );
+    return [...bagItems, ...equipItems].map(repairItem => ({
+      ...repairItem,
+      repairCost: this.calculateRepairCost(repairItem),
+    }));
+  }
 
   public repairItem(
     item: RepairableItem,
@@ -22,18 +45,6 @@ export class ItemRepairService {
     const newGoldCount = currentGold - cost;
 
     return { newGoldCount, repairedItem };
-  }
-
-  public calculateRepairPreview(item: RepairableItem, currentGold: number) {
-    this.assertRepairable(item);
-
-    const cost = this.calculateRepairCost(item);
-
-    return {
-      cost,
-      canAfford: currentGold >= cost,
-      missingGold: Math.max(cost - currentGold, 0),
-    };
   }
 
   private assertRepairable(item: RepairableItem) {

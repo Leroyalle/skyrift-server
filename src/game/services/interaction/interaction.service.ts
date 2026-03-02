@@ -26,6 +26,7 @@ import { isPlayer } from '../combat/lib/entity/guards/is-player.lib';
 import { ActionQueueService } from '../combat/services/action-queue/action-queue.service';
 import { EntityRegistryService } from '../entity-registry/entity-registry.service';
 import { GameInitialDataService } from '../game-core/game-initial-data/game-initial-data.service';
+import { ItemRepairService } from '../item-repair/item-repair.service';
 import { MovementQueueService } from '../movement/services/movement-queue/movement-queue.service';
 import { PathFindingService } from '../path-finding/path-finding.service';
 import { SocketService } from '../socket/socket.service';
@@ -53,6 +54,7 @@ export class InteractionService {
     private readonly playerStateService: PlayerStateService,
     private readonly runtimeQuestService: RuntimeQuestService,
     private readonly questIndexService: QuestIndexService,
+    private readonly itemRepairService: ItemRepairService,
   ) {}
 
   private readonly pendingInteractions = new Map<string, PendingInteraction>();
@@ -151,6 +153,7 @@ export class InteractionService {
       npcId: npc.id,
       data: resolver(player, npc),
     };
+    console.log('INTERACTIONS PAULODA', payload);
 
     this.socketService.sendToUser(
       player.userId,
@@ -165,7 +168,13 @@ export class InteractionService {
     [NpcServiceType.Quests]: (player, npc) =>
       this.runtimeQuestService.getAvailableQuests(player, npc.givenQuests),
 
-    [NpcServiceType.Repair]: () => null,
+    [NpcServiceType.Repair]: player => {
+      console.log(player.wallet);
+      return {
+        playerGold: player.wallet.gold,
+        repairableItems: this.itemRepairService.getRepairableItems(player),
+      };
+    },
 
     [NpcServiceType.Shop]: () => null,
   };

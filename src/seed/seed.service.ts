@@ -257,6 +257,10 @@ export class SeedService {
       bag: {
         items: [],
       },
+      wallet: {
+        gold: 201012,
+        gems: 10,
+      },
     });
     const elvenBowItem = await this.itemService.createAndSave({
       magicDamage: 0,
@@ -395,6 +399,10 @@ export class SeedService {
       attackSpeed: 1000,
       isAlive: true,
       bag: {},
+      wallet: {
+        gold: 100,
+        gems: 0,
+      },
     });
 
     console.log('Characters saved');

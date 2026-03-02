@@ -166,13 +166,13 @@ export class GameGateway implements OnGatewayConnection, OnGatewayDisconnect {
     return await this.gameService.requestTalkToNpc(socket, input);
   }
 
-  @SubscribeMessage(ClientToServerEvents.RequestNpcFixItem)
+  @SubscribeMessage(ClientToServerEvents.RequestNpcRepairItem)
   @UseGuards(WsAuthGuard)
-  public requestNpcFixItem(
+  public requestRepairItem(
     @AuthSocket() socket: AuthenticatedSocket,
     @MessageBody() input: RequestNpcRepairItemDto,
   ) {
-    return this.gameService.requestNpcFixItem(socket, input);
+    return this.gameService.requestRepairItem(socket, input);
   }
 
   @SubscribeMessage(ClientToServerEvents.RequestAcceptQuest)
