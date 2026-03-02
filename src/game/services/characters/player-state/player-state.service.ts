@@ -4,6 +4,7 @@ import { IRuntimeCharacter } from 'src/characters/character/types/runtime-charac
 import { PositionDto } from 'src/common/dto/position.dto';
 import { RedisKeysFactory } from 'src/common/infra/redis-keys-factory.infra';
 import { RedisService } from 'src/infrastructure/redis/redis.service';
+import { ItemService } from 'src/item/item.service';
 import { CachedLocation } from 'src/world/location/types/cashed-location.type';
 import { Teleport } from 'src/world/location/types/teleport.type';
 
@@ -19,6 +20,7 @@ export class PlayerStateService {
     private readonly redisService: RedisService,
     private readonly characterService: CharacterService,
     private readonly registryService: EntityRegistryService,
+    private readonly itemService: ItemService,
   ) {}
 
   // private readonly playersStates: Map<string, IRuntimeCharacter> = new Map();
@@ -74,7 +76,7 @@ export class PlayerStateService {
       lastHpRegenerationTime: ___,
       isAttacking: ____,
       userId: _____,
-      bag: ______,
+      // bag: ______,
       ...croppedCharacter
     } = character;
     console.log('croppedCharacter', croppedCharacter);
@@ -83,6 +85,7 @@ export class PlayerStateService {
     await this.redisService.hset(RedisKeysFactory.playerState(characterId), character);
 
     await this.characterService.update(character.id, croppedCharacter);
+    await this.itemService.saveEquipment(character.equipment);
     return character;
   }
 

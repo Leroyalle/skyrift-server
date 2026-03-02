@@ -25,10 +25,12 @@ export class ItemRepairService {
         (item.itemType === ItemTypeEnum.WEAPON || item.itemType === ItemTypeEnum.ARMOR) &&
         (item as Weapon | Armor).durability < 1,
     );
-    return [...bagItems, ...equipItems].map(repairItem => ({
+    const result = [...bagItems, ...equipItems].map(repairItem => ({
       ...repairItem,
       repairCost: this.calculateRepairCost(repairItem),
     }));
+    console.log('repair data', result);
+    return result;
   }
 
   public repairItem(

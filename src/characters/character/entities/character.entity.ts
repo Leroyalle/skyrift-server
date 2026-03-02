@@ -1,6 +1,5 @@
 import { CharacterClass } from 'src/character-class/entities/character-class.entity';
 import { ActorEntity } from 'src/common/entities/actor-entity.entity';
-import { BaseItem } from 'src/item/entities/item.entity';
 import { PlayerQuest } from 'src/quest/entities/player-quest.entity';
 import { User } from 'src/user/entities/user.entity';
 import { Location } from 'src/world/location/entities/location.entity';
@@ -8,7 +7,6 @@ import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne } from 'type
 
 import { Field, Int, ObjectType } from '@nestjs/graphql';
 
-import { Equipment } from '../../../equipment/entities/equipment.entity';
 import { Bag } from '../bag/entities/bag.entity';
 import { CharacterSkill } from '../character-skill/entities/character-skill.entity';
 

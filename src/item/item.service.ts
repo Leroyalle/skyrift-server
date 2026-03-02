@@ -1,11 +1,12 @@
 import { ItemTypeEnum } from 'src/common/enums/item-type.enum';
+import { Equipment } from 'src/equipment/entities/equipment.entity';
 import { ItemRegistryService } from 'src/game/services/item-registry/item-registry.service';
 import { Repository } from 'typeorm';
 
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
-import { Armor, Resource, Weapon } from './entities/item.entity';
+import { Armor, BaseItem, Resource, Weapon } from './entities/item.entity';
 
 type CreateItemInput =
   | ({ itemType: ItemTypeEnum.WEAPON } & Omit<Weapon, 'id'>)
@@ -77,5 +78,26 @@ export class ItemService {
       this.resourceRepo.find(),
     ]);
     return [...weapons, ...armors, ...resources];
+  }
+
+  public async saveItem(item: Weapon | Armor | Resource): Promise<Weapon | Armor | Resource> {
+    switch (item.itemType) {
+      case ItemTypeEnum.WEAPON:
+        return this.weaponRepo.save(item);
+      case ItemTypeEnum.ARMOR:
+        return this.armorRepo.save(item);
+      case ItemTypeEnum.RESOURCE:
+        return this.resourceRepo.save(item);
+      default:
+        throw new Error('Unknown itemType');
+    }
+  }
+
+  public async saveEquipment(equipment: Equipment): Promise<void> {
+    for (const slot of Object.values(equipment)) {
+      if (slot && typeof slot === 'object' && 'id' in slot) {
+        await this.saveItem(slot);
+      }
+    }
   }
 }

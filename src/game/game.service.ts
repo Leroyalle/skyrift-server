@@ -256,6 +256,7 @@ export class GameService extends BaseLogger {
   public async playerSendLocationMessage(client: Socket, input: string) {
     return await this.chatService.sendLocationMessage(client, input);
   }
+
   public async playerSendDirectMessage(client: Socket, input: DirectMessageInput) {
     return await this.chatService.sendDirectMessage(client, input);
   }
@@ -536,8 +537,7 @@ export class GameService extends BaseLogger {
     const result = this.itemRepairService.repairItem(repairableItem, character.wallet.gold);
 
     character.wallet.gold = result.newGoldCount;
-    console.log('reparii result ', result);
-    console.log(character.equipment.helmet, character.equipment.breastplate);
+    repairableItem.durability = 1;
     this.socketService.sendToUser(userId, ServerToClientEvents.NpcItemRepaired, {
       itemId: result.repairedItem.id,
       gold: result.newGoldCount,

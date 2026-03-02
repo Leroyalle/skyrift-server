@@ -169,7 +169,6 @@ export class InteractionService {
       this.runtimeQuestService.getAvailableQuests(player, npc.givenQuests),
 
     [NpcServiceType.Repair]: player => {
-      console.log(player.wallet);
       return {
         playerGold: player.wallet.gold,
         repairableItems: this.itemRepairService.getRepairableItems(player),
