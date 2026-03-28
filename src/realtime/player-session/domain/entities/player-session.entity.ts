@@ -80,6 +80,10 @@ export class PlayerSession {
     return new PlayerSession(props);
   }
 
+  public getId(): string {
+    return this.props.playerId;
+  }
+
   public moveTo(x: number, y: number, movedAt: number): void {
     this.ensureAlive();
     this.props.position.x = x;
