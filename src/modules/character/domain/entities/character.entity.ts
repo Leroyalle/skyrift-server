@@ -1,4 +1,6 @@
-interface Props {
+import type { Appearance } from '../vo/appearance.vo';
+
+interface CharacterData {
   experience: number;
   experienceToNextLevel: number;
   skillPoints: number;
@@ -6,11 +8,7 @@ interface Props {
   userId: string;
   classId: string;
   skillsIds: string[];
-  // characterClass: CharacterClass;
   locationId: string;
-  // characterSkills: CharacterSkill[];
-  // bag: Bag;
-  // quests: PlayerQuest[];
   id: string;
   name: string;
   level: number;
@@ -24,25 +22,61 @@ interface Props {
   attackSpeed: number;
   attackRange: number;
   isAlive: boolean;
+  questsIds: string[];
   x: number;
   y: number;
   walkSpeed: number;
   equipmentId: string;
-  appearanceId: string;
-  // equipment: Equipment;
-  // appearance: Appearance;
+  appearance: Appearance;
   createdAt: Date;
-  // updatedAt: Date;
+  bagId: string;
 }
 
+interface Props {
+  id: string;
+  userId: string;
+  classId: string;
+  name: string;
+  appearance: Appearance;
+}
 export class Character {
-  constructor(private readonly props: Props) {}
+  private constructor(private readonly props: CharacterData) {}
 
   public static create(props: Props) {
-    return new Character(props);
+    return new Character({
+      id: props.id,
+      userId: props.userId,
+      classId: props.classId,
+      name: props.name,
+      appearance: props.appearance,
+      level: 1,
+      x: 2016,
+      y: 960,
+      maxHp: 1000,
+      hp: 1000,
+      baseMagicDamage: 20,
+      basePhysicalDamage: 50,
+      critMultiplier: 1,
+      experienceToNextLevel: 400,
+      attackRange: 4,
+      attackSpeed: 1000,
+      isAlive: true,
+      walkSpeed: 450,
+      skillsIds: [],
+      questsIds: [],
+      physicalDefense: 10,
+      magicDefense: 5,
+      isDeleted: false,
+      skillPoints: 0,
+      locationId: '1',
+      equipmentId: '1',
+      bagId: '1',
+      createdAt: new Date(),
+      experience: 0,
+    });
   }
 
-  public snapshot(): Readonly<Props> {
+  public snapshot(): Readonly<CharacterData> {
     return {
       ...this.props,
       createdAt: new Date(this.props.createdAt),
