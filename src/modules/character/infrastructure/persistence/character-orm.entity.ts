@@ -33,7 +33,7 @@ export class CharacterOrmEntity extends ActorEntity {
 
   @Column()
   @Field(() => User, { description: 'Аккаунт пользователя' })
-  userid!: string;
+  userId!: string;
 
   @ManyToOne(() => CharacterClass, characterClass => characterClass.characters)
   @Field(() => CharacterClass, { description: 'Класс персонажа' })

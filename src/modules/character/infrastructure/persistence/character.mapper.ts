@@ -4,7 +4,7 @@ import { Appearance } from '../../domain/vo/appearance.vo';
 import { CharacterOrmEntity } from './character-orm.entity';
 
 export class CharacterMapper {
-  public static toDomain(payload: CharacterOrmEntity): Character {
+  public static toDomain = (payload: CharacterOrmEntity): Character => {
     return Character.create({
       y: payload.y,
       x: payload.x,
@@ -39,9 +39,9 @@ export class CharacterMapper {
       attackSpeed: payload.attackSpeed,
       attackRange: payload.attackRange,
     });
-  }
+  };
 
-  public static toPersistence(domain: Character): CharacterOrmEntity {
+  public static toPersistence = (domain: Character): CharacterOrmEntity => {
     const snapshot = domain.snapshot();
 
     return {
@@ -76,5 +76,5 @@ export class CharacterMapper {
       attackSpeed: snapshot.attackSpeed,
       attackRange: snapshot.attackRange,
     };
-  }
+  };
 }
