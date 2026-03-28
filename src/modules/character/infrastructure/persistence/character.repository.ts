@@ -65,5 +65,7 @@ export class CharacterRepository implements CharacterRepositoryPort {
         userId,
       },
     });
+
+    return result.map(CharacterMapper.toDomain);
   }
 }
