@@ -1,6 +1,6 @@
 import type { Character } from '../../domain/entities/character.entity';
 
-interface CharacterClientDto {
+export interface CharacterClientDto {
   experience: number;
   experienceToNextLevel: number;
   skillPoints: number;
