@@ -1,11 +1,12 @@
+import type { ClassDescriptionVo } from '../vo/class-description.vo';
+
 interface Props {
   id: string;
   name: string;
-  description: string;
+  description: ClassDescriptionVo;
   logo: string;
   factionId: string;
   skillsIds: string[];
-  // charactersIds: Character[];
 }
 
 export class CharacterClass {
@@ -16,6 +17,6 @@ export class CharacterClass {
   }
 
   public snapshot(): Readonly<Props> {
-    return this.props;
+    return { ...this.props };
   }
 }

@@ -4,7 +4,7 @@ import { ClassDescriptionVo } from '../../domain/vo/class-description.vo';
 import type { CharacterClassOrmEntity } from './character-class-orm.entity';
 
 export class CharacterClassMapper {
-  public static toDomain(payload: CharacterClassOrmEntity): CharacterClass {
+  public static toDomain = (payload: CharacterClassOrmEntity): CharacterClass => {
     return CharacterClass.create({
       description: ClassDescriptionVo.create(payload.description),
       id: payload.id,
@@ -13,9 +13,9 @@ export class CharacterClassMapper {
       factionId: payload.factionId,
       skillsIds: payload.skillsIds,
     });
-  }
+  };
 
-  public static toPersistence(payload: CharacterClass): CharacterClassOrmEntity {
+  public static toPersistence = (payload: CharacterClass): CharacterClassOrmEntity => {
     const snapshot = payload.snapshot();
     return {
       description: snapshot.description.getValue(),
@@ -25,5 +25,5 @@ export class CharacterClassMapper {
       name: snapshot.name,
       logo: snapshot.logo,
     };
-  }
+  };
 }

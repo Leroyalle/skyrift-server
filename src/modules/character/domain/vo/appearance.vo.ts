@@ -11,6 +11,6 @@ export class Appearance {
   }
 
   public snapshot(): Readonly<Props> {
-    return this.props;
+    return { ...this.props };
   }
 }

@@ -13,34 +13,34 @@ import { CharacterMapper } from './character.mapper';
 export class CharacterRepository implements CharacterRepositoryPort {
   constructor(
     @InjectRepository(CharacterOrmEntity)
-    private readonly characterRepository: Repository<CharacterOrmEntity>,
+    private readonly repository: Repository<CharacterOrmEntity>,
   ) {}
 
   public async create(domain: Character): Promise<Character> {
     const persistence = CharacterMapper.toPersistence(domain);
 
-    const saved = await this.characterRepository.save(persistence);
+    const saved = await this.repository.save(persistence);
 
     return CharacterMapper.toDomain(saved);
   }
 
   public async remove(id: string): Promise<void> {
-    await this.characterRepository.delete(id);
+    await this.repository.delete(id);
   }
 
   public async findAll(): Promise<Character[]> {
-    const characters = await this.characterRepository.find();
+    const characters = await this.repository.find();
 
     return characters.map(CharacterMapper.toDomain);
   }
 
   public async update(payload: Character): Promise<Character> {
     const persistence = CharacterMapper.toPersistence(payload);
-    const character = await this.characterRepository.preload(persistence);
+    const character = await this.repository.preload(persistence);
 
     if (!character) throw new Error('Персонаж не найден');
 
-    const result = await this.characterRepository.save(character);
+    const result = await this.repository.save(character);
 
     return CharacterMapper.toDomain(result);
   }
@@ -49,7 +49,7 @@ export class CharacterRepository implements CharacterRepositoryPort {
     userId: string,
     characterId: string,
   ): Promise<Character | undefined> {
-    const result = await this.characterRepository.findOne({
+    const result = await this.repository.findOne({
       where: {
         id: characterId,
         userId,
@@ -60,7 +60,7 @@ export class CharacterRepository implements CharacterRepositoryPort {
   }
 
   public async findUserCharacters(userId: string): Promise<Character[] | undefined> {
-    const result = await this.characterRepository.find({
+    const result = await this.repository.find({
       where: {
         userId,
       },
