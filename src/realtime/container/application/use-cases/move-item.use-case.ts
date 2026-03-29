@@ -1,9 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
 
-import type { EquipmentSlot } from '../../domain/entities/equipment-container.entity';
 import { isEquippableItem } from '../../domain/guards/is-equippable-item.guard';
 import type { InMemoryBagContainerRepositoryPort } from '../../domain/ports/in-memory-bag-container.port';
 import type { InMemoryEquipmentContainerRepositoryPort } from '../../domain/ports/in-memory-equipment-container-repository.port';
+import type { EquipmentSlot } from '../../domain/types/equippable-item.type';
 import {
   BAG_CONTAINER_REPOSITORY_TOKEN,
   EQUIPMENT_CONTAINER_REPOSITORY_TOKEN,
@@ -45,5 +45,28 @@ export class MoveItemUseCase {
     if (!isEquippableItem(foundItem)) throw new Error('Item is not equippable');
 
     equipment.equip(foundItem, payload.slot);
+  }
+
+  public moveFromEquipmentToBag(payload: {
+    equipmentId: string;
+    bagId: string;
+    slot: EquipmentSlot;
+  }): void {
+    const equipment = this.equipmentRepository.findById(payload.equipmentId);
+
+    if (!equipment) throw new Error('Equipment not found');
+
+    const foundItem = equipment.getItem(payload.slot);
+
+    if (foundItem === undefined) throw new Error('Slot is not found');
+    if (foundItem === null) throw new Error('No item equipped in the specified slot');
+
+    const bag = this.bagRepository.findById(payload.bagId);
+
+    if (!bag) throw new Error('Bag container not found');
+
+    equipment.unequip(payload.slot);
+
+    bag.addItem(foundItem);
   }
 }
