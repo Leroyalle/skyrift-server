@@ -8,7 +8,7 @@ import { QuestStep } from '../../../domain/types/quest-step.type';
 
 @ObjectType()
 @Entity('quests')
-export class Quest {
+export class QuestOrmEntity {
   @PrimaryGeneratedColumn('uuid')
   @Field(() => ID)
   id!: string;
