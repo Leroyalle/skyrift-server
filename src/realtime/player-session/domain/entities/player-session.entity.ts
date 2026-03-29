@@ -33,7 +33,7 @@ export type RuntimeItem = {
 };
 
 export type PlayerSessionProps = {
-  playerId: string;
+  // playerId: string;
   userId: string;
   characterId: string;
   name: string;
@@ -64,11 +64,13 @@ export type PlayerSessionProps = {
     lastMoveAt: number;
   };
 
-  itemsById: Map<string, RuntimeItem>;
+  // itemsById: Map<string, RuntimeItem>;
   skillsById: Map<string, RuntimeSkill>;
-  inventoryItemIds: Set<string>;
+  // inventoryItemIds: Set<string>;
+  bagId: string;
+  equipmentId: string;
 
-  equipment: Record<EquipmentSlot, string | null>;
+  // equipment: Record<EquipmentSlot, string | null>;
 
   dirty: boolean;
 };
@@ -81,7 +83,7 @@ export class PlayerSession {
   }
 
   public getId(): string {
-    return this.props.playerId;
+    return this.props.characterId;
   }
 
   public moveTo(x: number, y: number, movedAt: number): void {
@@ -108,94 +110,26 @@ export class PlayerSession {
     this.markDirty();
   }
 
-  public addInventoryItem(item: RuntimeItem): void {
-    this.props.itemsById.set(item.id, item);
-    this.props.inventoryItemIds.add(item.id);
-    this.markDirty();
-  }
-
-  public equipItem(
-    itemId: string,
-    slot: EquipmentSlot,
-  ): {
-    equippedItemId: string;
-    unequippedItemId: string | null;
-  } {
-    if (!this.props.inventoryItemIds.has(itemId)) {
-      throw new Error('Item is not in inventory');
-    }
-
-    const item = this.requireItem(itemId);
-
-    if (!item.slot) {
-      throw new Error('Item is not equippable');
-    }
-
-    if (item.slot !== slot) {
-      throw new Error('Invalid equipment slot');
-    }
-
-    const previousItemId = this.props.equipment[slot];
-
-    this.props.inventoryItemIds.delete(itemId);
-    this.props.equipment[slot] = itemId;
-
-    if (previousItemId) {
-      this.props.inventoryItemIds.add(previousItemId);
-    }
-
-    this.markDirty();
-
-    return {
-      equippedItemId: itemId,
-      unequippedItemId: previousItemId,
-    };
-  }
-
-  public unequipItem(slot: EquipmentSlot): string | null {
-    const itemId = this.props.equipment[slot];
-
-    if (!itemId) {
-      return null;
-    }
-
-    this.props.equipment[slot] = null;
-    this.props.inventoryItemIds.add(itemId);
-    this.markDirty();
-
-    return itemId;
-  }
-
-  public hasInventoryItem(itemId: string): boolean {
-    return this.props.inventoryItemIds.has(itemId);
-  }
-
-  public getEquippedItem(slot: EquipmentSlot): RuntimeItem | null {
-    const itemId = this.props.equipment[slot];
-    if (!itemId) return null;
-    return this.requireItem(itemId);
-  }
-
   public getDerivedStats() {
-    let maxHp = this.props.baseStats.maxHp;
-    let physicalDamage = this.props.baseStats.basePhysicalDamage;
-    let magicDamage = this.props.baseStats.baseMagicDamage;
-    let physicalDefense = this.props.baseStats.physicalDefense;
-    let magicDefense = this.props.baseStats.magicDefense;
+    const maxHp = this.props.baseStats.maxHp;
+    const physicalDamage = this.props.baseStats.basePhysicalDamage;
+    const magicDamage = this.props.baseStats.baseMagicDamage;
+    const physicalDefense = this.props.baseStats.physicalDefense;
+    const magicDefense = this.props.baseStats.magicDefense;
 
-    for (const itemId of Object.values(this.props.equipment)) {
-      if (!itemId) continue;
+    // for (const itemId of Object.values(this.props.equipment)) {
+    //   if (!itemId) continue;
 
-      const item = this.requireItem(itemId);
-      const modifiers = item.statModifiers;
-      if (!modifiers) continue;
+    //   const item = this.requireItem(itemId);
+    //   const modifiers = item.statModifiers;
+    //   if (!modifiers) continue;
 
-      maxHp += modifiers.maxHp ?? 0;
-      physicalDamage += modifiers.physicalDamage ?? 0;
-      magicDamage += modifiers.magicDamage ?? 0;
-      physicalDefense += modifiers.physicalDefense ?? 0;
-      magicDefense += modifiers.magicDefense ?? 0;
-    }
+    //   maxHp += modifiers.maxHp ?? 0;
+    //   physicalDamage += modifiers.physicalDamage ?? 0;
+    //   magicDamage += modifiers.magicDamage ?? 0;
+    //   physicalDefense += modifiers.physicalDefense ?? 0;
+    //   magicDefense += modifiers.magicDefense ?? 0;
+    // }
 
     return {
       maxHp,
@@ -220,7 +154,6 @@ export class PlayerSession {
 
   public toPublicSnapshot() {
     return {
-      playerId: this.props.playerId,
       characterId: this.props.characterId,
       name: this.props.name,
       level: this.props.level,
@@ -229,7 +162,8 @@ export class PlayerSession {
       y: this.props.position.y,
       hp: this.props.combat.hp,
       isAlive: this.props.combat.isAlive,
-      equipment: this.props.equipment,
+      equipmentId: this.props.equipmentId,
+      bagId: this.props.bagId,
       derivedStats: this.getDerivedStats(),
     };
   }
@@ -242,8 +176,8 @@ export class PlayerSession {
       y: this.props.position.y,
       hp: this.props.combat.hp,
       isAlive: this.props.combat.isAlive,
-      inventoryItemIds: Array.from(this.props.inventoryItemIds),
-      equipment: { ...this.props.equipment },
+      equipmentId: this.props.equipmentId,
+      bagId: this.props.bagId,
     };
   }
 
@@ -253,14 +187,6 @@ export class PlayerSession {
 
   public markPersisted(): void {
     this.props.dirty = false;
-  }
-
-  private requireItem(itemId: string): RuntimeItem {
-    const item = this.props.itemsById.get(itemId);
-    if (!item) {
-      throw new Error(`Item ${itemId} not found in session`);
-    }
-    return item;
   }
 
   private ensureAlive(): void {
