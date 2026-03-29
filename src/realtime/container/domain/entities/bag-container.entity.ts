@@ -1,10 +1,4 @@
-export type RuntimeContainerType = 'player-bag' | 'player-equipment' | 'chest' | 'ground';
-
-export type RuntimeItem = {
-  id: string;
-  name: string;
-  itemType: 'weapon' | 'armor' | 'resource' | 'consumable';
-};
+import type { RuntimeContainerType, RuntimeItem } from '../types/runtime-item.type';
 
 type Props = {
   id: string;

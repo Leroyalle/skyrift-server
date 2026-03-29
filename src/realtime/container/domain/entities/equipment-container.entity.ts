@@ -1,44 +1,5 @@
-export type RuntimeContainerType = 'player-bag' | 'player-equipment' | 'chest' | 'ground';
-
-export type EquipmentSlot =
-  | 'helmet'
-  | 'breastplate'
-  | 'gloves'
-  | 'legs'
-  | 'cloak'
-  | 'mainHand'
-  | 'offHand'
-  | 'ring1'
-  | 'ring2';
-
-export type RuntimeEquippableItem = {
-  id: string;
-  templateId: string;
-  name: string;
-  itemType: 'weapon' | 'armor';
-  slot: EquipmentSlot;
-
-  durability: number;
-  rarity: 'common' | 'rare' | 'epic';
-
-  stats: {
-    physicalDamage?: number;
-    magicDamage?: number;
-    physicalDefense?: number;
-    magicDefense?: number;
-    maxHp?: number;
-  };
-
-  requirements?: {
-    level?: number;
-    classId?: string;
-  };
-
-  effects?: Array<{
-    effectId: string;
-    value: number;
-  }>;
-};
+import type { EquipmentSlot, RuntimeEquippableItem } from '../types/equippable-item.type';
+import type { RuntimeContainerType } from '../types/runtime-item.type';
 
 type Props = {
   id: string;
