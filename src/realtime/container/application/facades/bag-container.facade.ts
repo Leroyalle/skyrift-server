@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 
-import type { RuntimeItem } from '../../domain/entities/bag-container.entity';
 import type { InMemoryBagContainerRepositoryPort } from '../../domain/ports/in-memory-bag-container.port';
+import type { RuntimeItem } from '../../domain/types/runtime-item.type';
 import type { BagContainerFacadePort } from '../ports/bag-container-facade.port';
 import { BAG_CONTAINER_REPOSITORY_TOKEN } from '../ports/tokens';
 

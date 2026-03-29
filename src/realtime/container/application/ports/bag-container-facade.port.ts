@@ -1,4 +1,4 @@
-import type { RuntimeItem } from '../../domain/entities/bag-container.entity';
+import type { RuntimeItem } from '../../domain/types/runtime-item.type';
 
 export interface BagContainerFacadePort {
   getBagItem(containerId: string, itemId: string): RuntimeItem | null;

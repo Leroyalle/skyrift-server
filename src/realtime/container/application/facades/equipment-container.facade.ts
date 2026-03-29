@@ -1,10 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 
-import type {
-  EquipmentSlot,
-  RuntimeEquippableItem,
-} from '../../domain/entities/equipment-container.entity';
 import type { InMemoryEquipmentContainerRepositoryPort } from '../../domain/ports/in-memory-equipment-container-repository.port';
+import type { EquipmentSlot, RuntimeEquippableItem } from '../../domain/types/equippable-item.type';
 import type { EquipmentContainerFacadePort } from '../ports/equipment-container-facade.port';
 import { EQUIPMENT_CONTAINER_REPOSITORY_TOKEN } from '../ports/tokens';
 
