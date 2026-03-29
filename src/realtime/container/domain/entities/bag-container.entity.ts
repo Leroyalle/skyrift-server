@@ -21,7 +21,7 @@ export class BagContainer {
     return new BagContainer(props);
   }
 
-  public getId(): string {
+  public get id(): string {
     return this.props.id;
   }
 

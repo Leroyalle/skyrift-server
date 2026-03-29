@@ -8,7 +8,7 @@ export class InMemoryBagContainerRepository implements InMemoryBagContainerRepos
   private readonly sessions = new Map<string, BagContainer>();
 
   public save(data: BagContainer): void {
-    this.sessions.set(data.getId(), data);
+    this.sessions.set(data.id, data);
   }
 
   public findById(id: string): BagContainer | null {
