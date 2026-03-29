@@ -4,7 +4,7 @@ import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 import { Field, ID, ObjectType } from '@nestjs/graphql';
 
 @ObjectType()
-@Entity()
+@Entity('character_classes')
 export class CharacterClassOrmEntity {
   @PrimaryGeneratedColumn('uuid')
   @Field(() => ID, { description: 'ID класса' })
