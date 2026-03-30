@@ -4,6 +4,14 @@ import { StepType } from '../types/quest-step.type';
 
 import type { Quest } from './quest.entity';
 
+type AdvanceStepResult = { type: 'step-advanced' } | { type: 'quest-completed' };
+
+type QuestProgressResult =
+  | { type: 'no-change' }
+  | { type: 'progressed' }
+  | { type: 'step-advanced' }
+  | { type: 'quest-completed' };
+
 export class PlayerQuest {
   private constructor(private readonly props: IPlayerQuest) {}
 
@@ -27,13 +35,13 @@ export class PlayerQuest {
     this.props.completedAt = new Date();
   }
 
-  public progress(quest: Quest) {
+  public progress(quest: Quest): QuestProgressResult {
     const progress = this.props.progress;
-    if (!progress) return;
+    if (!progress) return { type: 'no-change' };
 
     switch (progress.type) {
       case 'kill':
-      case 'collect':
+      case 'collect': {
         assertCountProgress(progress);
 
         if (progress.current < progress.required) {
@@ -43,21 +51,26 @@ export class PlayerQuest {
         this.props.progress = progress;
 
         if (progress.current >= progress.required) {
-          this.advanceStep(quest);
+          const result = this.advanceStep(quest);
+          return {
+            type: result.type,
+          };
         }
 
-        break;
+        return { type: 'progressed' };
+      }
 
-      case 'talk':
-        this.advanceStep(quest);
-        break;
+      case 'talk': {
+        const result = this.advanceStep(quest);
+        return { type: result.type };
+      }
 
       default:
         throw new Error('Unsupported increment progress type');
     }
   }
 
-  public advanceStep(quest: Quest) {
+  public advanceStep(quest: Quest): AdvanceStepResult {
     const questSnapshot = quest.snapshot();
 
     if (this.props.stepIndex >= questSnapshot.steps.length) {
@@ -68,7 +81,7 @@ export class PlayerQuest {
 
     if (!nextStep) {
       this.markAsCompleted();
-      return;
+      return { type: 'quest-completed' };
     }
 
     switch (nextStep.type) {
@@ -89,6 +102,7 @@ export class PlayerQuest {
     }
 
     this.props.stepIndex += 1;
+    return { type: 'step-advanced' };
   }
 
   public snapshot(): Readonly<IPlayerQuest> {
