@@ -1,7 +1,7 @@
 import type { PlayerQuest } from 'src/modules/quest/domain/entities/player-quest.entity';
 import type { Quest } from 'src/modules/quest/domain/entities/quest.entity';
 import { StepType } from 'src/modules/quest/domain/types/quest-step.type';
-import { isSameReference } from 'src/realtime/shared/lib/guards/is-same-referense';
+import { isSameReference } from 'src/realtime/shared/lib/guards/is-same-referense.guard';
 import type { IEntityRef } from 'src/realtime/shared/types/entity-ref.type';
 
 type QuestProgressResult =

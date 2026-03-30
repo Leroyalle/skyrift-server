@@ -1,4 +1,4 @@
-import type { Appearance } from '../vo/appearance.vo';
+import type { Appearance } from 'src/common/domain/vo/appearance.vo';
 
 interface CharacterData {
   experience: number;
