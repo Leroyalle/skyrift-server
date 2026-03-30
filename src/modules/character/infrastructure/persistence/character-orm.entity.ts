@@ -7,7 +7,7 @@ import { Column, Entity, ManyToOne } from 'typeorm';
 import { Field, Int, ObjectType } from '@nestjs/graphql';
 
 @ObjectType()
-@Entity()
+@Entity('characters')
 export class CharacterOrmEntity extends ActorEntity {
   @Column({ default: 0 })
   @Field(() => Int, { description: 'Опыт персонажа', defaultValue: 0 })
