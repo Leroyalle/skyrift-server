@@ -4,7 +4,7 @@ import type { DeepPartial } from 'typeorm';
 import type { PlayerQuestOrmEntity } from '../entities/player-quest-orm.entity';
 
 export class PlayerQuestMapper {
-  public static toPersistence(domain: PlayerQuest): DeepPartial<PlayerQuestOrmEntity> {
+  public static toPersistence = (domain: PlayerQuest): DeepPartial<PlayerQuestOrmEntity> => {
     const snapshot = domain.snapshot();
 
     return {
@@ -15,9 +15,9 @@ export class PlayerQuestMapper {
       id: snapshot.id,
       completedAt: snapshot.completedAt,
     };
-  }
+  };
 
-  public toDomain(persistence: PlayerQuestOrmEntity): PlayerQuest {
+  public static toDomain = (persistence: PlayerQuestOrmEntity): PlayerQuest => {
     return PlayerQuest.create({
       characterId: persistence.characterId,
       stepIndex: persistence.stepIndex,
@@ -26,5 +26,5 @@ export class PlayerQuestMapper {
       id: persistence.id,
       completedAt: persistence.completedAt,
     });
-  }
+  };
 }
