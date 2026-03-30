@@ -64,13 +64,9 @@ export type PlayerSessionProps = {
     lastMoveAt: number;
   };
 
-  // itemsById: Map<string, RuntimeItem>;
   skillsById: Map<string, RuntimeSkill>;
-  // inventoryItemIds: Set<string>;
   bagId: string;
   equipmentId: string;
-
-  // equipment: Record<EquipmentSlot, string | null>;
 
   dirty: boolean;
 };
