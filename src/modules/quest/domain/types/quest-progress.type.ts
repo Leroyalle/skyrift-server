@@ -11,13 +11,16 @@ export type QuestProgressByType = {
 export type KillProgress = {
   current: number;
   required: number;
+  type: 'kill';
 };
 
 export type TalkProgress = {
   npcId: string;
+  type: 'talk';
 };
 
 export type CollectProgress = {
   current: number;
   required: number;
+  type: 'collect';
 };
