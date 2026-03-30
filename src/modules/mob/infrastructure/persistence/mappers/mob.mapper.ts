@@ -1,5 +1,6 @@
 import { Appearance } from 'src/common/domain/vo/appearance.vo';
 import { Mob } from 'src/modules/mob/domain/entities/mob.entity';
+import type { DeepPartial } from 'typeorm';
 
 import { MobOrmEntity } from '../entities/mob-orm.entity';
 
@@ -36,7 +37,7 @@ export class MobMapper {
     });
   }
 
-  public static toPersistence(mob: Mob): MobOrmEntity {
+  public static toPersistence(mob: Mob): DeepPartial<MobOrmEntity> {
     const snapshot = mob.snapshot();
     return {
       x: snapshot.x,
@@ -62,8 +63,6 @@ export class MobMapper {
       appearance: snapshot.appearance,
       equipmentId: snapshot.equipmentId,
       id: snapshot.id,
-      createdAt: new Date(),
-      updatedAt: new Date(),
     };
   }
 }
