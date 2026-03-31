@@ -18,4 +18,8 @@ export class MobSession {
   public get aggroTable() {
     return this.props.aggroTable;
   }
+
+  public snapshot(): Readonly<IMobSession> {
+    return { ...this.props };
+  }
 }
