@@ -6,11 +6,10 @@ import type {
 import type { Appearance } from 'src/common/domain/vo/appearance.vo';
 
 export interface IMobSession {
-  userId: string;
-  characterId: string;
   name: string;
   id: string;
   level: number;
+  mobId: number;
 
   baseStats: BaseStats;
   position: PositionStats;
