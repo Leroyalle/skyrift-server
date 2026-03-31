@@ -1,0 +1,1 @@
+export const ENTITY_RESOLVER_TOKEN = Symbol('ENTITY_RESOLVER_TOKEN');
