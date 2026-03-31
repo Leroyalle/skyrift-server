@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 
 import type { PlayerSession } from '../../domain/entities/player-session.entity';
-import type { InMemoryPlayerSessionRepositoryPort } from '../../domain/ports/in-memory-player-session-repository.port';
+import type { PlayerSessionRepositoryPort } from '../../domain/ports/in-memory-player-session-repository.port';
 
 @Injectable()
-export class InMemoryPlayerSessionRepository implements InMemoryPlayerSessionRepositoryPort {
+export class InMemoryPlayerSessionRepository implements PlayerSessionRepositoryPort {
   private readonly sessions = new Map<string, PlayerSession>();
 
   public save(session: PlayerSession): void {
