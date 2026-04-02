@@ -1,80 +1,9 @@
-export type EquipmentSlot =
-  | 'helmet'
-  | 'breastplate'
-  | 'gloves'
-  | 'legs'
-  | 'cloak'
-  | 'mainHand'
-  | 'offHand'
-  | 'ring1'
-  | 'ring2';
-
-export type RuntimeSkill = {
-  skillId: string;
-  level: number;
-  cooldownMs: number;
-  lastUsedAt: number | null;
-  id: string;
-};
-
-export type RuntimeItem = {
-  id: string;
-  templateId: string;
-  itemType: 'weapon' | 'armor' | 'resource' | 'consumable';
-  slot?: EquipmentSlot;
-  name: string;
-  statModifiers?: {
-    physicalDamage?: number;
-    magicDamage?: number;
-    physicalDefense?: number;
-    magicDefense?: number;
-    maxHp?: number;
-  };
-};
-
-export type PlayerSessionProps = {
-  // playerId: string;
-  userId: string;
-  characterId: string;
-  name: string;
-  level: number;
-
-  baseStats: {
-    maxHp: number;
-    basePhysicalDamage: number;
-    baseMagicDamage: number;
-    physicalDefense: number;
-    magicDefense: number;
-    attackSpeed: number;
-    attackRange: number;
-    walkSpeed: number;
-  };
-
-  position: {
-    locationId: string;
-    x: number;
-    y: number;
-  };
-
-  combat: {
-    hp: number;
-    isAlive: boolean;
-    currentTargetId: string | null;
-    lastAttackAt: number;
-    lastMoveAt: number;
-  };
-
-  skillsById: Map<string, RuntimeSkill>;
-  bagId: string;
-  equipmentId: string;
-
-  dirty: boolean;
-};
+import type { IPlayerSession, PlayerSessionSnapshot } from '../types/player-session.type';
 
 export class PlayerSession {
-  private constructor(private props: PlayerSessionProps) {}
+  private constructor(private props: IPlayerSession) {}
 
-  public static create(props: PlayerSessionProps): PlayerSession {
+  public static create(props: IPlayerSession): PlayerSession {
     return new PlayerSession(props);
   }
 
@@ -148,19 +77,20 @@ export class PlayerSession {
     return Date.now() - skill.lastUsedAt >= skill.cooldownMs;
   }
 
-  public toPublicSnapshot() {
+  public toPublicSnapshot(): PlayerSessionSnapshot {
     return {
       characterId: this.props.characterId,
       name: this.props.name,
       level: this.props.level,
-      locationId: this.props.position.locationId,
-      x: this.props.position.x,
-      y: this.props.position.y,
-      hp: this.props.combat.hp,
-      isAlive: this.props.combat.isAlive,
+      userId: this.props.userId,
+      skillsById: this.props.skillsById,
+      combat: { ...this.props.combat },
+      baseStats: { ...this.props.baseStats },
+      appearance: { ...this.props.appearance.snapshot() },
+      position: this.props.position,
       equipmentId: this.props.equipmentId,
       bagId: this.props.bagId,
-      derivedStats: this.getDerivedStats(),
+      type: 'player',
     };
   }
 
