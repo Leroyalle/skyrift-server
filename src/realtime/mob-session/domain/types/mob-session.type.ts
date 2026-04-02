@@ -8,7 +8,7 @@ import type { Appearance } from 'src/common/domain/vo/appearance.vo';
 export interface IMobSession {
   name: string;
   level: number;
-  mobId: string;
+  id: string;
 
   baseStats: MobBaseStats;
   position: PositionStats;

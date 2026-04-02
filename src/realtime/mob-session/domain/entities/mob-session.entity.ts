@@ -12,7 +12,7 @@ export class MobSession {
   }
 
   public get mobId() {
-    return this.props.mobId;
+    return this.props.id;
   }
 
   public get aggroTable() {
@@ -32,7 +32,7 @@ export class MobSession {
       baseStats: { ...this.props.baseStats },
       combat: { ...this.props.combat },
       position: { ...this.props.position },
-      mobId: this.props.mobId,
+      id: this.props.id,
       name: this.props.name,
       level: this.props.level,
       type: 'mob',
