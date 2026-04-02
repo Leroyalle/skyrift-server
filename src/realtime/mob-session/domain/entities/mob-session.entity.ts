@@ -11,6 +11,10 @@ export class MobSession {
     return new MobSession({ ...props, aggroTable: new AggroTableDo() });
   }
 
+  public get mobId() {
+    return this.props.mobId;
+  }
+
   public get aggroTable() {
     return this.props.aggroTable;
   }

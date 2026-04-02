@@ -7,11 +7,10 @@ import type { Appearance } from 'src/common/domain/vo/appearance.vo';
 
 export interface IMobSession {
   name: string;
-  id: string;
   level: number;
-  mobId: number;
+  mobId: string;
 
-  baseStats: BaseStats;
+  baseStats: MobBaseStats;
   position: PositionStats;
   combat: CombatStats;
 
@@ -22,3 +21,14 @@ export interface IMobSession {
 
   dirty: boolean;
 }
+
+interface MobBaseStats extends BaseStats {
+  chaseSpeed: number;
+}
+
+export type MobSessionSnapshot = Readonly<
+  Omit<IMobSession, 'dirty' | 'appearance'> & {
+    appearance: ReturnType<Appearance['snapshot']>;
+    type: 'mob';
+  }
+>;
