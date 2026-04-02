@@ -12,6 +12,7 @@ export interface BaseStats {
 export interface CombatStats {
   hp: number;
   isAlive: boolean;
+  isAttacking: boolean;
   currentTargetId: string | null;
   lastAttackAt: number;
   lastMoveAt: number;
