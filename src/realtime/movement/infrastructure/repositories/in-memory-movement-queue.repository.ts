@@ -10,8 +10,8 @@ import type { IMovementQueue } from '../../domain/types/movement-queue.type';
 export class InMemoryMovementQueueRepository implements InMemoryMovementQueueRepositoryPort {
   private readonly queues: Map<IEntityKey, IMovementQueue> = new Map();
 
-  public add(entityRef: IEntityRef, steps: IMovementQueue): void {
-    this.queues.set(generateEntityKey(entityRef), steps);
+  public set(entityRef: IEntityRef, queue: IMovementQueue): void {
+    this.queues.set(generateEntityKey(entityRef), queue);
   }
 
   public remove(entityRef: IEntityRef): void {
@@ -20,5 +20,9 @@ export class InMemoryMovementQueueRepository implements InMemoryMovementQueueRep
 
   public get(entityRef: IEntityRef): IMovementQueue | null {
     return this.queues.get(generateEntityKey(entityRef)) ?? null;
+  }
+
+  public getAllIterable(): [IEntityKey, IMovementQueue][] {
+    return Array.from(this.queues.entries());
   }
 }
