@@ -6,7 +6,7 @@ import type { GetMobSessionSnapshotByMobIdPort } from '../../ports/get-mob-sessi
 import { MOB_SESSION_REPOSITORY_TOKEN } from '../../ports/tokens';
 
 @Injectable()
-export class GetPlayerSessionSnapshotByCharacterIdQuery implements GetMobSessionSnapshotByMobIdPort {
+export class GetMobSessionSnapshotByMobIdQuery implements GetMobSessionSnapshotByMobIdPort {
   constructor(
     @Inject(MOB_SESSION_REPOSITORY_TOKEN)
     private readonly mobSessionRepository: MobSessionRepositoryPort,
