@@ -1,14 +1,14 @@
 import type { IEntityRef, IEntityType } from 'src/realtime/shared/types/entity-ref.type';
 
-export interface SpatialGridIndexPort<
-  T extends {
-    id: string;
-    locationId: string;
-    x: number;
-    y: number;
-    type: IEntityType;
-  },
-> {
+interface SpatialGridEntity {
+  id: string;
+  locationId: string;
+  x: number;
+  y: number;
+  type: IEntityType;
+}
+
+export interface SpatialGridIndexPort<T extends SpatialGridEntity = SpatialGridEntity> {
   add(entity: T): void;
   remove(entity: T): void;
   update(entity: T, oldLocationId: string, oldX: number, oldY: number): void;

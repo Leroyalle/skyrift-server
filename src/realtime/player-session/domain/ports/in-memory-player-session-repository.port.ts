@@ -1,6 +1,6 @@
 import type { PlayerSession } from '../entities/player-session.entity';
 
-export interface InMemoryPlayerSessionRepositoryPort {
+export interface PlayerSessionRepositoryPort {
   save(session: PlayerSession): void;
   findByCharacterId(characterId: string): PlayerSession | null;
   findAll(): PlayerSession[];
