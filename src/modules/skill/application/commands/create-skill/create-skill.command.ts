@@ -1,4 +1,6 @@
-export interface ISkill {
+import type { SkillType, SkillVisualEffect } from 'src/modules/skill/domain/types/skill.type';
+
+interface Props {
   id: string;
   classId: string;
   name: string;
@@ -17,12 +19,6 @@ export interface ISkill {
   extraParams?: Record<string, any>;
 }
 
-export type SkillType = 'Target' | 'AoE' | 'Self' | 'Passive' | 'Buff' | 'Debuff';
-
-export interface SkillVisualEffect {
-  type: 'animation' | 'particle' | 'sound';
-  assetKey: string;
-  durationMs?: number;
-  frameRate?: number;
-  offset?: { x: number; y: number };
+export class CreateSkillCommand {
+  constructor(public readonly props: Props) {}
 }
