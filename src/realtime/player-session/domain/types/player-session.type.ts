@@ -15,7 +15,7 @@ export type RuntimeSkill = {
 
 export interface IPlayerSession {
   userId: string;
-  characterId: string;
+  id: string;
   name: string;
   level: number;
 

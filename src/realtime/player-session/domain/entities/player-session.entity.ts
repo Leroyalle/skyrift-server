@@ -8,7 +8,7 @@ export class PlayerSession {
   }
 
   public getId(): string {
-    return this.props.characterId;
+    return this.props.id;
   }
 
   public moveTo(x: number, y: number, movedAt: number): void {
@@ -79,7 +79,7 @@ export class PlayerSession {
 
   public toPublicSnapshot(): PlayerSessionSnapshot {
     return {
-      characterId: this.props.characterId,
+      id: this.props.id,
       name: this.props.name,
       level: this.props.level,
       userId: this.props.userId,
@@ -91,19 +91,6 @@ export class PlayerSession {
       equipmentId: this.props.equipmentId,
       bagId: this.props.bagId,
       type: 'player',
-    };
-  }
-
-  public toPersistencePayload() {
-    return {
-      characterId: this.props.characterId,
-      locationId: this.props.position.locationId,
-      x: this.props.position.x,
-      y: this.props.position.y,
-      hp: this.props.combat.hp,
-      isAlive: this.props.combat.isAlive,
-      equipmentId: this.props.equipmentId,
-      bagId: this.props.bagId,
     };
   }
 
