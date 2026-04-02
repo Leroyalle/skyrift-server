@@ -1,0 +1,1 @@
+export const PATH_FINDING_SERVICE = Symbol('PATH_FINDING_SERVICE');
