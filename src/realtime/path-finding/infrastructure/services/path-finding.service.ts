@@ -1,13 +1,14 @@
 import EasyStar from 'easystarjs';
+import type { IPositionTile } from 'src/realtime/shared/types/position.type';
 
 import { Injectable } from '@nestjs/common';
 
+import type { PathFindingServicePort } from '../../application/ports/path-finding-service.port';
+
 import { createEasyStarInstance } from './lib/create-easystar-instance.lib';
 
-type TCoord = { x: number; y: number };
-
 @Injectable()
-export class PathFindingService {
+export class PathFindingService implements PathFindingServicePort {
   private easyStarMap = new Map<string, EasyStar.js>();
 
   private getOrCreateEasyStar(locationId: string, passableMap: number[][]): EasyStar.js {
@@ -29,10 +30,10 @@ export class PathFindingService {
    * @returns числовое значение количества шагов к таргет позиции (@param to)
    */
 
-  public getPathDistance(
+  public getDistance(
     locationId: string,
-    from: TCoord,
-    to: TCoord,
+    from: IPositionTile,
+    to: IPositionTile,
     passableMap: number[][],
   ): Promise<number> {
     const easyStar = this.getOrCreateEasyStar(locationId, passableMap);
@@ -56,19 +57,19 @@ export class PathFindingService {
    * @param locationId Айди локации
    * @param tilesFrom Тайловые координаты откуда
    * @param tilesTo Тайловые координаты куда
-   * @param map Матрица проходимости локации
+   * @param passableMap Матрица проходимости локации
    * @returns Массив шагов в формате {x, y} или null если путь не найден
    */
-  public getPlayerPath(
+  public getPath(
     locationId: string,
-    tilesFrom: TCoord,
-    tilesTo: TCoord,
-    map: number[][],
+    from: IPositionTile,
+    to: IPositionTile,
+    passableMap: number[][],
   ): Promise<{ x: number; y: number }[] | null> {
-    const easyStar = this.getOrCreateEasyStar(locationId, map);
+    const easyStar = this.getOrCreateEasyStar(locationId, passableMap);
 
     return new Promise(resolve => {
-      easyStar.findPath(tilesFrom.x, tilesFrom.y, tilesTo.x, tilesTo.y, path => {
+      easyStar.findPath(from.x, from.y, to.x, to.y, path => {
         if (!path) {
           resolve(null);
           return;
