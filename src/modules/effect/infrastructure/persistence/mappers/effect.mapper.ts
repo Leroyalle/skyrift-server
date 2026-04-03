@@ -3,7 +3,7 @@ import { Effect } from 'src/modules/effect/domain/entities/effect.entity';
 import type { EffectOrmEntity } from '../entities/effect-orm.entity';
 
 export class EffectMapper {
-  public static toDomain(payload: EffectOrmEntity): Effect {
+  public static toDomain = (payload: EffectOrmEntity): Effect => {
     return Effect.create({
       durationMs: payload.durationMs,
       id: payload.id,
@@ -13,9 +13,9 @@ export class EffectMapper {
       slowPercent: payload.slowPercent,
       damagePerSecond: payload.damagePerSecond,
     });
-  }
+  };
 
-  public static toPersistence(payload: Effect): EffectOrmEntity {
+  public static toPersistence = (payload: Effect): EffectOrmEntity => {
     const snapshot = payload.snapshot();
 
     return {
@@ -27,5 +27,5 @@ export class EffectMapper {
       skillId: snapshot.skillId,
       type: snapshot.type,
     };
-  }
+  };
 }

@@ -15,6 +15,10 @@ export class Effect {
     return this.props.type;
   }
 
+  public get skillId() {
+    return this.props.skillId;
+  }
+
   public snapshot(): Readonly<IEffect> {
     return { ...this.props };
   }
