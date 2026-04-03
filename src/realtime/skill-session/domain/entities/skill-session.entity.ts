@@ -1,13 +1,13 @@
-import type { ISessionSkill } from '../types/skill-session.type';
+import type { ISkillSession } from '../types/skill-session.type';
 
-export class SessionSkill {
-  private constructor(private readonly props: ISessionSkill) {}
+export class SkillSession {
+  private constructor(private readonly props: ISkillSession) {}
 
-  public static create(payload: ISessionSkill) {
-    return new SessionSkill(payload);
+  public static create(payload: ISkillSession) {
+    return new SkillSession(payload);
   }
 
-  public snapshot(): Readonly<ISessionSkill> {
+  public snapshot(): Readonly<ISkillSession> {
     return { ...this.props };
   }
 
@@ -25,6 +25,11 @@ export class SessionSkill {
 
   public get cooldownEnd() {
     return this.props.cooldownEnd;
+  }
+
+  public canUse(now: number): boolean {
+    if (!this.cooldownEnd) return true;
+    return now > this.cooldownEnd;
   }
 
   public levelUp() {

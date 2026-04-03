@@ -1,6 +1,6 @@
 import type { IEntityRef } from 'src/realtime/shared/types/entity-ref.type';
 
-export interface ISessionSkill {
+export interface ISkillSession {
   id: string;
   skill: ISkill;
   ownerRef: IEntityRef;
@@ -9,7 +9,7 @@ export interface ISessionSkill {
   level: number;
 }
 
-export interface ISkill {
+interface ISkill {
   id: string;
   classId: string;
   name: string;
