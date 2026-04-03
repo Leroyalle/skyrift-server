@@ -5,6 +5,8 @@ import type {
 } from 'src/common/domain/types/runtime-stats.type';
 import type { Appearance } from 'src/common/domain/vo/appearance.vo';
 
+import { type ISkillSession, SkillSession } from '../../../skill-session';
+
 export type RuntimeSkill = {
   skillId: string;
   level: number;
@@ -25,7 +27,7 @@ export interface IPlayerSession {
 
   appearance: Appearance;
 
-  skillsById: Map<string, RuntimeSkill>;
+  skillsById: Map<string, SkillSession>;
   bagId: string;
   equipmentId: string;
 
@@ -33,8 +35,9 @@ export interface IPlayerSession {
 }
 
 export type PlayerSessionSnapshot = Readonly<
-  Omit<IPlayerSession, 'dirty' | 'appearance'> & {
+  Omit<IPlayerSession, 'dirty' | 'appearance' | 'skillsById'> & {
     appearance: ReturnType<Appearance['snapshot']>;
     type: 'player';
+    skillsById: Map<string, ISkillSession>;
   }
 >;

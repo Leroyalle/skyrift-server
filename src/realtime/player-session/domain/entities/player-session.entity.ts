@@ -1,3 +1,5 @@
+import type { ISkillSession, SkillSession } from 'src/realtime/skill-session';
+
 import type { IPlayerSession, PlayerSessionSnapshot } from '../types/player-session.type';
 
 export class PlayerSession {
@@ -68,22 +70,23 @@ export class PlayerSession {
     };
   }
 
-  public canUseSkill(skillId: string): boolean {
+  public getSkill(skillId: string): SkillSession {
     const skill = this.props.skillsById.get(skillId);
     if (!skill) throw new Error('Skill not found');
-
-    if (skill.lastUsedAt === null) return true;
-
-    return Date.now() - skill.lastUsedAt >= skill.cooldownMs;
+    return skill;
   }
 
   public toPublicSnapshot(): PlayerSessionSnapshot {
+    const skillsById = new Map<string, ISkillSession>();
+    for (const skill of this.props.skillsById.values()) {
+      skillsById.set(skill.id, skill.snapshot());
+    }
     return {
       id: this.props.id,
       name: this.props.name,
       level: this.props.level,
       userId: this.props.userId,
-      skillsById: this.props.skillsById,
+      skillsById,
       combat: { ...this.props.combat },
       baseStats: { ...this.props.baseStats },
       appearance: { ...this.props.appearance.snapshot() },
