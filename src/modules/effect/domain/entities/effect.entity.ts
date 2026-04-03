@@ -1,10 +1,10 @@
 import type { IEffect } from '../types/effect.type';
 
-export class EffectEntity {
+export class Effect {
   private constructor(private readonly props: IEffect) {}
 
   public static create(props: IEffect) {
-    return new EffectEntity(props);
+    return new Effect(props);
   }
 
   public get id() {
