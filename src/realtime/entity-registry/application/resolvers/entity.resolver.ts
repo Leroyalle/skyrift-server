@@ -27,5 +27,7 @@ export class EntityResolver implements EntityResolverPort {
     } else if (ref.type === 'mob') {
       return this.getMobSessionSnapshotPort.execute(ref.id);
     }
+
+    return null;
   }
 }
