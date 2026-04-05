@@ -3,4 +3,5 @@ import type { EquipmentSlot, RuntimeEquippableItem } from '../../domain/types/eq
 export interface EquipmentContainerFacadePort {
   getEquipmentSlotById(id: string, slot: EquipmentSlot): Promise<RuntimeEquippableItem | null>;
   getEquippedItems(id: string): Promise<Record<EquipmentSlot, RuntimeEquippableItem | null>>;
+  getEquippedItemsList(id: string): RuntimeEquippableItem[];
 }

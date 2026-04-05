@@ -40,4 +40,16 @@ export class EquipmentContainerFacade implements EquipmentContainerFacadePort {
 
     return Promise.resolve(snapshot.slots);
   }
+
+  public getEquippedItemsList(id: string): RuntimeEquippableItem[] {
+    const equipment = this.repository.findById(id);
+
+    if (!equipment) {
+      throw new Error('Equipment container not found');
+    }
+
+    return Object.values(equipment.snapshot().slots).filter(
+      (item): item is RuntimeEquippableItem => item !== null,
+    );
+  }
 }
