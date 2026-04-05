@@ -7,7 +7,7 @@ import type { MobSessionRepositoryPort } from '../domain/ports/in-memory-mob-ses
 export class InMemoryMobSessionRepository implements MobSessionRepositoryPort {
   private readonly mobs: Map<string, MobSession> = new Map();
 
-  public findByMobId(id: string): MobSession | null {
+  public findById(id: string): MobSession | null {
     return this.mobs.get(id) ?? null;
   }
 

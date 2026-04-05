@@ -11,7 +11,7 @@ export class InMemoryPlayerSessionRepository implements PlayerSessionRepositoryP
     this.sessions.set(session.getId(), session);
   }
 
-  public findByCharacterId(characterId: string): PlayerSession | null {
+  public findById(characterId: string): PlayerSession | null {
     return this.sessions.get(characterId) ?? null;
   }
 
