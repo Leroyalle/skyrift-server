@@ -27,8 +27,13 @@ export class InMemoryActionQueueRepository implements ActionQueueRepositoryPort 
     queue.push(action);
   }
 
-  public clear(): void {
+  public clearAll(): void {
     this.pendingActionsQueue.clear();
+  }
+
+  public clear(entityRef: IEntityRef): void {
+    const key = generateEntityKey(entityRef);
+    this.pendingActionsQueue.delete(key);
   }
 
   private getOrCreateActionQueue(key: IEntityKey): PendingAction[] {

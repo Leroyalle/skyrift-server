@@ -5,6 +5,7 @@ import type { PendingAction } from '../types/action-queue.type';
 export interface ActionQueueRepositoryPort {
   set(action: PendingAction): void;
   get(entityRef: IEntityRef): PendingAction[];
-  clear(): void;
+  clearAll(): void;
   shift(entityRef: IEntityRef): void;
+  clear(entityRef: IEntityRef): void;
 }
