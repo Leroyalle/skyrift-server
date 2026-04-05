@@ -64,6 +64,7 @@ export class MobSession {
       level: this.props.level,
       type: 'mob',
       equipmentId: this.props.equipmentId,
+      faction: this.props.faction,
     };
   }
 

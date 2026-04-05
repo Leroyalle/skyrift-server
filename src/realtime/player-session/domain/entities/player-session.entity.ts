@@ -101,6 +101,7 @@ export class PlayerSession {
       equipmentId: this.props.equipmentId,
       bagId: this.props.bagId,
       type: 'player',
+      faction: this.props.faction,
     };
   }
 

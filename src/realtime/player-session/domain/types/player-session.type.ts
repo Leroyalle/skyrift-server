@@ -4,6 +4,7 @@ import type {
   PositionStats,
 } from 'src/common/domain/types/runtime-stats.type';
 import type { Appearance } from 'src/common/domain/vo/appearance.vo';
+import type { FactionName } from 'src/realtime/faction';
 
 import { type ISkillSession, SkillSession } from '../../../skill-session';
 
@@ -16,6 +17,7 @@ export interface IPlayerSession {
   baseStats: BaseStats;
   position: PositionStats;
   combat: CombatStats;
+  faction: FactionName;
 
   appearance: Appearance;
 

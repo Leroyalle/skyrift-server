@@ -14,8 +14,8 @@ import { SPATIAL_GRID_INDEX_TOKEN, type SpatialGridIndexPort } from 'src/realtim
 
 import { Inject, Injectable } from '@nestjs/common';
 
-import { AoeTickPolicy } from '../../domain/pollices/aoe-tick.policy';
-import { CombatTargetingPolicy } from '../../domain/pollices/combat-targeting.policy';
+import { AoeTickPolicy } from '../../domain/polices/aoe-tick.policy';
+import { CombatTargetingPolicy } from '../../domain/polices/combat-targeting.policy';
 import type { AoeZoneRepositoryPort } from '../../domain/ports/aoe-zone-repository.port';
 import { DamageCalculator } from '../../domain/services/damage-calculator.service';
 import type { BatchUpdateAction, Target } from '../../domain/types/batch-update-action.type';
@@ -47,7 +47,6 @@ export class ProcessAoeTickUseCase {
         continue;
       }
 
-      // if (zone.lastUsedAt && now - zone.lastUsedAt <= 1000) continue;
       if (!AoeTickPolicy.canTick(now, zone.lastUsedAt)) continue;
 
       const attacker = this.entityResolver.getByRef(zone.casterRef);
