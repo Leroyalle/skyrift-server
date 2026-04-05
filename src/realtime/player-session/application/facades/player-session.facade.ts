@@ -52,6 +52,7 @@ export class PlayerSessionFacade implements PlayerSessionFacadePort {
       magnitude: skill.skill.damagePerSecond,
       areaRadius: skill.skill.areaRadius,
       duration: skill.skill.duration,
+      range: skill.skill.range,
     };
   }
 }

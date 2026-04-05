@@ -15,4 +15,5 @@ export interface SkillCombatSpec {
   magnitude?: number;
   areaRadius?: number;
   duration?: number;
+  range: number;
 }
