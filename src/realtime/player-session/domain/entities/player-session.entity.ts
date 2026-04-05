@@ -1,6 +1,7 @@
 import type { ISkillSession, SkillSession } from 'src/realtime/skill-session';
 
 import type { IPlayerSession, PlayerSessionSnapshot } from '../types/player-session.type';
+import type { IReceiveDamageResult } from '../types/receive-damage-result.type';
 
 export class PlayerSession {
   private constructor(private props: IPlayerSession) {}
@@ -21,13 +22,17 @@ export class PlayerSession {
     this.markDirty();
   }
 
-  public receiveDamage(amount: number): void {
-    if (!this.props.combat.isAlive) return;
+  public receiveDamage(amount: number): IReceiveDamageResult {
+    if (!this.props.combat.isAlive) {
+      return {
+        hp: this.props.combat.hp,
+        isAlive: this.props.combat.isAlive,
+      };
+    }
 
-    this.props.combat.hp = Math.min(
-      Math.max(0, this.props.combat.hp - amount),
-      this.props.baseStats.maxHp,
-    );
+    const hp = Math.min(Math.max(0, this.props.combat.hp - amount), this.props.baseStats.maxHp);
+
+    this.props.combat.hp = hp;
 
     if (this.props.combat.hp === 0) {
       this.props.combat.isAlive = false;
@@ -35,6 +40,8 @@ export class PlayerSession {
     }
 
     this.markDirty();
+
+    return { hp, isAlive: this.props.combat.isAlive };
   }
 
   public getDerivedStats() {
