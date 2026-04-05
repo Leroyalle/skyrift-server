@@ -7,7 +7,11 @@ import type { IPositionTile } from 'src/realtime/shared/types/position.type';
 
 import { Inject, Injectable } from '@nestjs/common';
 
-import type { EntityActionFacadePort } from '../ports/entity-action-facade.port';
+import type {
+  EntityActionFacadePort,
+  IApplyDamageResult,
+  SkillCombatSpec,
+} from '../ports/entity-action-facade.port';
 
 @Injectable()
 export class EntityActionFacade implements EntityActionFacadePort {
@@ -23,6 +27,32 @@ export class EntityActionFacade implements EntityActionFacadePort {
       this.playerSessionFacade.move(entityRef.id, position, now);
     } else if (entityRef.type === 'mob') {
       this.mobSessionFacade.move(entityRef.id, position, now);
+    }
+  }
+
+  public canUseSkill(entityRef: IEntityRef, skillId: string): boolean {
+    if (entityRef.type === 'player') {
+      return this.playerSessionFacade.canUseSkill(skillId);
+    }
+    return false;
+  }
+
+  public getSkillCombatSpec(entityRef: IEntityRef, skillId: string): SkillCombatSpec | null {
+    if (entityRef.type === 'player') {
+      return this.playerSessionFacade.getSkillCombatSpec(skillId);
+    }
+    return null;
+  }
+
+  public applyHit(
+    entityRef: IEntityRef,
+    amount: number,
+    attackerRef: IEntityRef,
+  ): IApplyDamageResult | undefined {
+    if (entityRef.type === 'player') {
+      return this.playerSessionFacade.applyDamage(entityRef.id, amount);
+    } else if (entityRef.type === 'mob') {
+      return this.mobSessionFacade.applyDamage(entityRef.id, amount, attackerRef);
     }
   }
 }
