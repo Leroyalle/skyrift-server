@@ -1,9 +1,10 @@
+import type { IEntityRef } from 'src/realtime/shared/types/entity-ref.type';
 import type { EffectType } from 'src/realtime/skill-session/domain/types/skill-session.type';
 
-export interface ActiveAoEZone {
+export interface AoeZone {
   id: string;
   skillId: string;
-  casterId: string;
+  casterRef: IEntityRef;
   locationId: string;
   x: number;
   y: number;
@@ -13,9 +14,9 @@ export interface ActiveAoEZone {
   expiresAt: number;
 }
 
-interface SkillEffectConfig {
+export interface SkillEffectConfig {
   type: EffectType;
-  damagePerSecond?: number;
+  magnitude?: number;
   durationMs?: number;
   amount?: number;
   slowPercent?: number;
