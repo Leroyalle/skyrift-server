@@ -7,14 +7,6 @@ import type { Appearance } from 'src/common/domain/vo/appearance.vo';
 
 import { type ISkillSession, SkillSession } from '../../../skill-session';
 
-export type RuntimeSkill = {
-  skillId: string;
-  level: number;
-  cooldownMs: number;
-  lastUsedAt: number | null;
-  id: string;
-};
-
 export interface IPlayerSession {
   userId: string;
   id: string;
