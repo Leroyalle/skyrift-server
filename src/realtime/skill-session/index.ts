@@ -1,2 +1,2 @@
 export { SkillSession } from './domain/entities/skill-session.entity';
-export { ISkillSession } from './domain/types/skill-session.type';
+export { ISkillSession, SkillType } from './domain/types/skill-session.type';
