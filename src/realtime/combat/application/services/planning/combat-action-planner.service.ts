@@ -1,3 +1,6 @@
+import { CombatTargetingPolicy } from 'src/realtime/combat/domain/polices/combat-targeting.policy';
+import type { ActionQueueRepositoryPort } from 'src/realtime/combat/domain/ports/action-queue-repository.port';
+import type { PendingAction } from 'src/realtime/combat/domain/types/action-queue.type';
 import {
   ENTITY_ACTION_FACADE_TOKEN,
   ENTITY_RESOLVER_TOKEN,
@@ -12,14 +15,11 @@ import type { IPositionTile } from 'src/realtime/shared/types/position.type';
 
 import { Inject, Injectable } from '@nestjs/common';
 
-import { CombatTargetingPolicy } from '../../domain/polices/combat-targeting.policy';
-import type { ActionQueueRepositoryPort } from '../../domain/ports/action-queue-repository.port';
-import type { PendingAction } from '../../domain/types/action-queue.type';
 import type {
   CombatActionPlannerPayload,
   CombatActionPlannerPort,
-} from '../ports/combat-action-planner.port';
-import { ACTION_QUEUE_REPOSITORY_TOKEN } from '../ports/tokens';
+} from '../../ports/combat-action-planner.port';
+import { ACTION_QUEUE_REPOSITORY_TOKEN } from '../../ports/tokens';
 
 import type { PendingActionSchedulerService } from './pending-action-scheduler.service';
 

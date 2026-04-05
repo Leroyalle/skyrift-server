@@ -3,10 +3,10 @@ import type { SkillType } from 'src/realtime/skill-session';
 
 import { Inject, Injectable } from '@nestjs/common';
 
-import { actionRules } from '../../domain/constants/action-rules.constant';
-import type { ActionQueueRepositoryPort } from '../../domain/ports/action-queue-repository.port';
-import type { PendingAction } from '../../domain/types/action-queue.type';
-import { ACTION_QUEUE_REPOSITORY_TOKEN } from '../ports/tokens';
+import { actionRules } from '../../../domain/constants/action-rules.constant';
+import type { ActionQueueRepositoryPort } from '../../../domain/ports/action-queue-repository.port';
+import type { PendingAction } from '../../../domain/types/action-queue.type';
+import { ACTION_QUEUE_REPOSITORY_TOKEN } from '../../ports/tokens';
 
 @Injectable()
 export class PendingActionSchedulerService {
