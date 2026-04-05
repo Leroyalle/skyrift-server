@@ -18,23 +18,27 @@ import { actionRules } from '../../domain/constants/action-rules.constant';
 import { CombatTargetingPolicy } from '../../domain/polices/combat-targeting.policy';
 import type { ActionQueueRepositoryPort } from '../../domain/ports/action-queue-repository.port';
 import type { PendingAction } from '../../domain/types/action-queue.type';
+import type {
+  CombatActionPlannerPayload,
+  CombatActionPlannerPort,
+} from '../ports/combat-action-planner.port';
 import { ACTION_QUEUE_REPOSITORY_TOKEN } from '../ports/tokens';
 
-interface Payload {
-  attackerRef: IEntityRef;
-  target: Target;
-  skillId: string | null;
-}
-type Target =
-  | {
-      kind: 'target';
-      victimRef: IEntityRef;
-    }
-  | {
-      kind: 'aoe';
-      x: number;
-      y: number;
-    };
+// interface Payload {
+//   attackerRef: IEntityRef;
+//   target: Target;
+//   skillId: string | null;
+// }
+// type Target =
+//   | {
+//       kind: 'target';
+//       victimRef: IEntityRef;
+//     }
+//   | {
+//       kind: 'aoe';
+//       x: number;
+//       y: number;
+//     };
 
 type ResolveTargetResult = {
   tile: IPositionTile;
@@ -42,7 +46,7 @@ type ResolveTargetResult = {
 } | null;
 
 @Injectable()
-export class CombatActionPlannerService {
+export class CombatActionPlannerService implements CombatActionPlannerPort {
   constructor(
     @Inject(PATH_FINDING_SERVICE) private readonly pathFindingService: PathFindingServicePort,
     @Inject(ACTION_QUEUE_REPOSITORY_TOKEN)
@@ -53,7 +57,7 @@ export class CombatActionPlannerService {
     @Inject(ENTITY_ACTION_FACADE_TOKEN) private readonly entityActionFacade: EntityActionFacadePort,
   ) {}
 
-  public async execute(payload: Payload) {
+  public async execute(payload: CombatActionPlannerPayload) {
     const attacker = this.entityResolver.getByRef(payload.attackerRef);
 
     if (!attacker) return;
@@ -150,7 +154,10 @@ export class CombatActionPlannerService {
     };
   }
 
-  private resolveTarget(target: Target, tileSize: number): ResolveTargetResult | null {
+  private resolveTarget(
+    target: CombatActionPlannerPayload['target'],
+    tileSize: number,
+  ): ResolveTargetResult | null {
     if (target.kind === 'target') {
       const victim = this.entityResolver.getByRef(target.victimRef);
       if (!victim) return null;
