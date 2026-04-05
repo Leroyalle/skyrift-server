@@ -13,7 +13,7 @@ export class GetPlayerSessionSnapshotByCharacterIdQuery implements GetPlayerSess
   ) {}
 
   public execute(characterId: string) {
-    const playerSession = this.playerSessionRepository.findByCharacterId(characterId);
+    const playerSession = this.playerSessionRepository.findById(characterId);
 
     if (!playerSession) {
       return null;

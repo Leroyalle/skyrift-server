@@ -13,7 +13,7 @@ export class GetMobSessionSnapshotByMobIdQuery implements GetMobSessionSnapshotB
   ) {}
 
   public execute(mobId: string) {
-    const mobSession = this.mobSessionRepository.findByMobId(mobId);
+    const mobSession = this.mobSessionRepository.findById(mobId);
 
     if (!mobSession) {
       return null;
