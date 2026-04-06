@@ -2,6 +2,7 @@ import type {
   BaseStats,
   CombatStats,
   PositionStats,
+  StateStats,
 } from 'src/common/domain/types/runtime-stats.type';
 import type { Appearance } from 'src/common/domain/vo/appearance.vo';
 import type { FactionName } from 'src/realtime/faction';
@@ -17,6 +18,8 @@ export interface IPlayerSession {
   baseStats: BaseStats;
   position: PositionStats;
   combat: CombatStats;
+  state: StateStats;
+
   faction: FactionName;
 
   appearance: Appearance;

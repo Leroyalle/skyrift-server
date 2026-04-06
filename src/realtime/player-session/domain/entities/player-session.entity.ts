@@ -77,6 +77,11 @@ export class PlayerSession {
     };
   }
 
+  public cancelAttack(): void {
+    this.props.combat.currentTargetId = null;
+    this.props.state.current = 'idle';
+  }
+
   public getSkill(skillId: string): SkillSession {
     const skill = this.props.skillsById.get(skillId);
     if (!skill) throw new Error('Skill not found');
@@ -102,6 +107,7 @@ export class PlayerSession {
       bagId: this.props.bagId,
       type: 'player',
       faction: this.props.faction,
+      state: { ...this.props.state },
     };
   }
 

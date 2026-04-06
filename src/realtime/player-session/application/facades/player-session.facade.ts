@@ -55,4 +55,11 @@ export class PlayerSessionFacade implements PlayerSessionFacadePort {
       range: skill.skill.range,
     };
   }
+
+  public cancelAttack(id: string): void {
+    const session = this.playerSessionRepository.findById(id);
+    if (!session) return;
+    session.cancelAttack();
+    this.playerSessionRepository.save(session);
+  }
 }

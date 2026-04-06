@@ -8,6 +8,7 @@ export interface PlayerSessionFacadePort {
   canUseSkill(skillId: string): boolean;
   getSkillCombatSpec(skillId: string): SkillCombatSpec | null;
   applyDamage(characterId: string, amount: number): IReceiveDamageResult | undefined;
+  cancelAttack(id: string): void;
 }
 export interface SkillCombatSpec {
   skillId: string;
