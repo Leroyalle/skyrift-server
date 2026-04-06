@@ -44,4 +44,11 @@ export class MobSessionFacade implements MobSessionFacadePort {
 
     return result;
   }
+
+  public cancelAttack(id: string): void {
+    const session = this.mobSessionRepository.findById(id);
+    if (!session) return;
+    session.cancelAttack();
+    this.mobSessionRepository.save(session);
+  }
 }

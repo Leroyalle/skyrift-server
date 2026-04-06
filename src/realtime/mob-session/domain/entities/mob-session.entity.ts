@@ -53,6 +53,11 @@ export class MobSession {
     return { hp, isAlive: this.props.combat.isAlive };
   }
 
+  public cancelAttack(): void {
+    this.props.combat.currentTargetId = null;
+    this.props.state.current = 'idle';
+  }
+
   public toPublicSnapshot(): Readonly<MobSessionSnapshot> {
     return {
       appearance: this.props.appearance.snapshot(),
@@ -65,6 +70,7 @@ export class MobSession {
       type: 'mob',
       equipmentId: this.props.equipmentId,
       faction: this.props.faction,
+      state: { ...this.props.state },
     };
   }
 

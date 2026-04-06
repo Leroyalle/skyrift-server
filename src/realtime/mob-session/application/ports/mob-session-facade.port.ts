@@ -10,5 +10,5 @@ export interface MobSessionFacadePort {
     amount: number,
     attackerRef: IEntityRef,
   ): IReceiveDamageResult | undefined;
-  // updateAggro(id: string, entityRef: IEntityRef, amount: number): void;
+  cancelAttack(id: string): void;
 }
