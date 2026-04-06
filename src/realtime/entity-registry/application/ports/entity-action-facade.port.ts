@@ -16,6 +16,7 @@ export interface EntityActionFacadePort {
     amount: number,
     attackerRef: IEntityRef,
   ): IApplyDamageResult | undefined;
+  cancelAttack(entityRef: IEntityRef): void;
 }
 
 export interface SkillCombatSpec {

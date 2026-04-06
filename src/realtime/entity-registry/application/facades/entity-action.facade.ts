@@ -55,4 +55,12 @@ export class EntityActionFacade implements EntityActionFacadePort {
       return this.mobSessionFacade.applyDamage(entityRef.id, amount, attackerRef);
     }
   }
+
+  public cancelAttack(entityRef: IEntityRef): void {
+    if (entityRef.type === 'player') {
+      this.playerSessionFacade.cancelAttack(entityRef.id);
+    } else if (entityRef.type === 'mob') {
+      this.mobSessionFacade.cancelAttack(entityRef.id);
+    }
+  }
 }
