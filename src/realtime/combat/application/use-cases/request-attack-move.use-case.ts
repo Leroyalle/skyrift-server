@@ -29,7 +29,7 @@ export class RequestAttackMoveUseCase {
 
     return await this.combatActionPlanner.execute({
       attackerRef: payload.attackerRef,
-      target: { kind: 'target', victimRef: payload.victimRef },
+      target: { kind: 'target', value: payload.victimRef },
       skillId: null,
     });
   }

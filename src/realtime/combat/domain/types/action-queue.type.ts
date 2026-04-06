@@ -1,10 +1,10 @@
 import type { IEntityRef } from 'src/realtime/shared/types/entity-ref.type';
 import type { IPositionTile } from 'src/realtime/shared/types/position.type';
 
-// TODO: переделать тип под union и рассмотреть нужен ли area если position лежит в target
+// FIXME: переделать тип под union и рассмотреть нужен ли area если position лежит в target
 export type PendingAction = {
   attackerRef: IEntityRef;
-  target: TargetAction;
+  target: CombatTarget;
   area?: IPositionTile;
   actionType: ActionType;
   state: State;
@@ -15,6 +15,18 @@ export type ActionType = 'autoAttack' | 'skill' | 'effect';
 
 export type State = 'wait-path' | 'move-to-target' | 'attack';
 
-export type TargetAction =
-  | { kind: 'target'; victimRef: IEntityRef }
-  | { kind: 'aoe'; x: number; y: number };
+type TargetKind = 'aoe' | 'target';
+
+type TargetValueByKind = {
+  aoe: IPositionTile;
+  target: IEntityRef;
+};
+
+type Target<K extends TargetKind = TargetKind> = {
+  kind: K;
+  value: TargetValueByKind[K];
+};
+
+export type CombatTarget = {
+  [K in TargetKind]: Target<K>;
+}[TargetKind];

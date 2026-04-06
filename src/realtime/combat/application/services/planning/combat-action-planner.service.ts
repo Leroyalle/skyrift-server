@@ -109,7 +109,7 @@ export class CombatActionPlannerService implements CombatActionPlannerPort {
     tileSize: number,
   ): ResolveTargetResult | null {
     if (target.kind === 'target') {
-      const victim = this.entityResolver.getByRef(target.victimRef);
+      const victim = this.entityResolver.getByRef(target.value);
       if (!victim) return null;
       return {
         currentTarget: victim,
@@ -118,7 +118,7 @@ export class CombatActionPlannerService implements CombatActionPlannerPort {
     } else if (target.kind === 'aoe') {
       return {
         currentTarget: null,
-        tile: getTileByPosition(target.x, target.y, tileSize),
+        tile: getTileByPosition(target.value.x, target.value.y, tileSize),
       };
     }
     return null;
