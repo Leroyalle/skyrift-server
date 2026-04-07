@@ -1,3 +1,5 @@
+import type { StateStats } from 'src/common/domain/types/runtime-stats.type';
+import type { MobStateStats } from 'src/realtime/mob-session';
 import type { MobSessionFacadePort } from 'src/realtime/mob-session/application/ports/mob-session-facade.port';
 import { MOB_SESSION_FACADE_TOKEN } from 'src/realtime/mob-session/application/ports/tokens';
 import type { PlayerSessionFacadePort } from 'src/realtime/player-session/application/ports/player-session-facade.port';
@@ -61,6 +63,17 @@ export class EntityActionFacade implements EntityActionFacadePort {
       this.playerSessionFacade.cancelAttack(entityRef.id);
     } else if (entityRef.type === 'mob') {
       this.mobSessionFacade.cancelAttack(entityRef.id);
+    }
+  }
+
+  public setState<T extends IEntityRef['type']>(
+    entityRef: Extract<IEntityRef, { type: T }>,
+    state: { player: StateStats; mob: MobStateStats; npc: never }[T],
+  ): void {
+    if (entityRef.type === 'player') {
+      this.playerSessionFacade.setState(entityRef.id, state as StateStats);
+    } else if (entityRef.type === 'mob') {
+      this.mobSessionFacade.setState(entityRef.id, state as MobStateStats);
     }
   }
 }

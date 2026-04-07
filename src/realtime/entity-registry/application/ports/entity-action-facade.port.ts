@@ -1,3 +1,5 @@
+import type { StateStats } from 'src/common/domain/types/runtime-stats.type';
+import type { MobStateStats } from 'src/realtime/mob-session';
 import type { IEntityRef } from 'src/realtime/shared/types/entity-ref.type';
 import type { IPositionTile } from 'src/realtime/shared/types/position.type';
 import type { SkillType } from 'src/realtime/skill-session/domain/types/skill-session.type';
@@ -17,7 +19,17 @@ export interface EntityActionFacadePort {
     attackerRef: IEntityRef,
   ): IApplyDamageResult | undefined;
   cancelAttack(entityRef: IEntityRef): void;
+  setState<T extends IEntityRef['type']>(
+    entityRef: Extract<IEntityRef, { type: T }>,
+    state: EntityStateByType[T],
+  ): void;
 }
+
+type EntityStateByType = {
+  player: StateStats;
+  mob: MobStateStats;
+  npc: never;
+};
 
 export interface SkillCombatSpec {
   skillId: string;
