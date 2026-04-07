@@ -44,4 +44,8 @@ export class InMemoryActionQueueRepository implements ActionQueueRepositoryPort 
     }
     return queue;
   }
+
+  public getAllIterable(): PendingAction[][] {
+    return Array.from(this.pendingActionsQueue.values());
+  }
 }

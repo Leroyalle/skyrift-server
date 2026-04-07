@@ -8,4 +8,5 @@ export interface ActionQueueRepositoryPort {
   clearAll(): void;
   shift(entityRef: IEntityRef): void;
   clear(entityRef: IEntityRef): void;
+  getAllIterable(): PendingAction[][];
 }
