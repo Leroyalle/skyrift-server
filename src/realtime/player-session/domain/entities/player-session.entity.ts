@@ -1,3 +1,4 @@
+import type { StateStats } from 'src/common/domain/types/runtime-stats.type';
 import type { ISkillSession, SkillSession } from 'src/realtime/skill-session';
 
 import type { IPlayerSession, PlayerSessionSnapshot } from '../types/player-session.type';
@@ -127,5 +128,10 @@ export class PlayerSession {
 
   private markDirty(): void {
     this.props.dirty = true;
+  }
+
+  public setState(state: StateStats): void {
+    this.props.state = state;
+    this.markDirty();
   }
 }

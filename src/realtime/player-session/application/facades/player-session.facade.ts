@@ -1,3 +1,4 @@
+import type { StateStats } from 'src/common/domain/types/runtime-stats.type';
 import type { PositionDto } from 'src/common/dto/position.dto';
 import { CLOCK_TOKEN, type ClockPort } from 'src/realtime/shared/infrastructure/time';
 
@@ -60,6 +61,13 @@ export class PlayerSessionFacade implements PlayerSessionFacadePort {
     const session = this.playerSessionRepository.findById(id);
     if (!session) return;
     session.cancelAttack();
+    this.playerSessionRepository.save(session);
+  }
+
+  public setState(id: string, state: StateStats): void {
+    const session = this.playerSessionRepository.findById(id);
+    if (!session) return;
+    session.setState(state);
     this.playerSessionRepository.save(session);
   }
 }

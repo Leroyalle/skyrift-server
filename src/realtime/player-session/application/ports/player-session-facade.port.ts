@@ -1,3 +1,4 @@
+import type { StateStats } from 'src/common/domain/types/runtime-stats.type';
 import type { IPositionTile } from 'src/realtime/shared/types/position.type';
 import type { SkillType } from 'src/realtime/skill-session/domain/types/skill-session.type';
 
@@ -9,6 +10,7 @@ export interface PlayerSessionFacadePort {
   getSkillCombatSpec(skillId: string): SkillCombatSpec | null;
   applyDamage(characterId: string, amount: number): IReceiveDamageResult | undefined;
   cancelAttack(id: string): void;
+  setState(id: string, state: StateStats): void;
 }
 export interface SkillCombatSpec {
   skillId: string;
