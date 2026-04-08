@@ -12,6 +12,7 @@ export interface PlayerSessionFacadePort {
   cancelAttack(id: string): void;
   setState(id: string, state: StateStats): void;
   setLastAttackAt(id: string, lastAttackAt: number): void;
+  applySkillCooldown(id: string, skillId: string, now: number): number | undefined;
 }
 export interface SkillCombatSpec {
   skillId: string;

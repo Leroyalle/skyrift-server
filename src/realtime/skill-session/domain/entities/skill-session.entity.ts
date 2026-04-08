@@ -42,5 +42,6 @@ export class SkillSession {
     const cooldownEnd = now + cooldownMs;
     if (now <= this.props.cooldownEnd) throw new Error('Skill is already on cooldown');
     this.props.cooldownEnd = cooldownEnd;
+    return cooldownEnd;
   }
 }

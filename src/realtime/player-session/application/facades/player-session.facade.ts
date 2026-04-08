@@ -81,4 +81,10 @@ export class PlayerSessionFacade implements PlayerSessionFacadePort {
     session.setLastAttackAt(lastAttackAt);
     this.playerSessionRepository.save(session);
   }
+
+  public applySkillCooldown(id: string, skillId: string, now: number): number | undefined {
+    const session = this.playerSessionRepository.findById(id);
+    if (!session) return;
+    return session.applySkillCooldown(skillId, now);
+  }
 }

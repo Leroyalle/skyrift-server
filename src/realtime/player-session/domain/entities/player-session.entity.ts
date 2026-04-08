@@ -138,4 +138,10 @@ export class PlayerSession {
   public setLastAttackAt(lastAttackAt: number): void {
     this.props.combat.lastAttackAt = lastAttackAt;
   }
+
+  public applySkillCooldown(skillId: string, now: number): number | undefined {
+    const skill = this.props.skillsById.get(skillId);
+    if (!skill) return;
+    return skill.cooldown(now);
+  }
 }
