@@ -1,6 +1,7 @@
 import type { IEntityRef } from 'src/realtime/shared/types/entity-ref.type';
 import type { IPositionTile } from 'src/realtime/shared/types/position.type';
 
+import type { MobStateStats } from '../../domain/types/mob-session.type';
 import type { IReceiveDamageResult } from '../../domain/types/receive-damage-result.type';
 
 export interface MobSessionFacadePort {
@@ -11,4 +12,5 @@ export interface MobSessionFacadePort {
     attackerRef: IEntityRef,
   ): IReceiveDamageResult | undefined;
   cancelAttack(id: string): void;
+  setState(id: string, state: MobStateStats): void;
 }

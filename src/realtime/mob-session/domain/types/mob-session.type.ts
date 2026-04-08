@@ -15,7 +15,7 @@ export interface IMobSession {
   baseStats: MobBaseStats;
   position: PositionStats;
   combat: CombatStats;
-  state: StateStats;
+  state: MobStateStats;
 
   faction: FactionName;
 
@@ -26,6 +26,9 @@ export interface IMobSession {
 
   dirty: boolean;
 }
+export type MobStateStats = {
+  current: StateStats['current'] | 'return';
+};
 
 interface MobBaseStats extends BaseStats {
   chaseSpeed: number;

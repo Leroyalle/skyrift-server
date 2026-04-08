@@ -4,6 +4,7 @@ import type { IPositionTile } from 'src/realtime/shared/types/position.type';
 import { Inject, Injectable } from '@nestjs/common';
 
 import type { MobSessionRepositoryPort } from '../../domain/ports/in-memory-mob-session-repository.port';
+import type { MobStateStats } from '../../domain/types/mob-session.type';
 import type { IReceiveDamageResult } from '../../domain/types/receive-damage-result.type';
 import type { MobSessionFacadePort } from '../ports/mob-session-facade.port';
 import { MOB_SESSION_REPOSITORY_TOKEN } from '../ports/tokens';
@@ -49,6 +50,13 @@ export class MobSessionFacade implements MobSessionFacadePort {
     const session = this.mobSessionRepository.findById(id);
     if (!session) return;
     session.cancelAttack();
+    this.mobSessionRepository.save(session);
+  }
+
+  public setState(id: string, state: MobStateStats): void {
+    const session = this.mobSessionRepository.findById(id);
+    if (!session) return;
+    session.setState(state);
     this.mobSessionRepository.save(session);
   }
 }

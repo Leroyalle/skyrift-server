@@ -1,7 +1,7 @@
 import type { IEntityRef } from 'src/realtime/shared/types/entity-ref.type';
 
 import { AggroTableDo } from '../do/aggro-table.do';
-import type { IMobSession, MobSessionSnapshot } from '../types/mob-session.type';
+import type { IMobSession, MobSessionSnapshot, MobStateStats } from '../types/mob-session.type';
 import type { IReceiveDamageResult } from '../types/receive-damage-result.type';
 
 interface MobSessionData extends IMobSession {
@@ -78,5 +78,9 @@ export class MobSession {
     if (!this.props.combat.isAlive) {
       throw new Error('Player is dead');
     }
+  }
+
+  public setState(state: MobStateStats): void {
+    this.props.state = state;
   }
 }
