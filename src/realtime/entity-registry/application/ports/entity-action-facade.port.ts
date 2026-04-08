@@ -21,7 +21,7 @@ export interface EntityActionFacadePort {
   cancelAttack(entityRef: IEntityRef): void;
   setState(payload: SetStatePayload): void;
   setLastAttackAt(entityRef: IEntityRef, lastAttackAt: number): void;
-  applySkillCooldown(entityRef: IEntityRef, skillId: string, now: number): number;
+  applySkillCooldown(entityRef: IEntityRef, skillId: string, now: number): number | undefined;
 }
 
 export type SetStatePayload =

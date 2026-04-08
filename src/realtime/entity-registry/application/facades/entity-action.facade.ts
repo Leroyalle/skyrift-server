@@ -82,4 +82,14 @@ export class EntityActionFacade implements EntityActionFacadePort {
       this.mobSessionFacade.setLastAttackAt(entityRef.id, lastAttackAt);
     }
   }
+
+  public applySkillCooldown(
+    entityRef: IEntityRef,
+    skillId: string,
+    now: number,
+  ): number | undefined {
+    if (entityRef.type === 'player') {
+      return this.playerSessionFacade.applySkillCooldown(entityRef.id, skillId, now);
+    }
+  }
 }
