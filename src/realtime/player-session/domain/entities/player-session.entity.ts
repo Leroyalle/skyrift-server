@@ -134,4 +134,8 @@ export class PlayerSession {
     this.props.state = state;
     this.markDirty();
   }
+
+  public setLastAttackAt(lastAttackAt: number): void {
+    this.props.combat.lastAttackAt = lastAttackAt;
+  }
 }

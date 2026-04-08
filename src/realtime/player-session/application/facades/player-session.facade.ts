@@ -48,6 +48,10 @@ export class PlayerSessionFacade implements PlayerSessionFacadePort {
     if (!session) return null;
     const skill = session.getSkill(skillId).snapshot();
     return {
+      id: skill.id,
+      lastUsedAt: skill.lastUsedAt,
+      cooldownEnd: skill.cooldownEnd,
+      cooldownMs: skill.skill.cooldownMs,
       skillId,
       type: skill.skill.type,
       magnitude: skill.skill.damagePerSecond,
@@ -68,6 +72,13 @@ export class PlayerSessionFacade implements PlayerSessionFacadePort {
     const session = this.playerSessionRepository.findById(id);
     if (!session) return;
     session.setState(state);
+    this.playerSessionRepository.save(session);
+  }
+
+  public setLastAttackAt(id: string, lastAttackAt: number): void {
+    const session = this.playerSessionRepository.findById(id);
+    if (!session) return;
+    session.setLastAttackAt(lastAttackAt);
     this.playerSessionRepository.save(session);
   }
 }

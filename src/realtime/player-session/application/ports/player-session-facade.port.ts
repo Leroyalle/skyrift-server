@@ -11,12 +11,17 @@ export interface PlayerSessionFacadePort {
   applyDamage(characterId: string, amount: number): IReceiveDamageResult | undefined;
   cancelAttack(id: string): void;
   setState(id: string, state: StateStats): void;
+  setLastAttackAt(id: string, lastAttackAt: number): void;
 }
 export interface SkillCombatSpec {
   skillId: string;
-  type: SkillType;
   magnitude?: number;
   areaRadius?: number;
   duration?: number;
   range: number;
+  cooldownMs: number;
+  lastUsedAt: number;
+  cooldownEnd: number;
+  id: string;
+  type: SkillType;
 }
