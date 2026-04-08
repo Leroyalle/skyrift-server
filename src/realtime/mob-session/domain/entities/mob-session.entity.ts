@@ -83,4 +83,8 @@ export class MobSession {
   public setState(state: MobStateStats): void {
     this.props.state = state;
   }
+
+  public setLastAttackAt(lastAttackAt: number): void {
+    this.props.combat.lastAttackAt = lastAttackAt;
+  }
 }

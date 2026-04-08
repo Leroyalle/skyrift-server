@@ -59,4 +59,11 @@ export class MobSessionFacade implements MobSessionFacadePort {
     session.setState(state);
     this.mobSessionRepository.save(session);
   }
+
+  public setLastAttackAt(id: string, lastAttackAt: number): void {
+    const session = this.mobSessionRepository.findById(id);
+    if (!session) return;
+    session.setLastAttackAt(lastAttackAt);
+    this.mobSessionRepository.save(session);
+  }
 }

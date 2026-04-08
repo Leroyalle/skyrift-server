@@ -13,4 +13,5 @@ export interface MobSessionFacadePort {
   ): IReceiveDamageResult | undefined;
   cancelAttack(id: string): void;
   setState(id: string, state: MobStateStats): void;
+  setLastAttackAt(id: string, lastAttackAt: number): void;
 }
