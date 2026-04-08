@@ -23,14 +23,14 @@ export class ProjectileQueueRepository implements ProjectileQueueRepositoryPort 
     this.projectileQueue.delete(entityRef.id);
   }
 
-  public setOne(entityRef: IEntityRef, projectile: IProjectile): void {
+  public set(entityRef: IEntityRef, projectile: IProjectile): void {
     const projectiles = this.projectileQueue.get(entityRef.id);
     if (projectiles) {
       projectiles.set(projectile.startedAt, projectile);
     }
   }
 
-  public set(entityRef: IEntityRef, projectiles: IProjectile[]): void {
+  public setArray(entityRef: IEntityRef, projectiles: IProjectile[]): void {
     this.projectileQueue.set(entityRef.id, new Map(projectiles.map(p => [p.startedAt, p])));
   }
 
