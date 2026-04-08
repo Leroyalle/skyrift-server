@@ -39,7 +39,7 @@ export class RequestUseSkillUseCase {
 
     if (!attacker) return;
 
-    const skill = this.entityActionFacade.getSkillCombatSpec(attacker, payload.skillId);
+    const skill = this.entityActionFacade.getSkillCombatData(attacker, payload.skillId);
 
     if (!skill) return;
 

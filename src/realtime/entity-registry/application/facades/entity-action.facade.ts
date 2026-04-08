@@ -12,6 +12,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import type {
   EntityActionFacadePort,
   IApplyDamageResult,
+  SetStatePayload,
   SkillCombatSpec,
 } from '../ports/entity-action-facade.port';
 
@@ -39,7 +40,7 @@ export class EntityActionFacade implements EntityActionFacadePort {
     return false;
   }
 
-  public getSkillCombatSpec(entityRef: IEntityRef, skillId: string): SkillCombatSpec | null {
+  public getSkillCombatData(entityRef: IEntityRef, skillId: string): SkillCombatSpec | null {
     if (entityRef.type === 'player') {
       return this.playerSessionFacade.getSkillCombatSpec(skillId);
     }
@@ -66,14 +67,11 @@ export class EntityActionFacade implements EntityActionFacadePort {
     }
   }
 
-  public setState<T extends IEntityRef['type']>(
-    entityRef: Extract<IEntityRef, { type: T }>,
-    state: { player: StateStats; mob: MobStateStats; npc: never }[T],
-  ): void {
-    if (entityRef.type === 'player') {
-      this.playerSessionFacade.setState(entityRef.id, state as StateStats);
-    } else if (entityRef.type === 'mob') {
-      this.mobSessionFacade.setState(entityRef.id, state as MobStateStats);
+  public setState(payload: SetStatePayload): void {
+    if (payload.entityRef.type === 'player') {
+      this.playerSessionFacade.setState(payload.entityRef.id, payload.state as StateStats);
+    } else if (payload.entityRef.type === 'mob') {
+      this.mobSessionFacade.setState(payload.entityRef.id, payload.state as MobStateStats);
     }
   }
 }

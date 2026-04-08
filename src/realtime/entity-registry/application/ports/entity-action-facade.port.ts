@@ -12,30 +12,33 @@ export interface IApplyDamageResult {
 export interface EntityActionFacadePort {
   move(entityRef: IEntityRef, position: IPositionTile, now: number): void;
   canUseSkill(entityRef: IEntityRef, skillId: string): boolean;
-  getSkillCombatSpec(entityRef: IEntityRef, skillId: string): SkillCombatSpec | null;
+  getSkillCombatData(entityRef: IEntityRef, skillId: string): SkillCombatSpec | null;
   applyHit(
     entityRef: IEntityRef,
     amount: number,
     attackerRef: IEntityRef,
   ): IApplyDamageResult | undefined;
   cancelAttack(entityRef: IEntityRef): void;
-  setState<T extends IEntityRef['type']>(
-    entityRef: Extract<IEntityRef, { type: T }>,
-    state: EntityStateByType[T],
-  ): void;
+  setState(payload: SetStatePayload): void;
+  setLastAttackAt(entityRef: IEntityRef, lastAttackAt: number): void;
+  applySkillCooldown(entityRef: IEntityRef, skillId: string, now: number): number;
 }
 
-type EntityStateByType = {
-  player: StateStats;
-  mob: MobStateStats;
-  npc: never;
-};
+export type SetStatePayload =
+  | { entityRef: IEntityRef & { type: 'player' }; state: StateStats }
+  | { entityRef: IEntityRef & { type: 'mob' }; state: MobStateStats }
+  | { entityRef: IEntityRef & { type: 'npc' }; state: null }
+  | { entityRef: IEntityRef; state: StateStats };
 
 export interface SkillCombatSpec {
   skillId: string;
-  type: SkillType;
   magnitude?: number;
   areaRadius?: number;
   duration?: number;
   range: number;
+  cooldownMs: number;
+  lastUsedAt: number;
+  cooldownEnd: number;
+  id: string;
+  type: SkillType;
 }

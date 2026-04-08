@@ -58,7 +58,7 @@ export class CombatActionPlannerService implements CombatActionPlannerPort {
     if (!location) return;
 
     const skillSpec = payload.skillId
-      ? this.entityActionFacade.getSkillCombatSpec(
+      ? this.entityActionFacade.getSkillCombatData(
           {
             id: attacker.id,
             type: attacker.type,
