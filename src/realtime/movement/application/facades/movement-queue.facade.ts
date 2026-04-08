@@ -17,4 +17,8 @@ export class MovementQueueFacade implements MovementQueueFacadePort {
   public set(entityRef: IEntityRef, movementQueue: IMovementQueue) {
     this.movementQueueRepository.set(entityRef, movementQueue);
   }
+
+  public remove(entityRef: IEntityRef) {
+    this.movementQueueRepository.remove(entityRef);
+  }
 }
