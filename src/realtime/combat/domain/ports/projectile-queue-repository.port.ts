@@ -1,0 +1,12 @@
+import type { IEntityRef } from 'src/realtime/shared/types/entity-ref.type';
+
+import type { IProjectile } from '../types/projectile-queue.type';
+
+export interface ProjectileQueueRepositoryPort {
+  getAllByRef(entityRef: IEntityRef): IProjectile[];
+  get(entityRef: IEntityRef, startedAt: number): IProjectile | null;
+  set(entityRef: IEntityRef, projectiles: IProjectile[]): void;
+  setOne(entityRef: IEntityRef, projectile: IProjectile): void;
+  clear(entityRef: IEntityRef): void;
+  remove(entityRef: IEntityRef, startedAt: number): void;
+}
