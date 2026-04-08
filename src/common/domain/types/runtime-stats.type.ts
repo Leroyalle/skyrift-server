@@ -23,8 +23,15 @@ export interface PositionStats {
   y: number;
 }
 
-export type ActorState = 'idle' | 'moving' | 'attacking' | 'casting' | 'stunned' | 'dead';
-
 export interface StateStats {
   current: ActorState;
 }
+
+export type ActorState =
+  | 'idle'
+  | 'moving'
+  | 'attacking'
+  | 'casting'
+  | 'stunned'
+  | 'dead'
+  | 'pursue';
