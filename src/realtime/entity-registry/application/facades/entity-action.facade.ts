@@ -74,4 +74,12 @@ export class EntityActionFacade implements EntityActionFacadePort {
       this.mobSessionFacade.setState(payload.entityRef.id, payload.state as MobStateStats);
     }
   }
+
+  public setLastAttackAt(entityRef: IEntityRef, lastAttackAt: number): void {
+    if (entityRef.type === 'player') {
+      this.playerSessionFacade.setLastAttackAt(entityRef.id, lastAttackAt);
+    } else if (entityRef.type === 'mob') {
+      this.mobSessionFacade.setLastAttackAt(entityRef.id, lastAttackAt);
+    }
+  }
 }
