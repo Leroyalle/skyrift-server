@@ -14,4 +14,5 @@ export interface MobSessionFacadePort {
   cancelAttack(id: string): void;
   setState(id: string, state: MobStateStats): void;
   setLastAttackAt(id: string, lastAttackAt: number): void;
+  setMovementLockedUntil(id: string, now: number): void;
 }

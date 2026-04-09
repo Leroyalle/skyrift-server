@@ -66,4 +66,11 @@ export class MobSessionFacade implements MobSessionFacadePort {
     session.setLastAttackAt(lastAttackAt);
     this.mobSessionRepository.save(session);
   }
+
+  public setMovementLockedUntil(id: string, now: number): void {
+    const session = this.mobSessionRepository.findById(id);
+    if (!session) return;
+    session.setMovementLockedUntil(now);
+    this.mobSessionRepository.save(session);
+  }
 }

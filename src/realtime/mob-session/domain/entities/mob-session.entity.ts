@@ -87,4 +87,8 @@ export class MobSession {
   public setLastAttackAt(lastAttackAt: number): void {
     this.props.combat.lastAttackAt = lastAttackAt;
   }
+
+  public setMovementLockedUntil(now: number): void {
+    this.props.combat.lastMoveAt = now + 200;
+  }
 }
