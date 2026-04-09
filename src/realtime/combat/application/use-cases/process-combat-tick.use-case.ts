@@ -5,6 +5,7 @@ import {
   type EntityActionFacadePort,
   type EntityResolverPort,
 } from 'src/realtime/entity-registry';
+import { LOCATION_READER_FACADE_TOKEN, type LocationReaderPort } from 'src/realtime/location';
 import { MOVEMENT_QUEUE_FACADE_TOKEN, type MovementQueueFacadePort } from 'src/realtime/movement';
 import { PATH_FINDING_SERVICE, type PathFindingServicePort } from 'src/realtime/path-finding';
 import { CLOCK_TOKEN, type ClockPort } from 'src/realtime/shared/infrastructure/time';
@@ -31,6 +32,7 @@ export class ProcessCombatTickUseCase {
     private readonly movementQueueFacade: MovementQueueFacadePort,
     @Inject(ACTION_RESOLVER_TOKEN) private readonly actionResolverToken: ActionResolverServicePort,
     @Inject(CLOCK_TOKEN) private readonly clockService: ClockPort,
+    @Inject(LOCATION_READER_FACADE_TOKEN) private readonly locationReaderFacade: LocationReaderPort,
   ) {}
 
   public async execute() {
@@ -48,20 +50,14 @@ export class ProcessCombatTickUseCase {
 
       if (!attacker) continue;
 
-      const location = {
-        x: 1,
-        y: 1,
-        passableMap: [[1], [2], [3]],
-        id: attacker.position.locationId,
-        tileWidth: 32,
-      };
+      const location = this.locationReaderFacade.getById(attacker.position.locationId);
 
       if (!location) continue;
 
       const attackerTile = getTileByPosition(
         attacker.position.x,
         attacker.position.y,
-        location.tileWidth,
+        location.size.tileWidth,
       );
 
       let targetTile: IPositionTile | null = null;
@@ -71,12 +67,16 @@ export class ProcessCombatTickUseCase {
 
         if (!victim) continue;
 
-        targetTile = getTileByPosition(victim.position.x, victim.position.y, location.tileWidth);
+        targetTile = getTileByPosition(
+          victim.position.x,
+          victim.position.y,
+          location.size.tileWidth,
+        );
       } else if (action.target.kind === 'aoe') {
         targetTile = getTileByPosition(
           action.target.value.x,
           action.target.value.y,
-          location.tileWidth,
+          location.size.tileWidth,
         );
       }
 
@@ -134,7 +134,7 @@ export class ProcessCombatTickUseCase {
         context: {
           now,
           removeAction: () => queue.shift(),
-          tileSize: location.tileWidth,
+          tileSize: location.size.tileWidth,
         },
         target: action.target,
       });

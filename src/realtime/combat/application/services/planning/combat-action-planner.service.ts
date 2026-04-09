@@ -8,6 +8,7 @@ import {
   type EntityResolverPort,
   type EntitySnapshot,
 } from 'src/realtime/entity-registry';
+import { LOCATION_READER_FACADE_TOKEN, type LocationReaderPort } from 'src/realtime/location';
 import { MOVEMENT_QUEUE_FACADE_TOKEN, type MovementQueueFacadePort } from 'src/realtime/movement';
 import { PATH_FINDING_SERVICE, type PathFindingServicePort } from 'src/realtime/path-finding';
 import { getTileByPosition } from 'src/realtime/shared/lib/helpers/get-tile-by-position.lib';
@@ -39,6 +40,7 @@ export class CombatActionPlannerService implements CombatActionPlannerPort {
     private readonly movementQueueFacade: MovementQueueFacadePort,
     @Inject(ENTITY_ACTION_FACADE_TOKEN) private readonly entityActionFacade: EntityActionFacadePort,
     private readonly pendingActionScheduler: PendingActionSchedulerService,
+    @Inject(LOCATION_READER_FACADE_TOKEN) private readonly locationReaderFacade: LocationReaderPort,
   ) {}
 
   public async execute(payload: CombatActionPlannerPayload) {
@@ -46,14 +48,7 @@ export class CombatActionPlannerService implements CombatActionPlannerPort {
 
     if (!attacker) return;
 
-    // TODO: получать из фасада локации
-    const location = {
-      x: 1,
-      y: 1,
-      passableMap: [[1], [2], [3]],
-      id: attacker.position.locationId,
-      tileWidth: 32,
-    };
+    const location = this.locationReaderFacade.getById(attacker.position.locationId);
 
     if (!location) return;
 
@@ -67,7 +62,7 @@ export class CombatActionPlannerService implements CombatActionPlannerPort {
         )
       : null;
 
-    const target = this.resolveTarget(payload.target, location.tileWidth);
+    const target = this.resolveTarget(payload.target, location.size.tileWidth);
 
     if (!target) return;
 
@@ -79,7 +74,7 @@ export class CombatActionPlannerService implements CombatActionPlannerPort {
 
     const steps = await this.pathFindingService.getPath(
       location.id,
-      getTileByPosition(attacker.position.x, attacker.position.y, location.tileWidth),
+      getTileByPosition(attacker.position.x, attacker.position.y, location.size.tileWidth),
       target.tile,
       location.passableMap,
     );
