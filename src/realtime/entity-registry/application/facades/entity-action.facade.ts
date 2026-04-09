@@ -92,4 +92,12 @@ export class EntityActionFacade implements EntityActionFacadePort {
       return this.playerSessionFacade.applySkillCooldown(entityRef.id, skillId, now);
     }
   }
+
+  public setMovementLockedUntil(entityRef: IEntityRef, now: number): void {
+    if (entityRef.type === 'player') {
+      this.playerSessionFacade.setMovementLockedUntil(entityRef.id, now);
+    } else if (entityRef.type === 'mob') {
+      this.mobSessionFacade.setMovementLockedUntil(entityRef.id, now);
+    }
+  }
 }
