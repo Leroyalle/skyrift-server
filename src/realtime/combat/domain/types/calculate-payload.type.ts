@@ -3,11 +3,21 @@ import type { BaseStats, CombatStats } from 'src/common/domain/types/runtime-sta
 import type { ActionType } from './action-queue.type';
 
 export interface CalculatePayload {
-  attacker: CombatActorStats;
+  power: DamagePower;
   victim: CombatActorStats;
   skill?: SkillCombatSpec;
   source: DamageSource;
 }
+
+type DamagePower =
+  | {
+      mode: 'attacker_stats';
+      attacker: CombatActorStats;
+    }
+  | {
+      mode: 'fixed';
+      amount: number;
+    };
 
 export interface CombatActorStats {
   baseStats: BaseStats;

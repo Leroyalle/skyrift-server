@@ -1,10 +1,15 @@
+import type { IEntityRef } from 'src/realtime/shared/types/entity-ref.type';
+
 export interface IEffect {
   type: EffectType;
-  damagePerSecond?: number;
+  magnitude?: number;
   durationMs: number;
   amount?: number;
   slowPercent?: number;
   skillId: string;
+  attackerRef: IEntityRef;
+  lastUsedAt: number;
+  expiresAt: number;
 }
 
 export type EffectType =
