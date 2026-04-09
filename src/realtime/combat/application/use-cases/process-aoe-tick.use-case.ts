@@ -77,10 +77,13 @@ export class ProcessAoeTickUseCase {
         const victimEquipment = this.equipmentFacade.getEquippedItemsList(victim.equipmentId);
 
         const damage = DamageCalculator.calculate({
-          attacker: {
-            baseStats: attacker.baseStats,
-            equipmentItemsStats: EquippedItemsToStatsMapper.map(attackerEquipment),
-            combatStats: attacker.combat,
+          power: {
+            mode: 'attacker_stats',
+            attacker: {
+              baseStats: attacker.baseStats,
+              equipmentItemsStats: EquippedItemsToStatsMapper.map(attackerEquipment),
+              combatStats: attacker.combat,
+            },
           },
           source: { kind: 'physical', origin: 'effect' },
           victim: {
