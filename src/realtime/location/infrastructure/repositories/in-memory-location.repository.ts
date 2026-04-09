@@ -22,4 +22,8 @@ export class InMemoryLocationRepository implements LocationRepositoryPort {
   public delete(id: ILocation['id']): void {
     this.locations.delete(id);
   }
+
+  public setAll(locations: ILocation[]): void {
+    locations.forEach(location => this.set(location));
+  }
 }
