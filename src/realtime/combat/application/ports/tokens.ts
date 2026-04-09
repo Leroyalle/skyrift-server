@@ -3,3 +3,4 @@ export const ACTION_QUEUE_REPOSITORY_TOKEN = Symbol('action_queue_repository_tok
 export const COMBAT_ACTION_PLANNER_TOKEN = Symbol('combat_action_planner_token');
 export const PROJECTILE_REPOSITORY_TOKEN = Symbol('projectile_repository_token');
 export const ACTION_RESOLVER_TOKEN = Symbol('action_resolver_token');
+export const APPLY_EFFECT_IMPACT_FACADE_TOKEN = Symbol('apply_effect_impact_facade_token');
