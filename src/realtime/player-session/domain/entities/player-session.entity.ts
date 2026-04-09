@@ -144,4 +144,9 @@ export class PlayerSession {
     if (!skill) return;
     return skill.cooldown(now);
   }
+
+  public setMovementLockedUntil(now: number): void {
+    this.props.combat.lastMoveAt = now + 200;
+    this.markDirty();
+  }
 }

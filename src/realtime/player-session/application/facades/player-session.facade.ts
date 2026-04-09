@@ -87,4 +87,11 @@ export class PlayerSessionFacade implements PlayerSessionFacadePort {
     if (!session) return;
     return session.applySkillCooldown(skillId, now);
   }
+
+  public setMovementLockedUntil(id: string, now: number): void {
+    const session = this.playerSessionRepository.findById(id);
+    if (!session) return;
+    session.setMovementLockedUntil(now);
+    this.playerSessionRepository.save(session);
+  }
 }
