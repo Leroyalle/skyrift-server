@@ -38,40 +38,32 @@ export class ProcessProjectileTick {
   public execute() {
     const updatesByLocation = new Map<string, BatchUpdateAction[]>();
 
-    const queue = this.projectileRepository.getIterable();
+    for (const { attackerRef, projectile } of this.projectileRepository.getAll()) {
+      const now = this.clockService.nowMs();
+      const attacker = this.entityResolver.getByRef(attackerRef);
+      if (!attacker) return;
+      const victim = this.entityResolver.getByRef(projectile.victimRef);
+      if (!victim) return;
+      if (attacker.position.locationId !== victim.position.locationId) return;
+      const attackInProgress = isAttackInProgress(
+        getTileByPosition(victim.position.x, victim.position.y),
+        100,
+        {
+          startedAt: projectile.startedAt,
+          startedTile: projectile.startedTile,
+        },
+      );
+      if (attackInProgress) return;
 
-    for (const [attackerRef, projectiles] of queue) {
-      for (const projectile of projectiles) {
-        const now = this.clockService.nowMs();
-        const attacker = this.entityResolver.getByRef(attackerRef);
-        if (!attacker) return;
-        const victim = this.entityResolver.getByRef(projectile.victimRef);
-        if (!victim) return;
-        if (attacker.position.locationId !== victim.position.locationId) return;
-        const attackInProgress = isAttackInProgress(
-          getTileByPosition(victim.position.x, victim.position.y),
-          100,
-          {
-            startedAt: projectile.startedAt,
-            startedTile: projectile.startedTile,
-          },
-        );
-        if (attackInProgress) return;
+      const result = this.applyProjectileAction(attacker, victim, projectile, { now });
 
-        const result = this.applyProjectileAction(attacker, victim, projectile, { now });
+      this.projectileRepository.remove(attackerRef, projectile.startedAt);
 
-        this.projectileRepository.remove(attackerRef, projectile.startedAt);
+      if (!result) return;
 
-        if (!result) return;
+      const batchLocation = getOrCreate(updatesByLocation, attacker.position.locationId, () => []);
 
-        const batchLocation = getOrCreate(
-          updatesByLocation,
-          attacker.position.locationId,
-          () => [],
-        );
-
-        batchLocation.push(result);
-      }
+      batchLocation.push(result);
     }
 
     return updatesByLocation;

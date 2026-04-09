@@ -43,10 +43,13 @@ export class ProjectileQueueRepository implements ProjectileQueueRepositoryPort 
     this.projectileQueue.delete(generateEntityKey(entityRef));
   }
 
-  public getIterable(): [IEntityRef, IProjectile[]][] {
-    return Array.from(this.projectileQueue.entries()).map(([entityKey, projectiles]) => [
-      decodeEntityKey(entityKey),
-      Array.from(projectiles.values()),
-    ]);
+  public *getAll(): Iterable<{ attackerRef: IEntityRef; projectile: IProjectile }> {
+    for (const [entityKey, projectiles] of this.projectileQueue.entries()) {
+      const attackerRef = decodeEntityKey(entityKey);
+
+      for (const projectile of projectiles.values()) {
+        yield { attackerRef, projectile };
+      }
+    }
   }
 }

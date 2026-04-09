@@ -9,5 +9,5 @@ export interface ProjectileQueueRepositoryPort {
   set(entityRef: IEntityRef, projectile: IProjectile): void;
   clear(entityRef: IEntityRef): void;
   remove(entityRef: IEntityRef, startedAt: number): void;
-  getIterable(): [IEntityRef, IProjectile[]][];
+  getAll(): Iterable<{ attackerRef: IEntityRef; projectile: IProjectile }>;
 }
