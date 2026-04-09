@@ -90,10 +90,13 @@ export class ProcessProjectileTick {
       case 'Target': {
         // const receivedDamage = skill.skill.damage;
         const damage = DamageCalculator.calculate({
-          attacker: {
-            baseStats: attacker.baseStats,
-            combatStats: attacker.combat,
-            equipmentItemsStats: EquippedItemsToStatsMapper.map(equipmentAttacker),
+          power: {
+            mode: 'attacker_stats',
+            attacker: {
+              baseStats: attacker.baseStats,
+              combatStats: attacker.combat,
+              equipmentItemsStats: EquippedItemsToStatsMapper.map(equipmentAttacker),
+            },
           },
           victim: {
             baseStats: victim.baseStats,
@@ -126,10 +129,13 @@ export class ProcessProjectileTick {
       }
       default: {
         const damage = DamageCalculator.calculate({
-          attacker: {
-            baseStats: attacker.baseStats,
-            combatStats: attacker.combat,
-            equipmentItemsStats: EquippedItemsToStatsMapper.map(equipmentAttacker),
+          power: {
+            mode: 'attacker_stats',
+            attacker: {
+              baseStats: attacker.baseStats,
+              combatStats: attacker.combat,
+              equipmentItemsStats: EquippedItemsToStatsMapper.map(equipmentAttacker),
+            },
           },
           victim: {
             baseStats: victim.baseStats,
