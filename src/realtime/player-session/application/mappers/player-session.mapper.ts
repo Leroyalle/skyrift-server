@@ -1,6 +1,8 @@
+import { Appearance } from 'src/common/domain/vo/appearance.vo';
+
 import type { PlayerSession } from '../../domain/entities/player-session.entity';
 
-type Appearance = {
+type AppearanceShape = {
   body: string;
   head: string;
 };
@@ -32,7 +34,7 @@ type Props = {
   y: number;
   walkSpeed: number;
   equipmentId: string;
-  appearance: Appearance;
+  appearance: AppearanceShape;
   createdAt: Date;
   bagId: string;
 };
@@ -59,7 +61,11 @@ export class PlayerSessionMapper {
         walkSpeed: payload.walkSpeed,
       },
       dirty: false,
-      characterId: payload.id,
+      id: payload.id,
+      state: { current: 'idle' },
+      // FIXME: вытащить фракцию
+      faction: 'CrimsonCoven',
+      appearance: Appearance.create(payload.appearance),
       combat: {
         hp: payload.hp,
         isAlive: payload.isAlive,
