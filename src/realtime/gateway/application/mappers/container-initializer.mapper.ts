@@ -43,7 +43,7 @@ export class ContainerInitializerMapper {
     };
   }
 
-  public toEquipmentProps(payload: {
+  public static toEquipmentProps(payload: {
     equipment: IEquipment;
     itemInstances: ItemInstance[];
     itemTemplates: ItemTemplate[];
