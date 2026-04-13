@@ -1,4 +1,5 @@
 import type { MobSessionSnapshot } from 'src/realtime/mob-session';
+import type { NpcSessionSnapshot } from 'src/realtime/npc-session';
 import type { PlayerSessionSnapshot } from 'src/realtime/player-session';
 import type { IEntityRef, IEntityType } from 'src/realtime/shared/types/entity-ref.type';
 
@@ -12,5 +13,5 @@ export interface EntityResolverPort {
 export interface EntityByLocationResultMap {
   player: PlayerSessionSnapshot[];
   mob: MobSessionSnapshot[];
-  npc: EntitySnapshot[];
+  npc: NpcSessionSnapshot[];
 }
