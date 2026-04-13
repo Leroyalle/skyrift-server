@@ -1,4 +1,4 @@
-import type { Repository } from 'typeorm';
+import { In, type Repository } from 'typeorm';
 
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -26,7 +26,21 @@ export class ItemInstanceRepository implements ItemInstanceRepositoryPort {
     return this.repository.findOneBy({ id });
   }
 
-  public async findByTemplateId(templateId: ItemInstance['templateId']): Promise<ItemInstance[]> {
-    return this.repository.findBy({ templateId });
+  public async findByContainer(
+    containerId: ItemInstance['containerId'],
+    containerType: ItemInstance['containerType'],
+  ): Promise<ItemInstance[]> {
+    return this.repository.findBy({ containerId, containerType });
+  }
+
+  public async findByOwner(
+    ownerId: ItemInstance['ownerId'],
+    ownerType: ItemInstance['ownerType'],
+  ): Promise<ItemInstance[]> {
+    return this.repository.findBy({ ownerId, ownerType });
+  }
+
+  public async findByIds(ids: ItemInstance['id'][]): Promise<ItemInstance[]> {
+    return this.repository.findBy({ id: In(ids) });
   }
 }
