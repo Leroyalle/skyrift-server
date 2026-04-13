@@ -1,13 +1,16 @@
 import { Namespace, Socket } from 'socket.io';
 import { ServerToClientEvents } from 'src/realtime/contracts/constants/socket-events.constant';
-import type { IPositionTile } from 'src/realtime/shared/types/position.type';
+import type {
+  SocketAdapterPort,
+  SocketUserData,
+} from 'src/realtime/gateway/application/ports/socket-adapter.port';
 
 import { Injectable } from '@nestjs/common';
 
 import { SocketConnectionRepository } from './socket-connection.repository';
 
 @Injectable()
-export class SocketAdapter {
+export class SocketAdapter implements SocketAdapterPort {
   private server: Namespace | null = null;
 
   constructor(private readonly connectionRepository: SocketConnectionRepository) {}
@@ -18,7 +21,6 @@ export class SocketAdapter {
 
   public onConnection(socket: Socket, userId: string) {
     this.connectionRepository.bind(userId, socket.id);
-    // socket.on('disconnect', () => this.connectionRepository.unbindSocket(socket.id));
   }
 
   public onDisconnect(socket: Socket) {
@@ -74,12 +76,7 @@ export class SocketAdapter {
     await socket.leave(roomId);
   }
 
-  public setClientUserData(
-    userId: string,
-    characterId: string,
-    locationId: string,
-    position: IPositionTile,
-  ) {
+  public setClientUserData({ characterId, locationId, position, userId }: SocketUserData) {
     const socketId = this.connectionRepository.getSocketId(userId);
 
     if (!socketId) return;
@@ -98,7 +95,5 @@ export class SocketAdapter {
       locationId,
       position,
     };
-
-    return socket.userData;
   }
 }

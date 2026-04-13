@@ -1,0 +1,1 @@
+export const SOCKET_ADAPTER_TOKEN = Symbol('SOCKET_ADAPTER_TOKEN');
