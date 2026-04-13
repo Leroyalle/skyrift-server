@@ -3,7 +3,7 @@ import { Skill } from 'src/modules/skill/domain/entities/skill.entity';
 import { SkillOrmEntity } from '../entities/skill-orm.entity';
 
 export class SkillMapper {
-  public static toDomain(payload: SkillOrmEntity): Skill {
+  public static toDomain = (payload: SkillOrmEntity): Skill => {
     return Skill.create({
       classId: payload.classId,
       visualEffects: payload.visualEffects,
@@ -22,9 +22,9 @@ export class SkillMapper {
       damage: payload.damage,
       cooldownMs: payload.cooldownMs,
     });
-  }
+  };
 
-  public static toPersistence(domain: Skill): SkillOrmEntity {
+  public static toPersistence = (domain: Skill): SkillOrmEntity => {
     const snapshot = domain.snapshot();
     return {
       extraParams: snapshot.extraParams,
@@ -44,5 +44,5 @@ export class SkillMapper {
       cooldownMs: snapshot.cooldownMs,
       classId: snapshot.classId,
     };
-  }
+  };
 }
