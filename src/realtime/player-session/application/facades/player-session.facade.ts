@@ -7,13 +7,13 @@ import { Inject, Injectable } from '@nestjs/common';
 import type { PlayerSessionRepositoryPort } from '../../domain/ports/in-memory-player-session-repository.port';
 import type { IReceiveDamageResult } from '../../domain/types/receive-damage-result.type';
 import type { PlayerSessionFacadePort, SkillCombatSpec } from '../ports/player-session-facade.port';
-import { PLAYER_SESSION_REPOSITORY } from '../ports/tokens';
+import { PLAYER_SESSION_REPOSITORY_TOKEN } from '../ports/tokens';
 
 @Injectable()
 export class PlayerSessionFacade implements PlayerSessionFacadePort {
   constructor(
     @Inject(CLOCK_TOKEN) private readonly clockService: ClockPort,
-    @Inject(PLAYER_SESSION_REPOSITORY)
+    @Inject(PLAYER_SESSION_REPOSITORY_TOKEN)
     private readonly playerSessionRepository: PlayerSessionRepositoryPort,
   ) {}
 

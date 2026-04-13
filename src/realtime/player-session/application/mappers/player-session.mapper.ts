@@ -1,4 +1,5 @@
 import { Appearance } from 'src/common/domain/vo/appearance.vo';
+import { type ISkillSession, SkillSession } from 'src/realtime/skill-session';
 
 import type { PlayerSession } from '../../domain/entities/player-session.entity';
 
@@ -14,7 +15,7 @@ type Props = {
   isDeleted: boolean;
   userId: string;
   classId: string;
-  skillsIds: string[];
+  skills: ISkillSession[];
   locationId: string;
   id: string;
   name: string;
@@ -49,6 +50,7 @@ export class PlayerSessionMapper {
         y: payload.y,
       },
       name: payload.name,
+      locationId: payload.locationId,
       level: payload.level,
       baseStats: {
         maxHp: payload.maxHp,
@@ -75,7 +77,9 @@ export class PlayerSessionMapper {
       },
       equipmentId: payload.equipmentId,
       bagId: payload.bagId,
-      skillsById: new Map(),
+      skillsById: new Map(
+        payload.skills.map(skill => [skill.id, SkillSession.create(skill)] as const),
+      ),
     };
   }
 }

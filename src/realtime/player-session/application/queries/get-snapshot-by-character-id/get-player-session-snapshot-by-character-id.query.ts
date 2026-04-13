@@ -3,12 +3,12 @@ import type { PlayerSessionRepositoryPort } from 'src/realtime/player-session/do
 
 import { Inject, Injectable } from '@nestjs/common';
 
-import { PLAYER_SESSION_REPOSITORY } from '../../ports/tokens';
+import { PLAYER_SESSION_REPOSITORY_TOKEN } from '../../ports/tokens';
 
 @Injectable()
 export class GetPlayerSessionSnapshotByCharacterIdQuery implements GetPlayerSessionSnapshotByCharacterIdPort {
   constructor(
-    @Inject(PLAYER_SESSION_REPOSITORY)
+    @Inject(PLAYER_SESSION_REPOSITORY_TOKEN)
     private readonly playerSessionRepository: PlayerSessionRepositoryPort,
   ) {}
 
