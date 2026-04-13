@@ -3,7 +3,9 @@ import { Column, Entity } from 'typeorm';
 
 import { Field, ObjectType } from '@nestjs/graphql';
 
-@Entity()
+import type { ItemContainerType } from '../../domain/types/item-instance.type';
+
+@Entity('item_instances')
 @ObjectType()
 export class ItemInstanceOrmEntity {
   @Column()
@@ -36,5 +38,5 @@ export class ItemInstanceOrmEntity {
 
   @Column()
   @Field()
-  containerType!: 'bag' | 'equipment';
+  containerType!: ItemContainerType;
 }
