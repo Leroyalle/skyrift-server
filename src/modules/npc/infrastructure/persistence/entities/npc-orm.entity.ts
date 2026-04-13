@@ -1,0 +1,12 @@
+import { ActorEntity } from 'src/common/entities/actor-entity.entity';
+import { Column, Entity } from 'typeorm';
+
+import { Field, ObjectType } from '@nestjs/graphql';
+
+@ObjectType()
+@Entity('npc')
+export class NpcOrmEntity extends ActorEntity {
+  @Column()
+  @Field()
+  spawnId!: string;
+}
