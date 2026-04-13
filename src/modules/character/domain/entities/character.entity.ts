@@ -1,36 +1,6 @@
 import type { Appearance } from 'src/common/domain/vo/appearance.vo';
 
-interface CharacterData {
-  experience: number;
-  experienceToNextLevel: number;
-  skillPoints: number;
-  isDeleted: boolean;
-  userId: string;
-  classId: string;
-  skillsIds: string[];
-  locationId: string;
-  id: string;
-  name: string;
-  level: number;
-  maxHp: number;
-  hp: number;
-  basePhysicalDamage: number;
-  baseMagicDamage: number;
-  physicalDefense: number;
-  magicDefense: number;
-  critMultiplier: number;
-  attackSpeed: number;
-  attackRange: number;
-  isAlive: boolean;
-  questsIds: string[];
-  x: number;
-  y: number;
-  walkSpeed: number;
-  equipmentId: string;
-  appearance: Appearance;
-  createdAt: Date;
-  bagId: string;
-}
+import type { CharacterSnapshot, ICharacter } from '../types/character.type';
 
 interface Props {
   id: string;
@@ -40,7 +10,7 @@ interface Props {
   appearance: Appearance;
 }
 export class Character {
-  private constructor(private readonly props: CharacterData) {}
+  private constructor(private readonly props: ICharacter) {}
 
   public static create(props: Props) {
     return new Character({
@@ -76,9 +46,10 @@ export class Character {
     });
   }
 
-  public snapshot(): Readonly<CharacterData> {
+  public snapshot(): Readonly<CharacterSnapshot> {
     return {
       ...this.props,
+      appearance: this.props.appearance.snapshot(),
       createdAt: new Date(this.props.createdAt),
     };
   }
