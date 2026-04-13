@@ -17,7 +17,7 @@ export class BagOrmEntity {
 
   @Column()
   @Field()
-  ownerRef!: IEntityType;
+  ownerType!: IEntityType;
 
   @Column({ default: 10 })
   @Field(() => Int, {

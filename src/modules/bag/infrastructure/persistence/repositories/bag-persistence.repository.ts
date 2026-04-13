@@ -1,5 +1,6 @@
 import type { BagRepositoryPort } from 'src/modules/bag/domain/ports/bag-repository.port';
 import type { IBag } from 'src/modules/bag/domain/types/bag.type';
+import type { IEntityRef } from 'src/realtime/shared/types/entity-ref.type';
 import type { Repository } from 'typeorm';
 
 import { Injectable } from '@nestjs/common';
@@ -27,5 +28,9 @@ export class BagPersistenceRepository implements BagRepositoryPort {
 
   public async update(bag: IBag): Promise<void> {
     await this.repository.update({ id: bag.id }, bag);
+  }
+
+  public async getByOwner(ownerRef: IEntityRef): Promise<IBag | null> {
+    return this.repository.findOneBy({ ownerId: ownerRef.id, ownerType: ownerRef.type });
   }
 }
