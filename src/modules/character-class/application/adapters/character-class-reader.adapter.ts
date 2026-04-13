@@ -1,4 +1,4 @@
-import type { CharacterClassReaderPort } from 'src/modules/character/application/ports/character-class-reader.port';
+import type { CharacterClassReaderPort } from 'src/modules/character-class/application/ports/character-class-reader.port';
 
 import { Injectable } from '@nestjs/common';
 import type { QueryBus } from '@nestjs/cqrs';
