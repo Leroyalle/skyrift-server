@@ -14,8 +14,12 @@ export class MobSession {
     return new MobSession({ ...props, aggroTable: new AggroTableDo() });
   }
 
-  public get mobId() {
+  public get id() {
     return this.props.id;
+  }
+
+  public get locationId() {
+    return this.props.locationId;
   }
 
   public get aggroTable() {
@@ -60,6 +64,7 @@ export class MobSession {
 
   public toPublicSnapshot(): Readonly<MobSessionSnapshot> {
     return {
+      locationId: this.props.locationId,
       appearance: this.props.appearance.snapshot(),
       baseStats: { ...this.props.baseStats },
       combat: { ...this.props.combat },

@@ -23,6 +23,7 @@ export interface IMobSession {
 
   // bagId: string;
   equipmentId: string;
+  locationId: string;
 
   dirty: boolean;
 }
