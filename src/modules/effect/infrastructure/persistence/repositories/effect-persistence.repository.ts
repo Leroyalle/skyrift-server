@@ -1,6 +1,6 @@
 import type { Effect } from 'src/modules/effect/domain/entities/effect.entity';
 import type { EffectPersistenceRepositoryPort } from 'src/modules/effect/domain/ports/effect-persistence-repository.port';
-import type { Repository } from 'typeorm';
+import { In, type Repository } from 'typeorm';
 
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -25,6 +25,11 @@ export class EffectPersistenceRepository implements EffectPersistenceRepositoryP
 
   public async findBySkillId(skillId: Effect['skillId']): Promise<Effect[]> {
     const result = await this.repository.find({ where: { skillId } });
+    return result.map(EffectMapper.toDomain);
+  }
+
+  public async findBySkillsIds(skillIds: Effect['skillId'][]): Promise<Effect[]> {
+    const result = await this.repository.find({ where: { skillId: In(skillIds) } });
     return result.map(EffectMapper.toDomain);
   }
 
