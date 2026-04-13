@@ -6,4 +6,5 @@ export interface OwnedSkillPersistenceRepositoryPort {
   findBySkillId(skillId: OwnedSkill['skillId']): Promise<OwnedSkill[]>;
   findById(id: OwnedSkill['id']): Promise<OwnedSkill | null>;
   update(domain: OwnedSkill): Promise<void>;
+  findByOwnerRef(ownerRef: OwnedSkill['ownerRef']): Promise<OwnedSkill[]>;
 }

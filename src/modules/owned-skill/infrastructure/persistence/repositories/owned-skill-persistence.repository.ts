@@ -24,6 +24,13 @@ export class OwnedSkillPersistenceRepository implements OwnedSkillPersistenceRep
     return result ? OwnedSkillMapper.toDomain(result) : null;
   }
 
+  public async findByOwnerRef(ownerRef: OwnedSkill['ownerRef']): Promise<OwnedSkill[]> {
+    const result = await this.repository.find({
+      where: { ownerId: ownerRef.id, ownerType: ownerRef.type },
+    });
+    return result.map(OwnedSkillMapper.toDomain);
+  }
+
   public async remove(id: OwnedSkill['id']): Promise<void> {
     await this.repository.delete(id);
   }
