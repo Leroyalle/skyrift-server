@@ -95,6 +95,10 @@ export abstract class ActorEntity extends Timestamp {
   @Field(() => Int, { description: 'Y координата позиции игрока' })
   y!: number;
 
+  @Column()
+  @Field()
+  locationId!: string;
+
   @Column({ default: 450 })
   @Field(() => Int, { defaultValue: 450 })
   walkSpeed!: number;

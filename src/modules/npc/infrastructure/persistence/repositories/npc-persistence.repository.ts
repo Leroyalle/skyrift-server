@@ -21,6 +21,10 @@ export class NpcPersistenceRepository implements NpcRepositoryPort {
     return this.repository.findOneBy({ id });
   }
 
+  public async findByLocationId(locationId: string): Promise<INpc[]> {
+    return this.repository.findBy({ locationId });
+  }
+
   public async remove(id: string): Promise<void> {
     await this.repository.delete(id);
   }
