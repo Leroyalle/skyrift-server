@@ -1,11 +1,11 @@
 import type { INpcSession, NpcSessionSnapshot, NpcStateStats } from '../types/npc-session.type';
 import type { IReceiveDamageResult } from '../types/receive-damage-result.type';
 
-export class NpcEntity {
+export class NpcSession {
   private constructor(private readonly props: INpcSession) {}
 
-  public static create(props: INpcSession): NpcEntity {
-    return new NpcEntity(props);
+  public static create(props: INpcSession): NpcSession {
+    return new NpcSession(props);
   }
 
   public get id(): string {
