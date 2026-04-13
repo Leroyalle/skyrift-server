@@ -36,15 +36,21 @@ export class BuildInitialWorldStateUseCase {
 
     const mobSessionsByLocation = mobSnapshotsByLocation.map(SessionClientMapper.mapMobSession);
 
-    const aoeZones = this.aoeZoneReader.getByLocationId(playerResult.player.locationId);
+    const npcSnapshotsByLocation = this.entityResolver.getByLocationId(
+      playerResult.player.locationId,
+      'npc',
+    );
 
-    // STOPPED: найти мобов, нпс, зоны и чего не хватает
+    const npcSessionsByLocation = npcSnapshotsByLocation.map(SessionClientMapper.mapNpcSession);
+
+    const aoeZones = this.aoeZoneReader.getByLocationId(playerResult.player.locationId);
 
     return {
       ...playerResult,
       players: playerSessionsByLocation,
       mobs: mobSessionsByLocation,
       aoeZones,
+      npcs: npcSessionsByLocation,
     };
   }
 }
