@@ -5,8 +5,8 @@ import type { CharacterRepositoryPort } from 'src/modules/character/domain/ports
 import { Inject } from '@nestjs/common';
 import { CommandHandler, type ICommandHandler } from '@nestjs/cqrs';
 
+import type { CharacterClassReaderPort } from '../../../../character-class/application/ports/character-class-reader.port';
 import { CharacterClientMapper } from '../../mappers/character-client.mapper';
-import type { CharacterClassReaderPort } from '../../ports/character-class-reader.port';
 import { CHARACTER_CLASS_READER_TOKEN, CHARACTER_REPOSITORY_TOKEN } from '../../ports/tokens';
 
 import { CreateCharacterCommand } from './create-character.command';
