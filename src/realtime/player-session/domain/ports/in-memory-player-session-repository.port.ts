@@ -5,4 +5,6 @@ export interface PlayerSessionRepositoryPort {
   findById(characterId: string): PlayerSession | null;
   findAll(): PlayerSession[];
   remove(characterId: string): void;
+  getByLocationId(locationId: string): PlayerSession[];
+  findByIds(ids: string[]): PlayerSession[];
 }

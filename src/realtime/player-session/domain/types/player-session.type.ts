@@ -27,6 +27,7 @@ export interface IPlayerSession {
   skillsById: Map<string, SkillSession>;
   bagId: string;
   equipmentId: string;
+  locationId: string;
 
   dirty: boolean;
 }

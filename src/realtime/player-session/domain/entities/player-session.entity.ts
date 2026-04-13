@@ -11,8 +11,12 @@ export class PlayerSession {
     return new PlayerSession(props);
   }
 
-  public getId(): string {
+  public get id(): string {
     return this.props.id;
+  }
+
+  public get locationId(): string {
+    return this.props.locationId;
   }
 
   public moveTo(x: number, y: number, movedAt: number): void {
@@ -95,6 +99,7 @@ export class PlayerSession {
       skillsById.set(skill.id, skill.snapshot());
     }
     return {
+      locationId: this.props.locationId,
       id: this.props.id,
       name: this.props.name,
       level: this.props.level,
