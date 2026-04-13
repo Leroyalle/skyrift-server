@@ -1,15 +1,36 @@
-import type { RuntimeEquippableItem } from './equippable-item.type';
+import type { EquipmentSlot } from 'src/common/types/equipment-slot.type';
 
-export type RuntimeContainerType = 'player-bag' | 'player-equipment' | 'chest' | 'ground';
-
-export type BaseItem = {
+export interface RuntimeItem {
   id: string;
+  templateId: string;
+
+  containerId: string;
+  containerType: ItemContainerType;
+
+  quantity: number;
+  durability: number;
+
+  physicalDamage: number | null;
+  magicDamage: number | null;
+  physicalDefense: number | null;
+  magicDefense: number | null;
+
   name: string;
+  itemType: 'weapon' | 'armor' | 'resource' | 'consumable';
+  slot: EquipmentSlot | null;
+  iconKey: string;
+  texture: TextureConfig;
+}
+
+export type RuntimeEquippableItem = RuntimeItem & {
+  itemType: 'weapon' | 'armor';
+  slot: EquipmentSlot;
 };
 
-// export type RuntimeConsumableItem = ...
-// export type RuntimeResourceItem = ...
+export type ItemContainerType = 'bag' | 'equipment';
+export type RuntimeContainerType = 'bag' | 'equipment' | 'chest' | 'ground';
 
-export type RuntimeItem = RuntimeEquippableItem;
-// | RuntimeConsumableItem
-// | RuntimeResourceItem;
+interface TextureConfig {
+  atlasKey: string;
+  frameName: string;
+}

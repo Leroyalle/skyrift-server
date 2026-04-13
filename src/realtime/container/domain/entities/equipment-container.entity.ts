@@ -1,27 +1,17 @@
-import type { EquipmentSlot, RuntimeEquippableItem } from '../types/equippable-item.type';
-import type { RuntimeContainerType } from '../types/runtime-item.type';
+import type { EquipmentSlot } from 'src/common/types/equipment-slot.type';
 
-type Props = {
-  id: string;
-  type: RuntimeContainerType;
-  ownerId: string;
-  slots: Record<EquipmentSlot, RuntimeEquippableItem | null>;
-  capacity: number | null;
-};
+import type { IEquipmentContainer } from '../types/equipment-container.type';
+import type { RuntimeEquippableItem } from '../types/runtime-item.type';
 
 export class EquipmentContainer {
-  private constructor(private readonly props: Props) {}
+  private constructor(private readonly props: IEquipmentContainer) {}
 
-  public static create(props: Props): EquipmentContainer {
+  public static create(props: IEquipmentContainer): EquipmentContainer {
     return new EquipmentContainer(props);
   }
 
   public get id(): string {
     return this.props.id;
-  }
-
-  public get ownerId(): string {
-    return this.props.ownerId;
   }
 
   public getItem(slot: EquipmentSlot): RuntimeEquippableItem | null {
@@ -33,13 +23,16 @@ export class EquipmentContainer {
   }
 
   public canEquip(item: RuntimeEquippableItem, slot: EquipmentSlot): boolean {
-    return item.slot === slot;
+    return item?.slot === slot;
   }
 
   public equip(
     item: RuntimeEquippableItem,
     slot: EquipmentSlot,
-  ): { equipped: RuntimeEquippableItem; previous: RuntimeEquippableItem | null } {
+  ): {
+    equipped: RuntimeEquippableItem;
+    previous: RuntimeEquippableItem | null;
+  } {
     if (!this.canEquip(item, slot)) {
       throw new Error('Item cannot be equipped into this slot');
     }
@@ -68,7 +61,7 @@ export class EquipmentContainer {
     return Object.values(this.props.slots).flatMap(item => (item ? [item] : []));
   }
 
-  public snapshot(): Readonly<EquipmentContainer['props']> {
+  public snapshot(): Readonly<IEquipmentContainer> {
     return {
       ...this.props,
     };

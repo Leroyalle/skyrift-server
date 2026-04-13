@@ -1,17 +1,10 @@
-import type { RuntimeContainerType, RuntimeItem } from '../types/runtime-item.type';
-
-type Props = {
-  id: string;
-  type: RuntimeContainerType;
-  ownerId: string;
-  items: RuntimeItem[];
-  capacity: number | null;
-};
+import type { IBagContainer } from '../types/bag-container.type';
+import type { RuntimeItem } from '../types/runtime-item.type';
 
 export class BagContainer {
-  private constructor(private readonly props: Props) {}
+  private constructor(private readonly props: IBagContainer) {}
 
-  public static create(props: Props) {
+  public static create(props: IBagContainer) {
     return new BagContainer(props);
   }
 
@@ -46,7 +39,7 @@ export class BagContainer {
     return this.findItem(itemId) !== null;
   }
 
-  public snapshot(): Readonly<Props> {
+  public snapshot(): Readonly<IBagContainer> {
     return this.props;
   }
 }
