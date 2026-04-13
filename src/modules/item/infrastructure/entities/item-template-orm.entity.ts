@@ -5,7 +5,7 @@ import { Field, Int, ObjectType } from '@nestjs/graphql';
 import type { ItemType } from '../../domain/constants/item-type.constant';
 import type { EquipmentSlotType } from '../../domain/constants/slot.constants';
 
-@Entity()
+@Entity('item_templates')
 @ObjectType()
 export class ItemTemplateOrmEntity {
   @PrimaryGeneratedColumn('uuid')
