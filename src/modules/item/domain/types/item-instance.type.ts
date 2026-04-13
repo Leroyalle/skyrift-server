@@ -8,8 +8,10 @@ export interface ItemInstance {
   ownerType: IEntityType;
 
   containerId: string;
-  containerType: 'bag' | 'equipment';
+  containerType: ItemContainerType;
 
   quantity: number;
   durability: number;
 }
+
+export type ItemContainerType = 'bag' | 'equipment';

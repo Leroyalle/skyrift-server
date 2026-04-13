@@ -1,9 +1,9 @@
+import type { EquipmentSlot } from 'src/common/types/equipment-slot.type';
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 import { Field, Int, ObjectType } from '@nestjs/graphql';
 
 import type { ItemType } from '../../domain/constants/item-type.constant';
-import type { EquipmentSlotType } from '../../domain/constants/slot.constants';
 
 @Entity('item_templates')
 @ObjectType()
@@ -22,7 +22,7 @@ export class ItemTemplateOrmEntity {
 
   @Column({ nullable: true })
   @Field()
-  slot!: EquipmentSlotType | null;
+  slot!: EquipmentSlot | null;
 
   @Column()
   @Field()

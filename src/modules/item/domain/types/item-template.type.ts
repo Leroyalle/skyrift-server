@@ -1,8 +1,10 @@
+import type { EquipmentSlot } from 'src/common/types/equipment-slot.type';
+
 export interface ItemTemplate {
   id: string;
   name: string;
   itemType: 'weapon' | 'armor' | 'resource' | 'consumable';
-  slot: EquipmentSlotType | null;
+  slot: EquipmentSlot | null;
   iconKey: string;
   texture: TextureConfig;
 
@@ -12,16 +14,6 @@ export interface ItemTemplate {
   physicalDefense: number | null;
   magicDefense: number | null;
 }
-export type EquipmentSlotType =
-  | 'helmet'
-  | 'breastplate'
-  | 'gloves'
-  | 'legs'
-  | 'cloak'
-  | 'mainHand'
-  | 'offHand'
-  | 'ring1'
-  | 'ring2';
 
 interface TextureConfig {
   atlasKey: string;
