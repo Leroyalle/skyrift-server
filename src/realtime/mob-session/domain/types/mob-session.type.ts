@@ -21,14 +21,24 @@ export interface IMobSession {
 
   appearance: Appearance;
 
-  // bagId: string;
   equipmentId: string;
-  locationId: string;
 
   dirty: boolean;
 }
 export type MobStateStats = {
   current: StateStats['current'] | 'return';
+};
+
+export type MobSessionProps = {
+  name: string;
+  level: number;
+  id: string;
+  baseStats: MobBaseStats;
+  position: PositionStats;
+  combat: CombatStats;
+  faction: FactionName;
+  appearance: { body: string; head: string };
+  equipmentId: string;
 };
 
 interface MobBaseStats extends BaseStats {

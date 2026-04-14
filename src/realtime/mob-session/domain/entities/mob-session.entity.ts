@@ -1,17 +1,35 @@
+import { Appearance } from 'src/common/domain/vo/appearance.vo';
 import type { IEntityRef } from 'src/realtime/shared/types/entity-ref.type';
 
 import { AggroTableDo } from '../do/aggro-table.do';
-import type { IMobSession, MobSessionSnapshot, MobStateStats } from '../types/mob-session.type';
+import type {
+  IMobSession,
+  MobSessionProps,
+  MobSessionSnapshot,
+  MobStateStats,
+} from '../types/mob-session.type';
 import type { IReceiveDamageResult } from '../types/receive-damage-result.type';
 
 interface MobSessionData extends IMobSession {
   aggroTable: AggroTableDo;
 }
 
+type CreatePayload = Omit<MobSessionProps, 'appearance'> & {
+  appearance: Appearance;
+};
+
 export class MobSession {
   private constructor(private readonly props: MobSessionData) {}
-  public static create(props: IMobSession) {
-    return new MobSession({ ...props, aggroTable: new AggroTableDo() });
+  public static create(props: CreatePayload) {
+    return new MobSession({
+      ...props,
+      aggroTable: new AggroTableDo(),
+      appearance: props.appearance,
+      dirty: false,
+      state: {
+        current: 'idle',
+      },
+    });
   }
 
   public get id() {
@@ -19,7 +37,7 @@ export class MobSession {
   }
 
   public get locationId() {
-    return this.props.locationId;
+    return this.props.position.locationId;
   }
 
   public get aggroTable() {
@@ -64,7 +82,6 @@ export class MobSession {
 
   public toPublicSnapshot(): Readonly<MobSessionSnapshot> {
     return {
-      locationId: this.props.locationId,
       appearance: this.props.appearance.snapshot(),
       baseStats: { ...this.props.baseStats },
       combat: { ...this.props.combat },
