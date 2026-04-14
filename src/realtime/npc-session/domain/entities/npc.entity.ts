@@ -1,11 +1,28 @@
-import type { INpcSession, NpcSessionSnapshot, NpcStateStats } from '../types/npc-session.type';
+import type { Appearance } from 'src/common/domain/vo/appearance.vo';
+
+import type {
+  INpcSession,
+  NpcSessionProps,
+  NpcSessionSnapshot,
+  NpcStateStats,
+} from '../types/npc-session.type';
 import type { IReceiveDamageResult } from '../types/receive-damage-result.type';
+
+type CreatePayload = Omit<NpcSessionProps, 'appearance'> & {
+  appearance: Appearance;
+};
 
 export class NpcSession {
   private constructor(private readonly props: INpcSession) {}
 
-  public static create(props: INpcSession): NpcSession {
-    return new NpcSession(props);
+  public static create(props: CreatePayload): NpcSession {
+    return new NpcSession({
+      ...props,
+      state: {
+        current: 'idle',
+      },
+      dirty: false,
+    });
   }
 
   public get id(): string {
@@ -13,7 +30,7 @@ export class NpcSession {
   }
 
   public get locationId(): string {
-    return this.props.locationId;
+    return this.props.position.locationId;
   }
 
   public toPublicSnapshot(): Readonly<NpcSessionSnapshot> {
@@ -24,7 +41,6 @@ export class NpcSession {
       spawnId: this.props.spawnId,
       position: { ...this.props.position },
       name: this.props.name,
-      locationId: this.props.locationId,
       level: this.props.level,
       id: this.props.id,
       faction: this.props.faction,

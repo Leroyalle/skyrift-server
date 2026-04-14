@@ -4,11 +4,13 @@ export interface INpc {
   name: string;
   level: number;
   maxHp: number;
+  chaseSpeed: number;
   hp: number;
   basePhysicalDamage: number;
   baseMagicDamage: number;
   physicalDefense: number;
   magicDefense: number;
+  locationId: string;
   critMultiplier: number;
   attackSpeed: number;
   attackRange: number;

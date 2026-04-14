@@ -9,4 +9,8 @@ export class NpcOrmEntity extends ActorEntity {
   @Column()
   @Field()
   spawnId!: string;
+
+  @Column()
+  @Field()
+  chaseSpeed!: number;
 }

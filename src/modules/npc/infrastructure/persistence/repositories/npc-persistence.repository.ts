@@ -32,4 +32,8 @@ export class NpcPersistenceRepository implements NpcRepositoryPort {
   public async update(npc: INpc): Promise<void> {
     await this.repository.save(npc);
   }
+
+  public findAll(): Promise<INpc[]> {
+    return this.repository.find();
+  }
 }
