@@ -2,10 +2,11 @@ import { Inject, Injectable } from '@nestjs/common';
 
 import type { LocationRepositoryPort } from '../../domain/ports/location-repository.port';
 import type { ILocation } from '../../domain/types/location.type';
+import type { BootstrapLocationsUseCasePort } from '../ports/bootstrap-locations-use-case.port';
 import { LOCATION_REPOSITORY_TOKEN } from '../ports/tokens';
 
 @Injectable()
-export class BootstrapLocationsUseCase {
+export class BootstrapLocationsUseCase implements BootstrapLocationsUseCasePort {
   constructor(
     @Inject(LOCATION_REPOSITORY_TOKEN)
     private readonly locationRepository: LocationRepositoryPort,
