@@ -19,6 +19,16 @@ export class MobPersistenceRepository implements MobPersistenceRepositoryPort {
     await this.mobRepository.save(persistence);
   }
 
+  public async findByLocationId(locationId: string): Promise<Mob[]> {
+    const mobs = await this.mobRepository.find({ where: { locationId } });
+    return mobs.map(MobMapper.toDomain);
+  }
+
+  public async findAll(): Promise<Mob[]> {
+    const mobs = await this.mobRepository.find();
+    return mobs.map(MobMapper.toDomain);
+  }
+
   public async findById(id: string): Promise<Mob | null> {
     const raw = await this.mobRepository.findOneBy({ id });
     if (!raw) {

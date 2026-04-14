@@ -5,8 +5,9 @@ import type { DeepPartial } from 'typeorm';
 import { MobOrmEntity } from '../entities/mob-orm.entity';
 
 export class MobMapper {
-  public static toDomain(raw: MobOrmEntity): Mob {
+  public static toDomain = (raw: MobOrmEntity): Mob => {
     return Mob.create({
+      locationId: raw.locationId,
       id: raw.id,
       spawnId: raw.spawnId,
       x: raw.x,
@@ -35,7 +36,7 @@ export class MobMapper {
       }),
       equipmentId: raw.equipmentId,
     });
-  }
+  };
 
   public static toPersistence(mob: Mob): DeepPartial<MobOrmEntity> {
     const snapshot = mob.snapshot();
