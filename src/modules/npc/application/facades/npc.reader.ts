@@ -18,4 +18,8 @@ export class NpcReader implements NpcReaderPort {
   public async findByLocationId(locationId: string): Promise<INpc[]> {
     return this.npcRepository.findByLocationId(locationId);
   }
+
+  public findAll(): Promise<INpc[]> {
+    return this.npcRepository.findAll();
+  }
 }
