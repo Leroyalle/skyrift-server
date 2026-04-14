@@ -8,6 +8,7 @@ export interface IMob {
   name: string;
   level: number;
   maxHp: number;
+  locationId: string;
   hp: number;
   basePhysicalDamage: number;
   baseMagicDamage: number;
