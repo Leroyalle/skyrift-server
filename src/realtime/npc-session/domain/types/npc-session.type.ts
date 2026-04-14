@@ -23,13 +23,25 @@ export interface INpcSession {
 
   spawnId: string;
   equipmentId: string;
-  locationId: string;
 
   dirty: boolean;
 }
 
 export type NpcStateStats = {
   current: StateStats['current'] | 'return';
+};
+
+export type NpcSessionProps = {
+  name: string;
+  level: number;
+  id: string;
+  spawnId: string;
+  baseStats: NpcBaseStats;
+  position: PositionStats;
+  combat: CombatStats;
+  faction: FactionName;
+  appearance: { body: string; head: string };
+  equipmentId: string;
 };
 
 interface NpcBaseStats extends BaseStats {
