@@ -5,7 +5,7 @@ import { Inject, Injectable } from '@nestjs/common';
 
 import type { InMemoryPlayerQuestRepositoryPort } from '../../domain/ports/in-memory-player-quest-repository.port';
 import type { InMemoryQuestRepositoryPort } from '../../domain/ports/in-memory-quest-repository.port';
-import { PLAYER_QUEST_REPOSITORY_TOKEN, QUEST_REPOSITORY_TOKEN } from '../../domain/ports/tokens';
+import { PLAYER_QUEST_REPOSITORY_TOKEN, QUEST_REPOSITORY_TOKEN } from '../ports/tokens';
 
 @Injectable()
 export class AcceptQuestUseCase {
@@ -38,7 +38,7 @@ export class AcceptQuestUseCase {
       completedAt: null,
     });
 
-    this.playerQuestRepository.save(playerQuest, input.characterId);
+    this.playerQuestRepository.save(playerQuest);
 
     return playerQuest.snapshot();
   }

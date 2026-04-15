@@ -4,8 +4,8 @@ import { Inject, Injectable } from '@nestjs/common';
 
 import type { InMemoryPlayerQuestRepositoryPort } from '../../domain/ports/in-memory-player-quest-repository.port';
 import type { InMemoryQuestRepositoryPort } from '../../domain/ports/in-memory-quest-repository.port';
-import { PLAYER_QUEST_REPOSITORY_TOKEN, QUEST_REPOSITORY_TOKEN } from '../../domain/ports/tokens';
 import { QuestProgressor } from '../../domain/services/quest-progressor.service';
+import { PLAYER_QUEST_REPOSITORY_TOKEN, QUEST_REPOSITORY_TOKEN } from '../ports/tokens';
 
 @Injectable()
 export class HandleEntityKilledUseCase {
@@ -26,7 +26,7 @@ export class HandleEntityKilledUseCase {
       if (quest) {
         const { type } = QuestProgressor.progressKillStep(playerQuest, quest, input.victimRef);
         if (type !== 'no-change') {
-          this.playerQuestInMemoryRepository.save(playerQuest, input.attackerRef.id);
+          this.playerQuestInMemoryRepository.save(playerQuest);
         }
         return {
           type,
