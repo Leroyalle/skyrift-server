@@ -1,27 +1,16 @@
 import { PATH_FINDING_SERVICE, type PathFindingServicePort } from 'src/realtime/path-finding';
-import type { IPositionTile } from 'src/realtime/shared/types/position.type';
 
 import { Inject, Injectable } from '@nestjs/common';
 
 import type { InMemoryMovementQueueRepositoryPort } from '../../domain/ports/in-memory-movement-queue-repository.port';
+import type {
+  PlanMovementUseCasePayload,
+  PlanMovementUseCasePort,
+} from '../ports/plan-movement-use-case.port';
 import { IN_MEMORY_MOVEMENT_QUEUE_REPOSITORY } from '../ports/tokens';
 
-type Props = {
-  entity: {
-    characterId: string;
-    position: IPositionTile;
-  };
-  location: {
-    id: string;
-    passableMap: number[][];
-    tileWidth: number;
-    tileHeight: number;
-  };
-  targetTile: IPositionTile;
-};
-
 @Injectable()
-export class PlanMovementUseCase {
+export class PlanMovementUseCase implements PlanMovementUseCasePort {
   constructor(
     @Inject(IN_MEMORY_MOVEMENT_QUEUE_REPOSITORY)
     private readonly movementQueueRepository: InMemoryMovementQueueRepositoryPort,
@@ -29,7 +18,7 @@ export class PlanMovementUseCase {
     private readonly pathFindingService: PathFindingServicePort,
   ) {}
 
-  public async execute(input: Props) {
+  public async execute(input: PlanMovementUseCasePayload) {
     const isPermissible =
       input.location.passableMap?.[input.targetTile.y]?.[input.targetTile.x] === 1;
 
@@ -48,7 +37,5 @@ export class PlanMovementUseCase {
     if (!steps) return;
 
     this.movementQueueRepository.set({ id: input.entity.characterId, type: 'player' }, { steps });
-    // this.interactionService.deletePendingInteraction(input.entity.characterId);
-    // this.movementQueueService.set({ id: input.entity.characterId, type: 'player' }, steps);
   }
 }
