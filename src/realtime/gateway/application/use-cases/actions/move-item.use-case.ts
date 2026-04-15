@@ -25,4 +25,8 @@ export class MoveItemUseCase {
   public moveFromBagToEquipment(payload: MoveFromBagToEquipmentPayload) {
     return this.moveItemUseCase.moveFromBagToEquipment(payload);
   }
+
+  public moveFromEquipmentToBag(payload: MoveFromEquipmentToBagPayload) {
+    return this.moveItemUseCase.moveFromEquipmentToBag(payload);
+  }
 }
