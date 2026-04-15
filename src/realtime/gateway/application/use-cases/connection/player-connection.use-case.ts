@@ -10,12 +10,14 @@ import {
 } from 'src/modules/item';
 import { LOCATION_READER_FACADE_TOKEN, type LocationReaderFacadePort } from 'src/modules/location';
 import { OWNED_SKILL_FACADE_TOKEN, type OwnedSkillFacadePort } from 'src/modules/owned-skill';
+import { PLAYER_QUEST_READER_TOKEN, type PlayerQuestReaderPort } from 'src/modules/quest';
 import { SKILL_FACADE_TOKEN, type SkillFacadePort } from 'src/modules/skill';
 import { CONTAINER_INITIALIZER_TOKEN, type ContainerInitializerPort } from 'src/realtime/container';
 import {
   CONNECT_PLAYER_USE_CASE_TOKEN,
   type ConnectPlayerUseCasePort,
 } from 'src/realtime/player-session';
+import { PLAYER_QUEST_FACADE_TOKEN, type PlayerQuestFacadePort } from 'src/realtime/quest';
 
 import { Inject, Injectable } from '@nestjs/common';
 
@@ -41,6 +43,8 @@ export class PlayerConnectionUseCase {
     @Inject(ITEM_TEMPLATE_FACADE_TOKEN) private readonly itemTemplateFacade: ItemTemplateFacadePort,
     @Inject(CONTAINER_INITIALIZER_TOKEN)
     private readonly containerInitializer: ContainerInitializerPort,
+    @Inject(PLAYER_QUEST_FACADE_TOKEN) private readonly playerQuestFacade: PlayerQuestFacadePort,
+    @Inject(PLAYER_QUEST_READER_TOKEN) private readonly playerQuestReader: PlayerQuestReaderPort,
   ) {}
 
   public async execute(payload: SocketUserData) {
@@ -103,6 +107,12 @@ export class PlayerConnectionUseCase {
 
     const bagContainer = this.containerInitializer.initializeBag(bagProps);
     const equipmentContainer = this.containerInitializer.initializeEquipment(equipmentProps);
+
+    const playerQuests = await this.playerQuestReader.findByCharacterId(character.id);
+
+    for (const playerQuest of playerQuests) {
+      this.playerQuestFacade.save(playerQuest);
+    }
 
     const playerSessionSnapshot = await this.connectPlayerUseCase.execute(connectionPayload);
 
