@@ -31,6 +31,10 @@ export class PlayerQuest {
     return this.props.questId;
   }
 
+  public get characterId(): string {
+    return this.props.characterId;
+  }
+
   private markAsCompleted() {
     this.props.completedAt = new Date();
   }
