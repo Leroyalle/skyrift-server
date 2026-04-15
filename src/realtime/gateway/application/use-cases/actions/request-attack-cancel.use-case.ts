@@ -2,13 +2,10 @@ import {
   REQUEST_ATTACK_CANCEL_USE_CASE_TOKEN,
   type RequestAttackCancelUseCasePort,
 } from 'src/realtime/combat';
-import type { IEntityRef } from 'src/realtime/shared/types/entity-ref.type';
 
 import { Inject, Injectable } from '@nestjs/common';
 
-interface RequestAttackCancelPayload {
-  entityRef: IEntityRef;
-}
+import type { SocketUserData } from '../../ports/socket-adapter.port';
 
 @Injectable()
 export class RequestAttackCancelUseCase {
@@ -17,7 +14,9 @@ export class RequestAttackCancelUseCase {
     private readonly requestAttackCancelUseCase: RequestAttackCancelUseCasePort,
   ) {}
 
-  public execute(payload: RequestAttackCancelPayload): void {
-    return this.requestAttackCancelUseCase.execute(payload);
+  public execute(payload: SocketUserData): void {
+    return this.requestAttackCancelUseCase.execute({
+      entityRef: { id: payload.characterId, type: 'player' },
+    });
   }
 }
