@@ -6,3 +6,4 @@ export const ACTION_RESOLVER_TOKEN = Symbol('action_resolver_token');
 export const APPLY_EFFECT_IMPACT_FACADE_TOKEN = Symbol('apply_effect_impact_facade_token');
 export const AOE_ZONE_READER_TOKEN = Symbol('AOE_ZONE_READER_TOKEN');
 export const REQUEST_ATTACK_MOVE_USE_CASE_TOKEN = Symbol('REQUEST_ATTACK_MOVE_USE_CASE_TOKEN');
+export const REQUEST_ATTACK_CANCEL_USE_CASE_TOKEN = Symbol('REQUEST_ATTACK_CANCEL_USE_CASE_TOKEN');

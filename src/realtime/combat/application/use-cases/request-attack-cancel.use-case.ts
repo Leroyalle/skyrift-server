@@ -9,6 +9,7 @@ import type { IEntityRef } from 'src/realtime/shared/types/entity-ref.type';
 import { Inject, Injectable } from '@nestjs/common';
 
 import type { ActionQueueRepositoryPort } from '../../domain/ports/action-queue-repository.port';
+import type { RequestAttackCancelUseCasePort } from '../ports/request-attack-cancel-use-case.port';
 import { ACTION_QUEUE_REPOSITORY_TOKEN } from '../ports/tokens';
 
 interface Payload {
@@ -16,7 +17,7 @@ interface Payload {
 }
 
 @Injectable()
-export class RequestAttackCancelUseCase {
+export class RequestAttackCancelUseCase implements RequestAttackCancelUseCasePort {
   constructor(
     @Inject(ACTION_QUEUE_REPOSITORY_TOKEN)
     private readonly actionQueueRepository: ActionQueueRepositoryPort,

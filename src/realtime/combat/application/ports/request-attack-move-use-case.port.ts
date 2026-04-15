@@ -1,6 +1,6 @@
 import type { IEntityRef } from 'src/realtime/shared/types/entity-ref.type';
 
-interface RequestAttackMovePayload {
+export interface RequestAttackMovePayload {
   attackerRef: IEntityRef;
   victimRef: IEntityRef;
 }
