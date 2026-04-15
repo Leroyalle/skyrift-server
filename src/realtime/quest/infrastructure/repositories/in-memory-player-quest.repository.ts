@@ -1,4 +1,5 @@
 import type { PlayerQuest } from 'src/modules/quest/domain/entities/player-quest.entity';
+import { getOrCreate } from 'src/realtime/shared/lib/helpers/get-or-create-array.lib';
 
 import type { InMemoryPlayerQuestRepositoryPort } from '../../domain/ports/in-memory-player-quest-repository.port';
 
@@ -10,14 +11,15 @@ export class InMemoryPlayerQuestRepository implements InMemoryPlayerQuestReposit
     return this.questById.get(id);
   }
 
-  public save(quest: PlayerQuest, characterId: string) {
+  public save(quest: PlayerQuest) {
     this.questById.set(quest.id, quest);
 
-    let characterQuests = this.questsByCharacterId.get(characterId);
-    if (!characterQuests) {
-      characterQuests = new Set();
-      this.questsByCharacterId.set(characterId, characterQuests);
-    }
+    const characterQuests = getOrCreate(
+      this.questsByCharacterId,
+      quest.characterId,
+      () => new Set(),
+    );
+
     characterQuests.add(quest.id);
   }
 
