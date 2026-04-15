@@ -4,6 +4,7 @@ import { Inject, Injectable } from '@nestjs/common';
 
 import type { ActionQueueRepositoryPort } from '../../domain/ports/action-queue-repository.port';
 import type { CombatActionPlannerPort } from '../ports/combat-action-planner.port';
+import type { RequestAttackMoveUseCasePort } from '../ports/request-attack-move-use-case.port';
 import { ACTION_QUEUE_REPOSITORY_TOKEN, COMBAT_ACTION_PLANNER_TOKEN } from '../ports/tokens';
 
 interface Payload {
@@ -12,7 +13,7 @@ interface Payload {
 }
 
 @Injectable()
-export class RequestAttackMoveUseCase {
+export class RequestAttackMoveUseCase implements RequestAttackMoveUseCasePort {
   constructor(
     @Inject(COMBAT_ACTION_PLANNER_TOKEN)
     private readonly combatActionPlanner: CombatActionPlannerPort,
