@@ -5,18 +5,18 @@ import { Inject, Injectable } from '@nestjs/common';
 
 import { SessionClientMapper } from '../../mappers/session-client.mapper';
 import type { SocketUserData } from '../../ports/socket-adapter.port';
-import type { PlayerConnectionUseCase } from '../connection/player-connection.use-case';
+import type { InitializePlayerSessionUseCase } from '../session/initialize-player-session.use-case';
 
 @Injectable()
 export class BuildInitialWorldStateUseCase {
   constructor(
-    private readonly playerConnectionUseCase: PlayerConnectionUseCase,
+    private readonly initializePlayerSessionUseCase: InitializePlayerSessionUseCase,
     @Inject(ENTITY_RESOLVER_TOKEN) private readonly entityResolver: EntityResolverPort,
     @Inject(AOE_ZONE_READER_TOKEN) private readonly aoeZoneReader: AoeZoneReaderPort,
   ) {}
 
   public async execute(payload: SocketUserData) {
-    const playerResult = await this.playerConnectionUseCase.execute(payload);
+    const playerResult = await this.initializePlayerSessionUseCase.execute(payload);
 
     if (!playerResult) return;
 

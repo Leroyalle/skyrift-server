@@ -27,7 +27,7 @@ import { SessionClientMapper } from '../../mappers/session-client.mapper';
 import type { SocketUserData } from '../../ports/socket-adapter.port';
 
 @Injectable()
-export class PlayerConnectionUseCase {
+export class InitializePlayerSessionUseCase {
   constructor(
     @Inject(CONNECT_PLAYER_USE_CASE_TOKEN)
     private readonly connectPlayerUseCase: ConnectPlayerUseCasePort,
