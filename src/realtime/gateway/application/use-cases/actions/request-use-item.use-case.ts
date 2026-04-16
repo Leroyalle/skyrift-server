@@ -1,0 +1,67 @@
+import {
+  BAG_CONTAINER_READER_TOKEN,
+  type BagContainerReaderPort,
+  isEquippableItem,
+  MOVE_ITEM_USE_CASE_TOKEN,
+  type MoveItemUseCasePort,
+  type RuntimeItem,
+} from 'src/realtime/container';
+import { ENTITY_RESOLVER_TOKEN, type EntityResolverPort } from 'src/realtime/entity-registry';
+
+import { Inject, Injectable } from '@nestjs/common';
+
+interface RequestUseItemPayload {
+  characterId: string;
+  itemId: string;
+}
+
+@Injectable()
+export class RequestUseItem {
+  constructor(
+    @Inject(ENTITY_RESOLVER_TOKEN) private readonly entityResolver: EntityResolverPort,
+    @Inject(BAG_CONTAINER_READER_TOKEN) private readonly bagContainerReader: BagContainerReaderPort,
+    @Inject(MOVE_ITEM_USE_CASE_TOKEN) private readonly moveItemUseCase: MoveItemUseCasePort,
+  ) {}
+
+  public execute(payload: RequestUseItemPayload) {
+    const character = this.entityResolver.getByRef({ id: payload.characterId, type: 'player' });
+
+    if (!character) throw new Error('Character not found');
+
+    const bag = this.bagContainerReader.findById(character.bagId);
+
+    if (!bag) throw new Error('Bag container not found');
+
+    const item = bag.findItem(payload.itemId);
+
+    if (!item) throw new Error('Item not found in bag container');
+
+    const action = this.resolveUse(item);
+
+    if (action === 'error') throw new Error('Item can not be used');
+
+    if (action === 'equip') {
+      if (!isEquippableItem(item)) throw new Error('Item is not equippable');
+      this.moveItemUseCase.moveFromBagToEquipment({
+        bagId: character.bagId,
+        equipmentId: character.equipmentId,
+        slot: item.slot,
+        itemId: item.id,
+      });
+      return;
+    }
+  }
+
+  public resolveUse = (item: RuntimeItem): 'equip' | 'use' | 'error' => {
+    switch (item.itemType) {
+      case 'weapon':
+      case 'armor': {
+        return 'equip';
+      }
+
+      default: {
+        return 'error';
+      }
+    }
+  };
+}
