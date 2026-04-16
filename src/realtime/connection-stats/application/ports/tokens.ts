@@ -1,0 +1,1 @@
+export const GET_PING_USE_CASE_TOKEN = Symbol('GET_PING_USE_CASE_TOKEN');
