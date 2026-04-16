@@ -15,7 +15,7 @@ import type { IEntityRef, IEntityType } from 'src/realtime/shared/types/entity-r
 
 import { Inject, Injectable } from '@nestjs/common';
 
-import type { EntityByLocationResultMap, EntityResolverPort } from '../ports/entity-resolver.port';
+import type { EntityResolverPort, ResolvedEntityMap } from '../ports/entity-resolver.port';
 
 @Injectable()
 export class EntityResolver implements EntityResolverPort {
@@ -29,13 +29,13 @@ export class EntityResolver implements EntityResolverPort {
     @Inject(NPC_SESSION_READER_TOKEN) private readonly npcSessionReader: NpcSessionReaderPort,
   ) {}
 
-  public getByRef(ref: IEntityRef) {
+  public getByRef<T extends IEntityType>(ref: IEntityRef<T>): ResolvedEntityMap[T] | null {
     if (ref.type === 'player') {
-      return this.getPlayerSessionSnapshotPort.execute(ref.id);
+      return this.getPlayerSessionSnapshotPort.execute(ref.id) as ResolvedEntityMap[T];
     } else if (ref.type === 'mob') {
-      return this.getMobSessionSnapshotPort.execute(ref.id);
+      return this.getMobSessionSnapshotPort.execute(ref.id) as ResolvedEntityMap[T];
     } else if (ref.type === 'npc') {
-      return this.npcSessionReader.findById(ref.id);
+      return this.npcSessionReader.findById(ref.id) as ResolvedEntityMap[T];
     }
 
     return null;
@@ -44,13 +44,13 @@ export class EntityResolver implements EntityResolverPort {
   public getByLocationId<T extends IEntityType>(
     locationId: string,
     type: T,
-  ): EntityByLocationResultMap[T] {
+  ): ResolvedEntityMap[T][] {
     if (type === 'player') {
-      this.playerSessionReader.getByLocationId(locationId) as EntityByLocationResultMap[T];
+      this.playerSessionReader.getByLocationId(locationId) as ResolvedEntityMap[T][];
     } else if (type === 'mob') {
-      return this.mobSessionReader.getByLocationId(locationId) as EntityByLocationResultMap[T];
+      return this.mobSessionReader.getByLocationId(locationId) as ResolvedEntityMap[T][];
     } else if (type === 'npc') {
-      return this.npcSessionReader.getByLocationId(locationId) as EntityByLocationResultMap[T];
+      return this.npcSessionReader.getByLocationId(locationId) as ResolvedEntityMap[T][];
     }
 
     return [];

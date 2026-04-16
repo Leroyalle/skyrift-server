@@ -3,15 +3,13 @@ import type { NpcSessionSnapshot } from 'src/realtime/npc-session';
 import type { PlayerSessionSnapshot } from 'src/realtime/player-session';
 import type { IEntityRef, IEntityType } from 'src/realtime/shared/types/entity-ref.type';
 
-import type { EntitySnapshot } from '../types/entity-snapshot.type';
-
 export interface EntityResolverPort {
-  getByRef(ref: IEntityRef): EntitySnapshot | null;
-  getByLocationId<T extends IEntityType>(locationId: string, type: T): EntityByLocationResultMap[T];
+  getByRef<T extends IEntityType>(ref: IEntityRef<T>): ResolvedEntityMap[T] | null;
+  getByLocationId<T extends IEntityType>(locationId: string, type: T): ResolvedEntityMap[T][];
 }
 
-export interface EntityByLocationResultMap {
-  player: PlayerSessionSnapshot[];
-  mob: MobSessionSnapshot[];
-  npc: NpcSessionSnapshot[];
+export interface ResolvedEntityMap {
+  player: PlayerSessionSnapshot;
+  mob: MobSessionSnapshot;
+  npc: NpcSessionSnapshot;
 }
