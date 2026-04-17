@@ -16,7 +16,7 @@ export class PlayerSession {
   }
 
   public get locationId(): string {
-    return this.props.locationId;
+    return this.props.position.locationId;
   }
 
   public moveTo(x: number, y: number, movedAt: number): void {
@@ -99,7 +99,6 @@ export class PlayerSession {
       skillsById.set(skill.id, skill.snapshot());
     }
     return {
-      locationId: this.props.locationId,
       id: this.props.id,
       name: this.props.name,
       level: this.props.level,
@@ -152,6 +151,14 @@ export class PlayerSession {
 
   public setMovementLockedUntil(now: number): void {
     this.props.combat.lastMoveAt = now + 200;
+    this.markDirty();
+  }
+
+  public changeLocation(x: number, y: number, locationId: string) {
+    this.ensureAlive();
+    this.props.position.x = x;
+    this.props.position.y = y;
+    this.props.position.locationId = locationId;
     this.markDirty();
   }
 }
