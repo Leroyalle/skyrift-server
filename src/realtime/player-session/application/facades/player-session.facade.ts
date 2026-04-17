@@ -94,4 +94,11 @@ export class PlayerSessionFacade implements PlayerSessionFacadePort {
     session.setMovementLockedUntil(now);
     this.playerSessionRepository.save(session);
   }
+
+  public changeLocation(id: string, x: number, y: number, locationId: string): void {
+    const session = this.playerSessionRepository.findById(id);
+    if (!session) return;
+    session.changeLocation(x, y, locationId);
+    this.playerSessionRepository.save(session);
+  }
 }

@@ -10,6 +10,7 @@ export interface PlayerSessionFacadePort {
   getSkillCombatSpec(skillId: string): SkillCombatSpec | null;
   applyDamage(characterId: string, amount: number): IReceiveDamageResult | undefined;
   cancelAttack(id: string): void;
+  changeLocation(id: string, x: number, y: number, locationId: string): void;
   setState(id: string, state: StateStats): void;
   setLastAttackAt(id: string, lastAttackAt: number): void;
   applySkillCooldown(id: string, skillId: string, now: number): number | undefined;
