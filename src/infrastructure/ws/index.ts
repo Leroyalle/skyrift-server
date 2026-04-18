@@ -1,2 +1,2 @@
 export { SOCKET_ADAPTER_TOKEN } from './application/ports/tokens';
-export { SocketAdapterPort } from './application/ports/socket-adapter.port';
+export { SocketAdapterPort, SocketUserData } from './application/ports/socket-adapter.port';

@@ -12,7 +12,7 @@ import { getTileByPosition } from 'src/game/lib/helpers/get-tile-by-position.lib
 import { isPlayerInTeleportArea } from 'src/game/lib/teleport/is-player-in-teleport-radius.lib';
 import { verifyUserDataInSocket } from 'src/game/lib/verify-user-data-in-socket.lib';
 import { PlayerStateService } from 'src/game/services/characters/player-state/player-state.service';
-import { RedisService } from 'src/infrastructure/redis/redis.service';
+import { RedisAdapter } from 'src/infrastructure/redis/infrastructure/client/redis.adapter';
 import { LocationService } from 'src/world/location/location.service';
 import { CachedLocation } from 'src/world/location/types/cashed-location.type';
 import { Teleport } from 'src/world/location/types/teleport.type';
@@ -44,7 +44,7 @@ export class InteractionService {
     private readonly locationService: LocationService,
     private readonly pathFindingService: PathFindingService,
     private readonly spatialGridService: SpatialGridService<IRuntimeCharacter>,
-    private readonly redisService: RedisService,
+    private readonly redisService: RedisAdapter,
     private readonly gameInitialDataService: GameInitialDataService,
     private readonly movementQueueService: MovementQueueService,
     private readonly actionQueueService: ActionQueueService,
