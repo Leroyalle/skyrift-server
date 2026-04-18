@@ -1,56 +1,34 @@
-import { AOE_ZONE_READER_TOKEN, type AoeZoneReaderPort } from 'src/realtime/combat';
-import { ENTITY_RESOLVER_TOKEN, type EntityResolverPort } from 'src/realtime/entity-registry';
+import type { SocketUserData } from 'src/infrastructure/ws';
+import type { GameInitialData } from 'src/realtime/contracts/types/game-initial-data.type';
+import {
+  BUILD_LOCATION_WORLD_STATE_USE_CASE_TOKEN,
+  type BuildLocationWorldStatePort,
+} from 'src/realtime/flow';
 
 import { Inject, Injectable } from '@nestjs/common';
 
-import { SessionClientMapper } from '../../mappers/session-client.mapper';
-import type { SocketUserData } from '../../ports/socket-adapter.port';
 import type { InitializePlayerSessionUseCase } from '../session/initialize-player-session.use-case';
 
 @Injectable()
 export class BuildInitialWorldStateUseCase {
   constructor(
     private readonly initializePlayerSessionUseCase: InitializePlayerSessionUseCase,
-    @Inject(ENTITY_RESOLVER_TOKEN) private readonly entityResolver: EntityResolverPort,
-    @Inject(AOE_ZONE_READER_TOKEN) private readonly aoeZoneReader: AoeZoneReaderPort,
+    @Inject(BUILD_LOCATION_WORLD_STATE_USE_CASE_TOKEN)
+    private readonly buildLocationWorldStateUseCase: BuildLocationWorldStatePort,
   ) {}
 
-  public async execute(payload: SocketUserData) {
+  public async execute(payload: SocketUserData): Promise<GameInitialData> {
     const playerResult = await this.initializePlayerSessionUseCase.execute(payload);
 
-    if (!playerResult) return;
+    if (!playerResult) throw new Error('Player initialization failed');
 
-    const playerSnapshotsByLocation = this.entityResolver.getByLocationId(
-      playerResult.player.locationId,
-      'player',
+    const locationResult = this.buildLocationWorldStateUseCase.execute(
+      playerResult.player.position.locationId,
     );
-
-    const playerSessionsByLocation = playerSnapshotsByLocation.map(
-      SessionClientMapper.mapPlayerSession,
-    );
-
-    const mobSnapshotsByLocation = this.entityResolver.getByLocationId(
-      playerResult.player.locationId,
-      'mob',
-    );
-
-    const mobSessionsByLocation = mobSnapshotsByLocation.map(SessionClientMapper.mapMobSession);
-
-    const npcSnapshotsByLocation = this.entityResolver.getByLocationId(
-      playerResult.player.locationId,
-      'npc',
-    );
-
-    const npcSessionsByLocation = npcSnapshotsByLocation.map(SessionClientMapper.mapNpcSession);
-
-    const aoeZones = this.aoeZoneReader.getByLocationId(playerResult.player.locationId);
 
     return {
       ...playerResult,
-      players: playerSessionsByLocation,
-      mobs: mobSessionsByLocation,
-      aoeZones,
-      npcs: npcSessionsByLocation,
+      ...locationResult,
     };
   }
 }

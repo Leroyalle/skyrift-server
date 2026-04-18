@@ -1,3 +1,4 @@
+import type { SocketUserData } from 'src/infrastructure/ws';
 import { BAG_FACADE_TOKEN, type BagFacadePort } from 'src/modules/bag';
 import { CHARACTER_FACADE_TOKEN, type CharacterFacadePort } from 'src/modules/character';
 import { EFFECT_FACADE_TOKEN, type EffectFacadePort } from 'src/modules/effect';
@@ -21,10 +22,9 @@ import { PLAYER_QUEST_FACADE_TOKEN, type PlayerQuestFacadePort } from 'src/realt
 
 import { Inject, Injectable } from '@nestjs/common';
 
+import { SessionClientMapper } from '../../../../shared/mappers/session-client.mapper';
 import { ContainerInitializerMapper } from '../../mappers/container-initializer.mapper';
 import { PlayerConnectionMapper } from '../../mappers/player-connection.mapper';
-import { SessionClientMapper } from '../../mappers/session-client.mapper';
-import type { SocketUserData } from '../../ports/socket-adapter.port';
 
 @Injectable()
 export class InitializePlayerSessionUseCase {
