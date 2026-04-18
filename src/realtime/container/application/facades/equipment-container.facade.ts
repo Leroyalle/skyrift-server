@@ -1,7 +1,10 @@
+import type { EquipmentSlot } from 'src/common/types/equipment-slot.type';
+
 import { Inject, Injectable } from '@nestjs/common';
 
 import type { InMemoryEquipmentContainerRepositoryPort } from '../../domain/ports/in-memory-equipment-container-repository.port';
-import type { EquipmentSlot, RuntimeEquippableItem } from '../../domain/types/equippable-item.type';
+import type { IEquipmentContainer } from '../../domain/types/equipment-container.type';
+import type { RuntimeEquippableItem } from '../../domain/types/runtime-item.type';
 import type { EquipmentContainerFacadePort } from '../ports/equipment-container-facade.port';
 import { EQUIPMENT_CONTAINER_REPOSITORY_TOKEN } from '../ports/tokens';
 
@@ -11,6 +14,16 @@ export class EquipmentContainerFacade implements EquipmentContainerFacadePort {
     @Inject(EQUIPMENT_CONTAINER_REPOSITORY_TOKEN)
     private readonly repository: InMemoryEquipmentContainerRepositoryPort,
   ) {}
+
+  public getContainerById(id: string): Promise<IEquipmentContainer> {
+    const equipment = this.repository.findById(id);
+
+    if (!equipment) {
+      throw new Error('Item not found in container');
+    }
+
+    return Promise.resolve(equipment.snapshot());
+  }
 
   public getEquipmentSlotById(
     id: string,

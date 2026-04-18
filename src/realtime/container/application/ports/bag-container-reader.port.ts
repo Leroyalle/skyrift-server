@@ -1,5 +1,5 @@
-import type { BagContainer } from '../../domain/entities/bag-container.entity';
+import type { IBagContainer } from '../../domain/types/bag-container.type';
 
 export interface BagContainerReaderPort {
-  findById(bagId: string): BagContainer | null;
+  findById(bagId: string): IBagContainer | null;
 }
