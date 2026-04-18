@@ -27,7 +27,6 @@ export interface IPlayerSession {
   skillsById: Map<string, SkillSession>;
   bagId: string;
   equipmentId: string;
-  locationId: string;
 
   dirty: boolean;
 }
@@ -39,3 +38,7 @@ export type PlayerSessionSnapshot = Readonly<
     skillsById: Map<string, ISkillSession>;
   }
 >;
+
+export type ClientPlayerSession = Omit<PlayerSessionSnapshot, 'skillsById'> & {
+  skills: ISkillSession[];
+};
