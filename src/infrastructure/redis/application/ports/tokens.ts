@@ -1,0 +1,2 @@
+export const REDIS_CLIENT_TOKEN = Symbol('REDIS_CLIENT_TOKEN');
+export const REDIS_ADAPTER_TOKEN = Symbol('REDIS_ADAPTER_TOKEN');

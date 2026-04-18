@@ -2,19 +2,22 @@ import Redis from 'ioredis';
 
 import { Inject, Injectable } from '@nestjs/common';
 
+import type { RedisAdapterPort } from '../../application/ports/redis-adapter.port';
+import { REDIS_CLIENT_TOKEN } from '../../application/ports/tokens';
+
 @Injectable()
-export class RedisService {
-  constructor(@Inject('REDIS_CLIENT') private readonly client: Redis) {
+export class RedisAdapter implements RedisAdapterPort {
+  constructor(@Inject(REDIS_CLIENT_TOKEN) private readonly client: Redis) {
     this.client.on('connect', () => console.log('Connected to Redis'));
     this.client.on('error', err => console.error('Redis error:', err));
   }
 
-  public async get<T = any>(key: string): Promise<T | null> {
+  public async get<T = unknown>(key: string): Promise<T | null> {
     const data = await this.client.get(key);
     return data ? (JSON.parse(data) as T) : null;
   }
 
-  public async set(key: string, value: any): Promise<void> {
+  public async set(key: string, value: unknown): Promise<void> {
     await this.client.set(key, JSON.stringify(value));
   }
 
@@ -22,7 +25,7 @@ export class RedisService {
     await this.client.del(key);
   }
 
-  public async mget<T = any[]>(keys: string[]): Promise<(T | null)[]> {
+  public async mget<T = unknown[]>(keys: string[]): Promise<(T | null)[]> {
     const data = await this.client.mget(keys);
     console.log('[redis service mget]', data);
     if (data) {
@@ -36,7 +39,7 @@ export class RedisService {
     await this.client.sadd(key, value);
   }
 
-  public async hset(key: string, value: any): Promise<void> {
+  public async hset(key: string, value: Record<string, unknown>): Promise<void> {
     await this.client.hset(key, value);
   }
 
