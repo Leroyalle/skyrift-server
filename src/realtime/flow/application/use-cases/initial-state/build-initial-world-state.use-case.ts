@@ -1,12 +1,10 @@
 import type { SocketUserData } from 'src/infrastructure/ws';
 import type { GameInitialData } from 'src/realtime/contracts/types/game-initial-data.type';
-import {
-  BUILD_LOCATION_WORLD_STATE_USE_CASE_TOKEN,
-  type BuildLocationWorldStatePort,
-} from 'src/realtime/flow';
 
 import { Inject, Injectable } from '@nestjs/common';
 
+import type { BuildLocationWorldStatePort } from '../../ports/build-location-world-state-use-case.port';
+import { BUILD_LOCATION_WORLD_STATE_USE_CASE_TOKEN } from '../../ports/tokens';
 import type { InitializePlayerSessionUseCase } from '../session/initialize-player-session.use-case';
 
 @Injectable()

@@ -10,8 +10,8 @@ import { SessionClientMapper } from 'src/realtime/shared/mappers/session-client.
 
 import { Inject, Injectable } from '@nestjs/common';
 
-import type { BuildLocationWorldStatePort } from '../ports/build-location-world-state-use-case.port';
-import { BUILD_LOCATION_WORLD_STATE_USE_CASE_TOKEN } from '../ports/tokens';
+import type { BuildLocationWorldStatePort } from '../../ports/build-location-world-state-use-case.port';
+import { BUILD_LOCATION_WORLD_STATE_USE_CASE_TOKEN } from '../../ports/tokens';
 
 @Injectable()
 export class BuildPlayerLocationStateUseCase {

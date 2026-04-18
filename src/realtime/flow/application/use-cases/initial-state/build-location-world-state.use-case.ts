@@ -5,7 +5,7 @@ import { SessionClientMapper } from 'src/realtime/shared/mappers/session-client.
 
 import { Inject, Injectable } from '@nestjs/common';
 
-import type { BuildLocationWorldStatePort } from '../ports/build-location-world-state-use-case.port';
+import type { BuildLocationWorldStatePort } from '../../ports/build-location-world-state-use-case.port';
 
 @Injectable()
 export class BuildLocationWorldStateUseCase implements BuildLocationWorldStatePort {

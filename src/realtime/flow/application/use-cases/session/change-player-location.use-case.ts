@@ -7,10 +7,9 @@ import { Inject, Injectable } from '@nestjs/common';
 import type {
   ChangePlayerLocationInput,
   ChangePlayerLocationPort,
-} from '../ports/change-player-location-use-case.port';
-import type { PlayerLocationTransitionService } from '../services/player-location-transition.service';
-
-import type { BuildPlayerLocationStateUseCase } from './build-player-location-state.use-case';
+} from '../../ports/change-player-location-use-case.port';
+import type { PlayerLocationTransitionService } from '../../services/player-location-transition.service';
+import type { BuildPlayerLocationStateUseCase } from '../initial-state/build-player-location-state.use-case';
 
 @Injectable()
 export class ChangePlayerLocationUseCase implements ChangePlayerLocationPort {
