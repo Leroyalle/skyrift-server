@@ -12,6 +12,8 @@ export class BagReaderUseCase implements BagContainerReaderPort {
   ) {}
 
   public findById(bagId: string) {
-    return this.bagContainerRepository.findById(bagId);
+    const bag = this.bagContainerRepository.findById(bagId);
+    if (!bag) return null;
+    return bag.snapshot();
   }
 }
