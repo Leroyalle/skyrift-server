@@ -1,3 +1,5 @@
+import type { Teleport } from './teleport.type';
+
 export interface ILocation {
   id: string;
   passableMap: number[][];
@@ -9,4 +11,5 @@ export interface ILocation {
     height: number;
   };
   filename: string;
+  teleportsMap: Record<string, Teleport>;
 }
