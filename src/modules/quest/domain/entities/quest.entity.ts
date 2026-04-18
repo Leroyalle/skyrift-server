@@ -11,6 +11,10 @@ export class Quest {
     return this.props.id;
   }
 
+  public get giverId(): string {
+    return this.props.giverNpcId;
+  }
+
   public snapshot(): Readonly<IQuest> {
     return {
       ...this.props,
