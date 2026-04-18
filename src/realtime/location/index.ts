@@ -5,3 +5,4 @@ export {
 } from './application/ports/tokens';
 export { BootstrapLocationsUseCasePort } from './application/ports/bootstrap-locations-use-case.port';
 export { ILocation } from './domain/types/location.type';
+export { Teleport } from './domain/types/teleport.type';
