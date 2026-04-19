@@ -1,18 +1,17 @@
 import { Socket } from 'socket.io';
-import { SocketService } from 'src/game/services/socket/socket.service';
+import { SOCKET_ADAPTER_TOKEN, type SocketAdapterPort } from 'src/infrastructure/ws';
 
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import { CanActivate, ExecutionContext, Inject, Injectable } from '@nestjs/common';
 
 @Injectable()
 export class WsAuthGuard implements CanActivate {
-  constructor(private readonly socketService: SocketService) {}
+  constructor(@Inject(SOCKET_ADAPTER_TOKEN) private readonly socketAdapter: SocketAdapterPort) {}
 
   public canActivate(context: ExecutionContext): boolean {
     const client = context.switchToWs().getClient<Socket>();
 
-    if (!this.socketService.verifyUserDataInSocket(client)) {
-      this.socketService.notifyDisconnection(client);
-      this.socketService.onDisconnect(client);
+    if (!client.userData) {
+      this.socketAdapter.onDisconnect(client);
       return false;
     }
 
