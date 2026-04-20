@@ -8,7 +8,7 @@ import {
   type EntityResolverPort,
   type EntitySnapshot,
 } from 'src/realtime/entity-registry';
-import { LOCATION_READER_FACADE_TOKEN, type LocationReaderPort } from 'src/realtime/location';
+import { LOCATION_READER_TOKEN, type LocationReaderPort } from 'src/realtime/location';
 import { MOVEMENT_QUEUE_FACADE_TOKEN, type MovementQueueFacadePort } from 'src/realtime/movement';
 import { PATH_FINDING_SERVICE, type PathFindingServicePort } from 'src/realtime/path-finding';
 import { getTileByPosition } from 'src/realtime/shared/lib/helpers/get-tile-by-position.lib';
@@ -40,7 +40,7 @@ export class CombatActionPlannerService implements CombatActionPlannerPort {
     private readonly movementQueueFacade: MovementQueueFacadePort,
     @Inject(ENTITY_ACTION_FACADE_TOKEN) private readonly entityActionFacade: EntityActionFacadePort,
     private readonly pendingActionScheduler: PendingActionSchedulerService,
-    @Inject(LOCATION_READER_FACADE_TOKEN) private readonly locationReaderFacade: LocationReaderPort,
+    @Inject(LOCATION_READER_TOKEN) private readonly locationReaderFacade: LocationReaderPort,
   ) {}
 
   public async execute(payload: CombatActionPlannerPayload) {
@@ -128,8 +128,7 @@ export class CombatActionPlannerService implements CombatActionPlannerPort {
     const inRange = steps.length <= range;
     if (!inRange) {
       this.movementQueueFacade.set(attacker, { steps });
-      // TODO: менять стейт через фасад
-      // attacker.state = 'pursue';
+      this.entityActionFacade.setState({ entityRef: attacker, state: { current: 'pursue' } });
       pendingAction.state = 'move-to-target';
     } else {
       pendingAction.state = 'attack';
