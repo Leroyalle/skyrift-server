@@ -132,6 +132,7 @@ export class CombatActionPlannerService implements CombatActionPlannerPort {
       pendingAction.state = 'move-to-target';
     } else {
       pendingAction.state = 'attack';
+      this.entityActionFacade.setState({ entityRef: attacker, state: { current: 'attacking' } });
     }
   }
 
