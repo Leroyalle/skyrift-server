@@ -71,7 +71,7 @@ export class PlayerSessionMapper {
       combat: {
         hp: payload.hp,
         isAlive: payload.isAlive,
-        currentTargetId: null,
+        currentTargetRef: null,
         lastAttackAt: 0,
         lastMoveAt: 0,
       },

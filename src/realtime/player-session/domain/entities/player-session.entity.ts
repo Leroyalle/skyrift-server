@@ -41,7 +41,7 @@ export class PlayerSession {
 
     if (this.props.combat.hp === 0) {
       this.props.combat.isAlive = false;
-      this.props.combat.currentTargetId = null;
+      this.props.combat.currentTargetRef = null;
     }
 
     this.markDirty();
@@ -83,7 +83,7 @@ export class PlayerSession {
   }
 
   public cancelAttack(): void {
-    this.props.combat.currentTargetId = null;
+    this.props.combat.currentTargetRef = null;
     this.props.state.current = 'idle';
   }
 
