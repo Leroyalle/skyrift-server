@@ -1,3 +1,5 @@
+import type { IEntityRef } from 'src/realtime/shared/types/entity-ref.type';
+
 export interface BaseStats {
   maxHp: number;
   basePhysicalDamage: number;
@@ -12,9 +14,10 @@ export interface BaseStats {
 export interface CombatStats {
   hp: number;
   isAlive: boolean;
-  currentTargetId: string | null;
+  currentTargetRef: IEntityRef | null;
   lastAttackAt: number;
   lastMoveAt: number;
+  lastHpRegenerationTime: number;
 }
 
 export interface PositionStats {
