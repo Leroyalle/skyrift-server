@@ -1,11 +1,9 @@
 import { Namespace, Socket } from 'socket.io';
 import { ServerToClientEvents } from 'src/realtime/contracts/constants/socket-events.constant';
-import type {
-  SocketAdapterPort,
-  SocketUserData,
-} from 'src/realtime/gateway/application/ports/socket-adapter.port';
 
 import { Injectable } from '@nestjs/common';
+
+import type { SocketAdapterPort, SocketUserData } from '../application/ports/socket-adapter.port';
 
 import { SocketConnectionRepository } from './socket-connection.repository';
 
