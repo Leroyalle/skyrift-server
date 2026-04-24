@@ -15,6 +15,7 @@ export interface PlayerSessionFacadePort {
   setLastAttackAt(id: string, lastAttackAt: number): void;
   applySkillCooldown(id: string, skillId: string, now: number): number | undefined;
   setMovementLockedUntil(id: string, now: number): void;
+  restoreHp(id: string, amount: number, now: number): number | undefined;
 }
 export interface SkillCombatSpec {
   skillId: string;

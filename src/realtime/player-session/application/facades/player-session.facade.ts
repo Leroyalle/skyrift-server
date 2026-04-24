@@ -24,6 +24,14 @@ export class PlayerSessionFacade implements PlayerSessionFacadePort {
     this.playerSessionRepository.save(session);
   }
 
+  public restoreHp(id: string, amount: number, now: number): number | undefined {
+    const session = this.playerSessionRepository.findById(id);
+    if (!session) return;
+    session.restoreHp(amount, now);
+    this.playerSessionRepository.save(session);
+    return session.hp;
+  }
+
   public applyDamage(characterId: string, amount: number): IReceiveDamageResult | undefined {
     const session = this.playerSessionRepository.findById(characterId);
 
