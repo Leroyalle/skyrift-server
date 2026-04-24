@@ -1,0 +1,39 @@
+import { Column, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+
+import { Field, ID, ObjectType } from '@nestjs/graphql';
+
+@ObjectType()
+@Entity()
+export class UserOrmEntity {
+  @PrimaryGeneratedColumn('uuid')
+  @Field(() => ID, { description: 'ID пользователя' })
+  id!: string;
+
+  @Column({ default: 'User' })
+  @Field({ description: 'Имя пользователя' })
+  name!: string;
+
+  @Column({ unique: true })
+  @Field({ description: 'Email пользователя' })
+  email!: string;
+
+  @Column()
+  @Field({ description: 'Password пользователя' })
+  password!: string;
+
+  // @OneToMany(() => Character, person => person.id)
+  // @Field(() => [Character], { description: 'Персонажи аккаунта' })
+  // persons: Character[];
+
+  @Column({ type: 'text', nullable: true })
+  @Field(() => String, { description: 'Refresh token', nullable: true })
+  refreshToken!: string | null;
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  @Field({ description: 'Дата создания пользователя' })
+  createdAt!: Date;
+
+  @UpdateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  @Field({ description: 'Дата последнего обновления пользователя' })
+  updatedAt!: Date;
+}
