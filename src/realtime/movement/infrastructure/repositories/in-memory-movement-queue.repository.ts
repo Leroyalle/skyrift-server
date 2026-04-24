@@ -1,4 +1,4 @@
-import { generateEntityKey } from 'src/game/lib/entity/generate-entity-key.lib';
+import { generateEntityKey } from 'src/realtime/shared/lib/helpers/generate-entity-key.helper';
 import type { IEntityKey, IEntityRef } from 'src/realtime/shared/types/entity-ref.type';
 
 import { Injectable } from '@nestjs/common';

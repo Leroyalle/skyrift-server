@@ -1,3 +1,6 @@
+import { SOCKET_ADAPTER_TOKEN, type SocketAdapterPort } from 'src/infrastructure/ws';
+import { RedisKeys } from 'src/realtime/contracts/constants/redis-keys.constant';
+import { ServerToClientEvents } from 'src/realtime/contracts/constants/socket-events.constant';
 import { isMob } from 'src/realtime/contracts/lib/guards/is-mob.lib';
 import {
   ENTITY_ACTION_FACADE_TOKEN,
@@ -5,7 +8,6 @@ import {
   type EntityActionFacadePort,
   type EntityResolverPort,
 } from 'src/realtime/entity-registry';
-import { PATH_FINDING_SERVICE, type PathFindingServicePort } from 'src/realtime/path-finding';
 import { CLOCK_TOKEN, type ClockPort } from 'src/realtime/shared/infrastructure/time';
 import { decodeEntityKey } from 'src/realtime/shared/lib/helpers/decode-entity-key.helper';
 import { getDirection } from 'src/realtime/shared/lib/helpers/get-direction.lib';
@@ -17,19 +19,19 @@ import { Inject, Injectable } from '@nestjs/common';
 
 import type { InMemoryMovementQueueRepositoryPort } from '../../domain/ports/in-memory-movement-queue-repository.port';
 import type { BatchUpdateMovement } from '../../domain/types/batch-update-movement.type';
+import type { ProcessMovementTickPort } from '../ports/process-movement-tick.port';
 import { IN_MEMORY_MOVEMENT_QUEUE_REPOSITORY } from '../ports/tokens';
 
 @Injectable()
-export class ProcessMovementTickUseCase {
+export class ProcessMovementTickUseCase implements ProcessMovementTickPort {
   constructor(
     @Inject(IN_MEMORY_MOVEMENT_QUEUE_REPOSITORY)
     private readonly movementQueueRepository: InMemoryMovementQueueRepositoryPort,
-    @Inject(PATH_FINDING_SERVICE)
-    private readonly pathFindingService: PathFindingServicePort,
     @Inject(ENTITY_RESOLVER_TOKEN) private readonly entityResolver: EntityResolverPort,
     @Inject(ENTITY_ACTION_FACADE_TOKEN) private readonly entityActionFacade: EntityActionFacadePort,
     @Inject(SPATIAL_GRID_INDEX_TOKEN) private readonly spatialGridIndex: SpatialGridIndexPort,
     @Inject(CLOCK_TOKEN) private readonly clockService: ClockPort,
+    @Inject(SOCKET_ADAPTER_TOKEN) private readonly socketAdapter: SocketAdapterPort,
   ) {}
 
   public execute() {
@@ -46,9 +48,10 @@ export class ProcessMovementTickUseCase {
       let speed: number | undefined = entity.baseStats.walkSpeed;
 
       if (isMob(entity)) {
-        speed = entity.combat.isAttacking
-          ? entity.baseStats.chaseSpeed
-          : entity.baseStats.walkSpeed;
+        // speed = entity.combat.isAttacking
+        //   ? entity.baseStats.chaseSpeed
+        //   : entity.baseStats.walkSpeed;
+        speed = entity.baseStats.chaseSpeed;
       }
 
       const now = this.clockService.nowMs();
@@ -106,15 +109,13 @@ export class ProcessMovementTickUseCase {
       });
     });
 
-    return updatesByLocation;
-
-    // for (const [locationId, updates] of updatesByLocation.entries()) {
-    //   this.socketService.sendTo(
-    //     RedisKeys.Location + locationId,
-    //     ServerToClientEvents.MovementBatch,
-    //     updates,
-    //   );
-    // }
+    for (const [locationId, updates] of updatesByLocation.entries()) {
+      this.socketAdapter.sendTo(
+        RedisKeys.Location + locationId,
+        ServerToClientEvents.MovementBatch,
+        updates,
+      );
+    }
   }
 
   private getOrCreateBatchUpdate(
