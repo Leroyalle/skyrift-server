@@ -1,29 +1,20 @@
-import { Appearance } from 'src/common/domain/vo/appearance.vo';
 import type { IEntityRef } from 'src/realtime/shared/types/entity-ref.type';
 
 import { AggroTableDo } from '../do/aggro-table.do';
 import type {
   IMobSession,
-  MobSessionProps,
+  MobSessionPayload,
   MobSessionSnapshot,
   MobStateStats,
 } from '../types/mob-session.type';
 import type { IReceiveDamageResult } from '../types/receive-damage-result.type';
 
-interface MobSessionData extends IMobSession {
-  aggroTable: AggroTableDo;
-}
-
-type CreatePayload = Omit<MobSessionProps, 'appearance'> & {
-  appearance: Appearance;
-};
-
 export class MobSession {
-  private constructor(private readonly props: MobSessionData) {}
-  public static create(props: CreatePayload) {
+  private constructor(private readonly props: IMobSession) {}
+  public static create(props: MobSessionPayload): MobSession {
     return new MobSession({
       ...props,
-      aggroTable: new AggroTableDo(),
+      combat: { ...props.combat, aggro: new AggroTableDo() },
       appearance: props.appearance,
       dirty: false,
       state: {
@@ -36,12 +27,54 @@ export class MobSession {
     return this.props.id;
   }
 
+  public get hp() {
+    return this.props.combat.hp;
+  }
+
   public get locationId() {
     return this.props.position.locationId;
   }
 
   public get aggroTable() {
-    return this.props.aggroTable;
+    return this.props.combat.aggro;
+  }
+
+  public get respawnIn() {
+    return this.props.lifecycle.respawnIn;
+  }
+
+  public get spawn() {
+    return { ...this.props.spawn };
+  }
+
+  public get state() {
+    return this.props.state.current;
+  }
+
+  public get nextThinkAt() {
+    return this.props.lifecycle.nextThinkAt;
+  }
+
+  public get position() {
+    return { ...this.props.position };
+  }
+
+  public scheduleNextThinkAt(now: number, delay: number): void {
+    this.props.lifecycle.nextThinkAt = now + delay;
+  }
+
+  public respawn() {
+    this.props.lifecycle.respawnIn = 0;
+    this.props.combat.isAlive = true;
+    this.props.state.current = 'idle';
+    this.props.combat.currentTargetRef = null;
+    this.props.combat.hp = this.props.baseStats.maxHp;
+  }
+
+  public restoreHp(amount: number, now: number): void {
+    this.ensureAlive();
+    this.props.combat.hp = Math.min(this.props.combat.hp + amount, this.props.baseStats.maxHp);
+    this.props.combat.lastHpRegenerationTime = now;
   }
 
   public updateAggro(entityRef: IEntityRef, amount: number): void {
@@ -69,19 +102,21 @@ export class MobSession {
 
     if (this.props.combat.hp === 0) {
       this.props.combat.isAlive = false;
-      this.props.combat.currentTargetId = null;
+      this.props.combat.currentTargetRef = null;
     }
 
     return { hp, isAlive: this.props.combat.isAlive };
   }
 
   public cancelAttack(): void {
-    this.props.combat.currentTargetId = null;
+    this.props.combat.currentTargetRef = null;
     this.props.state.current = 'idle';
   }
 
   public toPublicSnapshot(): Readonly<MobSessionSnapshot> {
     return {
+      spawn: { ...this.props.spawn },
+      lifecycle: { ...this.props.lifecycle },
       appearance: this.props.appearance.snapshot(),
       baseStats: { ...this.props.baseStats },
       combat: { ...this.props.combat },
