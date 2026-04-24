@@ -22,7 +22,7 @@ import type {
 } from '../../ports/combat-action-planner.port';
 import { ACTION_QUEUE_REPOSITORY_TOKEN } from '../../ports/tokens';
 
-import type { PendingActionSchedulerService } from './pending-action-scheduler.service';
+import { PendingActionSchedulerService } from './pending-action-scheduler.service';
 
 type ResolveTargetResult = {
   tile: IPositionTile;
@@ -131,8 +131,9 @@ export class CombatActionPlannerService implements CombatActionPlannerPort {
       this.entityActionFacade.setState({ entityRef: attacker, state: { current: 'pursue' } });
       pendingAction.state = 'move-to-target';
     } else {
-      pendingAction.state = 'attack';
+      this.movementQueueFacade.remove(attacker);
       this.entityActionFacade.setState({ entityRef: attacker, state: { current: 'attacking' } });
+      pendingAction.state = 'attack';
     }
   }
 

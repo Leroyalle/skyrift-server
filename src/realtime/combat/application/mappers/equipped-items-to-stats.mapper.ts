@@ -7,10 +7,10 @@ type EquippedItems = Awaited<ReturnType<EquipmentContainerFacadePort['getEquippe
 export class EquippedItemsToStatsMapper {
   public static map(equippedItems: EquippedItems): EquipmentItemStats[] {
     return equippedItems.map<EquipmentItemStats>(item => ({
-      magicDamage: item.stats.magicDamage,
-      physicalDamage: item.stats.physicalDamage,
-      magicDefense: item.stats.magicDefense,
-      physicalDefense: item.stats.physicalDefense,
+      magicDamage: item.magicDamage ?? undefined,
+      physicalDamage: item.physicalDamage ?? undefined,
+      magicDefense: item.magicDefense ?? undefined,
+      physicalDefense: item.physicalDefense ?? undefined,
     }));
   }
 }
