@@ -16,7 +16,8 @@ export class BootstrapNpcsMapper {
       faction: 'CrimsonCoven',
       equipmentId: npc.equipmentId,
       combat: {
-        currentTargetId: null,
+        lastHpRegenerationTime: 0,
+        currentTargetRef: null,
         lastMoveAt: 0,
         lastAttackAt: 0,
         isAlive: npc.isAlive,

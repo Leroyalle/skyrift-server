@@ -1,9 +1,22 @@
 import type { IMob } from 'src/modules/mob';
-import type { MobSessionProps } from 'src/realtime/mob-session';
+import type { IEntitySpawn } from 'src/modules/spawn';
+import type { SpawnMobSessionPayload } from 'src/realtime/mob-session';
 
 export class BootstrapMobsMapper {
-  public static toProps = (mob: IMob): MobSessionProps => {
+  public static toProps = (mob: IMob, spawn: IEntitySpawn): SpawnMobSessionPayload => {
     return {
+      spawn: {
+        position: {
+          x: spawn.spawnX,
+          y: spawn.spawnY,
+          locationId: spawn.locationId,
+        },
+        spawnId: mob.spawnId,
+      },
+      lifecycle: {
+        respawnIn: mob.respawnTime,
+        nextThinkAt: 0,
+      },
       position: {
         x: mob.x,
         y: mob.y,
@@ -15,7 +28,8 @@ export class BootstrapMobsMapper {
       faction: 'CrimsonCoven',
       equipmentId: mob.equipmentId,
       combat: {
-        currentTargetId: null,
+        lastHpRegenerationTime: 0,
+        currentTargetRef: null,
         lastMoveAt: 0,
         lastAttackAt: 0,
         isAlive: mob.isAlive,
@@ -23,6 +37,7 @@ export class BootstrapMobsMapper {
       },
       appearance: mob.appearance,
       baseStats: {
+        triggerRange: mob.triggerRange,
         maxHp: mob.maxHp,
         walkSpeed: mob.walkSpeed,
         chaseSpeed: mob.chaseSpeed,
