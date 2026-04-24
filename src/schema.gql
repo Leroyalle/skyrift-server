@@ -2,231 +2,70 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
-interface BaseItem {
-  id: ID!
-  name: String!
-  itemType: ItemTypeEnum!
-  iconKey: String!
-  bag: Bag
-}
-
-"""Типы предметов"""
-enum ItemTypeEnum {
-  WEAPON
-  ARMOR
-  RESOURCE
-}
-
-type Faction {
-  """ID фракции"""
+type UserOrmEntity {
+  """ID пользователя"""
   id: ID!
 
-  """Название фракции"""
+  """Имя пользователя"""
   name: String!
 
-  """Описание фракции"""
-  description: String!
+  """Email пользователя"""
+  email: String!
 
-  """Логотип фракции"""
-  logo: String!
+  """Password пользователя"""
+  password: String!
 
-  """Классы фракции"""
-  characterClasses: [CharacterClass!]!
+  """Refresh token"""
+  refreshToken: String
+
+  """Дата создания пользователя"""
+  createdAt: Timestamp!
+
+  """Дата последнего обновления пользователя"""
+  updatedAt: Timestamp!
 }
 
-type CharacterSkill {
-  id: String!
+"""
+`Date` type as integer. Type represents date and time as number of milliseconds from start of UNIX epoch.
+"""
+scalar Timestamp
 
-  """Навык"""
-  skill: Skill!
-
-  """Время последнего использования"""
-  lastUsedAt: Float
-
-  """Время окончания кулдауна"""
-  cooldownEnd: Float
-
-  """Уровень навыка"""
-  level: Int!
-}
-
-type Effect {
+type UserModel {
+  """ID пользователя"""
   id: ID!
-  type: EffectType!
-  damagePerSecond: Int
-  durationMs: Int!
-  amount: Int
-  slowPercent: Int
-  skill: Skill!
-}
 
-"""Тип эффекта"""
-enum EffectType {
-  InstantDamage
-  DamageOverTime
-  Heal
-  Shield
-  SpeedBoost
-  Slow
-  Stun
-}
-
-type Skill {
-  """ID навыка"""
-  id: String!
-
-  """Класс, к которому относится навык"""
-  characterClass: CharacterClass!
-
-  """Название навыка"""
+  """Имя пользователя"""
   name: String!
 
-  """Ключ иконки навыка"""
-  icon: String!
+  """Email пользователя"""
+  email: String!
 
-  """Кулдаун в миллисекундах"""
-  cooldownMs: Int!
+  """Password пользователя"""
+  password: String!
 
-  """Стоимость маны"""
-  manaCost: Int!
+  """Дата создания пользователя"""
+  createdAt: Timestamp!
 
-  """Наносимый урон"""
-  damage: Int!
-
-  """Восстанавливаемое здоровье"""
-  heal: Int!
-
-  """Дистанция"""
-  range: Int!
-
-  """Радиус действия в тайлах для AoE-скиллов (квадратная зона)"""
-  areaRadius: Float
-
-  """Урон в секунду для AoE-скиллов"""
-  damagePerSecond: Float
-
-  """Длительность действия AoE-скилла в миллисекундах"""
-  duration: Float
-  characterSkills: [CharacterSkill!]!
-
-  """Тип скилла"""
-  type: SkillType!
-
-  """Ключ тайлсета"""
-  tilesetKey: String!
-  effects: [Effect!]!
-
-  """Визуальные эффекты"""
-  visualEffects: String
-
-  """Дополнительные параметры в JSON"""
-  extraParams: String
+  """Дата последнего обновления пользователя"""
+  updatedAt: Timestamp!
 }
 
-"""Тип скилла. Например: aoe, target, buff"""
-enum SkillType {
-  Target
-  AoE
-  Self
-  Passive
-  Buff
-  Debuff
+type AuthModel {
+  """Access token"""
+  accessToken: String!
+
+  """RefreshToken token"""
+  refreshToken: String!
 }
 
-type CharacterClass {
-  """ID класса"""
-  id: ID!
-
-  """Название класса"""
-  name: String!
-
-  """Описание класса"""
-  description: String!
-
-  """Логотип класса"""
-  logo: String!
-
-  """Фракция класса"""
-  faction: Faction!
-
-  """Персонажи класса"""
-  characters: [Character!]!
-
-  """Список навыков класса"""
-  skills: [Skill!]!
-}
-
-type Bag {
-  id: ID!
-  items: [BaseItem!]!
-  character: Character!
-
-  """Максимальный размер сумки"""
-  maxSlots: Int!
-
-  """Текущий размер сумки"""
-  currentSlots: Int!
+type LogoutModel {
+  """Сообщение о выходе"""
+  message: String!
 }
 
 type TextureConfig {
   atlasKey: String!
   frameName: String!
-}
-
-type Weapon implements BaseItem {
-  id: ID!
-  name: String!
-  itemType: ItemTypeEnum!
-  iconKey: String!
-  bag: Bag
-  physicalDamage: Int!
-  magicDamage: Int!
-
-  """Прочность предмета"""
-  durability: Float!
-  slot: WeaponSlotEnum!
-  texture: TextureConfig!
-}
-
-"""Слоты оружия"""
-enum WeaponSlotEnum {
-  MAIN_HAND
-  OFF_HAND
-}
-
-type Armor implements BaseItem {
-  id: ID!
-  name: String!
-  itemType: ItemTypeEnum!
-  iconKey: String!
-  bag: Bag
-  physicalDefense: Int!
-  magicDefense: Int!
-
-  """Прочность предмета"""
-  durability: Float!
-  slot: ArmorSlotEnum!
-  texture: TextureConfig!
-}
-
-"""Слоты брони"""
-enum ArmorSlotEnum {
-  HELMET
-  BREASTPLATE
-  GLOVES
-  LEGS
-  CLOAK
-}
-
-type Resource implements BaseItem {
-  id: ID!
-  name: String!
-  itemType: ItemTypeEnum!
-  iconKey: String!
-  bag: Bag
-
-  """Описание предмета"""
-  description: String!
 }
 
 type Property {
@@ -304,317 +143,18 @@ type TiledMap {
   width: Int!
 }
 
-type Mob {
-  id: ID!
-
-  """Имя"""
-  name: String!
-
-  """Уровень"""
-  level: Int!
-
-  """Максимальное здоровье"""
-  maxHp: Int!
-
-  """Текущее здоровье"""
-  hp: Int!
-
-  """Физический урон"""
-  basePhysicalDamage: Int!
-
-  """Магический урон"""
-  baseMagicDamage: Int!
-
-  """Физическая защита (снижает физ. урон)"""
-  physicalDefense: Int!
-
-  """Магическая защита (снижает маг. урон)"""
-  magicDefense: Int!
-
-  """Множитель крит. урона"""
-  critMultiplier: Float!
-
-  """Скорость атаки (уд/сек)"""
-  attackSpeed: Float!
-
-  """Дистанция атаки (в тайлах)"""
-  attackRange: Int!
-  isAlive: Boolean!
-
-  """X координата позиции игрока"""
-  x: Int!
-
-  """Y координата позиции игрока"""
-  y: Int!
-  walkSpeed: Int!
-  triggerRange: Int!
-  chaseSpeed: Int!
-  expReward: Int!
-  respawnTime: Int!
-  spawn: MobSpawn!
-}
-
-type MobSpawn {
-  id: ID!
-  spawnX: Int!
-  spawnY: Int!
-  areaRadius: Int!
-  entities: [Mob!]!
-  location: Location!
-}
-
-type Location {
-  id: ID!
-  name: String!
-  filename: String!
-  tiledMap: TiledMap!
-  passableMap: [[Int!]!]!
-  width: Int!
-  height: Int!
-  tileWidth: Int!
-  tileHeight: Int!
-  characters: [Character!]!
-  mobSpawn: [MobSpawn!]!
-  npcSpawn: [NpcSpawn!]!
-}
-
-type NpcSpawn {
-  id: ID!
-  spawnX: Int!
-  spawnY: Int!
-  areaRadius: Int!
-  entities: [Npc!]!
-  location: Location!
-}
-
-type Npc {
-  id: ID!
-
-  """Имя"""
-  name: String!
-
-  """Уровень"""
-  level: Int!
-
-  """Максимальное здоровье"""
-  maxHp: Int!
-
-  """Текущее здоровье"""
-  hp: Int!
-
-  """Физический урон"""
-  basePhysicalDamage: Int!
-
-  """Магический урон"""
-  baseMagicDamage: Int!
-
-  """Физическая защита (снижает физ. урон)"""
-  physicalDefense: Int!
-
-  """Магическая защита (снижает маг. урон)"""
-  magicDefense: Int!
-
-  """Множитель крит. урона"""
-  critMultiplier: Float!
-
-  """Скорость атаки (уд/сек)"""
-  attackSpeed: Float!
-
-  """Дистанция атаки (в тайлах)"""
-  attackRange: Int!
-  isAlive: Boolean!
-
-  """X координата позиции игрока"""
-  x: Int!
-
-  """Y координата позиции игрока"""
-  y: Int!
-  walkSpeed: Int!
-  spawn: NpcSpawn!
-  givenQuests: [Quest!]!
-}
-
-type Quest {
-  id: ID!
-  name: String!
-  description: String!
-  expReward: Int!
-  goldReward: Int!
-  playerQuests: PlayerQuest!
-  giverNpc: Npc!
-}
-
-type PlayerQuest {
-  id: ID!
-}
-
-type Character {
-  id: ID!
-
-  """Имя"""
-  name: String!
-
-  """Уровень"""
-  level: Int!
-
-  """Максимальное здоровье"""
-  maxHp: Int!
-
-  """Текущее здоровье"""
-  hp: Int!
-
-  """Физический урон"""
-  basePhysicalDamage: Int!
-
-  """Магический урон"""
-  baseMagicDamage: Int!
-
-  """Физическая защита (снижает физ. урон)"""
-  physicalDefense: Int!
-
-  """Магическая защита (снижает маг. урон)"""
-  magicDefense: Int!
-
-  """Множитель крит. урона"""
-  critMultiplier: Float!
-
-  """Скорость атаки (уд/сек)"""
-  attackSpeed: Float!
-
-  """Дистанция атаки (в тайлах)"""
-  attackRange: Int!
-  isAlive: Boolean!
-
-  """X координата позиции игрока"""
-  x: Int!
-
-  """Y координата позиции игрока"""
-  y: Int!
-  walkSpeed: Int!
-
-  """Опыт персонажа"""
-  experience: Int!
-
-  """Опыт до следующего уровня"""
-  experienceToNextLevel: Int!
-
-  """Очки навыков"""
-  skillPoints: Int!
-
-  """Статус удален или нет"""
-  isDeleted: Boolean!
-
-  """Аккаунт пользователя"""
-  user: User!
-
-  """Класс персонажа"""
-  characterClass: CharacterClass!
-
-  """Локация персонажа"""
-  location: Location
-
-  """Айди локации в которой находится игрок"""
-  locationId: String!
-
-  """Навыки персонаж"""
-  characterSkills: [CharacterSkill!]!
-  bag: Bag!
-  quests: [PlayerQuest!]!
-}
-
-type User {
-  """ID пользователя"""
-  id: ID!
-
-  """Имя пользователя"""
-  name: String!
-
-  """Email пользователя"""
-  email: String!
-
-  """Password пользователя"""
-  password: String!
-
-  """Персонажи аккаунта"""
-  persons: [Character!]!
-
-  """Refresh token"""
-  refreshToken: String
-
-  """Дата создания пользователя"""
-  createdAt: Timestamp!
-
-  """Дата последнего обновления пользователя"""
-  updatedAt: Timestamp!
-}
-
-"""
-`Date` type as integer. Type represents date and time as number of milliseconds from start of UNIX epoch.
-"""
-scalar Timestamp
-
-type Auth {
-  """Access token"""
-  accessToken: String!
-
-  """RefreshToken token"""
-  refreshToken: String!
-}
-
-type Logout {
-  """Сообщение о выходе"""
-  message: String!
-}
-
 type Query {
-  location: [Location!]!
-  findLocationById(id: ID!): Location!
-  findAllUsers: [User!]!
-  findOneUser(id: ID!): User!
-  getCurrentUser: User!
-  faction(id: Int!): Faction!
-  findUserCharacters: [Character!]!
-  characterSkill(id: Int!): CharacterSkill!
-  bag(id: Int!): Bag!
-  characterClass(id: Int!): CharacterClass!
-  skill(id: Int!): Skill!
+  findAllUsers: [UserModel!]!
+  findOneUser(id: ID!): UserModel!
+  getCurrentUser: UserModel!
 }
 
 type Mutation {
-  createUser(createUserInput: CreateUserInput!): User!
-  signUp(signUpInput: RegisterInput!): Auth!
-  signIn(signInInput: LoginInput!): Auth!
-  logout: Logout!
-  refreshTokens: Auth!
-  createFaction(createFactionInput: CreateFactionInput!): Faction!
-  updateFaction(updateFactionInput: UpdateFactionInput!): Faction!
-  removeFaction(id: Int!): Faction!
-  createCharacter(createCharacterInput: CreateCharacterInput!): Character!
-  updateCharacter(updateCharacterInput: UpdateCharacterInput!): Character!
-  removeCharacter(id: Int!): Character!
-  createCharacterSkill(createCharacterSkillInput: CreateCharacterSkillInput!): CharacterSkill!
-  updateCharacterSkill(updateCharacterSkillInput: UpdateCharacterSkillInput!): CharacterSkill!
-  removeCharacterSkill(id: Int!): CharacterSkill!
-  createCharacterClass(createCharacterClassInput: CreateCharacterClassInput!): CharacterClass!
-  updateCharacterClass(updateCharacterClassInput: UpdateCharacterClassInput!): CharacterClass!
-  removeCharacterClass(id: Int!): CharacterClass!
-  createSkill(createSkillInput: CreateSkillInput!): Skill!
-  updateSkill(updateSkillInput: UpdateSkillInput!): Skill!
-  removeSkill(id: Int!): Skill!
-}
-
-input CreateUserInput {
-  """Имя пользователя"""
-  name: String!
-
-  """Email пользователя"""
-  email: String!
-
-  """Password пользователя"""
-  password: String!
-
-  """Токен обновления"""
-  refreshToken: String
+  signUp(signUpInput: RegisterInput!): AuthModel!
+  signIn(signInInput: LoginInput!): AuthModel!
+  logout: LogoutModel!
+  refreshTokens: AuthModel!
+  createUser(createUserInput: CreateUserDto!): UserModel!
 }
 
 input RegisterInput {
@@ -636,55 +176,8 @@ input LoginInput {
   password: String!
 }
 
-input CreateFactionInput {
-  """Example field (placeholder)"""
-  exampleField: Int!
-}
-
-input UpdateFactionInput {
-  """Example field (placeholder)"""
-  exampleField: Int
-  id: Int!
-}
-
-input CreateCharacterInput {
-  """Example field (placeholder)"""
-  exampleField: Int!
-}
-
-input UpdateCharacterInput {
-  id: String!
-}
-
-input CreateCharacterSkillInput {
-  """Example field (placeholder)"""
-  exampleField: Int!
-}
-
-input UpdateCharacterSkillInput {
-  """Example field (placeholder)"""
-  exampleField: Int
-  id: Int!
-}
-
-input CreateCharacterClassInput {
-  """Example field (placeholder)"""
-  exampleField: Int!
-}
-
-input UpdateCharacterClassInput {
-  """Example field (placeholder)"""
-  exampleField: Int
-  id: Int!
-}
-
-input CreateSkillInput {
-  """Example field (placeholder)"""
-  exampleField: Int!
-}
-
-input UpdateSkillInput {
-  """Example field (placeholder)"""
-  exampleField: Int
-  id: Int!
+input CreateUserDto {
+  name: String!
+  email: String!
+  password: String!
 }
