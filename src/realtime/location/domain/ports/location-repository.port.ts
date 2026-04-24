@@ -6,4 +6,5 @@ export interface LocationRepositoryPort {
   delete(id: ILocation['id']): void;
   get(id: ILocation['id']): ILocation | null;
   setAll(locations: ILocation[]): void;
+  getByFilename(filename: ILocation['filename']): ILocation | null;
 }
