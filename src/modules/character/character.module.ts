@@ -1,26 +1,26 @@
 import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
-import { CharacterClassReaderAdapter } from '../character-class/application/adapters/character-class-reader.adapter';
 import { CharacterClassModule } from '../character-class/character-class.module';
 
-import {
-  CHARACTER_CLASS_READER_TOKEN,
-  CHARACTER_REPOSITORY_TOKEN,
-} from './application/ports/tokens';
+import { CharacterFacade } from './application/facades/character.facade';
+import { CHARACTER_FACADE_TOKEN, CHARACTER_REPOSITORY_TOKEN } from './application/ports/tokens';
+import { CharacterOrmEntity } from './infrastructure/persistence/character-orm.entity';
 import { CharacterRepository } from './infrastructure/persistence/character.repository';
 
 @Module({
-  imports: [CqrsModule, CharacterClassModule],
+  imports: [CqrsModule, CharacterClassModule, TypeOrmModule.forFeature([CharacterOrmEntity])],
   providers: [
     {
       provide: CHARACTER_REPOSITORY_TOKEN,
       useClass: CharacterRepository,
     },
     {
-      provide: CHARACTER_CLASS_READER_TOKEN,
-      useClass: CharacterClassReaderAdapter,
+      provide: CHARACTER_FACADE_TOKEN,
+      useClass: CharacterFacade,
     },
   ],
+  exports: [CHARACTER_FACADE_TOKEN],
 })
 export class CharacterModule {}

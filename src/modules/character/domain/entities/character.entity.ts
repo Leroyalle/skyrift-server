@@ -1,18 +1,9 @@
-import type { Appearance } from 'src/common/domain/vo/appearance.vo';
-
 import type { CharacterSnapshot, ICharacter } from '../types/character.type';
 
-interface Props {
-  id: string;
-  userId: string;
-  classId: string;
-  name: string;
-  appearance: Appearance;
-}
 export class Character {
   private constructor(private readonly props: ICharacter) {}
 
-  public static create(props: Props) {
+  public static create(props: ICharacter) {
     return new Character({
       id: props.id,
       userId: props.userId,

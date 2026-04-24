@@ -1,13 +1,15 @@
 import { randomUUID } from 'crypto';
+import { CHARACTER_CLASS_READER_TOKEN } from 'src/modules/character-class';
 import { Character } from 'src/modules/character/domain/entities/character.entity';
 import type { CharacterRepositoryPort } from 'src/modules/character/domain/ports/character-repository.port';
+import { CLOCK_TOKEN, type ClockPort } from 'src/realtime/shared/infrastructure/time';
 
 import { Inject } from '@nestjs/common';
 import { CommandHandler, type ICommandHandler } from '@nestjs/cqrs';
 
 import type { CharacterClassReaderPort } from '../../../../character-class/application/ports/character-class-reader.port';
 import { CharacterClientMapper } from '../../mappers/character-client.mapper';
-import { CHARACTER_CLASS_READER_TOKEN, CHARACTER_REPOSITORY_TOKEN } from '../../ports/tokens';
+import { CHARACTER_REPOSITORY_TOKEN } from '../../ports/tokens';
 
 import { CreateCharacterCommand } from './create-character.command';
 
@@ -18,6 +20,7 @@ export class CreateCharacterHandler implements ICommandHandler<CreateCharacterCo
     private readonly characterRepository: CharacterRepositoryPort,
     @Inject(CHARACTER_CLASS_READER_TOKEN)
     private readonly characterClassReader: CharacterClassReaderPort,
+    @Inject(CLOCK_TOKEN) private readonly clockService: ClockPort,
   ) {}
 
   public async execute(command: CreateCharacterCommand) {
@@ -33,6 +36,30 @@ export class CreateCharacterHandler implements ICommandHandler<CreateCharacterCo
       name: command.props.name,
       appearance: command.props.appearance,
       id: randomUUID(),
+      y: command.props.y,
+      x: command.props.x,
+      hp: command.props.hp,
+      maxHp: command.props.maxHp,
+      attackRange: command.props.attackRange,
+      attackSpeed: command.props.attackSpeed,
+      basePhysicalDamage: command.props.basePhysicalDamage,
+      baseMagicDamage: command.props.baseMagicDamage,
+      physicalDefense: command.props.physicalDefense,
+      magicDefense: command.props.magicDefense,
+      critMultiplier: command.props.critMultiplier,
+      experienceToNextLevel: command.props.experienceToNextLevel,
+      experience: command.props.experience,
+      skillPoints: command.props.skillPoints,
+      bagId: command.props.bagId,
+      locationId: command.props.locationId,
+      equipmentId: command.props.equipmentId,
+      walkSpeed: command.props.walkSpeed,
+      isAlive: command.props.isAlive,
+      questsIds: command.props.questsIds,
+      createdAt: this.clockService.now(),
+      isDeleted: command.props.isDeleted,
+      level: command.props.level,
+      skillsIds: command.props.skillsIds,
     });
 
     const result = await this.characterRepository.create(character);

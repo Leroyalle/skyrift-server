@@ -1,5 +1,6 @@
+import { Appearance } from 'src/common/domain/vo/appearance.vo';
+
 import { Character } from '../../domain/entities/character.entity';
-import { Appearance } from '../../domain/vo/appearance.vo';
 
 import { CharacterOrmEntity } from './character-orm.entity';
 
@@ -57,7 +58,7 @@ export class CharacterMapper {
       userId: snapshot.userId,
       locationId: snapshot.locationId,
       equipmentId: snapshot.equipmentId,
-      appearance: snapshot.appearance.snapshot(),
+      appearance: snapshot.appearance,
       bagId: snapshot.bagId,
       questsIds: snapshot.questsIds,
       walkSpeed: snapshot.walkSpeed,

@@ -1,8 +1,6 @@
-import { CharacterClass } from 'src/character-class/entities/character-class.entity';
 import { ActorEntity } from 'src/common/entities/actor-entity.entity';
-import { PlayerQuest } from 'src/quest/entities/player-quest.entity';
-import { User } from 'src/user/entities/user.entity';
-import { Column, Entity, ManyToOne } from 'typeorm';
+import { UserOrmEntity } from 'src/modules/user/infrastructure/persistence/entities/user-orm.entity';
+import { Column, Entity } from 'typeorm';
 
 import { Field, Int, ObjectType } from '@nestjs/graphql';
 
@@ -32,26 +30,20 @@ export class CharacterOrmEntity extends ActorEntity {
   isDeleted!: boolean;
 
   @Column()
-  @Field(() => User, { description: 'Аккаунт пользователя' })
+  @Field(() => UserOrmEntity, { description: 'Аккаунт пользователя' })
   userId!: string;
 
-  @ManyToOne(() => CharacterClass, characterClass => characterClass.characters)
-  @Field(() => CharacterClass, { description: 'Класс персонажа' })
+  @Column()
+  @Field({ description: 'Класс персонажа' })
   classId!: string;
 
-  @Column()
-  @Field({ description: 'Айди локации в которой находится игрок' })
-  locationId!: string;
-
-  @Column({ type: 'array' })
-  @Field({ description: 'Навыки персонаж' })
+  @Column('uuid', { array: true })
   skillsIds!: string[];
 
   @Column()
   @Field()
   bagId!: string;
 
-  @Column({ type: 'array' })
-  @Field(() => [PlayerQuest])
+  @Column('uuid', { array: true })
   questsIds!: string[];
 }

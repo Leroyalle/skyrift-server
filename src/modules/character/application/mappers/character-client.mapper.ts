@@ -38,7 +38,6 @@ export interface CharacterClientDto {
 export class CharacterClientMapper {
   public static toClient = (payload: Character): CharacterClientDto => {
     const snapshot = payload.snapshot();
-    const appearance = snapshot.appearance.snapshot();
     return {
       x: snapshot.x,
       walkSpeed: snapshot.walkSpeed,
@@ -68,10 +67,7 @@ export class CharacterClientMapper {
       equipmentId: snapshot.equipmentId,
       createdAt: snapshot.createdAt,
       bagId: snapshot.bagId,
-      appearance: {
-        body: appearance.body,
-        head: appearance.head,
-      },
+      appearance: snapshot.appearance,
     };
   };
 }
