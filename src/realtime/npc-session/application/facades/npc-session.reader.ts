@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 
 import type { NpcSessionRepositoryPort } from '../../domain/ports/npc-session-repository.port';
+import type { NpcSessionSnapshot } from '../../domain/types/npc-session.type';
 import type { NpcSessionReaderPort } from '../ports/npc-session-reader.port';
 import { NPC_SESSION_REPOSITORY_TOKEN } from '../ports/tokens';
 
@@ -20,5 +21,12 @@ export class NpcSessionReader implements NpcSessionReaderPort {
   public getByLocationId(locationId: string) {
     const sessions = this.npcSessionRepository.getByLocationId(locationId);
     return sessions.map(session => session.toPublicSnapshot());
+  }
+
+  public *getIterable(): Iterable<NpcSessionSnapshot> {
+    const sessions = this.npcSessionRepository.getIterable();
+    for (const session of sessions) {
+      yield session.toPublicSnapshot();
+    }
   }
 }
