@@ -3,7 +3,10 @@ import type { CharacterClassRepositoryPort } from 'src/modules/character-class/d
 import { Inject } from '@nestjs/common';
 import { type IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 
-import { CharacterClassClientMapper } from '../../mappers/character-class-client.mapper';
+import {
+  type CharacterClassClientDto,
+  CharacterClassClientMapper,
+} from '../../mappers/character-class-client.mapper';
 import { CHARACTER_CLASS_REPOSITORY } from '../../ports/tokens';
 
 import { FindAllClassesQuery } from './find-all-classes.query';
@@ -15,8 +18,8 @@ export class FindAllClassesHandler implements IQueryHandler<FindAllClassesQuery>
     private readonly characterClassRepository: CharacterClassRepositoryPort,
   ) {}
 
-  public async execute() {
+  public async execute(): Promise<CharacterClassClientDto[]> {
     const result = await this.characterClassRepository.findAll();
-    return result.map(CharacterClassClientMapper.toClient);
+    return Promise.resolve(result.map(CharacterClassClientMapper.toClient));
   }
 }

@@ -1,7 +1,7 @@
 import type { CharacterClassReaderPort } from 'src/modules/character-class/application/ports/character-class-reader.port';
 
 import { Injectable } from '@nestjs/common';
-import type { QueryBus } from '@nestjs/cqrs';
+import { QueryBus } from '@nestjs/cqrs';
 
 import { FindAllClassesQuery } from '../queries/find-all/find-all-classes.query';
 import { FindClassByIdQuery } from '../queries/find-by-id/find-class-by-id.query';

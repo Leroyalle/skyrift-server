@@ -1,6 +1,6 @@
 import type { CharacterClass } from '../../domain/entities/character-class.entity';
 
-interface CharacterClassClientDto {
+export interface CharacterClassClientDto {
   id: string;
   name: string;
   description: string;

@@ -1,4 +1,3 @@
-import { Faction } from 'src/faction/entities/faction.entity';
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 import { Field, ID, ObjectType } from '@nestjs/graphql';
@@ -23,10 +22,9 @@ export class CharacterClassOrmEntity {
   logo!: string;
 
   @Column()
-  @Field(() => Faction, { description: 'Фракция класса' })
+  @Field({ description: 'Фракция класса' })
   factionId!: string;
 
-  @Column({ type: 'array' })
-  @Field({ description: 'Список навыков класса' })
+  @Column('uuid', { array: true })
   skillsIds!: string[];
 }
