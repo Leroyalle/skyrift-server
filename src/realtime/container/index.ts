@@ -15,3 +15,4 @@ export { isEquippableItem } from './domain/guards/is-equippable-item.guard';
 export { MoveItemUseCasePort } from './application/ports/move-item-use-case.port';
 export { BagItemManagementUseCasePort } from './application/ports/bag-item-management-use-case.port';
 export { BagContainerReaderPort } from './application/ports/bag-container-reader.port';
+export { Changes } from './application/types/changes.type';
