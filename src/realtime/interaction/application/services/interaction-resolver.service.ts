@@ -6,8 +6,8 @@ import { Injectable } from '@nestjs/common';
 import type { Interaction } from '../../domain/types/interaction.type';
 import type { InteractionResolverPort } from '../ports/interaction-resolver-service.port';
 
-import type { NpcInteractionService } from './npc-interaction.service';
-import type { TeleportInteractionService } from './teleport-interaction.service';
+import { NpcInteractionService } from './npc-interaction.service';
+import { TeleportInteractionService } from './teleport-interaction.service';
 
 @Injectable()
 export class InteractionResolverService implements InteractionResolverPort {

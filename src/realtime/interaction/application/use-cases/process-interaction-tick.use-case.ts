@@ -6,10 +6,11 @@ import { Inject, Injectable } from '@nestjs/common';
 
 import type { InteractionRepositoryPort } from '../../domain/ports/interaction-repository.port';
 import type { InteractionResolverPort } from '../ports/interaction-resolver-service.port';
+import type { ProcessInteractionTickPort } from '../ports/process-interaction-tick.port';
 import { INTERACTION_REPOSITORY_TOKEN, INTERACTION_RESOLVER_SERVICE_TOKEN } from '../ports/tokens';
 
 @Injectable()
-export class ProcessInteractionTickUseCase {
+export class ProcessInteractionTickUseCase implements ProcessInteractionTickPort {
   constructor(
     @Inject(ENTITY_RESOLVER_TOKEN) private readonly entityResolver: EntityResolverPort,
     @Inject(INTERACTION_REPOSITORY_TOKEN)

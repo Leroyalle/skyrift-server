@@ -4,24 +4,20 @@ import {
   APPROACH_TARGET_SERVICE_TOKEN,
   type ApproachTargetServicePort,
 } from 'src/realtime/movement';
-import { PATH_FINDING_SERVICE, type PathFindingServicePort } from 'src/realtime/path-finding';
 
 import { Inject, Injectable } from '@nestjs/common';
 
 import type { InteractionRepositoryPort } from '../../domain/ports/interaction-repository.port';
+import type {
+  RequestTalkToNpcPayload,
+  RequestTalkToNpcPort,
+} from '../ports/request-talk-to-npc.port';
 import { INTERACTION_REPOSITORY_TOKEN } from '../ports/tokens';
 
-export interface RequestTalkToNpcPayload {
-  npcId: string;
-  locationId: string;
-  characterId: string;
-}
-
 @Injectable()
-export class RequestTalkToNpcUseCase {
+export class RequestTalkToNpcUseCase implements RequestTalkToNpcPort {
   constructor(
     @Inject(ENTITY_RESOLVER_TOKEN) private readonly entityResolver: EntityResolverPort,
-    @Inject(PATH_FINDING_SERVICE) private readonly pathFindingService: PathFindingServicePort,
     @Inject(LOCATION_READER_TOKEN) private readonly locationReader: LocationReaderPort,
     @Inject(INTERACTION_REPOSITORY_TOKEN)
     private readonly interactionRepository: InteractionRepositoryPort,
