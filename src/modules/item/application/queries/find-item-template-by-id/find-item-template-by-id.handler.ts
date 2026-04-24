@@ -1,4 +1,4 @@
-import type { ItemTemplateRepositoryPort } from 'src/modules/item/domain/ports/item-tempalte-repository.port';
+import type { ItemTemplateRepositoryPort } from 'src/modules/item/domain/ports/item-template-repository.port';
 
 import { Inject } from '@nestjs/common';
 import { type IQueryHandler, QueryHandler } from '@nestjs/cqrs';

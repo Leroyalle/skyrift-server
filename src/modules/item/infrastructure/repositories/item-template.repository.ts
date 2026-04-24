@@ -3,7 +3,7 @@ import { In, type Repository } from 'typeorm';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
-import type { ItemTemplateRepositoryPort } from '../../domain/ports/item-tempalte-repository.port';
+import type { ItemTemplateRepositoryPort } from '../../domain/ports/item-template-repository.port';
 import type { ItemTemplate } from '../../domain/types/item-template.type';
 import { ItemTemplateOrmEntity } from '../entities/item-template-orm.entity';
 

@@ -1,5 +1,5 @@
 import type { IEntityType } from 'src/realtime/shared/types/entity-ref.type';
-import { Column, Entity } from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 import { Field, ObjectType } from '@nestjs/graphql';
 
@@ -8,7 +8,7 @@ import type { ItemContainerType } from '../../domain/types/item-instance.type';
 @Entity('item_instances')
 @ObjectType()
 export class ItemInstanceOrmEntity {
-  @Column()
+  @PrimaryGeneratedColumn('uuid')
   @Field()
   id!: string;
 

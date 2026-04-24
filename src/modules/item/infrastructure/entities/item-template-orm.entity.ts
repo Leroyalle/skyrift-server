@@ -5,6 +5,17 @@ import { Field, Int, ObjectType } from '@nestjs/graphql';
 
 import type { ItemType } from '../../domain/constants/item-type.constant';
 
+@ObjectType()
+class TextureConfig {
+  @Column()
+  @Field()
+  atlasKey!: string;
+
+  @Column()
+  @Field()
+  frameName!: string;
+}
+
 @Entity('item_templates')
 @ObjectType()
 export class ItemTemplateOrmEntity {
@@ -20,8 +31,8 @@ export class ItemTemplateOrmEntity {
   @Field()
   itemType!: ItemType;
 
-  @Column({ nullable: true })
-  @Field()
+  @Column('text', { nullable: true })
+  @Field(() => String, { nullable: true })
   slot!: EquipmentSlot | null;
 
   @Column()
@@ -32,30 +43,19 @@ export class ItemTemplateOrmEntity {
   @Field(() => TextureConfig)
   texture!: TextureConfig;
 
-  @Column({ nullable: true })
+  @Column('int', { nullable: true })
   @Field(() => Int)
   physicalDefense!: number | null;
 
-  @Column({ nullable: true })
+  @Column('int', { nullable: true })
   @Field(() => Int)
   magicDefense!: number | null;
 
-  @Column({ nullable: true })
+  @Column('int', { nullable: true })
   @Field(() => Int)
   physicalDamage!: number | null;
 
-  @Column({ nullable: true })
+  @Column('int', { nullable: true })
   @Field(() => Int)
   magicDamage!: number | null;
-}
-
-@ObjectType()
-class TextureConfig {
-  @Column()
-  @Field()
-  atlasKey!: string;
-
-  @Column()
-  @Field()
-  frameName!: string;
 }
