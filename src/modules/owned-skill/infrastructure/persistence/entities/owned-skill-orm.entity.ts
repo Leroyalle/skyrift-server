@@ -3,7 +3,7 @@ import { Column, Entity, PrimaryGeneratedColumn, Unique } from 'typeorm';
 import { Field, Int, ObjectType } from '@nestjs/graphql';
 
 @Entity()
-@Unique('UQ_owned_skill_owner_skill', ['ownerKey', 'ownerId', 'skillId'])
+@Unique('UQ_owned_skill_owner_skill', ['ownerType', 'ownerId', 'skillId'])
 @ObjectType()
 export class OwnedSkillOrmEntity {
   @PrimaryGeneratedColumn('uuid')
