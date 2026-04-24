@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import type { CommandBus } from '@nestjs/cqrs';
+import { CommandBus } from '@nestjs/cqrs';
 
 import type { PlayerSessionSnapshot } from '../../domain/types/player-session.type';
 import { ConnectPlayerCommand } from '../commands/connect-player/connect-player.command';

@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 
 import type { PlayerSessionRepositoryPort } from '../../domain/ports/in-memory-player-session-repository.port';
+import type { PlayerSessionSnapshot } from '../../domain/types/player-session.type';
 import type { PlayerSessionReaderPort } from '../ports/player-session-reader.port';
 import { PLAYER_SESSION_REPOSITORY_TOKEN } from '../ports/tokens';
 
@@ -14,5 +15,12 @@ export class PlayerSessionReader implements PlayerSessionReaderPort {
   public getByLocationId(locationId: string) {
     const playerSessions = this.playerSessionRepository.getByLocationId(locationId);
     return playerSessions.map(session => session.toPublicSnapshot());
+  }
+
+  public *getIterable(): Iterable<PlayerSessionSnapshot> {
+    const sessions = this.playerSessionRepository.getIterable();
+    for (const session of sessions) {
+      yield session.toPublicSnapshot();
+    }
   }
 }
