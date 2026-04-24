@@ -48,4 +48,8 @@ export class NpcSessionRepository implements NpcSessionRepositoryPort {
   public update(npc: NpcSession): void {
     this.sessions.set(npc.id, npc);
   }
+
+  public getIterable(): Iterable<NpcSession> {
+    return this.sessions.values();
+  }
 }

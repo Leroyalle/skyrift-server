@@ -6,4 +6,5 @@ export interface NpcSessionRepositoryPort {
   save(npc: NpcSession): void;
   remove(id: string): void;
   update(npc: NpcSession): void;
+  getIterable(): Iterable<NpcSession>;
 }
