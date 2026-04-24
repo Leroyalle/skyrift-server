@@ -1,4 +1,4 @@
-import { decodeEntityKey } from 'src/game/lib/entity/decode-entity-key.lib';
+import { decodeEntityKey } from 'src/realtime/shared/lib/helpers/decode-entity-key.helper';
 import { generateEntityKey } from 'src/realtime/shared/lib/helpers/generate-entity-key.helper';
 import type { IEntityKey, IEntityRef } from 'src/realtime/shared/types/entity-ref.type';
 
