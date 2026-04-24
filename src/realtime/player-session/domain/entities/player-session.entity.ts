@@ -15,6 +15,10 @@ export class PlayerSession {
     return this.props.id;
   }
 
+  public get hp() {
+    return this.props.combat.hp;
+  }
+
   public get locationId(): string {
     return this.props.position.locationId;
   }
@@ -25,6 +29,12 @@ export class PlayerSession {
     this.props.position.y = y;
     this.props.combat.lastMoveAt = movedAt;
     this.markDirty();
+  }
+
+  public restoreHp(amount: number, now: number): void {
+    this.ensureAlive();
+    this.props.combat.hp = Math.min(this.props.combat.hp + amount, this.props.baseStats.maxHp);
+    this.props.combat.lastHpRegenerationTime = now;
   }
 
   public receiveDamage(amount: number): IReceiveDamageResult {
