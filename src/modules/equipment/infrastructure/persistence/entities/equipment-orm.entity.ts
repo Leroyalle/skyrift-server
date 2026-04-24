@@ -13,39 +13,30 @@ export class EquipmentOrmEntity {
   @Field()
   characterId!: string;
 
-  @Field()
-  @Column({ nullable: true })
+  @Column('uuid', { nullable: true })
   helmetId!: string | null;
 
-  @Field()
-  @Column({ nullable: true })
+  @Column('uuid', { nullable: true })
   breastplateId!: string | null;
 
-  @Field()
-  @Column({ nullable: true })
+  @Column('uuid', { nullable: true })
   glovesId!: string | null;
 
-  @Field()
-  @Column({ nullable: true })
+  @Column('uuid', { nullable: true })
   legsId!: string | null;
 
-  @Field()
-  @Column({ nullable: true })
+  @Column('uuid', { nullable: true })
   mainHandId!: string | null;
 
-  @Field()
-  @Column({ nullable: true })
+  @Column('uuid', { nullable: true })
   offHandId!: string | null;
 
-  @Field()
-  @Column({ nullable: true })
+  @Column('uuid', { nullable: true })
   ring1Id!: string | null;
 
-  @Field()
-  @Column({ nullable: true })
+  @Column('uuid', { nullable: true })
   ring2Id!: string | null;
 
-  @Field()
-  @Column({ nullable: true })
+  @Column('uuid', { nullable: true })
   cloakId!: string | null;
 }
