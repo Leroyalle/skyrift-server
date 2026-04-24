@@ -29,8 +29,18 @@ export class NpcSession {
     return this.props.id;
   }
 
+  public get hp(): number {
+    return this.props.combat.hp;
+  }
+
   public get locationId(): string {
     return this.props.position.locationId;
+  }
+
+  public restoreHp(amount: number, now: number): void {
+    this.ensureAlive();
+    this.props.combat.hp = Math.min(this.props.combat.hp + amount, this.props.baseStats.maxHp);
+    this.props.combat.lastHpRegenerationTime = now;
   }
 
   public toPublicSnapshot(): Readonly<NpcSessionSnapshot> {
@@ -77,14 +87,14 @@ export class NpcSession {
 
     if (this.props.combat.hp === 0) {
       this.props.combat.isAlive = false;
-      this.props.combat.currentTargetId = null;
+      this.props.combat.currentTargetRef = null;
     }
 
     return { hp, isAlive: this.props.combat.isAlive };
   }
 
   public cancelAttack(): void {
-    this.props.combat.currentTargetId = null;
+    this.props.combat.currentTargetRef = null;
     this.props.state.current = 'idle';
   }
 
