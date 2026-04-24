@@ -1,7 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import type { AoeZoneRepositoryPort } from 'src/realtime/combat/domain/ports/aoe-zone-repository.port';
-import type { SkillEffectConfig } from 'src/realtime/combat/domain/types/aoe-zone.type';
-import { CLOCK_TOKEN, type ClockPort } from 'src/realtime/shared/infrastructure/time';
+import type { AoeZone, SkillEffectConfig } from 'src/realtime/combat/domain/types/aoe-zone.type';
 import type { IEntityRef } from 'src/realtime/shared/types/entity-ref.type';
 import type { IPositionTile } from 'src/realtime/shared/types/position.type';
 
@@ -18,6 +17,7 @@ interface Props {
     effects: SkillEffectConfig[];
   };
   area: IPositionTile;
+  now: number;
 }
 
 @Injectable()
@@ -25,11 +25,10 @@ export class AoeZoneLifecycleService {
   constructor(
     @Inject(AOE_ZONE_REPOSITORY_TOKEN)
     private readonly aoeZoneRepository: AoeZoneRepositoryPort,
-    @Inject(CLOCK_TOKEN) private readonly clockService: ClockPort,
   ) {}
 
-  public spawn(props: Props) {
-    this.aoeZoneRepository.set({
+  public spawn(props: Props): Readonly<AoeZone> {
+    const zone: AoeZone = {
       casterRef: props.casterRef,
       y: props.area.y,
       x: props.area.x,
@@ -39,8 +38,12 @@ export class AoeZoneLifecycleService {
       lastUsedAt: 0,
       id: randomUUID(),
       effects: props.stats.effects,
-      expiresAt: this.clockService.nowMs() + props.stats.duration,
-    });
+      expiresAt: props.now + props.stats.duration,
+    };
+
+    this.aoeZoneRepository.set(zone);
+
+    return zone;
   }
 
   public despawn(id: string): void {

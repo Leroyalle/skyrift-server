@@ -1,11 +1,8 @@
-import type { ActionQueueRepositoryPort } from 'src/realtime/combat/domain/ports/action-queue-repository.port';
 import type { ProjectileQueueRepositoryPort } from 'src/realtime/combat/domain/ports/projectile-queue-repository.port';
 import type { ActionType } from 'src/realtime/combat/domain/types/action-queue.type';
 import {
   ENTITY_ACTION_FACADE_TOKEN,
-  ENTITY_RESOLVER_TOKEN,
   type EntityActionFacadePort,
-  type EntityResolverPort,
 } from 'src/realtime/entity-registry';
 import type { TDirection } from 'src/realtime/movement';
 import { getDirection } from 'src/realtime/shared/lib/helpers/get-direction.lib';
@@ -15,7 +12,7 @@ import type { IPositionTile } from 'src/realtime/shared/types/position.type';
 
 import { Inject, Injectable } from '@nestjs/common';
 
-import { ACTION_QUEUE_REPOSITORY_TOKEN, PROJECTILE_REPOSITORY_TOKEN } from '../../ports/tokens';
+import { PROJECTILE_REPOSITORY_TOKEN } from '../../ports/tokens';
 
 interface StartAttackingPayload {
   attacker: Entity;
@@ -55,15 +52,12 @@ interface AttackStartedResult {
 @Injectable()
 export class AttackStarterService {
   constructor(
-    @Inject(ENTITY_RESOLVER_TOKEN) private readonly entityResolver: EntityResolverPort,
     @Inject(ENTITY_ACTION_FACADE_TOKEN) private readonly entityActionFacade: EntityActionFacadePort,
-    @Inject(ACTION_QUEUE_REPOSITORY_TOKEN)
-    private readonly actionQueueRepository: ActionQueueRepositoryPort,
     @Inject(PROJECTILE_REPOSITORY_TOKEN)
     private readonly projectileQueueRepository: ProjectileQueueRepositoryPort,
   ) {}
 
-  public execute(payload: StartAttackingPayload): AttackStartedResult | undefined {
+  public execute(payload: StartAttackingPayload): AttackStartedResult {
     const attackerDirection = getDirection(payload.attacker.position, payload.victim.position);
 
     let cooldown: AttackStartedResult['cooldownEnd'] = null;

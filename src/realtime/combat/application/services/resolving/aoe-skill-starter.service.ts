@@ -1,3 +1,4 @@
+import type { AoeZone } from 'src/realtime/combat/domain/types/aoe-zone.type';
 import {
   ENTITY_ACTION_FACADE_TOKEN,
   ENTITY_RESOLVER_TOKEN,
@@ -9,15 +10,16 @@ import type { IPositionTile } from 'src/realtime/shared/types/position.type';
 
 import { Inject, Injectable } from '@nestjs/common';
 
-import type { AoeZoneLifecycleService } from '../zones/aoe-zone-lifecycle.service';
+import { AoeZoneLifecycleService } from '../zones/aoe-zone-lifecycle.service';
 
 interface Payload {
   attackerRef: IEntityRef;
   skillId: string;
   area: IPositionTile;
+  now: number;
 }
 
-type Return = { cooldown: CooldownResult };
+type Return = { cooldown: CooldownResult; zone: AoeZone };
 
 export type CooldownResult = {
   skillId: string;
@@ -47,11 +49,9 @@ export class AoESkillStarterService {
 
     console.log('BEFORE SPAWN AOE ZONE');
 
-    const now = Date.now();
-
     if (!skill.duration || !skill.areaRadius) return;
 
-    this.aoeZoneLifecycleService.spawn({
+    const zone = this.aoeZoneLifecycleService.spawn({
       casterRef: { id: attacker.id, type: attacker.type, locationId: attacker.position.locationId },
       stats: {
         duration: skill.duration,
@@ -60,10 +60,17 @@ export class AoESkillStarterService {
         effects: [],
       },
       area: payload.area,
+      now: payload.now,
     });
 
-    this.entityActionFacade.setLastAttackAt(attacker, now);
-    const cooldownEnd = this.entityActionFacade.applySkillCooldown(attacker, skill.skillId, now);
+    this.entityActionFacade.setLastAttackAt(attacker, payload.now);
+    const cooldownEnd = this.entityActionFacade.applySkillCooldown(
+      attacker,
+      skill.skillId,
+      payload.now,
+    );
+
+    if (!cooldownEnd) return;
     // characterSkill.lastUsedAt = now;
     // characterSkill.cooldownEnd = now + characterSkill.skill.cooldownMs;
 
@@ -74,6 +81,7 @@ export class AoESkillStarterService {
         cooldownEnd: cooldownEnd,
         skillId: skill.skillId,
       },
+      zone,
     };
   }
 }

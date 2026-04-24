@@ -1,4 +1,7 @@
+import { SOCKET_ADAPTER_TOKEN, type SocketAdapterPort } from 'src/infrastructure/ws';
 import type { ActionQueueRepositoryPort } from 'src/realtime/combat/domain/ports/action-queue-repository.port';
+import { RedisKeys } from 'src/realtime/contracts/constants/redis-keys.constant';
+import { ServerToClientEvents } from 'src/realtime/contracts/constants/socket-events.constant';
 import {
   ENTITY_ACTION_FACADE_TOKEN,
   ENTITY_RESOLVER_TOKEN,
@@ -16,8 +19,8 @@ import type {
 } from '../../ports/action-resolver-service.port';
 import { ACTION_QUEUE_REPOSITORY_TOKEN } from '../../ports/tokens';
 
-import type { AoESkillStarterService } from './aoe-skill-starter.service';
-import type { AttackStarterService } from './attack-starter.service';
+import { AoESkillStarterService } from './aoe-skill-starter.service';
+import { AttackStarterService } from './attack-starter.service';
 
 @Injectable()
 export class ActionResolverService implements ActionResolverServicePort {
@@ -28,6 +31,7 @@ export class ActionResolverService implements ActionResolverServicePort {
     private readonly actionQueueRepository: ActionQueueRepositoryPort,
     private readonly attackStarterService: AttackStarterService,
     private readonly aoeSkillStarterService: AoESkillStarterService,
+    @Inject(SOCKET_ADAPTER_TOKEN) private readonly socketAdapter: SocketAdapterPort,
   ) {}
 
   public execute(payload: ActionResolverPayload) {
@@ -45,12 +49,23 @@ export class ActionResolverService implements ActionResolverServicePort {
           return;
         }
 
-        this.attackStarterService.execute({
+        const result = this.attackStarterService.execute({
           action: { skill: null, actionType: 'autoAttack' },
           attacker: payload.attacker,
           context: payload.context,
           victim: victim,
         });
+
+        this.socketAdapter.sendTo(
+          RedisKeys.Location + payload.attacker.position.locationId,
+          ServerToClientEvents.EntityAttackStart,
+          {
+            attackerRef: result.attackerRef,
+            victimRef: result.victimRef,
+            actionType: result.actionType,
+            skillId: result.skillId,
+          },
+        );
         break;
       }
 
@@ -73,6 +88,8 @@ export class ActionResolverService implements ActionResolverServicePort {
             victim.position.y,
             payload.context.tileSize,
           );
+          // STOPPED: доделать возвраты у юзкейсов и тиков + эмиттинг, DI модули + auth (опционально)
+          // TODO: мб удалить это, ведь ниже ветка обработки аое
         } else if (payload.target.kind === 'aoe') {
           targetTile = payload.target.value;
         }
@@ -89,7 +106,7 @@ export class ActionResolverService implements ActionResolverServicePort {
             return;
           }
 
-          this.attackStarterService.execute({
+          const result = this.attackStarterService.execute({
             action: {
               skill: {
                 cooldownEnd: payload.action.skill.cooldownEnd,
@@ -104,16 +121,50 @@ export class ActionResolverService implements ActionResolverServicePort {
             victim: victim,
           });
 
+          this.socketAdapter.sendTo(
+            RedisKeys.Location + payload.attacker.position.locationId,
+            ServerToClientEvents.EntityAttackStart,
+            {
+              attackerRef: result.attackerRef,
+              victimRef: result.victimRef,
+              actionType: result.actionType,
+              skillId: result.skillId,
+            },
+          );
+
           // this.startAttacking(payload.attacker, victim, action);
         } else if (skillType === 'AoE' && payload.target.kind === 'aoe') {
           const { kind: _, value } = payload.target;
-          const applyAoeSkillResult = this.aoeSkillStarterService.execute({
+          const result = this.aoeSkillStarterService.execute({
             area: value,
             skillId: payload.action.skill.id,
             attackerRef: payload.attacker,
+            now: payload.context.now,
           });
 
-          if (!applyAoeSkillResult) return;
+          if (!result) return;
+
+          if (payload.attacker.userId) {
+            this.socketAdapter.sendToUser(
+              payload.attacker.userId,
+              ServerToClientEvents.PlayerSkillCooldownUpdate,
+              result.cooldown,
+            );
+          }
+
+          this.socketAdapter.sendTo(
+            RedisKeys.Location + payload.attacker.position.locationId,
+            ServerToClientEvents.AoESpawn,
+            {
+              id: result.zone.id,
+              casterId: result.zone.casterRef.id,
+              skillId: result.zone.skillId,
+              radius: result.zone.radius,
+              x: result.zone.x,
+              y: result.zone.y,
+              expiresAt: result.zone.expiresAt,
+            },
+          );
 
           this.actionQueueRepository.clear(payload.attacker);
 
@@ -128,70 +179,4 @@ export class ActionResolverService implements ActionResolverServicePort {
       }
     }
   }
-
-  // public startAttacking(payload: StartAttackingPayload) {
-  //   const attackerDirection = getDirection(payload.attacker.position, payload.victim.position);
-
-  //   // const attackerRef = {
-  //   //   id: attacker.id,
-  //   //   type: attacker.type,
-  //   // };
-  //   // const victimRef = {
-  //   //   id: victim.id,
-  //   //   type: victim.type,
-  //   // };
-  //   // const now = Date.now();
-
-  //   // TODO: фасад заюзать
-  //   this.entityActionFacade.setLastAttackAt(payload.attacker, payload.context.now);
-
-  //   if (payload.action.skill) {
-  //     const cooldownEnd = payload.context.now + payload.action.skill.cooldownMs;
-  //     payload.action.skill.lastUsedAt = payload.context.now;
-  //     payload.action.skill.cooldownEnd = cooldownEnd;
-  //     // TODO: формировать объект перезарядки
-  //     // this.sendUserSkillCooldown(attacker.userId, {
-  //     //   skillId: action.skillId,
-  //     //   cooldownEnd,
-  //     // });
-  //   }
-
-  //   // TODO: вынести в отдельную функцию
-  //   // if (action.skillId && isPlayer(attacker)) {
-  //   //   const cSkill = attacker.characterSkills.find(skill => skill.id === action.skillId);
-  //   //   if (cSkill) {
-  //   //     const cooldownEnd = now + cSkill.skill.cooldownMs;
-  //   //     cSkill.lastUsedAt = now;
-  //   //     cSkill.cooldownEnd = cooldownEnd;
-  //   //     // TODO: мб слать кулдаун вместе с аттак стартед
-  //   //     this.sendUserSkillCooldown(attacker.userId, {
-  //   //       skillId: action.skillId,
-  //   //       cooldownEnd,
-  //   //     });
-  //   //   }
-  //   // }
-
-  //   // this.applyMiniRoot(attacker);
-
-  //   this.projectileService.add(attackerRef, {
-  //     victimRef,
-  //     skillId: action.skillId,
-  //     startedAt: Date.now(),
-  //     startedTile: getTileByPosition(attacker.x, attacker.y),
-  //   });
-
-  //   this.socketService.sendTo(
-  //     RedisKeys.Location + attacker.locationId,
-  //     ServerToClientEvents.EntityAttackStart,
-  //     {
-  //       attackerRef: {
-  //         ...attackerRef,
-  //         direction: attackerDirection,
-  //       },
-  //       victimRef,
-  //       actionType: action.skillId ? ActionType.Skill : ActionType.AutoAttack,
-  //       skillId: action.skillId,
-  //     },
-  //   );
-  // }
 }
