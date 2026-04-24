@@ -1,5 +1,7 @@
 import type { EquipmentSlot } from 'src/common/types/equipment-slot.type';
 
+import type { Changes } from '../types/changes.type';
+
 export interface MoveFromBagToEquipmentPayload {
   bagId: string;
   equipmentId: string;
@@ -14,6 +16,6 @@ export interface MoveFromEquipmentToBagPayload {
 }
 
 export interface MoveItemUseCasePort {
-  moveFromBagToEquipment(payload: MoveFromBagToEquipmentPayload): void;
-  moveFromEquipmentToBag(payload: MoveFromEquipmentToBagPayload): void;
+  moveFromBagToEquipment(payload: MoveFromBagToEquipmentPayload): Changes[];
+  moveFromEquipmentToBag(payload: MoveFromEquipmentToBagPayload): Changes[];
 }

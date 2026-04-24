@@ -12,6 +12,7 @@ import {
   BAG_CONTAINER_REPOSITORY_TOKEN,
   EQUIPMENT_CONTAINER_REPOSITORY_TOKEN,
 } from '../ports/tokens';
+import type { Changes } from '../types/changes.type';
 
 @Injectable()
 export class MoveItemUseCase implements MoveItemUseCasePort {
@@ -22,7 +23,7 @@ export class MoveItemUseCase implements MoveItemUseCasePort {
     private readonly equipmentRepository: InMemoryEquipmentContainerRepositoryPort,
   ) {}
 
-  public moveFromBagToEquipment(payload: MoveFromBagToEquipmentPayload): void {
+  public moveFromBagToEquipment(payload: MoveFromBagToEquipmentPayload): Changes[] {
     const bag = this.bagRepository.findById(payload.bagId);
 
     if (!bag) throw new Error('Bag container not found');
@@ -44,9 +45,19 @@ export class MoveItemUseCase implements MoveItemUseCasePort {
     if (!isEquippableItem(foundItem)) throw new Error('Item is not equippable');
 
     equipment.equip(foundItem, payload.slot);
+
+    const result: Changes[] = [
+      {
+        from: { container: 'bag' },
+        to: { container: 'equipment', slot: payload.slot },
+        itemId: foundItem.id,
+      },
+    ];
+
+    return result;
   }
 
-  public moveFromEquipmentToBag(payload: MoveFromEquipmentToBagPayload): void {
+  public moveFromEquipmentToBag(payload: MoveFromEquipmentToBagPayload): Changes[] {
     const equipment = this.equipmentRepository.findById(payload.equipmentId);
 
     if (!equipment) throw new Error('Equipment not found');
@@ -63,5 +74,15 @@ export class MoveItemUseCase implements MoveItemUseCasePort {
     equipment.unequip(payload.slot);
 
     bag.addItem(foundItem);
+
+    const result: Changes[] = [
+      {
+        from: { container: 'equipment', slot: payload.slot },
+        to: { container: 'bag' },
+        itemId: foundItem.id,
+      },
+    ];
+
+    return result;
   }
 }
