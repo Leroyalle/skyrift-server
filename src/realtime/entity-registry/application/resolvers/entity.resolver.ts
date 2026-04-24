@@ -55,4 +55,16 @@ export class EntityResolver implements EntityResolverPort {
 
     return [];
   }
+
+  public getIterable<T extends IEntityType>(type: T): Iterable<ResolvedEntityMap[T]> {
+    if (type === 'player') {
+      return this.playerSessionReader.getIterable() as Iterable<ResolvedEntityMap[T]>;
+    } else if (type === 'mob') {
+      return this.mobSessionReader.getIterable() as Iterable<ResolvedEntityMap[T]>;
+    } else if (type === 'npc') {
+      return this.npcSessionReader.getIterable() as Iterable<ResolvedEntityMap[T]>;
+    }
+
+    throw new Error('Unsupported entity type');
+  }
 }

@@ -6,6 +6,7 @@ import type { IEntityRef, IEntityType } from 'src/realtime/shared/types/entity-r
 export interface EntityResolverPort {
   getByRef<T extends IEntityType>(ref: IEntityRef<T>): ResolvedEntityMap[T] | null;
   getByLocationId<T extends IEntityType>(locationId: string, type: T): ResolvedEntityMap[T][];
+  getIterable<T extends IEntityType>(type: T): Iterable<ResolvedEntityMap[T]>;
 }
 
 export interface ResolvedEntityMap {
