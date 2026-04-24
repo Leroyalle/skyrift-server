@@ -1,5 +1,5 @@
-import { generateEntityKey } from 'src/game/lib/entity/generate-entity-key.lib';
 import { decodeEntityKey } from 'src/realtime/shared/lib/helpers/decode-entity-key.helper';
+import { generateEntityKey } from 'src/realtime/shared/lib/helpers/generate-entity-key.helper';
 import { getOrCreate } from 'src/realtime/shared/lib/helpers/get-or-create-array.lib';
 import type { IEntityKey, IEntityRef } from 'src/realtime/shared/types/entity-ref.type';
 

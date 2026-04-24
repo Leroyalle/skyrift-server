@@ -1,4 +1,3 @@
-import { getOrCreate } from 'src/game/lib/helpers/get-or-create-array.lib';
 import type { BatchUpdateAction } from 'src/realtime/combat';
 import type { ApplyEffectImpactFacadePort } from 'src/realtime/combat/application/ports/apply-effect-impact-facade.port';
 import { APPLY_EFFECT_IMPACT_FACADE_TOKEN } from 'src/realtime/combat/application/ports/tokens';
@@ -8,15 +7,17 @@ import {
   type EntitySnapshot,
 } from 'src/realtime/entity-registry';
 import { CLOCK_TOKEN, type ClockPort } from 'src/realtime/shared/infrastructure/time';
+import { getOrCreate } from 'src/realtime/shared/lib/helpers/get-or-create-array.lib';
 
 import { Inject, Injectable } from '@nestjs/common';
 
 import type { InMemoryEffectRepositoryPort } from '../../domain/ports/in-memory-effect-repository.port';
 import type { EffectType, IEffect } from '../../domain/types/effect.type';
+import type { ProcessEffectTickPort } from '../ports/process-effect-tick.port';
 import { EFFECT_REPOSITORY_TOKEN } from '../ports/tokens';
 
 @Injectable()
-export class ProcessEffectTickUseCase {
+export class ProcessEffectTickUseCase implements ProcessEffectTickPort {
   constructor(
     @Inject(EFFECT_REPOSITORY_TOKEN)
     private readonly effectRepository: InMemoryEffectRepositoryPort,
