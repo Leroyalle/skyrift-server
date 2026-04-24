@@ -1,18 +1,13 @@
 import { ENTITY_RESOLVER_TOKEN, type EntityResolverPort } from 'src/realtime/entity-registry';
 import { LOCATION_READER_TOKEN, type LocationReaderPort } from 'src/realtime/location';
 import { PLAN_MOVEMENT_USE_CASE_TOKEN, type PlanMovementUseCasePort } from 'src/realtime/movement';
-import type { IPositionTile } from 'src/realtime/shared/types/position.type';
 
 import { Inject, Injectable } from '@nestjs/common';
 
-import type { SocketUserData } from '../../ports/socket-adapter.port';
-
-interface Payload extends SocketUserData {
-  targetTile: IPositionTile;
-}
+import type { RequestMovePayload, RequestMovePort } from '../../ports/actions/request-move.port';
 
 @Injectable()
-export class RequestMoveUseCase {
+export class RequestMoveUseCase implements RequestMovePort {
   constructor(
     @Inject(ENTITY_RESOLVER_TOKEN) private readonly entityResolver: EntityResolverPort,
     @Inject(PLAN_MOVEMENT_USE_CASE_TOKEN)
@@ -20,7 +15,7 @@ export class RequestMoveUseCase {
     @Inject(LOCATION_READER_TOKEN) private readonly locationReader: LocationReaderPort,
   ) {}
 
-  public async execute(payload: Payload) {
+  public async execute(payload: RequestMovePayload) {
     const character = this.entityResolver.getByRef({
       id: payload.characterId,
       type: 'player',

@@ -10,13 +10,13 @@ import { ENTITY_RESOLVER_TOKEN, type EntityResolverPort } from 'src/realtime/ent
 
 import { Inject, Injectable } from '@nestjs/common';
 
-interface RequestUseItemPayload {
-  characterId: string;
-  itemId: string;
-}
+import type {
+  RequestUseItemPayload,
+  RequestUseItemPort,
+} from '../../ports/actions/request-use-item.port';
 
 @Injectable()
-export class RequestUseItem {
+export class RequestUseItemUseCase implements RequestUseItemPort {
   constructor(
     @Inject(ENTITY_RESOLVER_TOKEN) private readonly entityResolver: EntityResolverPort,
     @Inject(BAG_CONTAINER_READER_TOKEN) private readonly bagContainerReader: BagContainerReaderPort,
@@ -28,11 +28,7 @@ export class RequestUseItem {
 
     if (!character) throw new Error('Character not found');
 
-    const bag = this.bagContainerReader.findById(character.bagId);
-
-    if (!bag) throw new Error('Bag container not found');
-
-    const item = bag.findItem(payload.itemId);
+    const item = this.bagContainerReader.findItemById(character.bagId, payload.itemId);
 
     if (!item) throw new Error('Item not found in bag container');
 

@@ -8,15 +8,18 @@ import type {
   ChangePlayerLocationInput,
   ChangePlayerLocationPort,
 } from '../../ports/change-player-location-use-case.port';
-import type { PlayerLocationTransitionService } from '../../services/player-location-transition.service';
-import type { BuildPlayerLocationStateUseCase } from '../initial-state/build-player-location-state.use-case';
+import type { BuildPlayerLocationStatePort } from '../../ports/initial-state/build-player-location-state.port';
+import { BUILD_PLAYER_LOCATION_STATE_USE_CASE_TOKEN } from '../../ports/tokens';
+import { PlayerLocationTransitionService } from '../../services/player-location-transition.service';
 
 @Injectable()
 export class ChangePlayerLocationUseCase implements ChangePlayerLocationPort {
   constructor(
     @Inject(SOCKET_ADAPTER_TOKEN) private readonly socketAdapter: SocketAdapterPort,
     private readonly playerLocationTransitionService: PlayerLocationTransitionService,
-    private readonly buildPlayerLocationStateUseCase: BuildPlayerLocationStateUseCase,
+
+    @Inject(BUILD_PLAYER_LOCATION_STATE_USE_CASE_TOKEN)
+    private readonly buildPlayerLocationStateUseCase: BuildPlayerLocationStatePort,
   ) {}
 
   public async execute(payload: ChangePlayerLocationInput) {
