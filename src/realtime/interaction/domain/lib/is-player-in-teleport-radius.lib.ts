@@ -1,5 +1,5 @@
+import type { Teleport } from 'src/realtime/location';
 import type { PlayerSessionSnapshot } from 'src/realtime/player-session';
-import { Teleport } from 'src/world/location/types/teleport.type';
 
 export const isPlayerInTeleportArea = (playerState: PlayerSessionSnapshot, teleport: Teleport) => {
   const px = Math.floor(playerState.position.x);

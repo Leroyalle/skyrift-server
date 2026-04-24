@@ -9,17 +9,14 @@ import { Inject, Injectable } from '@nestjs/common';
 
 import { isPlayerInTeleportArea } from '../../domain/lib/is-player-in-teleport-radius.lib';
 import type { InteractionRepositoryPort } from '../../domain/ports/interaction-repository.port';
+import type {
+  RequestUseTeleportPayload,
+  RequestUseTeleportPort,
+} from '../ports/request-use-teleport.port';
 import { INTERACTION_REPOSITORY_TOKEN } from '../ports/tokens';
 
-interface RequestUseTeleportPayload {
-  teleportId: string;
-  pointerX: number;
-  pointerY: number;
-  characterId: string;
-}
-
 @Injectable()
-export class RequestUseTeleportUseCase {
+export class RequestUseTeleportUseCase implements RequestUseTeleportPort {
   constructor(
     @Inject(ENTITY_RESOLVER_TOKEN) private readonly entityResolver: EntityResolverPort,
     @Inject(LOCATION_READER_TOKEN) private readonly locationReader: LocationReaderPort,
