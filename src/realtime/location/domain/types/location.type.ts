@@ -1,3 +1,5 @@
+import type { TiledMap } from 'src/common/types/tiled-map.type';
+
 import type { Teleport } from './teleport.type';
 
 export interface ILocation {
@@ -11,5 +13,6 @@ export interface ILocation {
     height: number;
   };
   filename: string;
+  tiledMap: TiledMap;
   teleportsMap: Record<string, Teleport>;
 }
