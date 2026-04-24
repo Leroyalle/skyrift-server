@@ -15,4 +15,7 @@ export interface MobSessionFacadePort {
   setState(id: string, state: MobStateStats): void;
   setLastAttackAt(id: string, lastAttackAt: number): void;
   setMovementLockedUntil(id: string, now: number): void;
+  respawn(id: string): void;
+  scheduleNextThinkAt(id: string, now: number, delay: number): void;
+  restoreHp(id: string, amount: number, now: number): number | undefined;
 }

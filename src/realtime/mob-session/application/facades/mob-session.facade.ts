@@ -16,6 +16,28 @@ export class MobSessionFacade implements MobSessionFacadePort {
     private readonly mobSessionRepository: MobSessionRepositoryPort,
   ) {}
 
+  public restoreHp(id: string, amount: number, now: number): number | undefined {
+    const session = this.mobSessionRepository.findById(id);
+    if (!session) return;
+    session.restoreHp(amount, now);
+    this.mobSessionRepository.save(session);
+    return session.hp;
+  }
+
+  public scheduleNextThinkAt(id: string, now: number, delay: number): void {
+    const session = this.mobSessionRepository.findById(id);
+    if (!session) return;
+    session.scheduleNextThinkAt(now, delay);
+    this.mobSessionRepository.save(session);
+  }
+
+  public respawn(id: string): void {
+    const session = this.mobSessionRepository.findById(id);
+    if (!session) return;
+    session.respawn();
+    this.mobSessionRepository.save(session);
+  }
+
   public findById(id: string) {
     return this.mobSessionRepository.findById(id);
   }
