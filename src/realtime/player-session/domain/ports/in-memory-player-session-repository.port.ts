@@ -7,4 +7,5 @@ export interface PlayerSessionRepositoryPort {
   remove(characterId: string): void;
   getByLocationId(locationId: string): PlayerSession[];
   findByIds(ids: string[]): PlayerSession[];
+  getIterable(): Iterable<PlayerSession>;
 }

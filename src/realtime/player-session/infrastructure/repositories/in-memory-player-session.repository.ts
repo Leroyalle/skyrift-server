@@ -1,4 +1,4 @@
-import { getOrCreate } from 'src/game/lib/helpers/get-or-create-array.lib';
+import { getOrCreate } from 'src/realtime/shared/lib/helpers/get-or-create-array.lib';
 
 import { Injectable } from '@nestjs/common';
 
@@ -43,5 +43,9 @@ export class InMemoryPlayerSessionRepository implements PlayerSessionRepositoryP
     const sessionIds = this.locationIdToSessionIds.get(locationId);
     if (!sessionIds) return [];
     return this.findByIds(Array.from(sessionIds));
+  }
+
+  public getIterable(): Iterable<PlayerSession> {
+    return this.sessions.values();
   }
 }
