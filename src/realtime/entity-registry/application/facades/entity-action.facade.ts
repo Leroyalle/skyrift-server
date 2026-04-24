@@ -2,6 +2,7 @@ import type { StateStats } from 'src/common/domain/types/runtime-stats.type';
 import type { MobStateStats } from 'src/realtime/mob-session';
 import type { MobSessionFacadePort } from 'src/realtime/mob-session/application/ports/mob-session-facade.port';
 import { MOB_SESSION_FACADE_TOKEN } from 'src/realtime/mob-session/application/ports/tokens';
+import { NPC_SESSION_FACADE_TOKEN, type NpcSessionFacadePort } from 'src/realtime/npc-session';
 import type { PlayerSessionFacadePort } from 'src/realtime/player-session/application/ports/player-session-facade.port';
 import { PLAYER_SESSION_FACADE_TOKEN } from 'src/realtime/player-session/application/ports/tokens';
 import type { IEntityRef } from 'src/realtime/shared/types/entity-ref.type';
@@ -23,6 +24,8 @@ export class EntityActionFacade implements EntityActionFacadePort {
     private readonly playerSessionFacade: PlayerSessionFacadePort,
     @Inject(MOB_SESSION_FACADE_TOKEN)
     private readonly mobSessionFacade: MobSessionFacadePort,
+    @Inject(NPC_SESSION_FACADE_TOKEN)
+    private readonly npcSessionFacade: NpcSessionFacadePort,
   ) {}
 
   public move(entityRef: IEntityRef, position: IPositionTile, now: number): void {
@@ -72,6 +75,16 @@ export class EntityActionFacade implements EntityActionFacadePort {
       this.playerSessionFacade.setState(payload.entityRef.id, payload.state as StateStats);
     } else if (payload.entityRef.type === 'mob') {
       this.mobSessionFacade.setState(payload.entityRef.id, payload.state as MobStateStats);
+    }
+  }
+
+  public restoreHp(entityRef: IEntityRef, amount: number, now: number): number | undefined {
+    if (entityRef.type === 'player') {
+      return this.playerSessionFacade.restoreHp(entityRef.id, amount, now);
+    } else if (entityRef.type === 'mob') {
+      return this.mobSessionFacade.restoreHp(entityRef.id, amount, now);
+    } else if (entityRef.type === 'npc') {
+      return this.npcSessionFacade.restoreHp(entityRef.id, amount, now);
     }
   }
 

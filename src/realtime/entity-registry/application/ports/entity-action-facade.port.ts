@@ -23,6 +23,7 @@ export interface EntityActionFacadePort {
   setLastAttackAt(entityRef: IEntityRef, lastAttackAt: number): void;
   setMovementLockedUntil(entityRef: IEntityRef, now: number): void;
   applySkillCooldown(entityRef: IEntityRef, skillId: string, now: number): number | undefined;
+  restoreHp(entityRef: IEntityRef, amount: number, now: number): number | undefined;
 }
 
 export type SetStatePayload =
