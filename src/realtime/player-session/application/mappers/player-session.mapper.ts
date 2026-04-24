@@ -50,7 +50,6 @@ export class PlayerSessionMapper {
         y: payload.y,
       },
       name: payload.name,
-      locationId: payload.locationId,
       level: payload.level,
       baseStats: {
         maxHp: payload.maxHp,
@@ -69,6 +68,7 @@ export class PlayerSessionMapper {
       faction: 'CrimsonCoven',
       appearance: Appearance.create(payload.appearance),
       combat: {
+        lastHpRegenerationTime: 0,
         hp: payload.hp,
         isAlive: payload.isAlive,
         currentTargetRef: null,
