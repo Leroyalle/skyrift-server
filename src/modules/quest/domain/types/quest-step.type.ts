@@ -1,4 +1,4 @@
-import { EntityRef } from 'src/game/types/entity/entity-ref.type';
+import type { IEntityRef } from 'src/realtime/shared/types/entity-ref.type';
 
 export type QuestStep = KillStep | CollectStep | TalkStep;
 
@@ -9,7 +9,7 @@ interface BaseQuestStep {
 
 export interface KillStep extends BaseQuestStep {
   type: StepType.Kill;
-  entityRef: EntityRef;
+  entityRef: IEntityRef;
   count: number;
 }
 export interface CollectStep extends BaseQuestStep {

@@ -1,4 +1,3 @@
-import { Npc } from 'src/characters/npc/entities/npc.entity';
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 import { Field, ID, Int, ObjectType } from '@nestjs/graphql';
@@ -42,6 +41,6 @@ export class QuestOrmEntity {
   prerequisites!: QuestPrerequisite[] | null;
 
   @Column()
-  @Field(() => Npc)
+  @Field()
   giverNpcId!: string;
 }
