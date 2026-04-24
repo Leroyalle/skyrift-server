@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 
 import type { LocationRepositoryPort } from '../../domain/ports/location-repository.port';
 import type { ILocation } from '../../domain/types/location.type';
+import { LocationAssembler } from '../assemblers/location.assembler';
 import type { BootstrapLocationsUseCasePort } from '../ports/bootstrap-locations-use-case.port';
 import { LOCATION_REPOSITORY_TOKEN } from '../ports/tokens';
 
@@ -12,7 +13,8 @@ export class BootstrapLocationsUseCase implements BootstrapLocationsUseCasePort 
     private readonly locationRepository: LocationRepositoryPort,
   ) {}
 
-  public execute(locations: ILocation[]) {
-    this.locationRepository.setAll(locations);
+  public execute(locations: Omit<ILocation, 'teleportsMap'>[]) {
+    const locationsWithTeleportsMap: ILocation[] = locations.map(LocationAssembler.toDomain);
+    this.locationRepository.setAll(locationsWithTeleportsMap);
   }
 }
