@@ -5,4 +5,5 @@ export interface MobSessionRepositoryPort {
   save(mobSession: MobSession): void;
   remove(id: string): void;
   getByLocationId(locationId: string): MobSession[];
+  getIterable(): Iterable<MobSession>;
 }

@@ -44,4 +44,8 @@ export class InMemoryMobSessionRepository implements MobSessionRepositoryPort {
     if (!sessionIds) return [];
     return this.findByIds(Array.from(sessionIds));
   }
+
+  public getIterable(): Iterable<MobSession> {
+    return this.sessions.values();
+  }
 }
