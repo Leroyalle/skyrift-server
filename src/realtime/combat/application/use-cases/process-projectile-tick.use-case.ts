@@ -1,7 +1,10 @@
+import { SOCKET_ADAPTER_TOKEN, type SocketAdapterPort } from 'src/infrastructure/ws';
 import {
   EQUIPMENT_CONTAINER_FACADE_TOKEN,
   type EquipmentContainerFacadePort,
 } from 'src/realtime/container';
+import { RedisKeys } from 'src/realtime/contracts/constants/redis-keys.constant';
+import { ServerToClientEvents } from 'src/realtime/contracts/constants/socket-events.constant';
 import {
   ENTITY_ACTION_FACADE_TOKEN,
   ENTITY_RESOLVER_TOKEN,
@@ -21,10 +24,11 @@ import { DamageCalculator } from '../../domain/services/damage-calculator.servic
 import type { BatchUpdateAction } from '../../domain/types/batch-update-action.type';
 import type { IProjectile } from '../../domain/types/projectile-queue.type';
 import { EquippedItemsToStatsMapper } from '../mappers/equipped-items-to-stats.mapper';
+import type { ProcessProjectileTickPort } from '../ports/process-projectile-tick.port';
 import { PROJECTILE_REPOSITORY_TOKEN } from '../ports/tokens';
 
 @Injectable()
-export class ProcessProjectileTick {
+export class ProcessProjectileTick implements ProcessProjectileTickPort {
   constructor(
     @Inject(PROJECTILE_REPOSITORY_TOKEN)
     private readonly projectileRepository: ProjectileQueueRepositoryPort,
@@ -33,6 +37,7 @@ export class ProcessProjectileTick {
     @Inject(CLOCK_TOKEN) private readonly clockService: ClockPort,
     @Inject(EQUIPMENT_CONTAINER_FACADE_TOKEN)
     private readonly equipmentFacade: EquipmentContainerFacadePort,
+    @Inject(SOCKET_ADAPTER_TOKEN) private readonly socketAdapter: SocketAdapterPort,
   ) {}
 
   public execute() {
@@ -64,6 +69,14 @@ export class ProcessProjectileTick {
       const batchLocation = getOrCreate(updatesByLocation, attacker.position.locationId, () => []);
 
       batchLocation.push(result);
+    }
+
+    for (const [locationId, batch] of updatesByLocation) {
+      this.socketAdapter.sendTo(
+        RedisKeys.Location + locationId,
+        ServerToClientEvents.EntityStateUpdate,
+        batch,
+      );
     }
 
     return updatesByLocation;

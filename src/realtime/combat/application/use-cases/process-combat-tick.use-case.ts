@@ -5,7 +5,7 @@ import {
   type EntityActionFacadePort,
   type EntityResolverPort,
 } from 'src/realtime/entity-registry';
-import { LOCATION_READER_FACADE_TOKEN, type LocationReaderPort } from 'src/realtime/location';
+import { LOCATION_READER_TOKEN, type LocationReaderPort } from 'src/realtime/location';
 import { MOVEMENT_QUEUE_FACADE_TOKEN, type MovementQueueFacadePort } from 'src/realtime/movement';
 import { PATH_FINDING_SERVICE, type PathFindingServicePort } from 'src/realtime/path-finding';
 import { CLOCK_TOKEN, type ClockPort } from 'src/realtime/shared/infrastructure/time';
@@ -18,10 +18,11 @@ import { Inject, Injectable } from '@nestjs/common';
 import type { ActionQueueRepositoryPort } from '../../domain/ports/action-queue-repository.port';
 import type { BatchUpdateAction } from '../../domain/types/batch-update-action.type';
 import type { ActionResolverServicePort } from '../ports/action-resolver-service.port';
+import type { ProcessCombatTickPort } from '../ports/process-combat-tick.port';
 import { ACTION_QUEUE_REPOSITORY_TOKEN, ACTION_RESOLVER_TOKEN } from '../ports/tokens';
 
 @Injectable()
-export class ProcessCombatTickUseCase {
+export class ProcessCombatTickUseCase implements ProcessCombatTickPort {
   constructor(
     @Inject(ACTION_QUEUE_REPOSITORY_TOKEN)
     private readonly actionQueueRepository: ActionQueueRepositoryPort,
@@ -30,9 +31,10 @@ export class ProcessCombatTickUseCase {
     @Inject(ENTITY_ACTION_FACADE_TOKEN) private entityActionFacade: EntityActionFacadePort,
     @Inject(MOVEMENT_QUEUE_FACADE_TOKEN)
     private readonly movementQueueFacade: MovementQueueFacadePort,
-    @Inject(ACTION_RESOLVER_TOKEN) private readonly actionResolverToken: ActionResolverServicePort,
+    @Inject(ACTION_RESOLVER_TOKEN)
+    private readonly actionResolverService: ActionResolverServicePort,
     @Inject(CLOCK_TOKEN) private readonly clockService: ClockPort,
-    @Inject(LOCATION_READER_FACADE_TOKEN) private readonly locationReaderFacade: LocationReaderPort,
+    @Inject(LOCATION_READER_TOKEN) private readonly locationReader: LocationReaderPort,
   ) {}
 
   public async execute() {
@@ -50,7 +52,7 @@ export class ProcessCombatTickUseCase {
 
       if (!attacker) continue;
 
-      const location = this.locationReaderFacade.getById(attacker.position.locationId);
+      const location = this.locationReader.getById(attacker.position.locationId);
 
       if (!location) continue;
 
@@ -120,7 +122,7 @@ export class ProcessCombatTickUseCase {
 
       const batchLocation = getOrCreate(updatesByLocation, location.id, () => []);
 
-      this.actionResolverToken.execute({
+      this.actionResolverService.execute({
         action: { actionType: action.actionType, skill },
         attacker: {
           attackSpeed: attacker.baseStats.attackSpeed,

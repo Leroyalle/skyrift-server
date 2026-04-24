@@ -1,7 +1,10 @@
+import { SOCKET_ADAPTER_TOKEN, type SocketAdapterPort } from 'src/infrastructure/ws';
 import {
   EQUIPMENT_CONTAINER_FACADE_TOKEN,
   type EquipmentContainerFacadePort,
 } from 'src/realtime/container';
+import { RedisKeys } from 'src/realtime/contracts/constants/redis-keys.constant';
+import { ServerToClientEvents } from 'src/realtime/contracts/constants/socket-events.constant';
 import {
   ENTITY_ACTION_FACADE_TOKEN,
   ENTITY_RESOLVER_TOKEN,
@@ -20,10 +23,11 @@ import type { AoeZoneRepositoryPort } from '../../domain/ports/aoe-zone-reposito
 import { DamageCalculator } from '../../domain/services/damage-calculator.service';
 import type { BatchUpdateAction, Target } from '../../domain/types/batch-update-action.type';
 import { EquippedItemsToStatsMapper } from '../mappers/equipped-items-to-stats.mapper';
+import type { ProcessAoeTickPort } from '../ports/process-aoe-tick.port';
 import { AOE_ZONE_REPOSITORY_TOKEN } from '../ports/tokens';
 
 @Injectable()
-export class ProcessAoeTickUseCase {
+export class ProcessAoeTickUseCase implements ProcessAoeTickPort {
   constructor(
     @Inject(AOE_ZONE_REPOSITORY_TOKEN)
     private readonly aoeZoneRepository: AoeZoneRepositoryPort,
@@ -33,6 +37,7 @@ export class ProcessAoeTickUseCase {
     @Inject(SPATIAL_GRID_INDEX_TOKEN) private readonly spatialGridIndex: SpatialGridIndexPort,
     @Inject(EQUIPMENT_CONTAINER_FACADE_TOKEN)
     private readonly equipmentFacade: EquipmentContainerFacadePort,
+    @Inject(SOCKET_ADAPTER_TOKEN) private readonly socketAdapter: SocketAdapterPort,
   ) {}
 
   public execute() {
@@ -116,6 +121,12 @@ export class ProcessAoeTickUseCase {
       });
     }
 
-    return updatesByLocation;
+    for (const [locationId, updates] of updatesByLocation.entries()) {
+      this.socketAdapter.sendTo(
+        RedisKeys.Location + locationId,
+        ServerToClientEvents.MovementBatch,
+        updates,
+      );
+    }
   }
 }
