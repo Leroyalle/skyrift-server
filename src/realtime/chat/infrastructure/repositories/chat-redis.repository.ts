@@ -5,7 +5,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import type { Message } from '../../domain/entities/message.entity';
 import type { ChatRepositoryPort } from '../../domain/ports/chat-repository.port';
 
-import { getRedisKeyByMessageType } from './lib/get-regis-key-by-message-type.lib';
+import { getRedisKeyByMessageType } from './lib/get-redis-key-by-message-type.lib';
 
 @Injectable()
 export class ChatRedisRepository implements ChatRepositoryPort {
