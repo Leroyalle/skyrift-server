@@ -1,4 +1,3 @@
-import { Character } from 'src/characters/character/entities/character.entity';
 import type { IEntityType } from 'src/realtime/shared/types/entity-ref.type';
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
@@ -12,7 +11,7 @@ export class BagOrmEntity {
   id!: string;
 
   @Column()
-  @Field(() => Character)
+  @Field()
   ownerId!: string;
 
   @Column()
