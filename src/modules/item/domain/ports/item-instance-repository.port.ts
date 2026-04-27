@@ -4,7 +4,7 @@ export interface ItemInstanceRepositoryPort {
   findById(id: ItemInstance['id']): Promise<ItemInstance | null>;
   findByIds(ids: ItemInstance['id'][]): Promise<ItemInstance[]>;
   save(itemInstance: ItemInstance): Promise<void>;
-  delete(itemInstance: ItemInstance): Promise<void>;
+  delete(id: ItemInstance['id']): Promise<void>;
   findByOwner(
     ownerId: ItemInstance['ownerId'],
     ownerType: ItemInstance['ownerType'],

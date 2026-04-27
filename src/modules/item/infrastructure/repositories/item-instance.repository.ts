@@ -14,8 +14,8 @@ export class ItemInstanceRepository implements ItemInstanceRepositoryPort {
     private readonly repository: Repository<ItemInstanceOrmEntity>,
   ) {}
 
-  public async delete(itemInstance: ItemInstance): Promise<void> {
-    await this.repository.remove(itemInstance);
+  public async delete(id: ItemInstance['id']): Promise<void> {
+    await this.repository.delete({ id });
   }
 
   public async save(itemInstance: ItemInstance): Promise<void> {
