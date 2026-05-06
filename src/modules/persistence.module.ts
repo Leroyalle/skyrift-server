@@ -6,6 +6,7 @@ import { CharacterClassModule } from './character-class/character-class.module';
 import { CharacterModule } from './character/character.module';
 import { EffectModule } from './effect/effect.module';
 import { EquipmentModule } from './equipment/equipment.module';
+import { FactionModule } from './faction/faction.module';
 import { ItemModule } from './item/item.module';
 import { LocationModule } from './location/location.module';
 import { MobModule } from './mob/mob.module';
@@ -33,6 +34,7 @@ import { UserModule } from './user/user.module';
     SpawnModule,
     AuthModule,
     UserModule,
+    FactionModule,
   ],
 })
 export class PersistenceModule {}
