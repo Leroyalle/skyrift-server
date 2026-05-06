@@ -13,6 +13,7 @@ async function runSeed() {
     console.log('Running seed...');
     await seedService.run();
     console.log('Seed completed successfully');
+    process.exit(0);
   } catch (error) {
     console.error('Error running seed:', error);
   } finally {
