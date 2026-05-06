@@ -1,12 +1,12 @@
-import fs from 'fs';
-import path from 'path';
+import * as fs from 'fs';
+import * as path from 'path';
 import { TiledMap } from 'src/common/types/tiled-map.type';
-import xml2js from 'xml2js';
+import * as xml2js from 'xml2js';
 
 export async function readFiles() {
-  const mapsDir = path.join(__dirname, '..', 'assets', 'maps');
+  const mapsDir = path.join(__dirname, '..', '..', '..', 'assets', 'maps');
   const maps = fs.readdirSync(mapsDir).filter(f => f.endsWith('.tmj'));
-  const tilesetsDir = path.join(__dirname, '..', 'assets', 'tilesets');
+  const tilesetsDir = path.join(__dirname, '..', '..', '..', 'assets', 'tilesets');
   const tilesets = fs.readdirSync(tilesetsDir).filter(f => f.endsWith('.xml'));
   const tilesetEntries = await Promise.all(
     tilesets.map(async tileset => {
@@ -22,7 +22,6 @@ export async function readFiles() {
     const parsedMap = JSON.parse(fs.readFileSync(filePath, 'utf-8')) as TiledMap;
     return { parsedMap, filename: map.split('.')[0] };
   });
-  console.log(mapEntries.length);
   return { tilesetEntries, mapEntries };
 }
 
