@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { CqrsModule } from '@nestjs/cqrs';
 
 import { InfrastructureModule } from './infrastructure/infrastructure.module';
 import { SeedModule } from './infrastructure/seed/seed.module';
@@ -11,6 +12,7 @@ import { RealtimeModule } from './realtime/reltime.module';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    CqrsModule.forRoot(),
     SeedModule,
     InfrastructureModule,
     PersistenceModule,

@@ -30,37 +30,29 @@ type UserOrmEntity {
 """
 scalar Timestamp
 
-type UserModel {
-  """ID пользователя"""
-  id: ID!
+type AppearanceModel {
+  head: String!
+  body: String!
+}
 
-  """Имя пользователя"""
+type FactionModel {
+  id: String!
   name: String!
-
-  """Email пользователя"""
-  email: String!
-
-  """Password пользователя"""
-  password: String!
-
-  """Дата создания пользователя"""
-  createdAt: Timestamp!
-
-  """Дата последнего обновления пользователя"""
-  updatedAt: Timestamp!
 }
 
-type AuthModel {
-  """Access token"""
-  accessToken: String!
-
-  """RefreshToken token"""
-  refreshToken: String!
+type CharacterClassModel {
+  id: String!
+  name: String!
+  faction: FactionModel!
 }
 
-type LogoutModel {
-  """Сообщение о выходе"""
-  message: String!
+type CharacterModel {
+  id: String!
+  name: String!
+  level: Int!
+  isDeleted: Boolean!
+  characterClass: CharacterClassModel!
+  appearance: AppearanceModel!
 }
 
 type TextureConfig {
@@ -143,18 +135,58 @@ type TiledMap {
   width: Int!
 }
 
+type UserModel {
+  """ID пользователя"""
+  id: ID!
+
+  """Имя пользователя"""
+  name: String!
+
+  """Email пользователя"""
+  email: String!
+
+  """Password пользователя"""
+  password: String!
+
+  """Дата создания пользователя"""
+  createdAt: Timestamp!
+
+  """Дата последнего обновления пользователя"""
+  updatedAt: Timestamp!
+}
+
+type AuthModel {
+  """Access token"""
+  accessToken: String!
+
+  """RefreshToken token"""
+  refreshToken: String!
+}
+
+type LogoutModel {
+  """Сообщение о выходе"""
+  message: String!
+}
+
 type Query {
+  findUserCharacters: [CharacterModel!]!
   findAllUsers: [UserModel!]!
   findOneUser(id: ID!): UserModel!
   getCurrentUser: UserModel!
 }
 
 type Mutation {
+  createUser(createUserInput: CreateUserDto!): UserModel!
   signUp(signUpInput: RegisterInput!): AuthModel!
   signIn(signInInput: LoginInput!): AuthModel!
   logout: LogoutModel!
   refreshTokens: AuthModel!
-  createUser(createUserInput: CreateUserDto!): UserModel!
+}
+
+input CreateUserDto {
+  name: String!
+  email: String!
+  password: String!
 }
 
 input RegisterInput {
@@ -173,11 +205,5 @@ input LoginInput {
   email: String!
 
   """Password пользователя"""
-  password: String!
-}
-
-input CreateUserDto {
-  name: String!
-  email: String!
   password: String!
 }
