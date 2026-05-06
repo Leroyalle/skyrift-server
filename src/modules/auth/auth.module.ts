@@ -1,10 +1,13 @@
 import { UserModule } from 'src/modules/user/user.module';
 
-import { Module } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
+import { PassportModule } from '@nestjs/passport';
 
+import { AuthFacade } from './application/facades/auth.facade';
 import {
   ACCESS_TOKEN_SERVICE_TOKEN,
+  AUTH_FACADE_TOKEN,
   LOGOUT_USE_CASE_TOKEN,
   PASSWORD_HASHER_TOKEN,
   REFRESH_HASHER_TOKEN,
@@ -26,8 +29,16 @@ import { AccessTokenStrategy } from './infrastructure/token/strategies/access-to
 import { RefreshTokenStrategy } from './infrastructure/token/strategies/refresh-token.strategy';
 import { AuthGraphqlController } from './presentation/auth.graphql.controller';
 
+@Global()
 @Module({
-  imports: [JwtModule.register({}), UserModule],
+  imports: [
+    PassportModule.register({
+      defaultStrategy: 'jwt',
+    }),
+
+    JwtModule.register({}),
+    UserModule,
+  ],
 
   providers: [
     AuthGraphqlController,
@@ -66,6 +77,11 @@ import { AuthGraphqlController } from './presentation/auth.graphql.controller';
       provide: REFRESH_USE_CASE_TOKEN,
       useClass: RefreshUseCase,
     },
+    {
+      provide: AUTH_FACADE_TOKEN,
+      useClass: AuthFacade,
+    },
   ],
+  exports: [AUTH_FACADE_TOKEN],
 })
 export class AuthModule {}
