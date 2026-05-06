@@ -2,7 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 
-import { AccessTokenPort, SignPayload } from '../../application/ports/access-token-service.port';
+import { AccessTokenPort } from '../../application/ports/access-token-service.port';
+import { SignPayload } from '../../application/types/sign-payload.type';
 import { TokenData } from '../../application/types/token-data.type';
 
 @Injectable()

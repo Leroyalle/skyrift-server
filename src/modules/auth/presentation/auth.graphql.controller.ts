@@ -42,7 +42,7 @@ export class AuthGraphqlController {
   public async signIn(
     @Args('signInInput') signInInput: LoginInput,
     @Context() context: { res: Response },
-  ) {
+  ): Promise<AuthModel> {
     const tokens = await this.signInUseCase.execute(signInInput);
 
     context.res.cookie('refreshToken', tokens.refreshToken, {
@@ -57,13 +57,13 @@ export class AuthGraphqlController {
       maxAge: 1000 * 60 * 15,
     });
 
-    return tokens;
+    return { accessToken: tokens.accessToken.token, refreshToken: tokens.refreshToken.token };
   }
 
   @UseGuards(AccessTokenGuard)
   @Mutation(() => LogoutModel)
   public logout(@CurrentUser() user: PayloadUser) {
-    return this.logoutUseCase.execute(user.sub);
+    return this.logoutUseCase.execute(user.id);
   }
 
   @UseGuards(RefreshTokenGuard)
@@ -72,8 +72,7 @@ export class AuthGraphqlController {
     @CurrentUser() user: PayloadUser,
     @Context() context: { res: Response },
   ) {
-    console.log('REFRESH USR');
-    const tokens = await this.refreshUseCase.execute(user.sub, user.refreshToken);
+    const tokens = await this.refreshUseCase.execute(user.id, user.refreshToken);
     context.res.cookie('refreshToken', tokens.refreshToken, {
       httpOnly: true,
       secure: true,
