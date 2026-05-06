@@ -42,7 +42,7 @@ export class SimulationTickUseCase {
 
   private readonly lastTickTimes = {
     movement: 0,
-    actions: 0,
+    combat: 0,
     aoe: 0,
     regeneration: 0,
     interaction: 0,
@@ -58,9 +58,9 @@ export class SimulationTickUseCase {
       this.processMovementTick.execute();
       this.lastTickTimes.movement = now;
     }
-    if (now - this.lastTickTimes.actions >= this.intervals.actions) {
+    if (now - this.lastTickTimes.combat >= this.intervals.combat) {
       await this.processCombatTick.execute();
-      this.lastTickTimes.actions = now;
+      this.lastTickTimes.combat = now;
     }
     if (now - this.lastTickTimes.projectiles >= this.intervals.projectiles) {
       this.processProjectileTick.execute();

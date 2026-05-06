@@ -26,7 +26,7 @@ interface ISkill {
   type: SkillType;
   tilesetKey: string;
   visualEffects?: SkillVisualEffect[];
-  extraParams?: Record<string, any>;
+  extraParams?: Record<string, unknown>;
 }
 
 export type SkillType = 'Target' | 'AoE' | 'Self' | 'Passive' | 'Buff' | 'Debuff';
