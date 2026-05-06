@@ -62,7 +62,10 @@ export class SeedService {
 
   public async run() {
     await this.clearDatabase();
+    await this.create();
+  }
 
+  private async create() {
     const { firstUser, secondUser } = await this.createUsers();
 
     const { dawnDominionFaction, silverleafFaction, crimsonCovenFaction } =
@@ -101,6 +104,11 @@ export class SeedService {
     const skills = await this.createSkills(archerClass.id);
 
     await this.createOwnedSkills({ id: players.first.id, type: 'player' }, [
+      skills.fireArrowSkill.id,
+      skills.fireHailSkill.id,
+    ]);
+
+    await this.createOwnedSkills({ id: players.second.id, type: 'player' }, [
       skills.fireArrowSkill.id,
       skills.fireHailSkill.id,
     ]);
@@ -309,8 +317,8 @@ export class SeedService {
       level: 1,
       locationId: locations[0].id,
       equipmentId: null,
-      x: 2016,
-      y: 960,
+      x: 1700,
+      y: 1200,
       maxHp: 1000,
       hp: 1000,
       baseMagicDamage: 20,
@@ -352,7 +360,57 @@ export class SeedService {
       bagId: bagId,
     });
 
-    return { first: firstCharacter };
+    const secondCharacter = await this.characterFacade.create({
+      name: 'Consul',
+      userId: users.second.id,
+      classId: classes.archerClass.id,
+      level: 1,
+      locationId: locations[0].id,
+      equipmentId: null,
+      x: 1700,
+      y: 1200,
+      maxHp: 1000,
+      hp: 1000,
+      baseMagicDamage: 20,
+      basePhysicalDamage: 50,
+      critMultiplier: 1,
+      experienceToNextLevel: 400,
+      attackRange: 4,
+      attackSpeed: 1000,
+      appearance: {
+        body: 'body_base',
+        head: 'head_base',
+      },
+      bagId: null,
+      experience: 0,
+      magicDefense: 1,
+      physicalDefense: 1,
+      questsIds: [],
+      skillPoints: 0,
+      skillsIds: [],
+      walkSpeed: 450,
+    });
+
+    const secondEquipmentId = await this.createEquipment(
+      {
+        id: secondCharacter.id,
+        type: 'player',
+      },
+      templateIds,
+    );
+
+    const secondBagId = await this.createBag({
+      id: secondCharacter.id,
+      type: 'player',
+    });
+
+    await this.characterFacade.update(secondCharacter.id, {
+      ...secondCharacter,
+      equipmentId: secondEquipmentId,
+      bagId: secondBagId,
+    });
+
+    return { first: firstCharacter, second: secondCharacter };
   }
 
   private async createSpawns(locations: ILocation[]) {
