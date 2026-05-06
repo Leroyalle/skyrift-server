@@ -14,8 +14,8 @@ export class BagPersistenceRepository implements BagRepositoryPort {
     @InjectRepository(BagOrmEntity) private readonly repository: Repository<BagOrmEntity>,
   ) {}
 
-  public async save(bag: IBag): Promise<void> {
-    await this.repository.save(bag);
+  public save(bag: IBag): Promise<IBag> {
+    return this.repository.save(bag);
   }
 
   public async remove(id: string): Promise<void> {

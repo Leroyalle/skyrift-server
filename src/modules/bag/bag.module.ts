@@ -1,14 +1,14 @@
 import { Module } from '@nestjs/common';
-import { CqrsModule } from '@nestjs/cqrs';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
-import { BagReader } from './application/facades/bag.reader';
+import { BagFacade } from './application/facades/bag.facade';
 import { BAG_FACADE_TOKEN, BAG_REPOSITORY_TOKEN } from './application/ports/tokens';
+import { queries } from './application/queries/queries';
 import { BagOrmEntity } from './infrastructure/persistence/entities/bag-orm.entity';
 import { BagPersistenceRepository } from './infrastructure/persistence/repositories/bag-persistence.repository';
 
 @Module({
-  imports: [CqrsModule, TypeOrmModule.forFeature([BagOrmEntity])],
+  imports: [TypeOrmModule.forFeature([BagOrmEntity])],
   providers: [
     {
       provide: BAG_REPOSITORY_TOKEN,
@@ -16,8 +16,9 @@ import { BagPersistenceRepository } from './infrastructure/persistence/repositor
     },
     {
       provide: BAG_FACADE_TOKEN,
-      useClass: BagReader,
+      useClass: BagFacade,
     },
+    ...queries,
   ],
   exports: [BAG_FACADE_TOKEN],
 })

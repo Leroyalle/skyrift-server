@@ -1,3 +1,3 @@
 export { BAG_FACADE_TOKEN } from './application/ports/tokens';
-export { BagReaderPort as BagFacadePort } from './application/ports/bag-reader.port';
+export { BagFacadePort } from './application/ports/bag-facade.port';
 export { IBag } from './domain/types/bag.type';

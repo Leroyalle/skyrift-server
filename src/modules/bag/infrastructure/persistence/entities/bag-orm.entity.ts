@@ -4,7 +4,7 @@ import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 import { Field, ID, Int, ObjectType } from '@nestjs/graphql';
 
 @ObjectType()
-@Entity()
+@Entity('bags')
 export class BagOrmEntity {
   @PrimaryGeneratedColumn('uuid')
   @Field(() => ID)
