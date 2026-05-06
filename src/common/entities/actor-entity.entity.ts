@@ -103,9 +103,9 @@ export abstract class ActorEntity extends Timestamp {
   @Field(() => Int, { defaultValue: 450 })
   walkSpeed!: number;
 
-  @Column()
+  @Column({ type: 'varchar', nullable: true })
   @JoinColumn({ name: 'equipmentId' })
-  equipmentId!: string;
+  equipmentId!: string | null;
 
   @Column(() => Appearance, { prefix: true })
   appearance!: Appearance;

@@ -3,7 +3,7 @@ export interface UserRequest extends Request {
 }
 
 export interface PayloadUser {
-  sub: string;
-  username: string;
+  id: string;
+  email: string;
   refreshToken: string;
 }
