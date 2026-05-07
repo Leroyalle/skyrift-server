@@ -68,7 +68,9 @@ export class CombatActionPlannerService implements CombatActionPlannerPort {
 
     if (!this.canAttackResolvedTarget(attacker, target.currentTarget)) return;
 
-    // TODO: засеттить атакеру currentTargetRef
+    if (target.currentTarget) {
+      this.entityActionFacade.setCurrentTarget(attacker, target.currentTarget);
+    }
 
     this.actionQueueRepository.clear(attacker);
 
@@ -146,7 +148,7 @@ export class CombatActionPlannerService implements CombatActionPlannerPort {
     return CombatTargetingPolicy.canHit(
       // TODO: вытащить фракцию сущности
       { id: attacker.id, type: attacker.type, faction: 'CrimsonCoven' },
-      { id: victim.id, type: victim.type, faction: 'CrimsonCoven' },
+      { id: victim.id, type: victim.type, faction: 'Silverleaf' },
     );
   }
 
