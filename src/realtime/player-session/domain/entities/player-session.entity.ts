@@ -1,4 +1,5 @@
 import type { StateStats } from 'src/common/domain/types/runtime-stats.type';
+import { IEntityRef } from 'src/realtime/shared/types/entity-ref.type';
 import type { ISkillSession, SkillSession } from 'src/realtime/skill-session';
 
 import type { IPlayerSession, PlayerSessionSnapshot } from '../types/player-session.type';
@@ -15,12 +16,22 @@ export class PlayerSession {
     return this.props.id;
   }
 
+  public get position() {
+    return this.props.position;
+  }
+
   public get hp() {
     return this.props.combat.hp;
   }
 
   public get locationId(): string {
     return this.props.position.locationId;
+  }
+
+  public setCurrentTarget(targetRef: IEntityRef): void {
+    this.ensureAlive();
+    this.props.combat.currentTargetRef = targetRef;
+    this.markDirty();
   }
 
   public moveTo(x: number, y: number, movedAt: number): void {

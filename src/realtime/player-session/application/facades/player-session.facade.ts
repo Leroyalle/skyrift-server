@@ -1,6 +1,7 @@
 import type { StateStats } from 'src/common/domain/types/runtime-stats.type';
 import type { PositionDto } from 'src/common/dto/position.dto';
 import { CLOCK_TOKEN, type ClockPort } from 'src/realtime/shared/infrastructure/time';
+import { IEntityRef } from 'src/realtime/shared/types/entity-ref.type';
 
 import { Inject, Injectable } from '@nestjs/common';
 
@@ -21,6 +22,13 @@ export class PlayerSessionFacade implements PlayerSessionFacadePort {
     const session = this.playerSessionRepository.findById(characterId);
     if (!session) return;
     session.moveTo(position.x, position.y, now);
+    this.playerSessionRepository.save(session);
+  }
+
+  public setCurrentTarget(id: string, targetRef: IEntityRef): void {
+    const session = this.playerSessionRepository.findById(id);
+    if (!session) return;
+    session.setCurrentTarget(targetRef);
     this.playerSessionRepository.save(session);
   }
 
@@ -51,8 +59,8 @@ export class PlayerSessionFacade implements PlayerSessionFacadePort {
     return skill.canUse(this.clockService.nowMs());
   }
 
-  public getSkillCombatSpec(skillId: string): SkillCombatSpec | null {
-    const session = this.playerSessionRepository.findById(skillId);
+  public getSkillCombatSpec(id: string, skillId: string): SkillCombatSpec | null {
+    const session = this.playerSessionRepository.findById(id);
     if (!session) return null;
     const skill = session.getSkill(skillId).snapshot();
     return {

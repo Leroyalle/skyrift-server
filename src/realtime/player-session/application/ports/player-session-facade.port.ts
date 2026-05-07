@@ -1,4 +1,5 @@
 import type { StateStats } from 'src/common/domain/types/runtime-stats.type';
+import { IEntityRef } from 'src/realtime/shared/types/entity-ref.type';
 import type { IPositionTile } from 'src/realtime/shared/types/position.type';
 import type { SkillType } from 'src/realtime/skill-session/domain/types/skill-session.type';
 
@@ -7,10 +8,11 @@ import type { IReceiveDamageResult } from '../../domain/types/receive-damage-res
 export interface PlayerSessionFacadePort {
   move(characterId: string, position: IPositionTile, now: number): void;
   canUseSkill(skillId: string): boolean;
-  getSkillCombatSpec(skillId: string): SkillCombatSpec | null;
+  getSkillCombatSpec(id: string, skillId: string): SkillCombatSpec | null;
   applyDamage(characterId: string, amount: number): IReceiveDamageResult | undefined;
   cancelAttack(id: string): void;
   changeLocation(id: string, x: number, y: number, locationId: string): void;
+  setCurrentTarget(id: string, targetRef: IEntityRef): void;
   setState(id: string, state: StateStats): void;
   setLastAttackAt(id: string, lastAttackAt: number): void;
   applySkillCooldown(id: string, skillId: string, now: number): number | undefined;
