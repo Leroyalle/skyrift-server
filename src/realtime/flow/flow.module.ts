@@ -29,6 +29,7 @@ import { CLOCK_TOKEN, SystemClockService } from '../shared/infrastructure/time';
 import { SpatialGridModule } from '../spatial-grid/spatial-grid.module';
 
 import {
+  BOOTSTRAP_WORLD_USE_CASE_TOKEN,
   BUILD_INITIAL_WORLD_STATE_USE_CASE,
   BUILD_LOCATION_WORLD_STATE_USE_CASE_TOKEN,
   BUILD_PLAYER_LOCATION_STATE_USE_CASE_TOKEN,
@@ -47,6 +48,8 @@ import { AiLifecycleService } from './application/services/ai/ai-lifecycle.servi
 import { AiPatrolService } from './application/services/ai/ai-patrol.service';
 import { AiStateSyncService } from './application/services/ai/ai-state-sync.service';
 import { AiTargetingService } from './application/services/ai/ai-targeting.service';
+import { RuntimeBagLoader } from './application/services/loaders/runtime-bag-loader.service';
+import { RuntimeEquipmentLoader } from './application/services/loaders/runtime-equipment-loader.service';
 import { PlayerLocationTransitionService } from './application/services/player-location-transition.service';
 import { ManageBagUseCase } from './application/use-cases/actions/manage-bag.use-case';
 import { MoveItemUseCase } from './application/use-cases/actions/move-item.use-case';
@@ -152,7 +155,10 @@ import { InitializePlayerSessionUseCase } from './application/use-cases/session/
     BootstrapMobsUseCase,
     BootstrapNpcsUseCase,
     BootstrapQuestsUseCase,
-    BootstrapWorldUseCase,
+    {
+      provide: BOOTSTRAP_WORLD_USE_CASE_TOKEN,
+      useClass: BootstrapWorldUseCase,
+    },
 
     // BuildInitialWorldStateUseCase,
 
@@ -165,6 +171,8 @@ import { InitializePlayerSessionUseCase } from './application/use-cases/session/
       useClass: BuildPlayerLocationStateUseCase,
     },
     InitializePlayerSessionUseCase,
+    RuntimeBagLoader,
+    RuntimeEquipmentLoader,
   ],
   exports: [
     CHANGE_PLAYER_LOCATION_USE_CASE_TOKEN,
@@ -177,6 +185,8 @@ import { InitializePlayerSessionUseCase } from './application/use-cases/session/
     MOVE_ITEM_USE_CASE_TOKEN,
     MANAGE_BAG_USE_CASE_TOKEN,
     PROCESS_AI_TICK_USE_CASE_TOKEN,
+    BUILD_INITIAL_WORLD_STATE_USE_CASE,
+    BOOTSTRAP_WORLD_USE_CASE_TOKEN,
   ],
 })
 export class FlowModule {}
