@@ -1,5 +1,6 @@
 import { decodeEntityKey } from 'src/realtime/shared/lib/helpers/decode-entity-key.helper';
 import { generateEntityKey } from 'src/realtime/shared/lib/helpers/generate-entity-key.helper';
+import { getOrCreate } from 'src/realtime/shared/lib/helpers/get-or-create-array.lib';
 import type { IEntityKey, IEntityRef } from 'src/realtime/shared/types/entity-ref.type';
 
 import { Injectable } from '@nestjs/common';
@@ -26,10 +27,12 @@ export class ProjectileQueueRepository implements ProjectileQueueRepositoryPort 
   }
 
   public set(entityRef: IEntityRef, projectile: IProjectile): void {
-    const projectiles = this.projectileQueue.get(generateEntityKey(entityRef));
-    if (projectiles) {
-      projectiles.set(projectile.startedAt, projectile);
-    }
+    const projectiles = getOrCreate(
+      this.projectileQueue,
+      generateEntityKey(entityRef),
+      () => new Map(),
+    );
+    projectiles.set(projectile.startedAt, projectile);
   }
 
   public setArray(entityRef: IEntityRef, projectiles: IProjectile[]): void {
