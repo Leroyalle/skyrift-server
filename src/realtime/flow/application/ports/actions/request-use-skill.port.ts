@@ -2,7 +2,7 @@ import type { IEntityRef } from 'src/realtime/shared/types/entity-ref.type';
 import type { IPositionTile } from 'src/realtime/shared/types/position.type';
 
 export interface RequestUseSkillPort {
-  execute(payload: RequestUseSkillPayload): void;
+  execute(payload: RequestUseSkillPayload): Promise<void>;
 }
 
 export type RequestUseSkillPayload = {

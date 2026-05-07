@@ -18,11 +18,10 @@ export class ContainerInitializerMapper {
       payload.itemTemplates.map(itemTemplate => [itemTemplate.id, itemTemplate]),
     );
 
-    const runtimeItems = payload.itemInstances.reduce<RuntimeItem[]>((acc, item) => {
-      const template = itemTemplatesMap.get(item.templateId);
+    const runtimeItems = payload.itemInstances.reduce<RuntimeItem[]>((acc, instanceItem) => {
+      const template = itemTemplatesMap.get(instanceItem.templateId);
       if (!template) throw new Error('Template not found');
       const { id: _, ...templateItem } = template;
-      const { ownerType: __, ownerId: ___, ...instanceItem } = item;
 
       acc.push({
         ...instanceItem,
@@ -65,8 +64,8 @@ export class ContainerInitializerMapper {
     };
 
     const equipmentItems = payload.itemInstances.reduce<IEquipmentContainer['slots']>(
-      (acc, item) => {
-        const template = itemTemplatesMap.get(item.templateId);
+      (acc, instanceItem) => {
+        const template = itemTemplatesMap.get(instanceItem.templateId);
         if (!template) throw new Error('Template not found');
 
         if (!template.slot) throw new Error("Template doesn't have a slot");
@@ -76,7 +75,6 @@ export class ContainerInitializerMapper {
         }
 
         const { id: _, ...templateItem } = template;
-        const { ownerType: __, ownerId: ___, ...instanceItem } = item;
 
         const eqItem = { ...instanceItem, ...templateItem };
         if (!isEquippableItem(eqItem)) throw new Error('Item is not equippable');
