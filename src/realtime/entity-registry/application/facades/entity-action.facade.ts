@@ -36,6 +36,14 @@ export class EntityActionFacade implements EntityActionFacadePort {
     }
   }
 
+  public setCurrentTarget(entityRef: IEntityRef, targetRef: IEntityRef): void {
+    if (entityRef.type === 'player') {
+      this.playerSessionFacade.setCurrentTarget(entityRef.id, targetRef);
+    } else if (entityRef.type === 'mob') {
+      this.mobSessionFacade.setCurrentTarget(entityRef.id, targetRef);
+    }
+  }
+
   public canUseSkill(entityRef: IEntityRef, skillId: string): boolean {
     if (entityRef.type === 'player') {
       return this.playerSessionFacade.canUseSkill(skillId);
@@ -45,7 +53,7 @@ export class EntityActionFacade implements EntityActionFacadePort {
 
   public getSkillCombatData(entityRef: IEntityRef, skillId: string): SkillCombatSpec | null {
     if (entityRef.type === 'player') {
-      return this.playerSessionFacade.getSkillCombatSpec(skillId);
+      return this.playerSessionFacade.getSkillCombatSpec(entityRef.id, skillId);
     }
     return null;
   }

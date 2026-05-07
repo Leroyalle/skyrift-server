@@ -40,9 +40,9 @@ export class MoveItemUseCase implements MoveItemUseCasePort {
 
     if (foundSlot === undefined) throw new Error('Slot is not found');
 
-    bag.removeItem(payload.itemId);
-
     if (!isEquippableItem(foundItem)) throw new Error('Item is not equippable');
+
+    bag.removeItem(payload.itemId);
 
     equipment.equip(foundItem, payload.slot);
 
