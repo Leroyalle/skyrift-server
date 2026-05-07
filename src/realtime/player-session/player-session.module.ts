@@ -1,8 +1,10 @@
 import { Module } from '@nestjs/common';
-import { CqrsModule } from '@nestjs/cqrs';
 
+import { PresenceModule } from '../presence/presence.module';
 import { CLOCK_TOKEN, SystemClockService } from '../shared/infrastructure/time';
+import { SpatialGridModule } from '../spatial-grid/spatial-grid.module';
 
+import { commands } from './application/commands/commands';
 import { PlayerSessionFacade } from './application/facades/player-session.facade';
 import { PlayerSessionReader } from './application/facades/player-session.reader';
 import {
@@ -13,11 +15,12 @@ import {
   PLAYER_SESSION_REPOSITORY_TOKEN,
 } from './application/ports/tokens';
 import { GetPlayerSessionSnapshotByCharacterIdQuery } from './application/queries/get-snapshot-by-character-id/get-player-session-snapshot-by-character-id.query';
+import { queries } from './application/queries/queries';
 import { ConnectPlayerUseCase } from './application/use-cases/connect-player.use-case';
 import { InMemoryPlayerSessionRepository } from './infrastructure/repositories/in-memory-player-session.repository';
 
 @Module({
-  imports: [CqrsModule],
+  imports: [SpatialGridModule, PresenceModule],
   providers: [
     { provide: CONNECT_PLAYER_USE_CASE_TOKEN, useClass: ConnectPlayerUseCase },
     {
@@ -40,6 +43,8 @@ import { InMemoryPlayerSessionRepository } from './infrastructure/repositories/i
       provide: CLOCK_TOKEN,
       useClass: SystemClockService,
     },
+    ...queries,
+    ...commands,
   ],
   exports: [
     CONNECT_PLAYER_USE_CASE_TOKEN,

@@ -1,42 +1,5 @@
-import type { ISkillSession } from 'src/realtime/skill-session';
-
-type Appearance = {
-  body: string;
-  head: string;
-};
-
-type Props = {
-  experience: number;
-  experienceToNextLevel: number;
-  skillPoints: number;
-  isDeleted: boolean;
-  userId: string;
-  classId: string;
-  skills: ISkillSession[];
-  locationId: string;
-  id: string;
-  name: string;
-  level: number;
-  maxHp: number;
-  hp: number;
-  basePhysicalDamage: number;
-  baseMagicDamage: number;
-  physicalDefense: number;
-  magicDefense: number;
-  critMultiplier: number;
-  attackSpeed: number;
-  attackRange: number;
-  isAlive: boolean;
-  questsIds: string[];
-  x: number;
-  y: number;
-  walkSpeed: number;
-  equipmentId: string;
-  appearance: Appearance;
-  createdAt: Date;
-  bagId: string;
-};
+import { ConnectPlayerPayload } from '../../types/connect-player-payload.type';
 
 export class ConnectPlayerCommand {
-  constructor(public readonly props: Props) {}
+  constructor(public readonly props: ConnectPlayerPayload) {}
 }
