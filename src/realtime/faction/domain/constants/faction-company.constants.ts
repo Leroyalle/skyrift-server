@@ -5,4 +5,6 @@ export const FactionCompany: Record<FactionName, number> = {
   Silverleaf: 1,
   CrimsonCoven: 2,
   Flameborn: 2,
+  Neutral: 0,
+  Wild: 0,
 } as const;

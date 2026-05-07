@@ -1,4 +1,10 @@
-export type FactionName = 'DawnDominion' | 'Silverleaf' | 'CrimsonCoven' | 'Flameborn';
+export type FactionName =
+  | 'DawnDominion'
+  | 'Silverleaf'
+  | 'CrimsonCoven'
+  | 'Flameborn'
+  | 'Wild'
+  | 'Neutral';
 
 export interface Faction {
   id: string;
