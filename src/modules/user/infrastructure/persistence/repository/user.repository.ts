@@ -27,8 +27,8 @@ export class UserRepository implements UserRepositoryPort {
   }
 
   public async findOne(id: string) {
-    const result = await this.userRepository.findOne({
-      where: { id },
+    const result = await this.userRepository.findOneBy({
+      id,
     });
     return result ? User.create(result) : null;
   }

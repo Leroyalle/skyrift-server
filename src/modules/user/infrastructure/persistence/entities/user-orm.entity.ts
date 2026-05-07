@@ -3,7 +3,7 @@ import { Column, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeor
 import { Field, ID, ObjectType } from '@nestjs/graphql';
 
 @ObjectType()
-@Entity()
+@Entity('users')
 export class UserOrmEntity {
   @PrimaryGeneratedColumn('uuid')
   @Field(() => ID, { description: 'ID пользователя' })

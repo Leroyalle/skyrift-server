@@ -37,7 +37,7 @@ export class UserGraphqlController {
   @UseGuards(AccessTokenGuard)
   @Query(() => UserModel, { name: 'getCurrentUser' })
   public async getCurrentUser(@CurrentUser() user: PayloadUser) {
-    const foundUser = await this.userFacade.findOne(user.sub);
+    const foundUser = await this.userFacade.findOne(user.id);
     if (!foundUser) return null;
     return UserPresentationMapper.toModel(foundUser);
   }
