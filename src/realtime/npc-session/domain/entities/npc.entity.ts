@@ -48,7 +48,7 @@ export class NpcSession {
       appearance: this.props.appearance.snapshot(),
       type: 'npc',
       state: { ...this.props.state },
-      spawnId: this.props.spawnId,
+      spawn: { ...this.props.spawn },
       position: { ...this.props.position },
       name: this.props.name,
       level: this.props.level,

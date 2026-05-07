@@ -17,11 +17,12 @@ export interface INpcSession {
   combat: CombatStats;
   state: NpcStateStats;
 
+  spawn: NpcSpawnPoint;
+
   faction: FactionName;
 
   appearance: Appearance;
 
-  spawnId: string;
   equipmentId: string;
 
   dirty: boolean;
@@ -35,13 +36,18 @@ export type NpcSessionProps = {
   name: string;
   level: number;
   id: string;
-  spawnId: string;
+  spawn: NpcSpawnPoint;
   baseStats: NpcBaseStats;
   position: PositionStats;
   combat: CombatStats;
   faction: FactionName;
   appearance: { body: string; head: string };
   equipmentId: string;
+};
+
+export type NpcSpawnPoint = {
+  spawnId: string;
+  position: PositionStats;
 };
 
 interface NpcBaseStats extends BaseStats {
