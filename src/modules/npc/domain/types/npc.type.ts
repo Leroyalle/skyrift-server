@@ -18,7 +18,7 @@ export interface INpc {
   x: number;
   y: number;
   walkSpeed: number;
-  equipmentId: string;
+  equipmentId: string | null;
   appearance: {
     body: string;
     head: string;

@@ -4,7 +4,7 @@ import { Column, Entity } from 'typeorm';
 import { Field, ObjectType } from '@nestjs/graphql';
 
 @ObjectType()
-@Entity('npc')
+@Entity('npcs')
 export class NpcOrmEntity extends ActorEntity {
   @Column()
   @Field()

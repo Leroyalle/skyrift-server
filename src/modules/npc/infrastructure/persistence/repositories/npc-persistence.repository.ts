@@ -13,8 +13,8 @@ export class NpcPersistenceRepository implements NpcRepositoryPort {
     @InjectRepository(NpcOrmEntity) private readonly repository: Repository<NpcOrmEntity>,
   ) {}
 
-  public async save(npc: INpc): Promise<void> {
-    await this.repository.save(npc);
+  public save(npc: INpc): Promise<INpc> {
+    return this.repository.save(npc);
   }
 
   public async findById(id: string): Promise<INpc | null> {
