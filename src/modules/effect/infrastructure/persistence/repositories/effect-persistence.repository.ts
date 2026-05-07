@@ -14,8 +14,9 @@ export class EffectPersistenceRepository implements EffectPersistenceRepositoryP
     @InjectRepository(EffectOrmEntity) private readonly repository: Repository<EffectOrmEntity>,
   ) {}
 
-  public async save(domain: Effect): Promise<void> {
-    await this.repository.save(EffectMapper.toPersistence(domain));
+  public async save(domain: Effect): Promise<Effect> {
+    const result = await this.repository.save(EffectMapper.toPersistence(domain));
+    return EffectMapper.toDomain(result);
   }
 
   public async findById(id: Effect['id']): Promise<Effect | null> {
