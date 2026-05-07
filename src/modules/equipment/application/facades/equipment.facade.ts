@@ -1,3 +1,5 @@
+import { randomUUID } from 'node:crypto';
+
 import { Inject, Injectable } from '@nestjs/common';
 
 import type { EquipmentRepositoryPort } from '../../domain/ports/equipment-repository.port';
@@ -12,23 +14,23 @@ export class EquipmentFacade implements EquipmentFacadePort {
     private readonly equipmentRepository: EquipmentRepositoryPort,
   ) {}
 
-  public findByCharacterId(characterId: IEquipment['characterId']): Promise<IEquipment | null> {
-    return this.equipmentRepository.findByCharacterId(characterId);
+  public findByOwnerRef(characterId: IEquipment['ownerRef']): Promise<IEquipment | null> {
+    return this.equipmentRepository.findByOwnerRef(characterId);
   }
 
-  public delete(equipment: IEquipment): Promise<void> {
-    return this.equipmentRepository.delete(equipment);
+  public delete(id: IEquipment['id']): Promise<void> {
+    return this.equipmentRepository.delete(id);
   }
 
   public findById(id: IEquipment['id']): Promise<IEquipment | null> {
     return this.equipmentRepository.findById(id);
   }
 
-  public save(equipment: IEquipment): Promise<void> {
-    return this.equipmentRepository.save(equipment);
+  public save(equipment: Omit<IEquipment, 'id'>): Promise<IEquipment> {
+    return this.equipmentRepository.save({ id: randomUUID(), ...equipment });
   }
 
-  public update(equipment: IEquipment): Promise<void> {
+  public update(id: IEquipment['id'], equipment: IEquipment): Promise<void> {
     return this.equipmentRepository.update(equipment);
   }
 }

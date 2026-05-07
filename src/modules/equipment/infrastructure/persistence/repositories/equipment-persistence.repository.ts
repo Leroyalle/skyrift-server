@@ -6,6 +6,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { EquipmentOrmEntity } from '../entities/equipment-orm.entity';
+import { EquipmentMapper } from '../mapper/equipment.mapper';
 
 @Injectable()
 export class EquipmentPersistenceRepository implements EquipmentRepositoryPort {
@@ -14,23 +15,33 @@ export class EquipmentPersistenceRepository implements EquipmentRepositoryPort {
     private readonly repository: Repository<EquipmentOrmEntity>,
   ) {}
 
-  public async save(equipment: IEquipment): Promise<void> {
-    await this.repository.save(equipment);
+  public async save(equipment: IEquipment): Promise<IEquipment> {
+    const result = await this.repository.save(EquipmentMapper.toPersistence(equipment));
+    return EquipmentMapper.toDomain(result);
   }
 
-  public update(equipment: IEquipment): Promise<void> {
-    return this.save(equipment);
+  public async update(equipment: IEquipment): Promise<void> {
+    await this.save(equipment);
   }
 
-  public async delete(equipment: IEquipment): Promise<void> {
-    await this.repository.remove(equipment);
+  public async delete(id: IEquipment['id']): Promise<void> {
+    await this.repository.delete({ id });
   }
 
-  public findByCharacterId(characterId: IEquipment['characterId']): Promise<IEquipment | null> {
-    return this.repository.findOneBy({ characterId });
+  public async findByOwnerRef(ownerRef: IEquipment['ownerRef']): Promise<IEquipment | null> {
+    const persistence = await this.repository.findOneBy({
+      ownerType: ownerRef.type,
+      ownerId: ownerRef.id,
+    });
+
+    if (!persistence) return null;
+
+    return EquipmentMapper.toDomain(persistence);
   }
 
-  public findById(id: IEquipment['id']): Promise<IEquipment | null> {
-    return this.repository.findOneBy({ id });
+  public async findById(id: IEquipment['id']): Promise<IEquipment | null> {
+    const persistence = await this.repository.findOneBy({ id });
+    if (!persistence) return null;
+    return EquipmentMapper.toDomain(persistence);
   }
 }

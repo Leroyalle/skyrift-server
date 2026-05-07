@@ -1,6 +1,8 @@
+import { IEntityRef } from 'src/realtime/shared/types/entity-ref.type';
+
 export interface IEquipment {
   id: string;
-  characterId: string;
+  ownerRef: IEntityRef;
   helmetId: string | null;
   breastplateId: string | null;
   glovesId: string | null;

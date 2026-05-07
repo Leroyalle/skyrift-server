@@ -1,3 +1,4 @@
+import { IEntityType } from 'src/realtime/shared/types/entity-ref.type';
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 import { Field, ID, ObjectType } from '@nestjs/graphql';
@@ -11,7 +12,11 @@ export class EquipmentOrmEntity {
 
   @Column()
   @Field()
-  characterId!: string;
+  ownerId!: string;
+
+  @Column()
+  @Field()
+  ownerType!: IEntityType;
 
   @Column('uuid', { nullable: true })
   helmetId!: string | null;
