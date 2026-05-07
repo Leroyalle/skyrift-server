@@ -18,7 +18,7 @@ export class CharacterClassMapper {
   public static toPersistence = (payload: CharacterClass): CharacterClassOrmEntity => {
     const snapshot = payload.snapshot();
     return {
-      description: snapshot.description.getValue(),
+      description: snapshot.description,
       factionId: snapshot.factionId,
       id: snapshot.id,
       skillsIds: snapshot.skillsIds,

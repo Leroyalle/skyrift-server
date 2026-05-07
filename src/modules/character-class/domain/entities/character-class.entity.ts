@@ -1,3 +1,4 @@
+import { ICharacterClass } from '../types/character-class.type';
 import type { ClassDescriptionVo } from '../vo/class-description.vo';
 
 interface Props {
@@ -16,7 +17,7 @@ export class CharacterClass {
     return new CharacterClass(props);
   }
 
-  public snapshot(): Readonly<Props> {
-    return { ...this.props };
+  public snapshot(): Readonly<ICharacterClass> {
+    return { ...this.props, description: this.props.description.getValue() };
   }
 }

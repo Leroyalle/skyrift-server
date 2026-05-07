@@ -1,17 +1,20 @@
 import { Module } from '@nestjs/common';
-import { CqrsModule } from '@nestjs/cqrs';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { CharacterClassReaderAdapter } from './application/adapters/character-class-reader.adapter';
+import { commands } from './application/commands/commands';
+import { CharacterClassFacade } from './application/facades/character-class.facade';
 import {
+  CHARACTER_CLASS_FACADE_TOKEN,
   CHARACTER_CLASS_READER_TOKEN,
   CHARACTER_CLASS_REPOSITORY,
 } from './application/ports/tokens';
+import { queries } from './application/queries/quries';
 import { CharacterClassOrmEntity } from './infrastructure/persistence/character-class-orm.entity';
 import { CharacterClassRepository } from './infrastructure/persistence/character-class.infrastructure';
 
 @Module({
-  imports: [CqrsModule, TypeOrmModule.forFeature([CharacterClassOrmEntity])],
+  imports: [TypeOrmModule.forFeature([CharacterClassOrmEntity])],
   providers: [
     {
       provide: CHARACTER_CLASS_REPOSITORY,
@@ -21,7 +24,10 @@ import { CharacterClassRepository } from './infrastructure/persistence/character
       provide: CHARACTER_CLASS_READER_TOKEN,
       useClass: CharacterClassReaderAdapter,
     },
+    { provide: CHARACTER_CLASS_FACADE_TOKEN, useClass: CharacterClassFacade },
+    ...commands,
+    ...queries,
   ],
-  exports: [CHARACTER_CLASS_READER_TOKEN],
+  exports: [CHARACTER_CLASS_READER_TOKEN, CHARACTER_CLASS_FACADE_TOKEN],
 })
 export class CharacterClassModule {}

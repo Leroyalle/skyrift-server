@@ -15,7 +15,7 @@ export class CharacterClassClientMapper {
     return {
       id: snapshot.id,
       name: snapshot.name,
-      description: snapshot.description.getValue(),
+      description: snapshot.description,
       logo: snapshot.logo,
       factionId: snapshot.factionId,
       skillsIds: snapshot.skillsIds,
