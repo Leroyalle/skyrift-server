@@ -29,7 +29,7 @@ export class BuildPlayerLocationStateUseCase implements BuildPlayerLocationState
     characterId: string,
     locationId: string,
   ): Promise<GameInitialData | undefined> {
-    const locationResult = this.buildLocationWorldStateUseCase.execute(locationId);
+    const locationResult = await this.buildLocationWorldStateUseCase.execute(locationId);
 
     const player = this.entityResolver.getByRef({
       type: 'player',
@@ -38,21 +38,20 @@ export class BuildPlayerLocationStateUseCase implements BuildPlayerLocationState
 
     if (!player) return;
 
-    const playerSession = SessionClientMapper.mapPlayerSession(player);
+    const equipment = await this.equipmentFacade.getContainerById(player.equipmentId);
+
+    if (!equipment) return;
+
+    const playerSession = SessionClientMapper.mapPlayerSession(player, equipment);
 
     const bag = this.bagContainerReader.findById(player.bagId);
 
     if (!bag) return;
 
-    const equipment = await this.equipmentFacade.getContainerById(player.equipmentId);
-
-    if (!equipment) return;
-
     return {
       ...locationResult,
       player: playerSession,
       bag,
-      equipment,
     };
   }
 }
