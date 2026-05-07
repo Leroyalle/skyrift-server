@@ -15,8 +15,10 @@ export class OwnedSkillPersistenceRepository implements OwnedSkillPersistenceRep
     private readonly repository: Repository<OwnedSkillOrmEntity>,
   ) {}
 
-  public async save(domain: OwnedSkill): Promise<void> {
-    await this.repository.save(OwnedSkillMapper.toPersistence(domain));
+  public async save(domain: OwnedSkill): Promise<OwnedSkill> {
+    const persistence = OwnedSkillMapper.toPersistence(domain);
+    const result = await this.repository.save(persistence);
+    return OwnedSkillMapper.toDomain(result);
   }
 
   public async findById(id: OwnedSkill['id']): Promise<OwnedSkill | null> {
