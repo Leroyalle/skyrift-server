@@ -41,6 +41,8 @@ export class ProcessInteractionTickUseCase implements ProcessInteractionTickPort
       }
 
       await this.interactionResolverService.execute(character, location, interaction);
+
+      this.interactionRepository.delete(interaction.characterId);
     }
   }
 }
