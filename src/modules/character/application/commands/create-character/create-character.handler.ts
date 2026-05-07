@@ -1,4 +1,5 @@
 import { randomUUID } from 'crypto';
+import { Appearance } from 'src/common/domain/vo/appearance.vo';
 import { CHARACTER_CLASS_READER_TOKEN } from 'src/modules/character-class';
 import { Character } from 'src/modules/character/domain/entities/character.entity';
 import type { CharacterRepositoryPort } from 'src/modules/character/domain/ports/character-repository.port';
@@ -34,7 +35,7 @@ export class CreateCharacterHandler implements ICommandHandler<CreateCharacterCo
       userId: command.props.userId,
       classId: command.props.classId,
       name: command.props.name,
-      appearance: command.props.appearance,
+      appearance: Appearance.create(command.props.appearance),
       id: randomUUID(),
       y: command.props.y,
       x: command.props.x,
@@ -54,10 +55,10 @@ export class CreateCharacterHandler implements ICommandHandler<CreateCharacterCo
       locationId: command.props.locationId,
       equipmentId: command.props.equipmentId,
       walkSpeed: command.props.walkSpeed,
-      isAlive: command.props.isAlive,
+      isAlive: command.props.hp > 0,
       questsIds: command.props.questsIds,
       createdAt: this.clockService.now(),
-      isDeleted: command.props.isDeleted,
+      isDeleted: false,
       level: command.props.level,
       skillsIds: command.props.skillsIds,
     });
