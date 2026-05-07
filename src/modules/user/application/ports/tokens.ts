@@ -1,0 +1,2 @@
+export const USER_REPOSITORY_TOKEN = Symbol('USER_REPOSITORY_TOKEN');
+export const USER_FACADE_TOKEN = Symbol('USER_FACADE_TOKEN');

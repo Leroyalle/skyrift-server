@@ -1,10 +1,11 @@
-import { CharacterActionState } from 'src/characters/character/types/runtime-character';
-import { MobActionState } from 'src/game/services/characters/runtime-mob/types/runtime-mob.type';
-import { NpcActionState } from 'src/game/services/characters/runtime-npc/types/runtime-npc.type';
-import { EntityRef } from 'src/game/types/entity/entity-ref.type';
-import { EntityType } from 'src/game/types/entity/entity-type.type';
+// import { CharacterActionState } from 'src/characters/character/types/runtime-character';
+// import { MobActionState } from 'src/game/services/characters/runtime-mob/types/runtime-mob.type';
+// import { NpcActionState } from 'src/game/services/characters/runtime-npc/types/runtime-npc.type';
+// import { EntityRef } from 'src/game/types/entity/entity-ref.type';
+// import { EntityType } from 'src/game/types/entity/entity-type.type';
+import type { IEntityRef, IEntityType } from 'src/realtime/shared/types/entity-ref.type';
 
-export interface RuntimeActorEntity<E extends EntityType>
+export interface RuntimeActorEntity<E extends IEntityType>
   extends ActorRuntimeStats, UniqueFields, IActorState<E> {
   type: E;
 }
@@ -14,7 +15,7 @@ export interface ActorRuntimeStats {
   lastAttackAt: number;
   lastMoveAt: number;
   isAttacking: boolean;
-  currentTarget: EntityRef | null;
+  currentTarget: IEntityRef | null;
 }
 
 interface IActorState<E extends keyof ActorStateMap> {
@@ -26,7 +27,7 @@ export interface UniqueFields {
 }
 
 type ActorStateMap = {
-  player: CharacterActionState;
-  mob: MobActionState;
-  npc: NpcActionState;
+  player: never;
+  mob: never;
+  npc: never;
 };

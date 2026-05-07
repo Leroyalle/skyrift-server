@@ -1,26 +1,13 @@
-import Redis from 'ioredis';
-
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 
-import { RedisService } from './redis.service';
+import { REDIS_ADAPTER_TOKEN } from './application/ports/tokens';
+import { REDIS_CLIENT_CONFIG } from './infrastructure/client/redis-client.config';
+import { RedisAdapter } from './infrastructure/client/redis.adapter';
 
 @Module({
   imports: [ConfigModule],
-  providers: [
-    RedisService,
-    {
-      provide: 'REDIS_CLIENT',
-      useFactory: (configService: ConfigService) => {
-        return new Redis({
-          host: configService.get('REDIS_HOST'),
-          port: configService.get('REDIS_PORT'),
-          password: configService.get('REDIS_PASSWORD'),
-        });
-      },
-      inject: [ConfigService],
-    },
-  ],
-  exports: [RedisService],
+  providers: [REDIS_CLIENT_CONFIG, { provide: REDIS_ADAPTER_TOKEN, useClass: RedisAdapter }],
+  exports: [REDIS_ADAPTER_TOKEN],
 })
 export class RedisModule {}

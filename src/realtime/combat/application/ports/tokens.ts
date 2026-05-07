@@ -1,0 +1,14 @@
+export const AOE_ZONE_REPOSITORY_TOKEN = Symbol('aoe_zone_repository_token');
+export const ACTION_QUEUE_REPOSITORY_TOKEN = Symbol('action_queue_repository_token');
+export const COMBAT_ACTION_PLANNER_TOKEN = Symbol('combat_action_planner_token');
+export const PROJECTILE_REPOSITORY_TOKEN = Symbol('projectile_repository_token');
+export const ACTION_RESOLVER_TOKEN = Symbol('action_resolver_token');
+export const APPLY_EFFECT_IMPACT_FACADE_TOKEN = Symbol('apply_effect_impact_facade_token');
+export const AOE_ZONE_READER_TOKEN = Symbol('AOE_ZONE_READER_TOKEN');
+export const REQUEST_ATTACK_MOVE_USE_CASE_TOKEN = Symbol('REQUEST_ATTACK_MOVE_USE_CASE_TOKEN');
+export const REQUEST_ATTACK_CANCEL_USE_CASE_TOKEN = Symbol('REQUEST_ATTACK_CANCEL_USE_CASE_TOKEN');
+export const REQUEST_USE_SKILL_USE_CASE_TOKEN = Symbol('REQUEST_USE_SKILL_USE_CASE_TOKEN');
+
+export const PROCESS_COMBAT_TICK_TOKEN = Symbol('PROCESS_COMBAT_TICK_TOKEN');
+export const PROCESS_PROJECTILES_TICK_TOKEN = Symbol('PROCESS_PROJECTILES_TOKEN');
+export const PROCESS_AOE_TICK_TOKEN = Symbol('PROCESS_AOE_TOKEN');
