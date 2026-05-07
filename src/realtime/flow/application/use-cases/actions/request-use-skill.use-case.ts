@@ -17,8 +17,8 @@ export class RequestUseSkillUseCase implements RequestUseSkillPort {
     private readonly requestUseSkillUseCase: RequestUseSkillUseCasePort,
   ) {}
 
-  public execute(payload: RequestUseSkillPayload) {
-    this.requestUseSkillUseCase.execute({
+  public async execute(payload: RequestUseSkillPayload) {
+    await this.requestUseSkillUseCase.execute({
       attackerRef: { id: payload.characterId, type: 'player' },
       target: payload.target,
       skillId: payload.skillId,

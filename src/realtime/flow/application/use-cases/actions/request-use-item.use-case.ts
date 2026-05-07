@@ -2,25 +2,25 @@ import {
   BAG_CONTAINER_READER_TOKEN,
   type BagContainerReaderPort,
   isEquippableItem,
-  MOVE_ITEM_USE_CASE_TOKEN,
-  type MoveItemUseCasePort,
   type RuntimeItem,
 } from 'src/realtime/container';
 import { ENTITY_RESOLVER_TOKEN, type EntityResolverPort } from 'src/realtime/entity-registry';
 
 import { Inject, Injectable } from '@nestjs/common';
 
+import { type MoveItemPort } from '../../ports/actions/move-item.port';
 import type {
   RequestUseItemPayload,
   RequestUseItemPort,
 } from '../../ports/actions/request-use-item.port';
+import { MOVE_ITEM_USE_CASE_TOKEN } from '../../ports/tokens';
 
 @Injectable()
 export class RequestUseItemUseCase implements RequestUseItemPort {
   constructor(
     @Inject(ENTITY_RESOLVER_TOKEN) private readonly entityResolver: EntityResolverPort,
     @Inject(BAG_CONTAINER_READER_TOKEN) private readonly bagContainerReader: BagContainerReaderPort,
-    @Inject(MOVE_ITEM_USE_CASE_TOKEN) private readonly moveItemUseCase: MoveItemUseCasePort,
+    @Inject(MOVE_ITEM_USE_CASE_TOKEN) private readonly moveItemUseCase: MoveItemPort,
   ) {}
 
   public execute(payload: RequestUseItemPayload) {
@@ -39,8 +39,7 @@ export class RequestUseItemUseCase implements RequestUseItemPort {
     if (action === 'equip') {
       if (!isEquippableItem(item)) throw new Error('Item is not equippable');
       this.moveItemUseCase.moveFromBagToEquipment({
-        bagId: character.bagId,
-        equipmentId: character.equipmentId,
+        characterId: character.id,
         slot: item.slot,
         itemId: item.id,
       });
