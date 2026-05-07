@@ -77,14 +77,13 @@ export class ProcessMovementTickUseCase implements ProcessMovementTickPort {
 
       const prevPosition: IPositionTile = { x: entity.position.x, y: entity.position.y };
       this.entityActionFacade.move(entityRef, pixelPosition, now);
-
       this.spatialGridIndex.update(
         {
           id: entity.id,
           type: entity.type,
           locationId: entity.position.locationId,
-          x: prevPosition.x,
-          y: prevPosition.y,
+          x: pixelPosition.x,
+          y: pixelPosition.y,
         },
         entity.position.locationId,
         prevPosition.x,
