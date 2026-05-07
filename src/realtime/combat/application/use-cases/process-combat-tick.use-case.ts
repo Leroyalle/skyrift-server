@@ -118,6 +118,12 @@ export class ProcessCombatTickUseCase implements ProcessCombatTickPort {
           entityRef: attacker,
           state: { current: 'attacking' },
         });
+        if (action.target.kind === 'target') {
+          this.entityActionFacade.setCurrentTarget(
+            { id: attacker.id, type: attacker.type },
+            action.target.value,
+          );
+        }
       }
 
       const batchLocation = getOrCreate(updatesByLocation, location.id, () => []);
