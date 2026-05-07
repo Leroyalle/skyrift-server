@@ -8,7 +8,7 @@ interface Entity extends IEntityRef {
 export class CombatTargetingPolicy {
   public static canHit(attacker: Entity, victim: Entity): boolean {
     if (attacker.id === victim.id && attacker.type === victim.type) return false;
-    if (FactionRelationPolicy.areAllies(attacker.faction, victim.faction)) return false;
+    // if (FactionRelationPolicy.areAllies(attacker.faction, victim.faction)) return false;
     return true;
   }
 }
