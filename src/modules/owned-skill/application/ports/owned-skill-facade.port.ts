@@ -4,4 +4,6 @@ import type { IOwnedSkill } from '../../domain/types/owned-skill.type';
 
 export interface OwnedSkillFacadePort {
   findOwnedSkills(props: IEntityRef): Promise<IOwnedSkill[]>;
+  create(entity: Omit<IOwnedSkill, 'id'>): Promise<IOwnedSkill>;
+  remove(id: IOwnedSkill['id']): Promise<void>;
 }
