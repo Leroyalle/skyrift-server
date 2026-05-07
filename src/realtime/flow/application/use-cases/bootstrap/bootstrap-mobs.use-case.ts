@@ -4,7 +4,9 @@ import { SPAWN_MOB_USE_CASE_TOKEN, type SpawnMobUseCasePort } from 'src/realtime
 
 import { Inject, Injectable } from '@nestjs/common';
 
+import { assertCreatureHasInventory } from '../../lib/assert-creature-has-inventory.lib';
 import { BootstrapMobsMapper } from '../../mappers/bootstrap-mobs.mapper';
+import { RuntimeEquipmentLoader } from '../../services/loaders/runtime-equipment-loader.service';
 
 @Injectable()
 export class BootstrapMobsUseCase {
@@ -12,6 +14,7 @@ export class BootstrapMobsUseCase {
     @Inject(MOB_READER_TOKEN) private readonly mobReader: MobReaderPort,
     @Inject(SPAWN_MOB_USE_CASE_TOKEN) private readonly spawnMobUseCase: SpawnMobUseCasePort,
     @Inject(SPAWN_READER_FACADE_TOKEN) private readonly spawnReaderFacade: SpawnReaderFacadePort,
+    private readonly runtimeEquipmentLoader: RuntimeEquipmentLoader,
   ) {}
 
   public async execute() {
@@ -19,7 +22,11 @@ export class BootstrapMobsUseCase {
 
     for (const mob of mobs) {
       const spawn = await this.spawnReaderFacade.get(mob.spawnId);
-      if (!spawn) continue;
+      if (!spawn) throw new Error('Spawn is not found');
+      assertCreatureHasInventory(mob);
+
+      await this.runtimeEquipmentLoader.execute(mob.equipmentId);
+
       this.spawnMobUseCase.execute(BootstrapMobsMapper.toProps(mob, spawn));
     }
   }
