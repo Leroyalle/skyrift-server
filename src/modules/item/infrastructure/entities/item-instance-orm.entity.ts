@@ -1,4 +1,3 @@
-import type { IEntityType } from 'src/realtime/shared/types/entity-ref.type';
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 import { Field, ObjectType } from '@nestjs/graphql';
@@ -15,14 +14,6 @@ export class ItemInstanceOrmEntity {
   @Column()
   @Field()
   templateId!: string;
-
-  @Column()
-  @Field()
-  ownerId!: string;
-
-  @Column()
-  @Field()
-  ownerType!: IEntityType;
 
   @Column()
   @Field()

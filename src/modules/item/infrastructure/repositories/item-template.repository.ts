@@ -14,12 +14,12 @@ export class ItemTemplateRepository implements ItemTemplateRepositoryPort {
     private readonly repository: Repository<ItemTemplateOrmEntity>,
   ) {}
 
-  public async save(itemTemplate: ItemTemplate): Promise<void> {
-    await this.repository.save(itemTemplate);
+  public save(itemTemplate: ItemTemplate): Promise<ItemTemplate> {
+    return this.repository.save(itemTemplate);
   }
 
-  public async delete(itemTemplate: ItemTemplate): Promise<void> {
-    await this.repository.remove(itemTemplate);
+  public async delete(id: ItemTemplate['id']): Promise<void> {
+    await this.repository.delete(id);
   }
 
   public async find(id: ItemTemplate['id']): Promise<ItemTemplate | null> {

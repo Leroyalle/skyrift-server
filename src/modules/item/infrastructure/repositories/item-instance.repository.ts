@@ -18,8 +18,8 @@ export class ItemInstanceRepository implements ItemInstanceRepositoryPort {
     await this.repository.delete({ id });
   }
 
-  public async save(itemInstance: ItemInstance): Promise<void> {
-    await this.repository.save(itemInstance);
+  public save(itemInstance: ItemInstance): Promise<ItemInstance> {
+    return this.repository.save(itemInstance);
   }
 
   public async findById(id: ItemInstance['id']): Promise<ItemInstance | null> {
@@ -31,13 +31,6 @@ export class ItemInstanceRepository implements ItemInstanceRepositoryPort {
     containerType: ItemInstance['containerType'],
   ): Promise<ItemInstance[]> {
     return this.repository.findBy({ containerId, containerType });
-  }
-
-  public async findByOwner(
-    ownerId: ItemInstance['ownerId'],
-    ownerType: ItemInstance['ownerType'],
-  ): Promise<ItemInstance[]> {
-    return this.repository.findBy({ ownerId, ownerType });
   }
 
   public async findByIds(ids: ItemInstance['id'][]): Promise<ItemInstance[]> {
