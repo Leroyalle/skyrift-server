@@ -14,9 +14,10 @@ export class MobPersistenceRepository implements MobPersistenceRepositoryPort {
     @InjectRepository(MobOrmEntity) private readonly mobRepository: Repository<MobOrmEntity>,
   ) {}
 
-  public async save(mob: Mob): Promise<void> {
+  public async save(mob: Mob): Promise<Mob> {
     const persistence = MobMapper.toPersistence(mob);
-    await this.mobRepository.save(persistence);
+    const result = await this.mobRepository.save(persistence);
+    return MobMapper.toDomain(result);
   }
 
   public async findByLocationId(locationId: string): Promise<Mob[]> {

@@ -43,6 +43,7 @@ export class MobMapper {
     return {
       x: snapshot.x,
       y: snapshot.y,
+      locationId: snapshot.locationId,
       walkSpeed: snapshot.walkSpeed,
       triggerRange: snapshot.triggerRange,
       chaseSpeed: snapshot.chaseSpeed,
