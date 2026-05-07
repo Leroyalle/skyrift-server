@@ -26,13 +26,13 @@ export interface CharacterClientDto {
   x: number;
   y: number;
   walkSpeed: number;
-  equipmentId: string;
+  equipmentId: string | null;
   appearance: {
     body: string;
     head: string;
   };
   createdAt: Date;
-  bagId: string;
+  bagId: string | null;
 }
 
 export class CharacterClientMapper {

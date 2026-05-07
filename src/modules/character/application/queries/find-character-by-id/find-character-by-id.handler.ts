@@ -14,7 +14,12 @@ export class FindCharacterByIdHandler implements IQueryHandler<FindCharacterById
     private readonly characterRepository: CharacterRepositoryPort,
   ) {}
 
-  public execute(query: FindCharacterByIdQuery) {
-    return this.characterRepository.findOwnedCharacter(query.props.userId, query.props.characterId);
+  public async execute(query: FindCharacterByIdQuery) {
+    const character = await this.characterRepository.findOwnedCharacter(
+      query.props.userId,
+      query.props.characterId,
+    );
+    if (!character) return null;
+    return character.snapshot();
   }
 }
