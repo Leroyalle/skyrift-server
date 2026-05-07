@@ -1,10 +1,21 @@
 import type { INpc } from 'src/modules/npc';
+import { IEntitySpawn } from 'src/modules/spawn';
 import type { NpcSessionProps } from 'src/realtime/npc-session';
 
 export class BootstrapNpcsMapper {
-  public static toProps = (npc: INpc): NpcSessionProps => {
+  public static toProps = (
+    npc: INpc & { equipmentId: string },
+    spawn: IEntitySpawn,
+  ): NpcSessionProps => {
     return {
-      spawnId: npc.spawnId,
+      spawn: {
+        position: {
+          x: spawn.spawnX,
+          y: spawn.spawnY,
+          locationId: spawn.locationId,
+        },
+        spawnId: npc.spawnId,
+      },
       position: {
         x: npc.x,
         y: npc.y,

@@ -3,7 +3,10 @@ import type { IEntitySpawn } from 'src/modules/spawn';
 import type { SpawnMobSessionPayload } from 'src/realtime/mob-session';
 
 export class BootstrapMobsMapper {
-  public static toProps = (mob: IMob, spawn: IEntitySpawn): SpawnMobSessionPayload => {
+  public static toProps = (
+    mob: IMob & { equipmentId: string },
+    spawn: IEntitySpawn,
+  ): SpawnMobSessionPayload => {
     return {
       spawn: {
         position: {
