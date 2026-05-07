@@ -1,0 +1,2 @@
+export const BAG_REPOSITORY_TOKEN = Symbol('BAG_REPOSITORY_TOKEN');
+export const BAG_FACADE_TOKEN = Symbol('BAG_FACADE_TOKEN');

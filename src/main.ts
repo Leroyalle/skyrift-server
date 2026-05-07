@@ -6,27 +6,33 @@ import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 
 import { AppModule } from './app.module';
+import { BOOTSTRAP_WORLD_USE_CASE_TOKEN, BootstrapWorldPort } from './realtime/flow';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  console.log('start');
+
   app.use(cookieParser());
-  const configService = app.get(ConfigService);
+
+  const config = app.get(ConfigService);
 
   app.enableCors({
-    origin: configService.getOrThrow<string>('FRONTEND_URL'),
+    origin: config.getOrThrow<string>('FRONTEND_URL'),
     credentials: true,
     exposedHeaders: ['Set-Cookie'],
   });
 
   app.use('/assets', express.static(join(__dirname, '..', 'src/assets')));
 
-  const port = configService.getOrThrow<number>('PORT') ?? 3001;
-  console.log('PORT', port);
+  const port = config.getOrThrow<number>('PORT') ?? 3001;
+
+  await app.init();
+
+  const bootstrapWorldUseCase = app.get<BootstrapWorldPort>(BOOTSTRAP_WORLD_USE_CASE_TOKEN);
+  await bootstrapWorldUseCase.execute();
+  console.log('BOOTSTRAP COMPLETED');
+
   await app.listen(port);
-  console.log(
-    `🚀 Server is running at http://localhost:${port}/graphql`,
-    join(__dirname, '..', 'src/assets'),
-  );
+
+  console.log(`🚀 Server is running at http://localhost:${port}`);
 }
-bootstrap();
+void bootstrap();

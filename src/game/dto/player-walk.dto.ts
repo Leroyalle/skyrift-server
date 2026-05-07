@@ -1,9 +1,0 @@
-import { Field, InputType } from '@nestjs/graphql';
-
-import { PositionDto } from '../../common/dto/position.dto';
-
-@InputType()
-export class PlayerWalkDto {
-  @Field(() => PositionDto)
-  position: PositionDto;
-}
