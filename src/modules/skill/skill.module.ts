@@ -1,14 +1,15 @@
 import { Module } from '@nestjs/common';
-import { CqrsModule } from '@nestjs/cqrs';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
+import { commands } from './application/commands/commands';
 import { SkillFacade } from './application/facades/skill.facade';
 import { SKILL_FACADE_TOKEN, SKILL_PERSISTENCE_REPOSITORY_TOKEN } from './application/ports/tokens';
+import { queries } from './application/queries/queries';
 import { SkillOrmEntity } from './infrastructure/persistence/entities/skill-orm.entity';
 import { SkillPersistenceRepository } from './infrastructure/persistence/repositories/skill-persistence.repository';
 
 @Module({
-  imports: [CqrsModule, TypeOrmModule.forFeature([SkillOrmEntity])],
+  imports: [TypeOrmModule.forFeature([SkillOrmEntity])],
   providers: [
     {
       provide: SKILL_PERSISTENCE_REPOSITORY_TOKEN,
@@ -18,6 +19,8 @@ import { SkillPersistenceRepository } from './infrastructure/persistence/reposit
       provide: SKILL_FACADE_TOKEN,
       useClass: SkillFacade,
     },
+    ...commands,
+    ...queries,
   ],
   exports: [SKILL_FACADE_TOKEN],
 })

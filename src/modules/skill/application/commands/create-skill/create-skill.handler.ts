@@ -1,5 +1,7 @@
+import { randomUUID } from 'node:crypto';
 import { Skill } from 'src/modules/skill/domain/entities/skill.entity';
 import type { SkillPersistenceRepositoryPort } from 'src/modules/skill/domain/ports/skill-persistence-repository.port';
+import { ISkill } from 'src/modules/skill/domain/types/skill.type';
 
 import { Inject } from '@nestjs/common';
 import { CommandHandler, type ICommandHandler } from '@nestjs/cqrs';
@@ -15,7 +17,7 @@ export class CreateSkillHandler implements ICommandHandler<CreateSkillCommand> {
     private readonly skillPersistenceRepository: SkillPersistenceRepositoryPort,
   ) {}
 
-  public async execute(command: CreateSkillCommand) {
+  public async execute(command: CreateSkillCommand): Promise<ISkill> {
     const skill = Skill.create({
       classId: command.props.classId,
       visualEffects: command.props.visualEffects,
@@ -28,13 +30,15 @@ export class CreateSkillHandler implements ICommandHandler<CreateSkillCommand> {
       range: command.props.range,
       name: command.props.name,
       manaCost: command.props.manaCost,
-      id: command.props.id,
+      id: randomUUID(),
       icon: command.props.icon,
       heal: command.props.heal,
       damage: command.props.damage,
       cooldownMs: command.props.cooldownMs,
     });
 
-    await this.skillPersistenceRepository.save(skill);
+    const result = await this.skillPersistenceRepository.save(skill);
+
+    return result.snapshot();
   }
 }
