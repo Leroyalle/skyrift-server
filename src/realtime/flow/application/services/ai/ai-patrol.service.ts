@@ -33,8 +33,8 @@ export class AiPatrolService {
     const tilePosition = getTileByPosition(mob.position.x, mob.position.y, location.size.tileWidth);
 
     const nextTile = this.getRandomTileInRange(
-      { x: tilePosition.x, y: tilePosition.y, radius: 5 },
-      { x: mob.position.x, y: mob.position.y },
+      { x: mob.spawn.position.x, y: mob.spawn.position.y, radius: 5 },
+      tilePosition,
       location,
     );
 
