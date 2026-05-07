@@ -77,8 +77,14 @@ export class MobSession {
     this.props.combat.lastHpRegenerationTime = now;
   }
 
+  public setCurrentTarget(targetRef: IEntityRef): void {
+    this.ensureAlive();
+    this.props.combat.currentTargetRef = targetRef;
+  }
+
   public updateAggro(entityRef: IEntityRef, amount: number): void {
     this.aggroTable.updateThreatMap(entityRef, amount);
+    this.props.lifecycle.nextThinkAt = 1;
   }
 
   public moveTo(x: number, y: number, movedAt: number): void {
@@ -110,7 +116,8 @@ export class MobSession {
 
   public cancelAttack(): void {
     this.props.combat.currentTargetRef = null;
-    this.props.state.current = 'idle';
+    this.props.combat.aggro.clear();
+    // this.props.state.current = 'idle';
   }
 
   public toPublicSnapshot(): Readonly<MobSessionSnapshot> {

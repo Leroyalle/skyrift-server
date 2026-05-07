@@ -12,6 +12,7 @@ export interface MobSessionFacadePort {
     attackerRef: IEntityRef,
   ): IReceiveDamageResult | undefined;
   cancelAttack(id: string): void;
+  setCurrentTarget(id: string, targetRef: IEntityRef): void;
   setState(id: string, state: MobStateStats): void;
   setLastAttackAt(id: string, lastAttackAt: number): void;
   setMovementLockedUntil(id: string, now: number): void;

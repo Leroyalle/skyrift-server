@@ -24,6 +24,13 @@ export class MobSessionFacade implements MobSessionFacadePort {
     return session.hp;
   }
 
+  public setCurrentTarget(id: string, targetRef: IEntityRef): void {
+    const session = this.mobSessionRepository.findById(id);
+    if (!session) return;
+    session.setCurrentTarget(targetRef);
+    this.mobSessionRepository.save(session);
+  }
+
   public scheduleNextThinkAt(id: string, now: number, delay: number): void {
     const session = this.mobSessionRepository.findById(id);
     if (!session) return;

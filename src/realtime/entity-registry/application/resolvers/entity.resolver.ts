@@ -46,7 +46,7 @@ export class EntityResolver implements EntityResolverPort {
     type: T,
   ): ResolvedEntityMap[T][] {
     if (type === 'player') {
-      this.playerSessionReader.getByLocationId(locationId) as ResolvedEntityMap[T][];
+      return this.playerSessionReader.getByLocationId(locationId) as ResolvedEntityMap[T][];
     } else if (type === 'mob') {
       return this.mobSessionReader.getByLocationId(locationId) as ResolvedEntityMap[T][];
     } else if (type === 'npc') {
