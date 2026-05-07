@@ -15,11 +15,14 @@ export class QuestPersistenceRepository implements QuestRepositoryPort {
   ) {}
 
   public async update(quest: Quest): Promise<void> {
-    await this.repository.save(quest);
+    const persistence = QuestMapper.toPersistence(quest);
+    await this.repository.save(persistence);
   }
 
-  public async save(quest: Quest): Promise<void> {
-    await this.repository.save(quest);
+  public async save(quest: Quest): Promise<Quest> {
+    const persistence = QuestMapper.toPersistence(quest);
+    const result = await this.repository.save(persistence);
+    return QuestMapper.toDomain(result);
   }
 
   public async findById(id: string): Promise<Quest | null> {

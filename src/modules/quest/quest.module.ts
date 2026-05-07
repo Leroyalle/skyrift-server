@@ -2,10 +2,12 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { PlayerQuestReader } from './application/facades/player-quest.reader';
+import { QuestFacade } from './application/facades/quest.facade';
 import { QuestReader } from './application/facades/quest.reader';
 import {
   PLAYER_QUEST_READER_TOKEN,
   PLAYER_QUEST_REPOSITORY_TOKEN,
+  QUEST_FACADE_TOKEN,
   QUEST_READER_TOKEN,
   QUEST_REPOSITORY_TOKEN,
 } from './application/ports/tokens';
@@ -33,7 +35,11 @@ import { QuestPersistenceRepository } from './infrastructure/persistence/reposit
       provide: PLAYER_QUEST_READER_TOKEN,
       useClass: PlayerQuestReader,
     },
+    {
+      provide: QUEST_FACADE_TOKEN,
+      useClass: QuestFacade,
+    },
   ],
-  exports: [QUEST_READER_TOKEN, PLAYER_QUEST_READER_TOKEN],
+  exports: [QUEST_READER_TOKEN, PLAYER_QUEST_READER_TOKEN, QUEST_FACADE_TOKEN],
 })
 export class QuestModule {}
