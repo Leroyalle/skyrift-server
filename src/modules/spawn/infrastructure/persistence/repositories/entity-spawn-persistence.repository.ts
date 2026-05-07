@@ -22,8 +22,8 @@ export class EntitySpawnPersistenceRepository implements EntitySpawnRepositoryPo
     return this.repository.find();
   }
 
-  public async save(spawn: IEntitySpawn): Promise<void> {
-    await this.repository.save(spawn);
+  public save(spawn: IEntitySpawn): Promise<IEntitySpawn> {
+    return this.repository.save(spawn);
   }
 
   public get(id: IEntitySpawn['id']): Promise<IEntitySpawn | null> {

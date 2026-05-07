@@ -2,8 +2,10 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { SpawnReaderFacade } from './application/facades/spawn-reader.facade';
+import { SpawnFacade } from './application/facades/spawn.facade';
 import {
   ENTITY_SPAWN_REPOSITORY_TOKEN,
+  SPAWN_FACADE_TOKEN,
   SPAWN_READER_FACADE_TOKEN,
 } from './application/ports/tokens';
 import { EntitySpawnOrmEntity } from './infrastructure/persistence/entities/entity-spawn-orm.entity';
@@ -20,7 +22,11 @@ import { EntitySpawnPersistenceRepository } from './infrastructure/persistence/r
       provide: SPAWN_READER_FACADE_TOKEN,
       useClass: SpawnReaderFacade,
     },
+    {
+      provide: SPAWN_FACADE_TOKEN,
+      useClass: SpawnFacade,
+    },
   ],
-  exports: [SPAWN_READER_FACADE_TOKEN],
+  exports: [SPAWN_READER_FACADE_TOKEN, SPAWN_FACADE_TOKEN],
 })
 export class SpawnModule {}

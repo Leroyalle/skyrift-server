@@ -2,7 +2,7 @@ import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 import { Field, ID, Int, ObjectType } from '@nestjs/graphql';
 
-@Entity()
+@Entity('entity_spawns')
 @ObjectType()
 export class EntitySpawnOrmEntity {
   @PrimaryGeneratedColumn('uuid')
