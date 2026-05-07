@@ -27,7 +27,7 @@ export class LocationPersistenceRepository implements LocationPersistenceReposit
     return this.repository.find();
   }
 
-  public async save(location: ILocation): Promise<void> {
-    await this.repository.save(location);
+  public save(location: ILocation): Promise<ILocation> {
+    return this.repository.save(location);
   }
 }

@@ -2,7 +2,9 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { LocationReaderFacade } from './application/facades/location-reader.facade';
+import { LocationFacade } from './application/facades/location.facade';
 import {
+  LOCATION_FACADE_TOKEN,
   LOCATION_READER_FACADE_TOKEN,
   LOCATION_REPOSITORY_TOKEN,
 } from './application/ports/tokens';
@@ -20,7 +22,11 @@ import { LocationPersistenceRepository } from './infrastructure/persistence/repo
       provide: LOCATION_READER_FACADE_TOKEN,
       useClass: LocationReaderFacade,
     },
+    {
+      provide: LOCATION_FACADE_TOKEN,
+      useClass: LocationFacade,
+    },
   ],
-  exports: [LOCATION_READER_FACADE_TOKEN],
+  exports: [LOCATION_READER_FACADE_TOKEN, LOCATION_FACADE_TOKEN],
 })
 export class LocationModule {}

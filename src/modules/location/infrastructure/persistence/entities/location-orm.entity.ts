@@ -3,7 +3,7 @@ import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 import { Field, ID, Int, ObjectType } from '@nestjs/graphql';
 
-@Entity()
+@Entity('locations')
 @ObjectType()
 export class LocationOrmEntity {
   @PrimaryGeneratedColumn('uuid')
