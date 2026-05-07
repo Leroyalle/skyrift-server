@@ -9,6 +9,7 @@ import { Inject, Injectable } from '@nestjs/common';
 
 import { Message } from '../../domain/entities/message.entity';
 import type { ChatRepositoryPort } from '../../domain/ports/chat-repository.port';
+import { MessageType } from '../../domain/types/message.type';
 import { MessageTextVo } from '../../domain/vo/message-text.vo';
 import type {
   SendMessagePayload,
@@ -57,9 +58,21 @@ export class SendMessageUseCase implements SendMessageUseCasePort {
       senderName: sender.name,
     });
 
-    await this.chatRepository.add(message, payload.receiverId);
+    const receiverId = this.getReceiverId(sender, payload.type, payload.receiverId);
+
+    await this.chatRepository.add(message, receiverId);
 
     this.emitMessage({ sender, message, recipient });
+  }
+
+  private getReceiverId(
+    sender: PlayerSessionSnapshot,
+    type: MessageType,
+    receiverId?: string,
+  ): string | undefined {
+    if (type === 'direct') return receiverId;
+    if (type === 'location') return sender.position.locationId;
+    return undefined;
   }
 
   private emitMessage(payload: EmitMessagePayload) {
