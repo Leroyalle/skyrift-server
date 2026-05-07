@@ -49,6 +49,11 @@ export class ProcessAoeTickUseCase implements ProcessAoeTickPort {
 
       if (now >= zone.expiresAt) {
         this.aoeZoneRepository.remove(zone.id);
+        this.socketAdapter.sendTo(
+          RedisKeys.Location + zone.locationId,
+          ServerToClientEvents.AoERemove,
+          { id: zone.id },
+        );
         continue;
       }
 
@@ -110,8 +115,6 @@ export class ProcessAoeTickUseCase implements ProcessAoeTickPort {
           isAlive: result.isAlive,
           receivedDamage: damage,
         });
-
-        console.log('TICK AOE', victim.name, damage);
       });
 
       batchLocation.push({
@@ -124,7 +127,7 @@ export class ProcessAoeTickUseCase implements ProcessAoeTickPort {
     for (const [locationId, updates] of updatesByLocation.entries()) {
       this.socketAdapter.sendTo(
         RedisKeys.Location + locationId,
-        ServerToClientEvents.MovementBatch,
+        ServerToClientEvents.EntityStateUpdate,
         updates,
       );
     }

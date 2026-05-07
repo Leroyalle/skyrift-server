@@ -43,11 +43,7 @@ export class AoESkillStarterService {
 
     if (!skill) return;
 
-    console.log('applyAoESkill', skill);
-
     if (skill.type !== 'AoE') return;
-
-    console.log('BEFORE SPAWN AOE ZONE');
 
     if (!skill.duration || !skill.areaRadius) return;
 
