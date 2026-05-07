@@ -40,9 +40,9 @@ export class CharacterOrmEntity extends ActorEntity {
   @Column('uuid', { array: true })
   skillsIds!: string[];
 
-  @Column()
-  @Field()
-  bagId!: string;
+  @Column('uuid', { nullable: true })
+  @Field(() => String, { nullable: true })
+  bagId!: string | null;
 
   @Column('uuid', { array: true })
   questsIds!: string[];

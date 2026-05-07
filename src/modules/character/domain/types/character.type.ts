@@ -26,10 +26,10 @@ export interface ICharacter {
   x: number;
   y: number;
   walkSpeed: number;
-  equipmentId: string;
+  equipmentId: string | null;
   appearance: Appearance;
   createdAt: Date;
-  bagId: string;
+  bagId: string | null;
 }
 
 export type CharacterSnapshot = Omit<ICharacter, 'appearance'> & {
