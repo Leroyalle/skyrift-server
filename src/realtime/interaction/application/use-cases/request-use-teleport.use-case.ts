@@ -31,7 +31,7 @@ export class RequestUseTeleportUseCase implements RequestUseTeleportPort {
 
     if (!character) throw new Error('Character not found');
 
-    const location = this.locationReader.getById(payload.teleportId);
+    const location = this.locationReader.getById(character.position.locationId);
 
     if (!location) throw new Error('Location not found');
 
