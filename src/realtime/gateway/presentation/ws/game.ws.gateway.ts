@@ -3,7 +3,11 @@ import { AuthSocket } from 'src/common/decorators/auth-socket.decorator';
 import { WsAuthGuard } from 'src/common/guards/ws-guard.guard';
 import { SOCKET_ADAPTER_TOKEN, type SocketAdapterPort } from 'src/infrastructure/ws';
 import { SEND_MESSAGE_USE_CASE_TOKEN, type SendMessageUseCasePort } from 'src/realtime/chat';
-import { ClientToServerEvents } from 'src/realtime/contracts/constants/socket-events.constant';
+import { GET_PING_USE_CASE_TOKEN, GetPingUseCasePort } from 'src/realtime/connection-stats';
+import {
+  ClientToServerEvents,
+  ServerToClientEvents,
+} from 'src/realtime/contracts/constants/socket-events.constant';
 import {
   MOVE_ITEM_USE_CASE_TOKEN,
   type MoveItemPort,
@@ -26,7 +30,7 @@ import {
 } from 'src/realtime/interaction';
 import type { AuthenticatedSocket } from 'src/realtime/shared/types/auth-socket.type';
 
-import { Inject, UseGuards } from '@nestjs/common';
+import { Inject, UseFilters, UseGuards } from '@nestjs/common';
 import {
   MessageBody,
   type OnGatewayConnection,
@@ -36,17 +40,24 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 
-import type { SendDirectMessageDto } from '../../dto/chat/send-direct-message.dto';
-import type { SendLocationMessageDto } from '../../dto/chat/send-location-message.dto';
-import type { SendWorldMessageDto } from '../../dto/chat/send-world-message.dto';
-import type { RequestAttackDto } from '../../dto/request-attack.dto';
-import type { RequestEquipItemDto } from '../../dto/request-equip-item.dto';
-import type { RequestMoveToDto } from '../../dto/request-move-to.dto';
-import type { RequestTalkToNpcDto } from '../../dto/request-talk-to-npc.dto';
-import type { RequestUnequipItemDto } from '../../dto/request-unequip-item.dto';
-import type { RequestUseItemDto } from '../../dto/request-use-item.dto';
-import type { RequestSkillUseDto } from '../../dto/request-use-skill.dto';
-import type { RequestUseTeleportDto } from '../../dto/request-use-teleport.dto';
+import { EnterWorldPort } from '../../application/ports/enter-world.port';
+import { HandleConnectionUseCasePort } from '../../application/ports/handle-connaction.port';
+import {
+  ENTER_WORLD_USE_CASE_TOKEN,
+  HANDLE_CONNECTION_USE_CASE_TOKEN,
+} from '../../application/ports/tokens';
+import { BaseWsExceptionFilter } from '../../infrastructure/ws/filters/base-ws-exception.filter';
+import type { SendDirectMessageDto } from '../dto/chat/send-direct-message.dto';
+import type { SendLocationMessageDto } from '../dto/chat/send-location-message.dto';
+import type { SendWorldMessageDto } from '../dto/chat/send-world-message.dto';
+import type { RequestAttackDto } from '../dto/request-attack.dto';
+import type { RequestEquipItemDto } from '../dto/request-equip-item.dto';
+import type { RequestMoveToDto } from '../dto/request-move-to.dto';
+import type { RequestTalkToNpcDto } from '../dto/request-talk-to-npc.dto';
+import type { RequestUnequipItemDto } from '../dto/request-unequip-item.dto';
+import type { RequestUseItemDto } from '../dto/request-use-item.dto';
+import type { RequestSkillUseDto } from '../dto/request-use-skill.dto';
+import type { RequestUseTeleportDto } from '../dto/request-use-teleport.dto';
 
 @WebSocketGateway({
   namespace: 'game',
@@ -55,6 +66,7 @@ import type { RequestUseTeleportDto } from '../../dto/request-use-teleport.dto';
     credentials: true,
   },
 })
+@UseFilters(BaseWsExceptionFilter)
 export class GameWsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(
     @Inject(SOCKET_ADAPTER_TOKEN) private readonly socketAdapter: SocketAdapterPort,
@@ -74,6 +86,11 @@ export class GameWsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly requestUseTeleportUseCase: RequestUseTeleportPort,
     @Inject(SEND_MESSAGE_USE_CASE_TOKEN)
     private readonly sendMessageUseCase: SendMessageUseCasePort,
+    @Inject(ENTER_WORLD_USE_CASE_TOKEN)
+    private readonly enterWorldUseCase: EnterWorldPort,
+    @Inject(HANDLE_CONNECTION_USE_CASE_TOKEN)
+    private readonly handleConnectionUseCase: HandleConnectionUseCasePort,
+    @Inject(GET_PING_USE_CASE_TOKEN) private readonly getPingUseCase: GetPingUseCasePort,
   ) {}
 
   @WebSocketServer()
@@ -85,11 +102,27 @@ export class GameWsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   public handleConnection(client: Socket) {
-    console.log('Client connected:', client.id);
+    try {
+      console.log('Client connected:', client.id);
+      return this.handleConnectionUseCase.execute({ client });
+    } catch (err) {
+      client.disconnect();
+      console.log('Handle connection error', err);
+    }
   }
 
   public handleDisconnect(client: Socket) {
     console.log('Client disconnected:', client.id);
+  }
+
+  @SubscribeMessage(ClientToServerEvents.RequestInitialState)
+  @UseGuards(WsAuthGuard)
+  public getInitialState(@AuthSocket() client: AuthenticatedSocket) {
+    return this.enterWorldUseCase.execute({
+      characterId: client.userData.characterId,
+      userId: client.userData.userId,
+      locationId: client.userData.locationId,
+    });
   }
 
   @SubscribeMessage(ClientToServerEvents.PlayerWalk)
@@ -179,6 +212,7 @@ export class GameWsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage(ClientToServerEvents.RequestTalkToNpc)
+  @UseGuards(WsAuthGuard)
   public requestTalkToNpc(
     @AuthSocket() client: AuthenticatedSocket,
     @MessageBody() input: RequestTalkToNpcDto,
@@ -191,6 +225,7 @@ export class GameWsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage(ClientToServerEvents.RequestUseTeleport)
+  @UseGuards(WsAuthGuard)
   public requestUseTeleport(
     @AuthSocket() client: AuthenticatedSocket,
     @MessageBody() input: RequestUseTeleportDto,
@@ -204,38 +239,54 @@ export class GameWsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   @SubscribeMessage(ClientToServerEvents.PlayerSendWorldMessage)
+  @UseGuards(WsAuthGuard)
   public sendWorldMessage(
     @AuthSocket() client: AuthenticatedSocket,
     @MessageBody() input: SendWorldMessageDto,
   ) {
     return this.sendMessageUseCase.execute({
       message: input.message,
-      senderId: client.userData.userId,
+      senderId: client.userData.characterId,
       type: 'world',
     });
   }
 
   @SubscribeMessage(ClientToServerEvents.PlayerSendLocationMessage)
+  @UseGuards(WsAuthGuard)
   public sendLocationMessage(
     @AuthSocket() client: AuthenticatedSocket,
     @MessageBody() input: SendLocationMessageDto,
   ) {
+    console.log('location chat', input);
     return this.sendMessageUseCase.execute({
       message: input.message,
-      senderId: client.userData.userId,
+      senderId: client.userData.characterId,
       type: 'location',
     });
   }
 
-  @SubscribeMessage(ClientToServerEvents.PlayerSendWorldMessage)
+  @SubscribeMessage(ClientToServerEvents.PlayerSendDirectMessage)
+  @UseGuards(WsAuthGuard)
   public sendDirectMessage(
     @AuthSocket() client: AuthenticatedSocket,
     @MessageBody() input: SendDirectMessageDto,
   ) {
     return this.sendMessageUseCase.execute({
       message: input.message,
-      senderId: client.userData.userId,
-      type: 'world',
+      senderId: client.userData.characterId,
+      type: 'direct',
+      // FIXME: передавать айдишку либо искать в юзкейсе по name
+      receiverId: input.recipientName,
+    });
+  }
+
+  @SubscribeMessage(ClientToServerEvents.PingTime)
+  @UseGuards(WsAuthGuard)
+  public sendPong(@AuthSocket() client: AuthenticatedSocket, @MessageBody() clientTime: number) {
+    const serverTime = this.getPingUseCase.execute();
+    client.emit(ServerToClientEvents.PongTime, {
+      sendClientTime: clientTime,
+      serverTime,
     });
   }
 }
