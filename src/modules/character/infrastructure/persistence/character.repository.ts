@@ -68,4 +68,14 @@ export class CharacterRepository implements CharacterRepositoryPort {
 
     return result.map(CharacterMapper.toDomain);
   }
+
+  public async findById(id: string): Promise<Character | undefined> {
+    const result = await this.repository.findOne({
+      where: {
+        id,
+      },
+    });
+
+    return result ? CharacterMapper.toDomain(result) : undefined;
+  }
 }

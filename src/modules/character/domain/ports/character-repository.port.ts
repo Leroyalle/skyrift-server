@@ -7,4 +7,5 @@ export interface CharacterRepositoryPort {
   findOwnedCharacter(userId: string, characterId: string): Promise<Character | undefined>;
   update(payload: Character): Promise<Character>;
   remove(id: string): Promise<void>;
+  findById(id: string): Promise<Character | undefined>;
 }
