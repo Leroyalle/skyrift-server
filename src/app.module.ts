@@ -3,7 +3,6 @@ import { ConfigModule } from '@nestjs/config';
 import { CqrsModule } from '@nestjs/cqrs';
 
 import { InfrastructureModule } from './infrastructure/infrastructure.module';
-import { SeedModule } from './infrastructure/seed/seed.module';
 import { PersistenceModule } from './modules/persistence.module';
 import { RealtimeModule } from './realtime/reltime.module';
 
@@ -13,7 +12,6 @@ import { RealtimeModule } from './realtime/reltime.module';
       isGlobal: true,
     }),
     CqrsModule.forRoot(),
-    SeedModule,
     InfrastructureModule,
     PersistenceModule,
     RealtimeModule,
