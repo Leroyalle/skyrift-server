@@ -139,6 +139,11 @@ Client
 src
 ├─ app.module.ts
 ├─ main.ts
+├─ schema.gql
+├─ assets
+│  ├─ maps
+│  └─ tilesets
+├─ common
 ├─ infrastructure
 │  ├─ database
 │  ├─ graphql
@@ -147,38 +152,46 @@ src
 │  └─ ws
 ├─ modules
 │  ├─ auth
-│  ├─ user
+│  ├─ bag
 │  ├─ character
 │  ├─ character-class
-│  ├─ item
-│  ├─ bag
-│  ├─ equipment
-│  ├─ skill
 │  ├─ effect
-│  ├─ quest
-│  ├─ npc
-│  ├─ mob
+│  ├─ equipment
+│  ├─ faction
+│  ├─ item
 │  ├─ location
+│  ├─ mob
+│  ├─ npc
+│  ├─ owned-skill
+│  ├─ quest
+│  ├─ skill
 │  ├─ spawn
-│  └─ faction
+│  └─ user
 ├─ realtime
-│  ├─ gateway
-│  ├─ flow
-│  ├─ simulation
-│  ├─ combat
-│  ├─ movement
-│  ├─ interaction
-│  ├─ presence
 │  ├─ chat
-│  ├─ player-session
+│  ├─ combat
+│  ├─ connection-stats
+│  ├─ container
+│  ├─ contracts
+│  ├─ effect
+│  ├─ entity-registry
+│  ├─ faction
+│  ├─ flow
+│  ├─ gateway
+│  ├─ interaction
+│  ├─ location
 │  ├─ mob-session
+│  ├─ movement
 │  ├─ npc-session
 │  ├─ path-finding
+│  ├─ player-session
+│  ├─ presence
+│  ├─ quest
+│  ├─ recovery
+│  ├─ shared
+│  ├─ simulation
+│  ├─ skill-session
 │  └─ spatial-grid
-├─ common
-└─ assets
-   ├─ maps
-   └─ tilesets
 ```
 
 ## 🔌 API и realtime
