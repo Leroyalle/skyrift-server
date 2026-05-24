@@ -1,12 +1,11 @@
-import { CurrentUser } from 'src/common/decorators/current-user.decorator';
-import { AccessTokenGuard } from 'src/common/guards/access-token.guard';
-import { PayloadUser } from 'src/common/types/user-request.type';
-
 import { Inject, UseGuards } from '@nestjs/common';
 import { Args, ID, Mutation, Query, Resolver } from '@nestjs/graphql';
 
+import { CurrentUser } from '../../../common/decorators/current-user.decorator';
+import { AccessTokenGuard } from '../../../common/guards/access-token.guard';
 import { USER_FACADE_TOKEN } from '../application/ports/tokens';
 import { UserFacadePort } from '../application/ports/user-facade.port';
+import { PayloadUser } from '../domain/types/user.type';
 
 import { CreateUserDto } from './dto/create-user.dto';
 import { UserPresentationMapper } from './mappers/user.presentation.mapper';

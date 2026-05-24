@@ -1,98 +1,319 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# ⚔️ SkyRift Server
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+`SkyRift Server` - backend-сервер для multiplayer RPG/online game-проекта `SkyRift`.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+Здесь собраны авторизация, GraphQL API, realtime-взаимодействие по WebSocket, игровая симуляция мира, боевая система, перемещение, NPC, квесты, инвентарь и вспомогательная инфраструктура.
 
-## Description
+## ✨ Что умеет проект
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+В сервер уже заложены основные игровые подсистемы:
 
-## Project setup
+- 🔐 регистрация, логин, refresh/logout и работа с токенами
+- 👤 пользователи и игровые персонажи
+- 🧙 классы персонажей, навыки и эффекты
+- 🎒 инвентарь, экипировка и предметы
+- 🗺 локации, спавны, тайловые карты и телепорты
+- 👾 мобы и NPC
+- ⚔️ realtime-бой, урон, AOE, снаряды и восстановление
+- 🧭 перемещение, pathfinding и spatial grid
+- 📜 квесты и прогресс игрока
+- 💬 чат и игровые realtime-события
+- 📡 presence и сессии игроков через Redis
+- 🌱 сидинг мира и стартовых игровых данных
 
-```bash
-$ npm install
+## 📚 Содержание
+
+- [Обзор](#-обзор)
+- [Технологический стек](#-технологический-стек)
+- [Функциональность](#-функциональность)
+- [Архитектура](#-архитектура)
+- [Структура проекта](#-структура-проекта)
+- [API и realtime](#-api-и-realtime)
+- [Quick Start](#-quick-start)
+- [Docker](#-docker)
+- [Скрипты](#-скрипты)
+
+## 📖 Обзор
+
+`SkyRift Server` построен как модульный backend на `NestJS` и разделен на два больших слоя:
+
+- `modules` - persistent-домен и бизнес-сущности, которые живут в PostgreSQL
+- `realtime` - игровая runtime-логика, которая обслуживает живой мир, сокеты, симуляцию и боевые тики
+
+При запуске сервер:
+
+- поднимает GraphQL API
+- подключает PostgreSQL и Redis
+- инициализирует realtime-подсистемы
+- загружает ассеты карт
+- выполняет bootstrap игрового мира
+
+То есть backend не просто отдает данные, а держит активное состояние мира и обрабатывает игровые действия в реальном времени.
+
+## 🧰 Технологический стек
+
+### Core
+
+- `TypeScript`
+- `Node.js`
+- `NestJS`
+- `CQRS`
+
+### API
+
+- `GraphQL`
+- `Apollo Server`
+- `cookie-based auth`
+
+### Realtime
+
+- `WebSocket`
+- `Socket.IO`
+- `Redis`
+
+### Data
+
+- `PostgreSQL`
+- `TypeORM`
+
+### Game Runtime
+
+- `EasyStar.js` для pathfinding
+- in-memory runtime repositories
+- tick-based simulation
+
+### DevOps
+
+- `Docker`
+- `Docker Compose`
+
+## 🎮 Функциональность
+
+| Модуль                     | Описание                                               |
+| -------------------------- | ------------------------------------------------------ |
+| 🔐 Auth                    | Регистрация, вход, refresh token, logout               |
+| 👤 Users                   | Пользователи и текущий профиль                         |
+| 🧝 Characters              | Игровые персонажи и получение персонажей пользователя  |
+| 🧙 Character Classes       | Классы персонажей и базовые параметры                  |
+| 🎒 Items / Bag / Equipment | Предметы, сумка, экипировка, runtime-перемещение вещей |
+| ✨ Skills / Effects        | Навыки, эффекты, AOE и боевые воздействия              |
+| 📜 Quests                  | Квесты и прогресс по ним                               |
+| 👾 Mobs / NPC              | Игровые сущности мира, поведение и взаимодействие      |
+| 🗺 Locations / Spawn       | Локации, точки появления, карты и телепорты            |
+| ⚔️ Combat                  | Атаки, снаряды, урон, боевые тики                      |
+| 🧭 Movement                | Перемещение, очереди движения, pathfinding             |
+| 💬 Chat                    | World / location / direct сообщения                    |
+| 📡 Presence                | Онлайн-состояние соединений и игроков через Redis      |
+| 🌱 Seed                    | Загрузка мира, карт и стартовых данных                 |
+
+## 🏗 Архитектура
+
+Проект организован модульно и сочетает `DDD`, `CQRS` и `ports & adapters`.
+
+Общий поток выглядит так:
+
+```text
+Client
+  │
+  ├── GraphQL API
+  │     └── use-cases / facades / repositories
+  │
+  └── WebSocket Gateway
+        └── realtime use-cases / runtime services / in-memory state
+                    │
+                    ├── PostgreSQL
+                    ├── Redis
+                    └── Game world simulation
 ```
 
-## Compile and run the project
+Что важно в текущей структуре:
 
-```bash
-# development
-$ npm run start
+- persistent-модули отвечают за сущности и данные, которые должны храниться между сессиями
+- realtime-модули отвечают за живое состояние мира и реакцию на игровые события
+- CQRS используется для разделения команд, query-объектов, фасадов и use-case логики
+- часть runtime-данных хранится в памяти для быстрой обработки тиков и боевых событий
 
-# watch mode
-$ npm run start:dev
+## 📂 Структура проекта
 
-# production mode
-$ npm run start:prod
+```text
+src
+├─ app.module.ts
+├─ main.ts
+├─ infrastructure
+│  ├─ database
+│  ├─ graphql
+│  ├─ redis
+│  ├─ seed
+│  └─ ws
+├─ modules
+│  ├─ auth
+│  ├─ user
+│  ├─ character
+│  ├─ character-class
+│  ├─ item
+│  ├─ bag
+│  ├─ equipment
+│  ├─ skill
+│  ├─ effect
+│  ├─ quest
+│  ├─ npc
+│  ├─ mob
+│  ├─ location
+│  ├─ spawn
+│  └─ faction
+├─ realtime
+│  ├─ gateway
+│  ├─ flow
+│  ├─ simulation
+│  ├─ combat
+│  ├─ movement
+│  ├─ interaction
+│  ├─ presence
+│  ├─ chat
+│  ├─ player-session
+│  ├─ mob-session
+│  ├─ npc-session
+│  ├─ path-finding
+│  └─ spatial-grid
+├─ common
+└─ assets
+   ├─ maps
+   └─ tilesets
 ```
 
-## Run tests
+## 🔌 API и realtime
+
+### GraphQL API
+
+Сервер поднимает GraphQL endpoint и автоматически собирает схему в файл:
+
+- `src/schema.gql`
+
+В проекте уже есть операции для:
+
+- `signUp`
+- `signIn`
+- `refreshTokens`
+- `logout`
+- `getCurrentUser`
+- `findUserCharacters`
+
+GraphQL playground включается в dev-режиме.
+
+### WebSocket gateway
+
+Realtime-взаимодействие работает через `Socket.IO` namespace:
+
+- `/game`
+
+Сокет-слой обрабатывает игровые события, например:
+
+- вход в мир
+- перемещение персонажа
+- атаку и отмену атаки
+- использование навыков
+- использование предметов
+- экипировку / снятие экипировки
+- разговор с NPC
+- использование телепортов
+- игровой чат
+- ping/pong и connection stats
+
+## ⚡ Quick Start
+
+### 1. Установка зависимостей
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+npm install
 ```
 
-## Deployment
+### 2. Подготовка окружения
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+Создайте `.env` и заполните основные переменные:
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+```env
+PORT=3001
+FRONTEND_URL=http://localhost:5173
+
+DB_HOST=localhost
+DB_PORT=5432
+DB_USER=postgres
+DB_PASSWORD=postgres
+DB_NAME=skyrift
+
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_USER=default
+REDIS_PASSWORD=redis
+
+ACCESS_SECRET=your_access_secret
+REFRESH_SECRET=your_refresh_secret
+```
+
+### 3. Поднять инфраструктуру
 
 ```bash
-$ npm install -g mau
-$ mau deploy
+docker compose up -d
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+### 4. Заполнить проект стартовыми данными
 
-## Resources
+```bash
+npm run seed
+```
 
-Check out a few resources that may come in handy when working with NestJS:
+### 5. Запустить сервер
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+```bash
+npm run start:dev
+```
 
-## Support
+После запуска приложение будет доступно по адресу:
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+- API: `http://localhost:3001/graphql`
+- Assets: `http://localhost:3001/assets/...`
+- WebSocket namespace: `ws://localhost:3001/game`
 
-## Stay in touch
+## 🐳 Docker
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+Через `docker-compose.yaml` поднимаются:
 
-## License
+- `PostgreSQL`
+- `Redis`
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+Команда запуска:
+
+```bash
+docker compose up -d
+```
+
+Если нужно остановить контейнеры:
+
+```bash
+docker compose down
+```
+
+## 🛠 Скрипты
+
+Основные npm-скрипты проекта:
+
+```bash
+npm run start
+npm run start:dev
+npm run start:prod
+
+npm run build
+npm run lint
+
+npm run seed
+```
+
+## 💡 Заметки по проекту
+
+- при старте вызывается bootstrap игрового мира, поэтому часть runtime-состояния инициализируется автоматически
+- карты и тайлсеты лежат прямо в репозитории в `src/assets`
+- backend рассчитан на связку с отдельным frontend-клиентом игры
+
+## 🚀 Статус
+
+Проект находится в стадии активной разработки и представляет собой серверную основу для realtime RPG-игры `SkyRift`.
