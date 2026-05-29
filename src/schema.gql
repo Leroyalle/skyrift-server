@@ -3,25 +3,39 @@
 # ------------------------------------------------------
 
 type UserOrmEntity {
-  """ID пользователя"""
+  """
+  ID пользователя
+  """
   id: ID!
 
-  """Имя пользователя"""
+  """
+  Имя пользователя
+  """
   name: String!
 
-  """Email пользователя"""
+  """
+  Email пользователя
+  """
   email: String!
 
-  """Password пользователя"""
+  """
+  Password пользователя
+  """
   password: String!
 
-  """Refresh token"""
+  """
+  Refresh token
+  """
   refreshToken: String
 
-  """Дата создания пользователя"""
+  """
+  Дата создания пользователя
+  """
   createdAt: Timestamp!
 
-  """Дата последнего обновления пользователя"""
+  """
+  Дата последнего обновления пользователя
+  """
   updatedAt: Timestamp!
 }
 
@@ -136,35 +150,53 @@ type TiledMap {
 }
 
 type UserModel {
-  """ID пользователя"""
+  """
+  ID пользователя
+  """
   id: ID!
 
-  """Имя пользователя"""
+  """
+  Имя пользователя
+  """
   name: String!
 
-  """Email пользователя"""
+  """
+  Email пользователя
+  """
   email: String!
 
-  """Password пользователя"""
+  """
+  Password пользователя
+  """
   password: String!
 
-  """Дата создания пользователя"""
+  """
+  Дата создания пользователя
+  """
   createdAt: Timestamp!
 
-  """Дата последнего обновления пользователя"""
+  """
+  Дата последнего обновления пользователя
+  """
   updatedAt: Timestamp!
 }
 
 type AuthModel {
-  """Access token"""
+  """
+  Access token
+  """
   accessToken: String!
 
-  """RefreshToken token"""
+  """
+  RefreshToken token
+  """
   refreshToken: String!
 }
 
 type LogoutModel {
-  """Сообщение о выходе"""
+  """
+  Сообщение о выходе
+  """
   message: String!
 }
 
@@ -190,20 +222,30 @@ input CreateUserDto {
 }
 
 input RegisterInput {
-  """Имя пользователя"""
+  """
+  Имя пользователя
+  """
   name: String!
 
-  """Email пользователя"""
+  """
+  Email пользователя
+  """
   email: String!
 
-  """Password пользователя"""
+  """
+  Password пользователя
+  """
   password: String!
 }
 
 input LoginInput {
-  """Email пользователя"""
+  """
+  Email пользователя
+  """
   email: String!
 
-  """Password пользователя"""
+  """
+  Password пользователя
+  """
   password: String!
 }
